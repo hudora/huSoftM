@@ -122,7 +122,6 @@ def get_kunde(kdnnr):
                      '%' + str(kdnnr)))
     if not rows:
         # no AKZ00 entry
-        print '-'* 50
         rows = husoftm.connection.get_connection().query(['XKD00', 'XKS00'],
                condition="KDKDNR='%8d' AND KSKDNR='%8d'" % (int(kdnnr), int(kdnnr)))
     if not rows:
@@ -141,25 +140,17 @@ def get_kunde(kdnnr):
 
 def get_kunde_by_iln(iln):
     rows = husoftm.connection.get_connection().query(['XKS00'], condition="KCE2IL='%s'" % (int(iln), ))
-# AKZ00
-# AYK00
-# XKS00
-# ALD00
-# AVA00
-# LVA00
-# 
-# XXA00
-#       AOD00                     Angebote: Einmal-Adress-Date
-#       AVA00                     Versandadressdatei
-# BA100                     Adressen Einmalkunden/-Lieferanten
-# EAD00
-# LVA00
-# MVD00
-
-
-    print rows
-    rows = husoftm.connection.get_connection().query(['AVA00'], condition="VAILN='%s'" % (int(iln), ))
-    print rows
+    if rows:
+        # stammadresse
+        return get_kunde(rows[0]['kundennummer'])
+    else:
+        # abweichende Lieferadresse
+        rows = husoftm.connection.get_connection().query(['AVA00'], condition="VAILN='%s'" % (int(iln), ))
+        if rows:
+            rows = husoftm.connection.get_connection().query(['XXA00'], condition="XASANR='%s'" % (int(rows[0]['satznummer']), ))
+            if rows:
+                return Kunde().fill_from_softm(rows[0])
+    
 
 
 def _selftest():

@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-fields.py - describes the SoftM table structure. Part of pySoftM.
+fields.py - describes the SoftM table structure. Part of huSoftM.
 
-Created by Maximillian Dornseif on 2007-03-18.
-Copyright (c) 2007 HUDORA GmbH. All rights reserved.
+Created by Maximillian Dornseif on 2007-03-18. Based on code named "MoftS" from Summer 2005.
+Copyright (c) 2007, 2008 HUDORA GmbH. All rights reserved.
 """
 
 __revision__ = "$Revision$"
@@ -15,8 +15,8 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                         'LPBHMG': 'behaeltermenge',
                         'LPLGPL': 'lagerplatz',
                         'LPFPAR': 'artnr',
-                        #'LPREIH': 'reihe', 
-                        #'LPFACH': 'fach', 
+                        #'LPREIH': 'reihe',
+                        #'LPFACH': 'fach',
                         #'LPRIEG': 'riegel',
                         'LPMINC': 'minmenge',
                         'LPMAXC': 'maxmenge',
@@ -47,10 +47,10 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                         #'LPBH10': 'bebaeltertyp10',
                        },
              'MLV00': {# Mehrplatzlagervorgänge
-                       'LVVGNR': 'vorgangsnummer',
-                       'LVARTN': 'artikelnummer',
+                       'LVVGNR': 'vorgangsnr',
+                       'LVARTN': 'artnr',
                        'LVAUFA': 'auftragsart',
-                       'LVAUFN': 'auftragsnummer',
+                       'LVAUFN': 'auftragsnr',
                        'LVAUPO': 'auftrags_position',
                        'LVBHTY': 'behaeltertyp',
                        'LVBPAE': 'benutzerprofil_aenderung',
@@ -61,7 +61,7 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        'LVDTBE': 'bearbeitung_date',
                        'LVDTER': 'erfassung_date',
                        'LVDTLT': 'liefer_date',
-                       'LVKDNR': 'kundennummer',
+                       'LVKDNR': 'kundennr',
                        'LVKOMP': 'komponentenartikel',
                        #'LVKZAR': 'KZ autom.Rueckmeldung',
                        #'LVKZAS': 'Auslagerungsstrategie',
@@ -77,9 +77,9 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        'LVMNGS': 'menge2',
                        #'LVPAN2': 'bez. Bestandssatz',
                        #'LVPANR': 'bez. Bestandssatz',
-                       'LVSAN1': 'satznummerALN00',
-                       'LVSAN2': 'satznummerALK00',
-                       'LVSANR': 'satznummer',
+                       'LVSAN1': 'satznrALN00',
+                       'LVSAN2': 'satznrALK00',
+                       'LVSANR': 'satznr',
                        'LVSBAE': 'sachbearbeiter_aenderung',
                        'LVSBER': 'sachbearbeiter_erfassung',
                        'LVSBNR': 'sachbearbeiter_rueckmeldung',
@@ -90,7 +90,7 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        'LVX3VA': 'versandart',
                       },
              'ALK00': {# Lieferscheinköpfe
-                       'LKSANK': 'satznummer',
+                       'LKSANK': 'satznr',
                        'LKSANB': 'bezogener_kopf',
                        'LKSBNR': 'sachbearbeiter',
                        'LKLGNR': 'lager',
@@ -109,7 +109,7 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        'LKZTKB': 'letzter_kommissionierbeleg_time',
                        'LKLFDN': 'laufendenr',
                        'LKBELN': 'belegnr_freigabe',
-                       # 'LKFGNR': 'Freigabenummer AFA20
+                       # 'LKFGNR': 'Freigabenr AFA20
                        # 'LKFGSB': 'Sachbearb. Freigabe
                        'LKDTFG': 'freigabe_date',
                        'LKZTFG': 'freigabe_time',
@@ -128,8 +128,8 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        'LKSTAT': 'satzstatus',
                       },
              'ALN00': {# Lieferscheinpositionen
-                       'LNSANK': 'satznummer_kopf',
-                       'LNSANP': 'satznummer',
+                       'LNSANK': 'satznr_kopf',
+                       'LNSANP': 'satznr',
                        # 'LNKANR': 'Übergeordnete Auftrags-Nr.
                        'LNAUFN': 'auftragsnr',
                        'LNAUPO': 'auftrags_position',
@@ -140,7 +140,7 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        # 'LNVKE':  'verkaufseinheit', # ist immer leer
                        'LNLGNR': 'lager',
                        #'LNLGPL': 'lagerplatz', # ist immer leer
-                       #'LNKZBE': 'Kz:keine Bestandsführung =1 
+                       #'LNKZBE': 'Kz:keine Bestandsführung =1
                        'LNMNGO': 'menge_offen',
                        'LNDTLT': 'liefertermin_date',
                        'LNJWLT': 'liefertermin_woche',
@@ -148,17 +148,17 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        'LNKZZL': 'zuteilungskennzeichen',
                        'LNKZZU': 'bevorzugte_zuteilung',
                        'LNKDRG': 'rechnungsempfaenger',
-                       'LNKDNR': 'kundennumer',
+                       'LNKDNR': 'kundennr',
                        'LNLFSN': 'lieferscheinnr',
                        'LNMNGL': 'menge',
                        'LNDTLF': 'lieferschein_date',
                        'LNZTLF': 'lieferschein_time',
-                       #'LNKZVL': 'KZ. Vorab-Lieferschein      
-                       #'LNKZLD': 'Kz: Im LF. andrucken        
-                       #'LNKZL2': 'Kz: Im LF. andrucken        
-                       #'LNKZLF': 'Kz: LF-Schein drucken       
-                       #'LNKZFA': 'Kz:Pos.für Fakt.ausgewählt= 
-                       #'LNKZFF': 'Kz: Pos ist fakturierbar =  
+                       #'LNKZVL': 'KZ. Vorab-Lieferschein
+                       #'LNKZLD': 'Kz: Im LF. andrucken
+                       #'LNKZL2': 'Kz: Im LF. andrucken
+                       #'LNKZLF': 'Kz: LF-Schein drucken
+                       #'LNKZFA': 'Kz:Pos.für Fakt.ausgewählt=
+                       #'LNKZFF': 'Kz: Pos ist fakturierbar =
                        'LNDTST': 'storno_date',
                        'LNKZRE': 'lieferschein_ausloesung',
                        'LNKBNR': 'kommissionierbelegnr',
@@ -170,8 +170,8 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        'LNDTVS': 'versand_date',
                        'LNSTOR': 'gutschrift',
                        'LNBELP': 'kommissionierbeleg_position',
-                       #'LNFGNR': 'Freigabenummer AFA20
-                       #'LNFNFA': 'Fehlernummer FG. AFA20
+                       #'LNFGNR': 'Freigabenr AFA20
+                       #'LNFNFA': 'Fehlernr FG. AFA20
                        'LNLSTO': 'lieferscheinstorno',
                        'LNMNGF': 'menge_fakturierung',
                        'LNKZV2': 'voll_ausgeliefert',
@@ -192,7 +192,7 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        'LNSBNR': 'sachbearbeiter_bearbeitung',
                       },
              'XKD00': {# Kundenadressen
-                       'KDKDNR': 'kundennummer',
+                       'KDKDNR': 'kundennr',
                        'KDNAME': 'name1',
                        'KDNAM2': 'name2',
                        'KDNAM3': 'name3',
@@ -219,54 +219,54 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        'KDDTER': 'erfassung_date',
                        'KDDTAE': 'aenderung_date',
                        },
-                
+
              'XKS00': { # Kundenzusatzdaten
-                       'KSKDNR': 'kundennummer',
-                       'KSLISP': 'liefersperre', 
-                       'KSAWRT': 'offener_aftragswert', 
-                       'KSAKWR': 'kreditlimit', 
-                       'KSCOMP': 'company', 
-                       'KSIAKZ': 'inland_ausland', 
-                       'KSFNRK': 'interne_firmennummer', 
-                       'KSINFL': 'unsere_lieferantennumemr', 
-                       'KCUSTN': 'ustid', 
-                       'KSLIMI': 'kreditlimit2', 
-                       'KSSKSL': 'skontoschluessel', 
-                       'KSDKSL': 'delcredereschlüssel', 
-                       'KSMASP': 'mahnsperre', 
-                       'KSKDZA': 'lastschrift', 
-                       'KSBOKZ': 'bonnitaet', 
-                       # 'KSKLTA': 'Kd/Li-Texte anzeigen       ', 
-                       # 'KSINF1': 'Inf. 1                     ', 
-                       'KCVERB': 'verband', 
-                       #'KSKRED': 'Verbands-/Mischkto-Satz    ', 
-                       'KCMGVB': 'mitgliednummer', 
-                       #'KCBBN':  'Bundeseinheitl.Betriebsnr. ', 
-                       #'KCBBS':  'Bundeseinh.Betriebsstell.Nr', 
-                       #'KCVRKZ': 'Kz. "Rechnungsliste erst." ', 
-                       #'KCRGKZ': 'Kz. "Rechnung drucken"     ', 
-                       #'KCKOIN': 'Kontoinhaber               ', 
-                       #'KCHSTU': 'Auswertungsebene / KD-Hier ', 
+                       'KSKDNR': 'kundennr',
+                       'KSLISP': 'liefersperre',
+                       'KSAWRT': 'offener_aftragswert',
+                       'KSAKWR': 'kreditlimit',
+                       'KSCOMP': 'company',
+                       'KSIAKZ': 'inland_ausland',
+                       'KSFNRK': 'interne_firmennr',
+                       'KSINFL': 'unsere_lieferantennumemr',
+                       'KCUSTN': 'ustid',
+                       'KSLIMI': 'kreditlimit2',
+                       'KSSKSL': 'skontoschluessel',
+                       'KSDKSL': 'delcredereschlüssel',
+                       'KSMASP': 'mahnsperre',
+                       'KSKDZA': 'lastschrift',
+                       'KSBOKZ': 'bonnitaet',
+                       # 'KSKLTA': 'Kd/Li-Texte anzeigen       ',
+                       # 'KSINF1': 'Inf. 1                     ',
+                       'KCVERB': 'verband',
+                       #'KSKRED': 'Verbands-/Mischkto-Satz    ',
+                       'KCMGVB': 'mitgliednr',
+                       #'KCBBN':  'Bundeseinheitl.Betriebsnr. ',
+                       #'KCBBS':  'Bundeseinh.Betriebsstell.Nr',
+                       #'KCVRKZ': 'Kz. "Rechnungsliste erst." ',
+                       #'KCRGKZ': 'Kz. "Rechnung drucken"     ',
+                       #'KCKOIN': 'Kontoinhaber               ',
+                       #'KCHSTU': 'Auswertungsebene / KD-Hier ',
                        #'KCSKRL': 'Skto-Ausweis RGL Verband ',
                        #'KCEDIL': 'LS-Daten per EDI         ',
                        #'KCPRIA': 'Inlands-/Auslandspreise  ',
                        'KCE2IL': 'ILN',
                        },
              'AKZ00': {# Kundenstamm für Auftragsverwaltung
-                       'KZKDNR': 'Kunden-Nummer              ', 
-                       #'KZSBNR': 'zuständiger Sachbearbeiter ', 
-                       'KZVRT': 'vertreter', 
-                       'KZGEB': 'gebiet', 
-                       'KZBRAN': 'branche', 
-                       'KZDSTK': 'distrikt', 
-                       #'KZKZVB':' Kz. 'Kunde ist Verbraucher',' 
-                       #'KZKZZU': 'Bevorzugte Zuteilung       ', 
-                       #'KZKZRK': 'Rückstand möglich          ', 
-                       'KZX3LB': 'lieferbedingung', 
-                       'KZX3VP': 'verpackungsvorschrift', 
-                       'KZX3VS': 'versandart', 
-                       #'KZVANR': 'Versand-Adress Nr.         ', 
-                       #'KZEXPR': 'Expreßgut-Station          ', 
+                       'KZKDNR': 'Kunden-nr              ',
+                       #'KZSBNR': 'zuständiger Sachbearbeiter ',
+                       'KZVRT': 'vertreter',
+                       'KZGEB': 'gebiet',
+                       'KZBRAN': 'branche',
+                       'KZDSTK': 'distrikt',
+                       #'KZKZVB':' Kz. 'Kunde ist Verbraucher','
+                       #'KZKZZU': 'Bevorzugte Zuteilung       ',
+                       #'KZKZRK': 'Rückstand möglich          ',
+                       'KZX3LB': 'lieferbedingung',
+                       'KZX3VP': 'verpackungsvorschrift',
+                       'KZX3VS': 'versandart',
+                       #'KZVANR': 'Versand-Adress Nr.         ',
+                       #'KZEXPR': 'Expreßgut-Station          ',
                        'KZLGNR': 'auslieferunglager',
                        #'KZX3ZB': 'Zahl.-Bed-Schl.            ',
                        #'KZKDRG': 'Rechnungs-Zahler           ',
@@ -274,15 +274,15 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        #'KZKZBO': 'Bonus-Kennzeichen          ',
                        #'KZKZSL': 'Sammellieferschein         ',
                        #'KZKZRV': 'Rechnung nur vollständig   ',
-                       #'KZKZSR': 'Sammelrechnung             ', 
-                       #'KZKZAB': 'Steuerung AB-Andruck       ', 
-                       #'KZABCO': 'Formular-Anz./Auftragsbest.', 
-                       #'KZKBCO': 'Formularanz./ Komm.-Beleg  ', 
-                       #'KZLSCO': 'Formularanz./ Lieferschein ', 
-                       #'KZRGCO': 'Formularanz./ Rechnung     ', 
-                       #'KZTELF': 'telefon', 
-                       #'KZTFAX': 'fax', 
-                       'KZINFO': 'sachbearbeiter', 
+                       #'KZKZSR': 'Sammelrechnung             ',
+                       #'KZKZAB': 'Steuerung AB-Andruck       ',
+                       #'KZABCO': 'Formular-Anz./Auftragsbest.',
+                       #'KZKBCO': 'Formularanz./ Komm.-Beleg  ',
+                       #'KZLSCO': 'Formularanz./ Lieferschein ',
+                       #'KZRGCO': 'Formularanz./ Rechnung     ',
+                       #'KZTELF': 'telefon',
+                       #'KZTFAX': 'fax',
+                       'KZINFO': 'sachbearbeiter',
                        'KZDTAE': 'updated_at',
              },
              'XAD00': {# Abweichende Lieferadressen
@@ -290,25 +290,25 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        'ADNAM2': 'name2',
                        'ADNAM3': 'name3',
                        'ADNAM4': 'name4',
-                       'ADSTR':  'strasse',
-                       'ADPLZ':  'postleitzahl',
-                       'ADORT':  'ortsname',
-                       'ADLKZ':  'laenderkennzeichen',
+                       'ADSTR': 'strasse',
+                       'ADPLZ': 'postleitzahl',
+                       'ADORT': 'ortsname',
+                       'ADLKZ': 'laenderkennzeichen',
                        'ADORTT': 'ortsteil',
                        'ADKZAD': 'adressaufbereitung',
                       },
-             'AAT00': {# Auftragsnummer
-                       'ATAUFN': 'auftragsnumer',
+             'AAT00': {# Auftragsnr
+                       'ATAUFN': 'auftragsnr',
                        'ATAUPO': 'auftragsposition',
                        'ATTART': 'textart',
-                       'ATLFNR': 'nummer',
+                       'ATLFNR': 'nr',
                        'ATTX60': 'text',
                        'ATKZAB': 'andruck_ab',
                        'ATKZLF': 'andruck_ls',
                        'ATKZRG': 'andruck_re',
                       },
              'ISA00': {# MyPL Schnittstelle: Komissionierbeleg
-                       'IAFNR':  'firma',
+                       'IAFNR': 'firma',
                        'IALGNR': 'lagernr',
                        'IAKBNR': 'kommissionierbelegnr',
                        'IAAUFN': 'auftragsnr',
@@ -316,36 +316,36 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        'IATIME': 'anforderung_time',
                        'IADFSL': 'dateifuehrungsschluessel',
                        'IASTAT': 'status',
-                       'IASANR': 'satznummer',
+                       'IASANR': 'satznr',
                       },
              'ISK00': {# MyPL Schnittstelle: Warenzugang aus Umlagerung
-                       'IKFNR ': 'firma',
+                       'IKFNR': 'firma',
                        'IKKBNR': 'kommissionierbelegnr',
                        'IKKPOS': 'kommissionierbelegposition',
-                       'IKAUFN': 'auftragsnummer',
+                       'IKAUFN': 'auftragsnr',
                        'IKAUPO': 'auftragsposition',
                        'IKRMNG': 'rueckmeldemenge',
                        'IKDATE': 'rueckmeldung_date',
                        'IKTIME': 'rueckmeldung_time',
                        'IKDFSL': 'dateifuehrungsschluessel',
                        'IKSTAT': 'status',
-                       'IKSANR': 'satznummer',
+                       'IKSANR': 'satznr',
                       },
              'ISR00': {# MyPL Schnittstelle: KB-Rückmeldung
-                       'IRFNR': 'firma', 
+                       'IRFNR': 'firma',
                        'IRKBNR': 'kommissionierbelegnr',
                        'IRKPOS': 'kommissionierbelegposition',
-                       'IRAUFN': 'auftragsnummer',
+                       'IRAUFN': 'auftragsnr',
                        'IRAUPO': 'auftragsposition',
                        'IRMENG': 'rueckmeldemenge',
                        'IRKZNU': 'kennzeichen_nullen',
                        'IRKZST': 'kennzeichen_stornieren',
                        'IRFCOD': 'letzter_fehlercode',
                        'IRDFSL': 'dateifuehrungsschluessel',
-                       'IRSTAT': 'status',                       
+                       'IRSTAT': 'status',
                       },
              'ISB00': {# MyPL Schnittstelle: Lagerbuchungsschnittstelle
-                       'IBFNR': 'firma', 
+                       'IBFNR': 'firma',
                        'IBBWSL': 'bewegungsschluessel',
                        'IBLGNR': 'lager',
                        'IBARTN': 'artnr',
@@ -353,17 +353,17 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        'IBINFO': 'info',
                        'IBFCOD': 'letzter_fehlercode',
                        'IBDFSL': 'dateifuehrungsschluessel',
-                       'IBSTAT': 'status',                       
+                       'IBSTAT': 'status',
                       },
              'ISZ00': {# MyPL Schnittstelle: Warenzugang aus Auftrag
                        'IZFNR ': 'firma',
-                       'IZBSTN': 'bestellnummer',
-                       'IZWVNR': 'warenvereinnahmungsnummer',
+                       'IZBSTN': 'bestellnr',
+                       'IZWVNR': 'warenvereinnahmungsnr',
                        'IZDTWZ': 'zugang_date',
                        'IZTIME': 'zugang_time',
                        'IZDFSL': 'dateiführungsschlüssel',
                        'IZSTAT': 'status',
-                       'IZSANR': 'satznummer',
+                       'IZSANR': 'satznr',
                        },
              'XAR00': {# Artikelstamm
                         'ARARTN': 'artnr',
@@ -378,14 +378,14 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                         'AREAN': 'ean',
                         'ARMEBE': 'mengeneinheit',
                         'ARZOGR': 'zollgruppe',
-                        'ARZTNR': 'statistischewarennummer',
+                        'ARZTNR': 'statistischewarennr',
                         'ARPREV': 'listenpreis',
                         'ARMALG': 'laenge',
                         'ARMABR': 'breite',
                         'ARMATI': 'tiefe',
                         'AREART': 'ersatzartikel',
-                        'ARMCOD': 'matchcode',  
-                        #'ARMEBE': 'Mengeneinheit/Bestandsf.', 
+                        'ARMCOD': 'matchcode',
+                        #'ARMEBE': 'Mengeneinheit/Bestandsf.',
                         #'ARMEER': 'Mengeneinheit/Erfassung',
                         #'ARFAKT': 'Umrechn.-Faktor  ER-->BE',
                         #'ARMEPR': 'Mengeneinheit/Preis',
@@ -393,13 +393,13 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                         'ARABC': 'abc1',
                         'ARABC2': 'abc2',
                         'ARABC3': 'abc3',
-                        #'ARZOGR': 'Zoll-Grupppe-Nummer',
-                        'ARZTNR': 'zolltarifnummer', 
+                        #'ARZOGR': 'Zoll-Grupppe-nr',
+                        'ARZTNR': 'zolltarifnr',
                         'ARURLD': 'ursprungsland',
                         #'ARPREV': 'Verkaufspreis',
                         #'ARPRE2': 'Verkaufspreis 2',
                         #'ARPREA': 'Verkaufspreis Ausland',
-                        #'ARPRI2': 'Vk-Preis/Inland - neu -',  
+                        #'ARPRI2': 'Vk-Preis/Inland - neu -',
                         #'ARPRA2': 'Vk-Preis/Ausland - neu -',
                         #'ARDTPI': 'Ab Datum Vk/Inland - neu -',
                         #'ARDTPA': 'Ab Datum Vk/Ausland - neu -',
@@ -421,7 +421,7 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                         'ARKZVP': 'ist_verpackung',
                         #'ARKZWB': 'webshop',
                         #'ARHAFO': 'handelsform',
-                        #'ARDAFO': 'darreichungsform', 
+                        #'ARDAFO': 'darreichungsform',
                         #'ARKZRG': 'andruck_in_rechnung',
                         'ARSBER': 'Sachb. Erfassung',
                         'ARBPER': 'BenutzerPr.Erfassung',
@@ -431,11 +431,11 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                         'ARDTAE': 'aenderung_date', },
              'ASK00': {# Set/Komponenten
                         # 'SKFNR':  'firma',
-                        'SKARTN': 'artikelnummer',
-                        # 'SKAUFN': 'Auftrags-Nummer',
+                        'SKARTN': 'artnr',
+                        # 'SKAUFN': 'Auftrags-nr',
                         # 'SKAUPO': 'Auftrags-Position',
-                        'SKLFNR': 'laufende_nummer',
-                        'SKKART': 'komponenten_artikelnummer',
+                        'SKLFNR': 'laufende_nr',
+                        'SKKART': 'komponenten_artnr',
                         'SKMENG': 'menge_im_set',
                         # 'SKKZSE': 'KENNZ: SERIEN-NR.-ARTIKEL',
                         # 'SKKZ01': 'AbwStddSet',
@@ -449,19 +449,19 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                         },
              'AAK00': {# Auftragsköpfe
                        # 'AKFNR ': 'Firma                       ',
-                       'AKAUFN': 'auftragsnummer',
+                       'AKAUFN': 'auftragsnr',
                        'AKSBNR': 'sachbearbeiter',
-                       # 'AKABT ': 'Abteilungs-Nummer           ',
+                       # 'AKABT ': 'Abteilungs-nr           ',
                        # 'AKAGRP': 'Abteilungs-Gruppe/Sparte    ',
                        # 'AKFGRP': 'Firmen-Gruppe               ',
                        'AKAUFA': 'art',
                        # 'AKRANR': 'Rahmenvereinbarungs-Nr.     ',
                        # 'AKKANR': 'Übergeordneter Auftrag      ',
-                       # 'AKFNRM': 'Mandanten-Nummer            ',
-                       # 'AKKDNR': 'Kunden-Nummer/Warenempfänge ',
+                       # 'AKFNRM': 'Mandanten-nr            ',
+                       # 'AKKDNR': 'Kunden-nr/Warenempfänge ',
                        # 'AKKDN3': 'Kunden-Nr/Verbraucher       ',
                        # 'AKEGCD': 'Ländercode / EG             ',
-                       # 'AKUSTN': 'USt-Id-Nummer               ',
+                       # 'AKUSTN': 'USt-Id-nr               ',
                        # 'AKVANR': 'Versandadress-Nr.           ',
                        # 'AKALS1': 'Alphasortierung/Warenempfän ',
                        # 'AKKDRG': 'Kundennr.Rechnungs-Empfänge ',
@@ -469,7 +469,7 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        # 'AKVERB': 'Verband/Mischkonto          ',
                        # 'AKABEM': 'Ab-Empfänger: R = Rg-Zahler ',
                        # 'AKRGEM': 'Rechnungsempfänger          ',
-                       'AKNRKD': 'auftragsnummer_kunde',
+                       'AKNRKD': 'auftragsnr_kunde',
                        'AKDTKD': 'auftragsdatum_kunde',
                        # 'AKDTLE': 'Leih-Datum                  ',
                        'AKDTKW': 'kundenwunsch_date',
@@ -506,10 +506,10 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        # 'AKVRT1': 'Vertreter 1                 ',
                        # 'AKVRT2': 'Vertreter 2                 ',
                        # 'AKPRZA': 'Aufteilungs-%-Satz          ',
-                       # 'AKBZRG': 'Bezogene RG-Nummer          ',
+                       # 'AKBZRG': 'Bezogene RG-nr          ',
                        # 'AKLGN1': 'Auslieferungslager          ',
                        # 'AKLGN2': 'Zugangslager                ',
-                       # 'AKTRNR': 'Touren-Nummer               ',
+                       # 'AKTRNR': 'Touren-nr               ',
                        # 'AKLINR': 'Lieferant bei Strecke       ',
                        # 'AKSPED': 'Spediteur                   ',
                        # 'AKKZBE': 'Steuerung Best.-Druck       ',
@@ -552,7 +552,7 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        # 'AKGEB ': 'Gebiet                      ',
                        # 'AKBRAN': 'Branche                     ',
                        # 'AKPLZ':  'plz',
-                       'AKLKZ':  'land',
+                       'AKLKZ': 'land',
                        # 'AKVRG1': 'Vertriebs-Gruppe 1          ',
                        # 'AKVRG2': 'Vertriebs-Gruppe 2          ',
                        # 'AKDSTK': 'Distrikt                    ',
@@ -577,33 +577,33 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                       },
             'AAP00': { # Auftragspositionen
                        # 'APFNR ': 'Firma                       ',
-                       # 'APAUFN': 'Auftrags-Nummer             ',
+                       # 'APAUFN': 'Auftrags-nr             ',
                        'APAUPO': 'position',
                        'APSBNR': 'sachbearbeiter',
-                       # 'APABT':  'Abteilungs-Nummer           ',
+                       # 'APABT':  'Abteilungs-nr           ',
                        # 'APAGRP': 'Abteilungs-Gruppe/Sparte    ',
                        # 'APFGRP': 'Firmen-Gruppe               ',
                        # 'APFNRX': 'Best.-Führungsfirma         ',
-                       # 'APKDNR': 'Kunden-Nummer               ',
+                       # 'APKDNR': 'Kunden-nr               ',
                        # 'APKDRG': 'Kundennr.Rechnungs-Empfänge ',
                        # 'APVERB': 'Verband/Mischkonto          ',
-                       # 'APLINR': 'Lieferanten-Nummer          ',
+                       # 'APLINR': 'Lieferanten-nr          ',
                        # 'APAUFA': 'AUFTRAGS-ART                ',
                        # 'APHPTP': 'zugeordnete_position',
                        # 'APRANR': 'rahmenauftrag',
                        # 'APRAPO': 'rahmenposition',
                        # 'APKANR': 'Übergeordneter Auftrag',
-                       # 'APANNR': 'Angebots-Nummer             ',
-                       # 'APANPO': 'Angebots-Positions-Nummer   ',
-                       # 'APBSTN': 'Bestell-Nummer              ',
+                       # 'APANNR': 'Angebots-nr             ',
+                       # 'APANPO': 'Angebots-Positions-nr   ',
+                       # 'APBSTN': 'Bestell-nr              ',
                        # 'APBSTP': 'Bestell-Position            ',
                        # 'APLHNR': 'LH-Nr.                      ',
                        # 'APLHPO': 'Leihauftrags-Pos            ',
-                       'APVGNR': 'vorgangs_nummer',
+                       'APVGNR': 'vorgangs_nr',
                        'APVGPO': 'vorgangs_position',
                        # 'APFAUN': 'Fertigungsauftrag           ',
                        # 'APPROB': 'Objekt/Projekt/Aktion       ',
-                       'APARTN': 'artikel_nummer',
+                       'APARTN': 'artnr',
                        # 'APARTG': 'Artikel-Gruppe              ',
                        # 'APARTH': 'Artikel-Haupt-Gruppe        ',
                        # 'APKZSO': 'Kennzeichen Sonderartikel   ',
@@ -616,7 +616,7 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        'APKZPS': 'Positionsbezogener Set',
                        # 'APKZEP': 'KZ: Eigen-Produkt           ',
                        # 'APKZMU': 'Muster-Artikel              ',
-                       'APMNG':  'bestellmenge',               # Die Menge, die der Kunde haben will
+                       'APMNG': 'bestellmenge',               # Die Menge, die der Kunde haben will
                        'APMNGL': 'Menge zu liefern',
                        'APMNGG': 'Menge/Liefersch.nichtfakt',
                        'APMNGF': 'Fakturierte Menge',          # Menge, die geliefert und fakturiert ist
@@ -738,7 +738,7 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        # 'APPR01': '%-Satz 1                    ',
                        'APDTZU': 'Datum Zuteilung',
                        'APZTZU': 'Uhrzeit Zuteilung HHMMSS',
-                       'APJNZU': 'Jobnummer Zuteilung',
+                       'APJNZU': 'Jobnr Zuteilung',
                        # 'APDTER': 'Datum Format CJJMMTT        ',
                        # 'APZTER': 'Uhrzeit der Erfassung       ',
                        # 'APDTAE': 'Datum Format CJJMMTT        ',
@@ -748,45 +748,45 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        # 'APSTAT': 'Satzstatus                  ',
                       },
              'IET00': { # Etikettendruckdatei
-                       'ETSANR': 'satznummer',
-                       'ETARTN': 'artikel',          
-                       'ETBEZ1': 'bezeichnung1',       
-                       'ETBEZ2': 'bezeichnung2',       
-                       'ETLGPA': 'lagerplatzAn',       
-                       'ETDTBE': 'datumBearbeitung',   
-                       'ETMNGI': 'vorgangsMenge', 
-                       #'ETBSTN': 'Bestellummer',        
-                       #'ETBSTP': 'Bestellposition',     
-                       #'ETAUFN': 'KdAuftrag',           
-                       #'ETAUPO': 'KdAuftragspos',       
-                       # 'ETKZVG': 'vorgangskennz',       
-                       # 'ETKZHK': 'vorgangsherkunft',    
-                       # 'ETETNR': 'EtikettenNr',               
-                       #'ETANZ':  'Anzahl Etiketten',          
-                       'ETDRET': 'druck',             
-                       #'ETRA30': 'Reserve-Feld A 30',         
-                       #'ETR1A1': 'Reserve-Feld 1 A 1',        
-                       #'ETR2A1': 'Reserve-Feld 2 A 1',        
-                       #'ETR3A1': 'Reserve-Feld 3 A 1',        
-                       #'ETR4A1': 'Reserve-Feld 4 A 1',        
-                       #'ETR5A1': 'Reserve-Feld 5 A 1',        
-                       #'ETRDT1': 'Reserve-Datum 1',           
-                       #'ETRDT2': 'Reserve-Datum 2',           
-                       #'ETRDT3': 'Reserve-Datum 3',           
-                       #'ETRMG1': 'Reserve-Menge 1',           
-                       #'ETRMG2': 'Reserve-Menge 2',           
-                       #'ETRMG3': 'Reserve-Menge 3',             
-                       #'ETRMG4': 'Reserve-Menge 4',             
-                       #'ETRMG5': 'Reserve-Menge 5',             
+                       'ETSANR': 'satznr',
+                       'ETARTN': 'artnr',
+                       'ETBEZ1': 'bezeichnung1',
+                       'ETBEZ2': 'bezeichnung2',
+                       'ETLGPA': 'lagerplatzAn',
+                       'ETDTBE': 'datumBearbeitung',
+                       'ETMNGI': 'vorgangsMenge',
+                       #'ETBSTN': 'Bestellummer',
+                       #'ETBSTP': 'Bestellposition',
+                       #'ETAUFN': 'KdAuftrag',
+                       #'ETAUPO': 'KdAuftragspos',
+                       # 'ETKZVG': 'vorgangskennz',
+                       # 'ETKZHK': 'vorgangsherkunft',
+                       # 'ETETNR': 'EtikettenNr',
+                       #'ETANZ':  'Anzahl Etiketten',
+                       'ETDRET': 'druck',
+                       #'ETRA30': 'Reserve-Feld A 30',
+                       #'ETR1A1': 'Reserve-Feld 1 A 1',
+                       #'ETR2A1': 'Reserve-Feld 2 A 1',
+                       #'ETR3A1': 'Reserve-Feld 3 A 1',
+                       #'ETR4A1': 'Reserve-Feld 4 A 1',
+                       #'ETR5A1': 'Reserve-Feld 5 A 1',
+                       #'ETRDT1': 'Reserve-Datum 1',
+                       #'ETRDT2': 'Reserve-Datum 2',
+                       #'ETRDT3': 'Reserve-Datum 3',
+                       #'ETRMG1': 'Reserve-Menge 1',
+                       #'ETRMG2': 'Reserve-Menge 2',
+                       #'ETRMG3': 'Reserve-Menge 3',
+                       #'ETRMG4': 'Reserve-Menge 4',
+                       #'ETRMG5': 'Reserve-Menge 5',
                        'ETDTER': 'erfassung_date',
                        'ETSBER': 'sachbearbeiter_erfassung',
                        'ETDTAE': 'aenderung_date',
                        'ETSBAE': 'sachbearbeiter_aenderung',
                        'ETDFSL': 'dateifuehrungsschluessel',
                        'ETSTAT': 'satzstatus',
-                       },   
+                       },
              'BED00': { # Datei fuer die Zentrale-Meldung innerg. Warenverk.
-                       'EDFNR ': 'firmennummer',
+                       'EDFNR ': 'firmennr',
                        'EDPKTO': 'personenkonto',
                        'EDBEKZ': 'berichtigungskennzeichen',
                        # 'EDJHBU': '???',
@@ -813,7 +813,7 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        # 'EDR4BT': 'reserverbetrag_4',
                        # 'EDR5BT': 'reserverbetrag_5',
                        # 'EDR6BT': 'reserverbetrag_6',
-                       },   
+                       },
              'XED00': { # Intrastat-Meldungs-Datei
                          'EDINKZ': 'kennziffer',
                          'EDFORM': 'anmeldeform',
@@ -846,13 +846,13 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                          'EDBUJJ': 'bezugsjahr',
                          'EDKREI': 'mineraloelerhebungspreis',
                          'EDFIL9': 'fueller09',
-                       },   
+                       },
              'XCK00': { # Ablaufkontrolle
                        'CKJNUM': 'jobnr',
                        'CKBLNA': 'blockname',
                        'CKJNAM': 'jobname',
                        'CKUSER': 'benutzer',
-                       'CKWSID': 'bildschirmidentifikation',    
+                       'CKWSID': 'bildschirmidentifikation',
                        'CKFNR ': 'firmennr',
                        'CKFCOD': 'firmencode',
                        'CKSBNR': 'sachbearbeiternr',
@@ -873,38 +873,116 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        'CKSTAT': 'satzstatus',
                        },
               'AVA00': {
-                       #'VAFNR':  Firma                      
+                       #'VAFNR':  Firma
                        'VAKDNR': 'kundennr',
                        'VAVANR': 'versandadresssnr',
-                       #'VAFGRP'  Firmen-Gruppe              
-                       #'VAAGRP'  Abteilungs-Gruppe/Sparte   
-                       #'VAABT'  Abteilungs-Nummer          
-                       'VASANR': 'satznummer', # gepackt       
-                       #'VAX3VS'  Versandarten-Schlüssel     
-                       #'VAX3LB'  Lieferbedingungs-Schlüssel 
-                       #'VAINFO'  Interne Information        
-                       #'VAVRT'  Vertreter-Nummer           
-                       #'VAEXPR'  Expressgut-Station         
-                       #'VATRNR'  Auslieferungstour          
-                       'VAILN': 'ILN',     
-                       #'VARES1'  Reserve 1                
-                       #'VAIK01'  Indv1 1A                 
-                       #'VAIK02'  Indv2 1A                 
-                       #'VAIK03'  Indv3 1A                 
-                       #'VAIK04'  Indv4 1A                 
-                       #'VAIK05'  Indv5 1A                 
-                       #'VAIK06'  Indv1 3A                 
-                       #'VAIK07'  Indv2 3A                 
-                       #'VAIK08'  Indv3 3A                 
-                       #'VAIK09'  Indv4 3A                 
-                       #'VAIK10'  Indv5 3A                 
-                       #'VAIK11'  Indv 10A                 
-                       #'VAIK12'  Indv 20A                 
-                       #'VADTER'  Datum Erfassung CJJMMTT  
-                       #'VADTAE'  Datum l. Änderung CJJMMTT 
-                       #'VADFSL'  Dateiführungs-Schlüssel   
-                       'VASTAT': 'satzstatus',    
-                     }            
+                       #'VAFGRP'  Firmen-Gruppe
+                       #'VAAGRP'  Abteilungs-Gruppe/Sparte
+                       #'VAABT'  Abteilungs-nr
+                       'VASANR': 'satznr', # gepackt
+                       #'VAX3VS'  Versandarten-Schlüssel
+                       #'VAX3LB'  Lieferbedingungs-Schlüssel
+                       #'VAINFO'  Interne Information
+                       #'VAVRT'  Vertreter-nr
+                       #'VAEXPR'  Expressgut-Station
+                       #'VATRNR'  Auslieferungstour
+                       'VAILN': 'ILN',
+                       #'VARES1'  Reserve 1
+                       #'VAIK01'  Indv1 1A
+                       #'VAIK02'  Indv2 1A
+                       #'VAIK03'  Indv3 1A
+                       #'VAIK04'  Indv4 1A
+                       #'VAIK05'  Indv5 1A
+                       #'VAIK06'  Indv1 3A
+                       #'VAIK07'  Indv2 3A
+                       #'VAIK08'  Indv3 3A
+                       #'VAIK09'  Indv4 3A
+                       #'VAIK10'  Indv5 3A
+                       #'VAIK11'  Indv 10A
+                       #'VAIK12'  Indv 20A
+                       #'VADTER'  Datum Erfassung CJJMMTT
+                       #'VADTAE'  Datum l. Änderung CJJMMTT
+                       #'VADFSL'  Dateiführungs-Schlüssel
+                       'VASTAT': 'satzstatus',
+                     },
+              'XXA00': {
+                      # 'XAFNR ': Firma
+                      'XAKDNR': 'kundennr',
+                      # 'XAKZKD': Kz Kunde
+                      # 'XALINR': Lieferanten-nr
+                      # 'XAKZLI': Kz Lieferant
+                      # 'XAKZIT': Kz Interessent
+                      # 'XANRRS': Freie nr
+                      # 'XAKZRS': Kz Adress-Art
+                      # 'XAKZT1': Adresstyp 1
+                      # 'XAKZT2': Adresstyp 2
+                      'XANAME': 'name1',
+                      'XANAM2': 'name2',
+                      'XANAM3': 'name3',
+                      'XANAM4': 'name4',
+                      'XASTR ': 'strasse',
+                      'XAPLZ ': 'plz',
+                      # 'XAPLZP': PLZ Postfach
+                      # 'XAPLZF': PLZ Firma
+                      # 'XAPLZI': Postleitzahl/international
+                      'XAORT ': 'ort',
+                      # 'XAORTT': Ortsteil/Info
+                      'XALKZ ': 'laenderkennzeichen',
+                      # 'XAPSTF': Postfach
+                      # 'XAORTP': Ortsname (Postfach-PLZ)
+                      # 'XAGESF': Gesch{ftsf}hrer
+                      'XATELF': 'telefon',
+                      # 'XATELX': Telex-nr
+                      'XATFAX': 'fax',
+                      # 'XAALSO': Alpha-Sortierfeld
+                      # 'XASPSL': Sprache
+                      # 'XAWSL ': W{hrungs-Kennzeichen
+                      # 'XAFGRP': Firmen-Gruppe
+                      # 'XAKGRP': Kunden-Gruppe
+                      # 'XALGRP': Lieferanten-Gruppe
+                      # 'XAISIC': ISIC-Schl}ssel
+                      # 'XARPMK': RPM-Kreis
+                      # 'XARPMS': RPM-Segment
+                      # 'XAGDE ': Gemeindeschl}ssel
+                      # 'XAHEA ': Herkunftsart
+                      # 'XAHESP': Herkunftsspezifikation
+                      # 'XAKZDR': Reserve 1
+                      # 'XAKZR2': Reserve 2
+                      # 'XAKZR3': Reserve 3
+                      # 'XAKXR4': Reserve 4
+                      # 'XAKZR5': Reserve 5
+                      # 'XARES6': Reserve 6
+                      # 'XARXS7': Reserve 7
+                      # 'XARES8': Reserve 8
+                      # 'XARES9': Reserve 9
+                      'XASANR': 'satznr',
+                      # 'XADTSP': Datum "Gesperrt bis"
+                      # 'XASBSP': Sachbearbeiter Sperre
+                      # 'XAKZSP': Kennzeichen Gesperrt
+                      # 'XAGRSP': Grund f}r Sperre
+                      # 'XATOFN': Niederlassungsk}rzel
+                      # 'XATOFK': TOF Kundennr
+                      # 'XATOFB': Barcodenr TOF
+                      # 'XAVRT ': Vertreter f}r Interessenten
+                      'XAEMAL': 'email',
+                      'XAMOBI': 'mobil',
+                      # 'XAHOME': Homepage
+                      # 'XANAM5': 5. Namenszeile
+                      # 'XANAM6': 6. Namenszeile
+                      # 'XASTR2': Stra~enzusatz
+                      # 'XASBER': Sachb. Erfassung
+                      # 'XABPER': BenutzerPr.Erfassung
+                      'XADTER': 'erfassung_date',
+                      # 'XASBAE': Sachb.letzte ¢nderung
+                      # 'XABPAE': BenutzerPr.letzte ¢nderung
+                      'XADTAE': 'aenderung_date',
+                      # 'XADFSL': Dateif}hrungs-Schl}ssel
+                      'XASTAT': 'satzstatus',
+                     },
+
+
+
+
 }
 
 # maps datefield to related timefield for generating datetime objects

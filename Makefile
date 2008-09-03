@@ -14,10 +14,10 @@ publish:
 	# remove development tag
 	perl -npe 's/^tag_build = .dev/# tag_build = .dev/' -i setup.cfg
 	svn commit
-	sh -c '(cd edilib; python setup.py build sdist bdist_egg)'
+	python setup.py build sdist bdist_egg
 	# add development tag
 	perl -npe 's/^\# tag_build = .dev/tag_build = .dev/' -i setup.cfg
-	rsync edilib/dist/* root@cybernetics.hudora.biz:/usr/local/www/apache22/data/dist/huSoftM/
+	rsync dist/* root@cybernetics.hudora.biz:/usr/local/www/apache22/data/dist/huSoftM/
 	echo "now bump version number in setup.py and commit"
 
 doc: build

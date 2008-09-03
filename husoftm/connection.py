@@ -48,15 +48,15 @@ class PyRoMoftSconnection(object):
         
         ret = []
         for row in rows:
-            l = {}
+            rowdict = {}
             for i in range(len(fields)):
                 data = self._fix_field(row[i])
                 if fields[i] in mappings:
                     if mappings[fields[i]].endswith('_date'):
                         if not row[i]:
-                            l[mappings[fields[i]]] = None
+                            rowdict[mappings[fields[i]]] = None
                         else:
-                            l[mappings[fields[i]]] = softm2date(row[i])
+                            rowdict[mappings[fields[i]]] = softm2date(row[i])
                             # check if there is also a time field
                             if fields[i] in DATETIMEDIR:
                                 basename = '_'.join(mappings[fields[i]].split('_')[:-1])
@@ -67,20 +67,19 @@ class PyRoMoftSconnection(object):
                                     try:
                                         # TODO: refactor
                                         if len(str(int(row[i]))) == 7:
-                                            l[basename] = datetime.datetime(*(
-                                                          time.strptime(str(int(row[i])), '1%y%m%d')[:3]
-                                                          + time.strptime(str(int(row[timepos])),
-                                                                          '%H%M%S')[3:6]))
+                                            rowdict[basename] = datetime.datetime(*(
+                                                time.strptime(str(int(row[i])), '1%y%m%d')[:3]
+                                                + time.strptime(str(int(row[timepos])), '%H%M%S')[3:6]))
                                         else:
                                             raise ValueError
                                     except ValueError:
                                         print int(row[i]), int(row[timepos])
                                         raise
                     else:
-                        l[mappings[fields[i]]] = data
+                        rowdict[mappings[fields[i]]] = data
                 else:
-                    l[fields[i]] = data
-            ret.append(l)
+                    rowdict[fields[i]] = data
+            ret.append(rowdict)
         return ret
     
     def _get_tablename(self, name):
@@ -132,10 +131,7 @@ class PyRoMoftSconnection(object):
         
         querydelta = time.time()-start
         start = time.time()
-        # TODO: fix_fields is now done by the server - remove
-        if len(fields) == 1:
-            rows = [self._fix_field(x[0]) for x in rows]
-        elif querymappings:
+        if querymappings:
             rows = self._rows2dict(fields, querymappings, rows)
         else:
             rows = [[y for y in x] for x in rows]

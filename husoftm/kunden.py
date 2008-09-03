@@ -15,9 +15,9 @@ import husoftm.tools
 class Kunde(object):
     """Representation of SoftM "Kunden" data objects."""
     
-    def __init__(self, kundennummer='', name1='', name2='', name3='', name4='',
+    def __init__(self, kundennr='', name1='', name2='', name3='', name4='',
                  adresse='', plz='', ort='', land=''):
-        self.kundennummer = kundennummer
+        self.kundennr = kundennr
         self.name1 = name1
         self.name2 = name2
         self.name3 = name3
@@ -32,42 +32,37 @@ class Kunde(object):
     
     def fill_from_softm(self, row):
         """Initializes the object from data returned by SoftM."""
-        self.kundennummer = row.get('kundennummer', '') # 10003
+        self.kundennr = row.get('kundennr', '') # 10003
         self.sortierfeld = row.get('sortierfeld', '') # AUER* NEUB
         self.name1 = row.get('name1', '') # Sport & Mode Auer
         self.name2 = row.get('name2', '') # 
         self.name3 = row.get('name3', '') # 
-        self.name4 = row.get('name4', '') # 
+        #self.name4 = row.get('name4', '') # 
         self.adresse = row.get('strasse', '') # Marktplatz 5
         self.plz = row.get('postleitzahl', '') # 75387
         self.ort = row.get('ort', '') # Neubulach
-        self.telefon = row.get('telefon', '') # 07053/7910
+        self.tel = row.get('tel', '') # 07053/7910
         self.fax = row.get('fax', '') # 07053/6041
-        self.url = row.get('url', '')
+        #self.url = row.get('url', '')
         self.mobil = row.get('mobil', '')
-        self.email = row.get('email', '')
-        self.kundengruppe = row.get('kundengruppe_id', '')
-        self.postfach = row.get('postfach', '')
-        self.postfach_plz = row.get('postfach_plz', '')
-        self.addressatz = row.get('adressdatei_id', '') # 123656141
-        self.created_at = row.get('erfassung_date', '') # 2004-12-01
-        self.updated_at = row.get('aendertung_date', '') # 2007-04-11
-        self.mitgliednummer = row.get('mitgliednummer', '')
-        self.ustid = row.get('ustid', '') # '132838685'
+        self.mail = row.get('mail', '')
+        #self.kundengruppe = row.get('kundengruppe_id', '')
+        #self.postfach = row.get('postfach', '')
+        #self.postfach_plz = row.get('postfach_plz', '')
+        #self.created_at = row.get('erfassung_date', '') # 2004-12-01
+        #self.updated_at = row.get('aendertung_date', '') # 2007-04-11
+        #self.mitgliednr = row.get('mitgliednr', '')
+        #self.ustid = row.get('ustid', '') # '132838685'
         self.adressdatei_id = row.get('adressdatei_id', '') # 123656179
-        self.company = row.get('company', '') # '06'
-        self.verband = row.get('verband', '')
-        self.gebiet = row.get('gebiet', '') # ': u'04'
-        self.distrikt = row.get('distrikt', '') # ': u'16'
-        self.vertreter = row.get('vertreter', '') # ': u'201'
-        self.branche = row.get('branche', '') # ': u'13'
-        self.versandart = row.get('versandart', '') # ': u''
-        self.iln = ''
-        if row.get('ILN'):
-            self.iln = row['ILN']
-        self.land = row['laenderkennzeichen']
-        if self.land != 'CC':
-            self.land = husoftm.tools.land2iso(row['laenderkennzeichen']) # D
+        #self.company = row.get('company', '') # '06'
+        #self.verband = row.get('verband', '')
+        #self.gebiet = row.get('gebiet', '') # ': u'04'
+        #self.distrikt = row.get('distrikt', '') # ': u'16'
+        #self.vertreter = row.get('vertreter', '') # ': u'201'
+        #self.branche = row.get('branche', '') # ': u'13'
+        #self.versandart = row.get('versandart', '') # ': u''
+        self.iln = unicode(row.get('ILN', '')).strip()
+        self.land = husoftm.tools.land2iso(row['laenderkennzeichen']) # D
         if row['erfassung_date']:
             self.erfassung = row['erfassung_date']
         if row['aenderung_date']:
@@ -75,11 +70,11 @@ class Kunde(object):
         else:
             self.aenderung = self.erfassung
         self.sachbearbeiter = row.get('sachbearbeiter', '') # ': u'Birgit Bonrath'
-        self.verpackungsvorschrift = row.get('verpackungsvorschrift', '') # ': u'',
-        self.lieferbedingung = row.get('lieferbedingung', '') # ': u''
-        self.auslieferunglager = row.get('auslieferunglager', 0) # ': 0
-        self.interne_firmennummer = row.get('interne_firmennummer', '') # ': u''
-        self.unsere_lieferantennummer = row.get('unsere_lieferantennumemr', '')
+        #self.verpackungsvorschrift = row.get('verpackungsvorschrift', '') # ': u'',
+        #self.lieferbedingung = row.get('lieferbedingung', '') # ': u''
+        #self.auslieferunglager = row.get('auslieferunglager', 0) # ': 0
+        #self.interne_firmennr = row.get('interne_firmennr', '') # ': u''
+        self.unsere_lieferantennr = row.get('unsere_lieferantennumemr', '')
         # 'skontoschluessel': 16, 
         # 'mahnsperre': u'', 
         # 'delcredereschl\xc3\xbcssel': 0, 
@@ -93,7 +88,7 @@ class Kunde(object):
         return self
     
 
-def get_kundennummern():
+def get_kundennrn():
     """Returns a list of all 'Kudennummern'."""
     
     rows = husoftm.connection.get_connection().query('XKD00', fields=['KDKDNR'])
@@ -139,19 +134,23 @@ def get_kunde(kdnnr):
     
 
 def get_kunde_by_iln(iln):
+    """Get Kunden Address based on ILN.
+    
+    See http://cybernetics.hudora.biz/projects/wiki/AddressProtocol for the structure of returned data."""
+    
     rows = husoftm.connection.get_connection().query(['XKS00'], condition="KCE2IL='%s'" % (int(iln), ))
     if rows:
         # stammadresse
-        return get_kunde(rows[0]['kundennummer'])
+        return get_kunde(rows[0]['kundennr'])
     else:
         # abweichende Lieferadresse
         rows = husoftm.connection.get_connection().query(['AVA00'], condition="VAILN='%s'" % (int(iln), ))
         if rows:
-            rows = husoftm.connection.get_connection().query(['XXA00'], condition="XASANR='%s'" % (int(rows[0]['satznummer']), ))
+            rows = husoftm.connection.get_connection().query(['XXA00'],
+                condition="XASANR='%s'" % (int(rows[0]['satznr']), ))
             if rows:
                 return Kunde().fill_from_softm(rows[0])
     
-
 
 def _selftest():
     """Test basic functionality"""

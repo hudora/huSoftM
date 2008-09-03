@@ -201,7 +201,7 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        'KDPLZ': 'postleitzahl',
                        'KDORT': 'ort',
                        'KDLKZ': 'laenderkennzeichen',
-                       'KDTELF': 'telefon',
+                       'KDTELF': 'tel',
                        'KDTFAX': 'fax',
                        'KDMOBI': 'mobil',
                        'KDPSTF': 'postfach', # gelegentlich genutzt
@@ -213,7 +213,7 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        # 'KDSPSL': 'Sprache', # Werte 1 & 2
                        # 'KDWSL ': 'Währungs-Kennzeichen',
                        'KDKGRP': 'kundengruppe_id', # alphanum
-                       'KDEMAL': 'email',
+                       'KDEMAL': 'mail',
                        'KDHOME': 'url',
                        'KDSANR': 'adressdatei_id',
                        'KDDTER': 'erfassung_date',
@@ -280,7 +280,7 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        #'KZKBCO': 'Formularanz./ Komm.-Beleg  ',
                        #'KZLSCO': 'Formularanz./ Lieferschein ',
                        #'KZRGCO': 'Formularanz./ Rechnung     ',
-                       #'KZTELF': 'telefon',
+                       #'KZTELF': 'tel',
                        #'KZTFAX': 'fax',
                        'KZINFO': 'sachbearbeiter',
                        'KZDTAE': 'updated_at',
@@ -931,7 +931,7 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                       # 'XAPSTF': Postfach
                       # 'XAORTP': Ortsname (Postfach-PLZ)
                       # 'XAGESF': Gesch{ftsf}hrer
-                      'XATELF': 'telefon',
+                      'XATELF': 'tel',
                       # 'XATELX': Telex-nr
                       'XATFAX': 'fax',
                       # 'XAALSO': Alpha-Sortierfeld
@@ -964,7 +964,7 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                       # 'XATOFK': TOF Kundennr
                       # 'XATOFB': Barcodenr TOF
                       # 'XAVRT ': Vertreter f}r Interessenten
-                      'XAEMAL': 'email',
+                      'XAEMAL': 'mail',
                       'XAMOBI': 'mobil',
                       # 'XAHOME': Homepage
                       # 'XANAM5': 5. Namenszeile
@@ -979,10 +979,6 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                       # 'XADFSL': Dateif}hrungs-Schl}ssel
                       'XASTAT': 'satzstatus',
                      },
-
-
-
-
 }
 
 # maps datefield to related timefield for generating datetime objects

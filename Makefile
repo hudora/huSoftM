@@ -3,17 +3,18 @@ check: clean
 	pylint husoftm
 
 build:
-	sh -c '(cd edilib; python setup.py build sdist bdist_egg)'
+	python setup.py build sdist bdist_egg
 
 upload: build doc
 	rsync dist/* root@cybernetics.hudora.biz:/usr/local/www/apache22/data/dist/huSoftM/
+	rsync husoftm/fields.py root@cybernetics.hudora.biz:/usr/local/www/apache22/data/dist/huSoftM/fields.py
 	rsync -r --delete html root@cybernetics.hudora.biz:/usr/local/www/apache22/data/dist/huSoftM/
 
 publish:
 	# remove development tag
 	perl -npe 's/^tag_build = .dev/# tag_build = .dev/' -i edilib/setup.cfg
 	svn commit
-	sh -c '(cd edilib; python setup.py build sdist bdist_egg upload)'
+	sh -c '(cd edilib; python setup.py build sdist bdist_egg)'
 	# add development tag
 	perl -npe 's/^\# tag_build = .dev/tag_build = .dev/' -i edilib/setup.cfg
 	rsync edilib/dist/* root@cybernetics.hudora.biz:/usr/local/www/apache22/data/dist/huSoftM/
@@ -25,8 +26,7 @@ doc: build
 	sh -c '(cd html; pydoc -w ../husoftm/*.py)'
 
 test:
-	PYTHONPATH=. python edilib/test/test_recordbased.py
-	PYTHONPATH=. python edilib/test/test_cctop_orders.py
+	PYTHONPATH=. python husoftm/tools.py
 
 install: build
 	sh -c '(cd edilib; sudo python setup.py install)'
@@ -35,4 +35,4 @@ clean:
 	rm -Rf build dist html test.db
 	find . -name '*.pyc' -or -name '*.pyo' -delete
 
-.PHONY: test
+.PHONY: build test

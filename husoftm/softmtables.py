@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-pySoftM/softmtables.py - acessing SoftM tables abstract classes.
+softmtables.py - acessing SoftM tables abstract classes.
 
 This abstract class comes without unittests. Child classes are expected to include extensive testcases.
 
@@ -13,7 +13,7 @@ Copyright (c) 2007 HUDORA. All rights reserved.
 import datetime
 import logging
 import sqlite3
-from pySoftM.tools import sql_quote
+from husoftm.tools import sql_quote
 
 
 class SoftMError(RuntimeError):
@@ -63,14 +63,14 @@ class AS400Connector_mixin(object):
         """Execute the actual SQL query (UPDATE)."""
         import pySoftM
         softm = pySoftM.PyRoMoftSconnection()
-        ret = softm.server.update2(sqlstr, token='E~iy3*eej^')
+        softm.server.update2(sqlstr, token='E~iy3*eej^')
         return 1
     
     def sql_insert(self, sqlstr):
         """Execute the actual SQL query (INSERT)."""
         import pySoftM
         softm = pySoftM.PyRoMoftSconnection()
-        ret = softm.server.insert(sqlstr, token='Aes.o=j7eS(')
+        softm.server.insert(sqlstr, token='Aes.o=j7eS(')
         return 1
     
 

@@ -150,7 +150,7 @@ def sql_quote(data):
     return "'%s'" % sql_escape(data)
     
 
-class GenericTests(unittest.TestCase):
+class _GenericTests(unittest.TestCase):
     """Vermischte Tests."""
     
     def test_land2iso(self):

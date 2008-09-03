@@ -22,7 +22,7 @@ class Kunde(object):
         self.name2 = name2
         self.name3 = name3
         self.name4 = name4
-        self.adresse = adresse
+        self.strasse = strasse
         self.plz = plz
         self.ort = ort
         self.land = land
@@ -38,8 +38,8 @@ class Kunde(object):
         self.name2 = row.get('name2', '') # 
         self.name3 = row.get('name3', '') # 
         #self.name4 = row.get('name4', '') # 
-        self.adresse = row.get('strasse', '') # Marktplatz 5
-        self.plz = row.get('postleitzahl', '') # 75387
+        self.strasse = row.get('strasse', '') # Marktplatz 5
+        self.plz = row.get('plz', '') # 75387
         self.ort = row.get('ort', '') # Neubulach
         self.tel = row.get('tel', '') # 07053/7910
         self.fax = row.get('fax', '') # 07053/6041

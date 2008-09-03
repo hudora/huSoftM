@@ -198,7 +198,7 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        'KDNAM3': 'name3',
                        'KDNAM4': 'name4',
                        'KDSTR': 'strasse',
-                       'KDPLZ': 'postleitzahl',
+                       'KDPLZ': 'plz',
                        'KDORT': 'ort',
                        'KDLKZ': 'laenderkennzeichen',
                        'KDTELF': 'tel',
@@ -291,7 +291,7 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        'ADNAM3': 'name3',
                        'ADNAM4': 'name4',
                        'ADSTR': 'strasse',
-                       'ADPLZ': 'postleitzahl',
+                       'ADPLZ': 'plz',
                        'ADORT': 'ortsname',
                        'ADLKZ': 'laenderkennzeichen',
                        'ADORTT': 'ortsteil',
@@ -886,7 +886,7 @@ MAPPINGDIR = {'MLP00': {# MPL Plätze
                        #'VAVRT'  Vertreter-nr
                        #'VAEXPR'  Expressgut-Station
                        #'VATRNR'  Auslieferungstour
-                       'VAILN': 'ILN',
+                       'VAILN': 'iln',
                        #'VARES1'  Reserve 1
                        #'VAIK01'  Indv1 1A
                        #'VAIK02'  Indv2 1A

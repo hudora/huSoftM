@@ -17,8 +17,8 @@ Copyright (c) 2007, 2008 HUDORA GmbH. All rights reserved.
 """
 
 import datetime
-import pySoftM
-from pySoftM.tools import date2softm, sql_quote
+from husoftm.connection import get_connection
+from husoftm.tools import date2softm, sql_quote
 
 # das Datenmodell, was hier definiert wird, ist deutlich reicher, als es momentan genutzt wird. Es ist
 # geplant, sowas wie in huProtocols.recordbased zu implementieren.
@@ -36,8 +36,8 @@ ABK00 = {
                       DSPDTAARA DTAARA(ADTASTAPEL). Um doppelte Sätze in den Schnittstellendateien zu
                       verhindern wird auch gegen diesen Datenbereich geprüft." Der Inhalt des Datenbereiches
                       scheint aus meiner (md) Sicht auf unserem System inkonsistent.'''), 
-'BKKDNR': dict(name='kundennummer', format='A8', required=True,
-               doc='''Kundennummer - wird in der restlichen SoftM Dokumentation als "Warenempfänger Kunde"
+'BKKDNR': dict(name='kundennr', format='A8', required=True,
+               doc='''kundennr - wird in der restlichen SoftM Dokumentation als "Warenempfänger Kunde"
                       betitelt.'''),
 'BKVGPO': dict(name='vorgangspositionszahl', format='S5.0', required=True, 
                doc='''Anzahl Vorgangspositionen) meint die noch nicht übernommenen Positionen für diesen
@@ -945,13 +945,13 @@ class Text(StapelSerializer):
 def getnextvorgang():
     """Ermittelt die nächste freie Vorgangsnummer."""
     
-    rows = pySoftM.get_connection().query('ABK00', fields=['MAX(BKVGNR)'])
-    return rows[0]+1
+    rows = get_connection().query('ABK00', fields=['MAX(BKVGNR)'])
+    return rows[0][0]+1
 
 def kundenauftragsnummer_bekannt(kundenauftragsnummer):
     """Prüft, ob eine Kunden-Auftragsnummer bereits verwendet wurde."""
     
-    rows = pySoftM.get_connection().query('ABK00', fields=['BKVGNR'],
+    rows = get_connection().query('ABK00', fields=['BKVGNR'],
                                           condition="BKNRKD=%s" % sql_quote(kundenauftragsnummer))
     if rows:
         return True
@@ -960,7 +960,7 @@ def kundenauftragsnummer_bekannt(kundenauftragsnummer):
 def schnittstelle_leer():
     """Ermittelt, ob sich ungeprüfte Vorgänge in der stapelschnittstelle befinden."""
     
-    rows = pySoftM.get_connection().query('ABK00', fields=['BKVGNR'],
+    rows = get_connection().query('ABK00', fields=['BKVGNR'],
                                           condition="BKAUFN = 0 AND BKKZBA = 0")
     if rows:
         return False
@@ -968,7 +968,7 @@ def schnittstelle_leer():
 
 def lieferungen_fuer_tag(day):
     """Ermittelt die Anzahl der Nachschub Lieferungen für einen Tag."""
-    rows = pySoftM.get_connection().query('ABK00', fields=['BKVGNR'],
+    rows = get_connection().query('ABK00', fields=['BKVGNR'],
                                           condition="BKNRKD LIKE 'N:20%%' AND BKDTLT=%s" % date2softm(day))
     return len(rows)
     
@@ -988,10 +988,10 @@ def auftrag2softm(auftrag, belegtexte=[]):
     kopf = Kopf()
     kopf.vorgang = vorgangsnummer
     kopf.kundenauftragsnr = auftrag.kundenauftragsnr
-    kopf.kundennummer = '%8s' % auftrag.kundennummer.split('/')[0]
-    if len(auftrag.kundennummer.split('/')) > 1:
+    kopf.kundennr = '%8s' % auftrag.kundennr.split('/')[0]
+    if len(auftrag.kundennr.split('/')) > 1:
         # abweichende Lieferadresse in address-zusatzdatei
-        kopf.lieferadresse = int(auftrag.kundennummer.split('/')[1])
+        kopf.lieferadresse = int(auftrag.kundennr.split('/')[1])
     
     infotext_kunde = models.TextField(blank=True)
     bestelltext = models.TextField(max_length=250, blank=True)
@@ -1006,7 +1006,7 @@ def auftrag2softm(auftrag, belegtexte=[]):
     
     positionen = []
     texte = []
-    for aobj_position in auftrag.positionen
+    for aobj_position in auftrag.positionen:
         position = Position()
         positionen.append(position)
         position.position, position.vorgangsposition = len(positionen), len(positionen)
@@ -1030,10 +1030,10 @@ def auftrag2softm(auftrag, belegtexte=[]):
     for x in texte:
         sql.append(x.to_sql())
     print sql
-    #pySoftM.get_connection().server.update_adtastapel(vorgangsnummer, token='Ae.so=7e,S(')
-    #pySoftM.get_connection().server.insert(kopf.to_sql(), token='Aes.o=j7eS(')
+    #get_connection().server.update_adtastapel(vorgangsnummer, token='Ae.so=7e,S(')
+    #get_connection().server.insert(kopf.to_sql(), token='Aes.o=j7eS(')
     #for x in texte:
-    #    pySoftM.get_connection().server.insert(x.to_sql() , token='Aes.o=j7eS(')
-    #pySoftM.get_connection().server.update2("UPDATE ABK00 SET BKKZBA=0 WHERE BKVGNR=%s" % vorgangsnummer, token='E~iy3*eej^')
+    #    get_connection().server.insert(x.to_sql() , token='Aes.o=j7eS(')
+    #get_connection().server.update2("UPDATE ABK00 SET BKKZBA=0 WHERE BKVGNR=%s" % vorgangsnummer, token='E~iy3*eej^')
     
     return vorgangsnummer

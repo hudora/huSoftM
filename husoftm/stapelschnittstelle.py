@@ -993,9 +993,10 @@ def auftrag2softm(auftrag, belegtexte=[]):
         # abweichende Lieferadresse in address-zusatzdatei
         kopf.lieferadresse = int(auftrag.kundennr.split('/')[1])
     
-    infotext_kunde = models.TextField(blank=True)
-    bestelltext = models.TextField(max_length=250, blank=True)
-    bestelldatum = models.DateField(blank=True, null=True)
+    #infotext_kunde = models.TextField(blank=True)
+    #bestelltext = models.TextField(max_length=250, blank=True)
+    #bestelldatum = models.DateField(blank=True, null=True)
+    
     kopf.auftragsart = ''
     kopf.sachbearbeiter = 1
     kopf.liefertermin = date2softm(auftrag.anlieferdatum_min)
@@ -1014,6 +1015,7 @@ def auftrag2softm(auftrag, belegtexte=[]):
         position.artikel = aobj_position.artnr
         position.vorgang = vorgangsnummer
         position.erfassungsdatum  = date2softm(datetime.date.today())
+        position.liefertermin = kopf.liefertermin
         if aobj_position.kundenartnr:
             text = Text()
             texte.append(text)

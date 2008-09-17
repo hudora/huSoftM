@@ -16,7 +16,7 @@ class Kunde(object):
     """Representation of SoftM "Kunden" data objects."""
     
     def __init__(self, kundennr='', name1='', name2='', name3='', name4='',
-                 adresse='', plz='', ort='', land=''):
+                 strasse='', plz='', ort='', land=''):
         self.kundennr = kundennr
         self.name1 = name1
         self.name2 = name2

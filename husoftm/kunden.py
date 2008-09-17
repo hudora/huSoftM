@@ -146,10 +146,12 @@ def get_kunde_by_iln(iln):
         # abweichende Lieferadresse
         rows = husoftm.connection.get_connection().query(['AVA00'], condition="VAILN='%s'" % (int(iln), ))
         if rows:
-            rows = husoftm.connection.get_connection().query(['XXA00'],
+            rows2 = husoftm.connection.get_connection().query(['XXA00'],
                 condition="XASANR='%s'" % (int(rows[0]['satznr']), ))
             if rows:
-                return Kunde().fill_from_softm(rows[0])
+                kunde = Kunde().fill_from_softm(rows2[0])
+                kunde.kundennr = kunde.kundennr + ('/%03d' % int(rows[0]['versandadresssnr']))
+                return kunde
     
 
 def _selftest():

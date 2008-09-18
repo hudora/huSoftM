@@ -17,6 +17,10 @@ Copyright (c) 2007, 2008 HUDORA GmbH. All rights reserved.
 """
 
 import datetime
+import time
+import os
+import thread
+import textwrap
 from husoftm.connection import get_connection
 from husoftm.tools import date2softm, sql_quote
 
@@ -61,7 +65,7 @@ ABK00 = {
                       Falls keine Auftragsart angegeben ist, dann wird die Standard-Auftragsart für im
                       Stapelübernommene Aufträge lt. Parameter 'Steuerung Stapelschnittstelle' eingesetzt.
                       Typische Werte bei HUDORA: U=Umlagerungsauftrag, WA=WerbeAuftrag'''),
-'BKNRKD': dict(name='kundenauftragsnumer', format='A20',
+'BKNRKD': dict(name='kundenauftragsnr', format='A20',
                doc='''AAK00.AKNRKD Kundenauftrag - Nummer, unter der der Auftrag beim Kunden geführt wird.
                       Diese Information wird in Auftragsformularen gedruckt. Zusätzlich ist die Suche eines
                       Auftrags über die Kundenauftragsnummer möglich. Automatisch erstellte Aufträge
@@ -80,10 +84,10 @@ ABK00 = {
 'BKLGNZ': dict(name='zugangslager', format='S4.0',
                doc='''Fertigungszugangslager Falls es sich bei einem Vorgang um eine Umlagerung handelt, kann
                       hier die Nummer des empfangenden Lagers angegeben werden.'''),
-'BKDTKD': dict(name='kundenauftragsdatum', format='P7.0', 
+'BKDTKD': dict(name='bestelldatum', format='P7.0', 
                doc='''AAK00.AKDTKD Datum, das der Kunde bei der Auftragserteilung mitgeteilt hat. Das Datum
                       ist als Information für den Kunden gedacht. Wahlweise Angabe,
-                      Prüfung auf formale Richtigkeit.'''),
+                      Prüfung auf formale Richtigkeit. Wird zum Teil auch "Kundenauftragsdatum" genannt'''),
 'BKDTKW': dict(name='kundenwunschtermin', format='P7.0', 
                doc='''AAK00.AKDTKW Termin, zu dem der Kunde die Ware erhalten soll. Für unbestimmte Termine
                       oder Rahmenkonditionen kann der Sonderwert '999999' eingegeben werden. Dieser Termin
@@ -373,7 +377,7 @@ ABK00 = {
                       1 Versandart bei Stapelprüfung eingesetzt
                       2 Versandart bei DialogKorr auf 0 gesetzt
                       3 Versandart nicht überschreiben'''),
-'BKDFSL': dict(name='Dateiführungsschluessel', format='A10', 
+'BKDFSL': dict(name='dateifuehrungsschluessel', format='A10', 
                doc='''Dieses Feld wird von dem Programm, das eine Änderung an Daten dieses Satzes vornimmt,
                       während des Änderungsvorgangs mit der Bildschirmidentifikation des ändernden
                       Bildschirms belegt.'''),
@@ -617,7 +621,7 @@ ABA00 = {
                Rahmenkonditionen kann der  Sonderwert '999999' eingegeben werden. Dieser Termin steuert
                den Zeitpunkt der Zuteilung und beeinflusst die Konditionsermittlung.'''),
 'BADFSL': dict(name='Dateifuehrungsschluessel', format='A10', 
-               doc='''Dieses Feld wird von dem Programm, das eine Änderung an Daten   dieses Satzes
+               doc='''Dieses Feld wird von dem Programm, das eine Änderung an Daten dieses Satzes
                vornimmt, während des Änderungsvorgangs mit der Bildschirmidentifikation des ändernden
                Bildschirms belegt.'''),
 'BASTAT': dict(name='Satzstatus', format='A1', 
@@ -811,7 +815,7 @@ ABT00 = {
 'BTLFNR': dict(name='textnummer', format='P4.0', key=True, default=1),
 'BTLFDS': dict(name='Stapelsatznummer', format='S11.0', doc='Lfd. Nummer Stapelsatz'),
 'BTTX60': dict(name='text', format='A60'),
-'BTKZAB': dict(name='Auf Auftragsbestätigung drucken', format='S1.0',
+'BTKZAB': dict(name='auf_auftragsbestaetigung', format='S1.0',
                doc='''Gültige Werte sind:
                       1 drucken
                       *ZERO nicht drucken'''),
@@ -820,7 +824,7 @@ ABT00 = {
                       1 auf LfSn/KB drucken
                       2 auf KB drucken
                       3 auf LfSn drucken'''),
-'BTKZRG': dict(name='Auf Rechnung/Gutschrift drucken', format='S1.0',
+'BTKZRG': dict(name='auf_rechnung', format='S1.0',
                doc='''*ZERO nicht drucken
                       1 drucken
                       2 ist gedruckt'''),
@@ -993,9 +997,7 @@ def auftrag2softm(auftrag, belegtexte=[]):
         # abweichende Lieferadresse in address-zusatzdatei
         kopf.lieferadresse = int(auftrag.kundennr.split('/')[1])
     
-    #infotext_kunde = models.TextField(blank=True)
-    #bestelltext = models.TextField(max_length=250, blank=True)
-    #bestelldatum = models.DateField(blank=True, null=True)
+    kopf.bestelldatum = auftrag.bestelldatum
     
     kopf.auftragsart = ''
     kopf.sachbearbeiter = 1
@@ -1007,6 +1009,30 @@ def auftrag2softm(auftrag, belegtexte=[]):
     
     positionen = []
     texte = []
+    
+    # split text into chunks of 60 chars
+    for line in textwrap.wrap(auftrag.infotext_kunde, 60):
+        text = Text()
+        texte.append(text)
+        text.vorgang = vorgangsnummer
+        text.vorgangsposition = 0
+        text.textart = 8
+        text.auf_auftragsbestaetigung = 1
+        text.auf_rechnung = 1
+        text.text = line
+
+    # split text into chunks of 60 chars
+    for line in textwrap.wrap(auftrag.bestelltext, 60):
+        text = Text()
+        texte.append(text)
+        text.vorgang = vorgangsnummer
+        text.vorgangsposition = 0
+        text.textart = 8
+        text.auf_auftragsbestaetigung = 1
+        text.auf_rechnung = 0
+        text.auf_lieferschein = 0
+        text.text = line
+    
     for aobj_position in auftrag.positionen:
         position = Position()
         positionen.append(position)
@@ -1021,18 +1047,33 @@ def auftrag2softm(auftrag, belegtexte=[]):
             texte.append(text)
             text.vorgang = vorgangsnummer
             text.vorgangsposition = position.vorgangsposition
-            text.textart, text.auf_lieferschein = 8, 1
+            text.textart = 8
+            text.auf_lieferschein = 1
+            text.auf_rechnung = 1
             text.text = "Kundenartikelnummer: %s" % aobj_position.kundenartnr
     kopf.vorgangspositionszahl = len(positionen)
     
+    # see http://blogs.23.nu/c0re/stories/18926/ for the aproach we try here to write data into softm. 
+    # But instead of using the date for our token we use the DFSL field
+    token = hex((int(time.time() * 10000) 
+                ^ (os.getpid() << 24) 
+                ^ thread.get_ident()) 
+                % 0xFFFFFFFFFF).rstrip('L')[2:]
+    
+    kopf.dateifuehrungsschluessel = token
+    #get_connection().server.update_adtastapel(vorgangsnummer, token='Ae.so=7e,S(')
+    #get_connection().server.insert(kopf.to_sql(), token='Aes.o=j7eS(')
+    rowcount = get_connection().query('ABK00', fields=['COUNT(*)'],
+                                          condition="BKDFSL=%s" % sql_quote(token))[0][0]
+    print rowcount
+    
     sql = []
-    sql.append(kopf.to_sql())
     for x in positionen:
         sql.append(x.to_sql())
     for x in texte:
         sql.append(x.to_sql())
+    sql.append(kopf.to_sql())
     print sql
-    #get_connection().server.update_adtastapel(vorgangsnummer, token='Ae.so=7e,S(')
     #get_connection().server.insert(kopf.to_sql(), token='Aes.o=j7eS(')
     #for x in texte:
     #    get_connection().server.insert(x.to_sql() , token='Aes.o=j7eS(')

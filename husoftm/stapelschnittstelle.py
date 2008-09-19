@@ -3,7 +3,7 @@
 """
 stapelschnittstelle.py - Ansprechen der SoftM Auftrags-Stapelschnittstelle.
 
-ACHTUNG: Die SoftM Stapel-Schnittstelle ist - wie alles von SoftM - dürftig dokumentiert. Das
+ACHTUNG: Die SoftM Stapel-Schnittstelle ist - dürftig dokumentiert. Das
 bedeutet, dass dieser Code grosse Chancen bietet, nicht wie erwartet zu funktionieren. Er ist nur für
 experimentelle Zwecke geeignet - oder für Leute mit starken Nerven.
 Aber wenn sie schwache Nerven hätten, würden sie kein SoftM einsetzen, oder?
@@ -20,9 +20,10 @@ import datetime
 import time
 import os
 import thread
+import random
 import textwrap
 from husoftm.connection import get_connection
-from husoftm.tools import date2softm, sql_quote
+from husoftm.tools import date2softm, sql_quote, iso2land
 
 # das Datenmodell, was hier definiert wird, ist deutlich reicher, als es momentan genutzt wird. Es ist
 # geplant, sowas wie in huProtocols.recordbased zu implementieren.
@@ -799,7 +800,7 @@ ABA00 = {
 }
 
 ABT00 = {
-'BTFNR':  dict(name='firma', format='A2', required=True, key=True, default = '01',
+'BTFNR':  dict(name='firma', format='A2', required=True, key=True, default='01',
                doc='''Gültige Werte sind: *FIRM gültige Firma'''),
 'BTVGNR': dict(name='vorgang', format='S9.0', key=True),
 'BTVGPO': dict(name='vorgangsposition', format='S5.0', key=True),
@@ -904,6 +905,60 @@ ABT00 = {
                    *ZERO nicht geprüft'''),
 }
 
+# To: m.dornseif@hudora.de
+# Subject: Füllen_Lieferadresse_in_Auftragseingangsschnittstelle
+# MIME-Version: 1.0
+# From: Dietmar Hering <dietmar.hering@softm.com>
+# Date: Thu, 18 Sep 2008 12:36:43 +0200
+# 
+# Sehr geehrter Herr Dornseif,
+# 
+# abweichende Lieferadressen für Aufträge die über die Eingangsschnittstelle
+# verarbeitet werden, können in die Datei ABV00 geschrieben werden.
+# Verknüft wird die Anschrift mit der Vorgangsnummer gemäß ABK00.
+# Zur Unterstützung lege ich dieser Mail noch die Feldbeschreibung der ABV00 bei.
+# 
+
+ABV00 = {
+'BVVGNR':  dict(name='vorgang', format='S9.0', key=True, default='',
+               doc=''''''),
+#'BVLFDS':  dict(name='stapelsatznummer', format='S11.0', default='',
+#               doc='''Lfd. Nummer Stapelsatz Nummer des Satzes aus der Originalstapeldatei, die zur 
+#                      Erstellung des Kopfsatzes führte. Ist in userem System in der Regel NULL.'''),
+'BVAART':  dict(name='adressart', format='S1.0', default='',
+               doc='''Gültige Werte sind: *ZERO Rechnungsadresse, 1 Lieferadresse'''),
+'BVNAME':  dict(name='name1', format='A40', default='',
+               doc=''''''),
+'BVNAM2':  dict(name='name2', format='A40', default='',
+               doc=''''''),
+'BVNAM3':  dict(name='name3', format='A40', default='',
+               doc=''''''),
+#'BVNAM4':  dict(name='name4', format='A40', default='',
+#               doc=''''''),
+'BVSTR':  dict(name='strasse', format='A40', default='',
+               doc=''''''),
+'BVPLZ':  dict(name='plz', format='A15', default='',
+               doc=''''''),
+'BVORT':  dict(name='ort', format='A40', default='',
+               doc=''''''),
+'BVLKZ':  dict(name='laenderkennzeichen', format='A3', default='',
+               doc=''''''),
+'BVKZBA':  dict(name='bearbeitungskennzeichen', format='S1.0', default='',
+               doc='''Gültige Werte sind: *ZERO nicht geprüft
+                        1 geprüft, Warnungen aufgetreten
+                        2 geprüft, Fehler aufgetreten
+                        3 geprüft, kann übernommen werden
+                        4 wurde übernommen'''),
+#'BVORTT':  dict(name='Ortszusatz', format='A40', default='',
+#               doc='''Dieses Feld wird gemäß Postbestimmungen in der deutschen Form der Adressaufbereitung
+#                   nicht mehr verwendet, sondern nur in der englischen Fassung für die Ortsbezeichnung.'''),
+'BVKZAD':  dict(name='Adressaufbereitung', format='S1.0', default=1,
+               doc='''Der Datenbestand kann gleichzeitig Adressen enthalten, die nach neuem Muster und nach
+                      altem Muster aufbereitet werden. Gültige Werte sind: *ZERO alte Adressaufbereitung
+                      1 neue Adressaufbereitung
+'''),
+}
+
 class StapelSerializer(object):
     """Abstrakte Klasse zum serialisieren der verschiedenen Sätze der Stapelschnittstelle."""
     
@@ -946,6 +1001,12 @@ class Text(StapelSerializer):
     rowmapping = ABT00
     tablename = 'ABT00'
 
+class Adresse(StapelSerializer):
+    """Repräsentiert einen Addresszusatz in ABV00."""
+    rowmapping = ABV00
+    tablename = 'ABV00'
+
+
 def getnextvorgang():
     """Ermittelt die nächste freie Vorgangsnummer."""
     
@@ -970,6 +1031,7 @@ def schnittstelle_leer():
         return False
     return True
 
+# TODO: Extract
 def lieferungen_fuer_tag(day):
     """Ermittelt die Anzahl der Nachschub Lieferungen für einen Tag."""
     rows = get_connection().query('ABK00', fields=['BKVGNR'],
@@ -1004,13 +1066,10 @@ def auftrag2softm(auftrag, belegtexte=[]):
     kopf.liefertermin = date2softm(auftrag.anlieferdatum_min)
     kopf.kundenwunschtermin = date2softm(auftrag.anlieferdatum_max)
     
-    # Diese Daten setze ich in der Hoffnung, dass die Stapelschnittstelle weniger 'rumzickt.
-    kopf.bearbeitungskennzeichen = 4
-    
     positionen = []
     texte = []
     
-    # split text into chunks of 60 chars
+    # add infotext_kunde - split text into chunks of 60 chars
     for line in textwrap.wrap(auftrag.infotext_kunde, 60):
         text = Text()
         texte.append(text)
@@ -1021,7 +1080,7 @@ def auftrag2softm(auftrag, belegtexte=[]):
         text.auf_rechnung = 1
         text.text = line
 
-    # split text into chunks of 60 chars
+    # add bestelltext - split text into chunks of 60 chars
     for line in textwrap.wrap(auftrag.bestelltext, 60):
         text = Text()
         texte.append(text)
@@ -1032,6 +1091,24 @@ def auftrag2softm(auftrag, belegtexte=[]):
         text.auf_rechnung = 0
         text.auf_lieferschein = 0
         text.text = line
+        
+    adressen = []
+    # add Lieferadresse if needed
+    if (hasattr(auftrag, 'lieferadresse')
+        and hasattr(auftrag.lieferadresse, 'name1')
+        and hasattr(auftrag.lieferadresse, 'ort')
+        and hasattr(, 'land')):
+        lieferadresse = Adresse()
+        lieferadresse.adressart = 1
+        lieferadresse.vorgang = vorgangsnummer
+        lieferadresse.name1 = getattr(auftrag.lieferadresse, 'name1', '')
+        lieferadresse.name2 = getattr(auftrag.lieferadresse, 'name2', '')
+        lieferadresse.name3 = getattr(auftrag.lieferadresse, 'name3', '')
+        lieferadresse.strasse = getattr(auftrag.lieferadresse, 'strasse', '')
+        lieferadresse.plz = getattr(auftrag.lieferadresse, 'plz', '')
+        lieferadresse.ort = getattr(auftrag.lieferadresse, 'ort', '')
+        lieferadresse.laenderkennzeichen = iso2land(getattr(auftrag.lieferadresse, 'ort', 'DE'))
+        adressen.append(lieferadresse)
     
     for aobj_position in auftrag.positionen:
         position = Position()
@@ -1053,30 +1130,36 @@ def auftrag2softm(auftrag, belegtexte=[]):
             text.text = "Kundenartikelnummer: %s" % aobj_position.kundenartnr
     kopf.vorgangspositionszahl = len(positionen)
     
-    # see http://blogs.23.nu/c0re/stories/18926/ for the aproach we try here to write data into softm. 
+    # see http://blogs.23.nu/c0re/stories/18926/ for the aproach we try here to write data into SoftM.
     # But instead of using the date for our token we use the DFSL field
-    token = hex((int(time.time() * 10000) 
+    uuid = hex((int(time.time() * 10000) 
                 ^ (os.getpid() << 24) 
                 ^ thread.get_ident()) 
                 % 0xFFFFFFFFFF).rstrip('L')[2:]
     
-    kopf.dateifuehrungsschluessel = token
-    #get_connection().server.update_adtastapel(vorgangsnummer, token='Ae.so=7e,S(')
-    #get_connection().server.insert(kopf.to_sql(), token='Aes.o=j7eS(')
+    kopf.dateifuehrungsschluessel = uuid
+    get_connection().server.update_adtastapel(vorgangsnummer, token='Ae.so=7e,S(')
+    get_connection().insert_raw(kopf.to_sql(), token='Aes.o=j7eS(')
     rowcount = get_connection().query('ABK00', fields=['COUNT(*)'],
                                           condition="BKDFSL=%s" % sql_quote(token))[0][0]
-    print rowcount
-    
-    sql = []
-    for x in positionen:
-        sql.append(x.to_sql())
-    for x in texte:
-        sql.append(x.to_sql())
-    sql.append(kopf.to_sql())
-    print sql
-    #get_connection().server.insert(kopf.to_sql(), token='Aes.o=j7eS(')
-    #for x in texte:
-    #    get_connection().server.insert(x.to_sql() , token='Aes.o=j7eS(')
-    #get_connection().server.update2("UPDATE ABK00 SET BKKZBA=0 WHERE BKVGNR=%s" % vorgangsnummer, token='E~iy3*eej^')
+    if rowcount < 1:
+        raise RuntimeException("Internal Server error: insertation into ABK00 failed: uuid=%r" % uuid)
+    elif rowcount > 1:
+        # the race condition has hit - remove our entry and retry
+        get_connection().delete(self, 'ABK00', 'BKDFSL=%s' % sql_quote(token))
+        # sleep to avoid deadlocks see http://de.wikipedia.org/wiki/CSMA/CD#Das_Backoff-Verfahren_bei_Ethernet
+        time.sleep(random.randint()/100.0)
+        # recusively try again
+        auftrag2softm(auftrag, belegtexte)
+    else:
+        sql = []
+        for x in positionen + texte + adressen:
+            sql.append(x.to_sql())
+        sql.append(kopf.to_sql())
+        for command in sql:
+            print command
+            get_connection().insert_raw(command, token='Aes.o=j7eS(')
+        # remove "dateifuehrungsschluessel" and set recort active
+        get_connection().update("UPDATE ABK00 SET BKKZBA=0, BKDFSL='' WHERE BKVGNR=%s" % vorgangsnummer, token='E~iy3*eej^')
     
     return vorgangsnummer

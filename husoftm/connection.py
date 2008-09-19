@@ -123,13 +123,12 @@ class PyRoMoftSconnection(object):
         start = time.time()
         LOG.debug(querystr)
         try:
-            # this is far to slow and Ihave no idea why
             rows = self.__server.select(querystr)
         except Exception, msg:
             LOG.error('PyRO remote exception:' + (''.join(Pyro.util.getPyroTraceback(msg))))
             raise
         
-        querydelta = time.time()-start
+        querydelta = time.time() - start
         start = time.time()
         if querymappings:
             rows = self._rows2dict(fields, querymappings, rows)
@@ -139,6 +138,29 @@ class PyRoMoftSconnection(object):
         LOG.info("%.3fs/%.3fs, %d rows: %s" % (querydelta, mapdelta, len(rows), querystr))
         return rows
     
+    def delete(self, table, condition):
+        """Delete rows from table where condition is met."""
+        
+        querystr = "DELETE FROM %s WHERE %s" % (table, condition)
+        LOG.debug(querystr)
+        try:
+            rows = self.__server.select(querystr)
+        except Exception, msg:
+            LOG.error('PyRO remote exception:' + (''.join(Pyro.util.getPyroTraceback(msg))))
+            raise
+        return rows
+    
+    def insert_raw(self, sqlstr):
+        """Insert rows into a table by directly executing SQL"""
+        
+        LOG.debug(sqlstr)
+        try:
+            rows = self.__server.select(sqlstr)
+        except Exception, msg:
+            LOG.error('PyRO remote exception:' + (''.join(Pyro.util.getPyroTraceback(msg))))
+            raise
+        return rows
+
 
 class PyRoMoftSconnectionToTestDB(PyRoMoftSconnection):
     """Represents an connection which can execute SWL on the Testdatabase (SMKDIFT) on the iSeries-AS/400."""

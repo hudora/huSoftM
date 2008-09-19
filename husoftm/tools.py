@@ -27,7 +27,7 @@ LOG = logging.getLogger('pySoftM.tools')
 
 
 SOFTMLKZ2ISOLAND = {'D': 'DE',
-                    'CC': 'DE',
+                    'CC': 'CC',
                     '???': '??', # WTF
                     'A': 'AT', # Oesterreich
                     'L': 'LU', # Luxemburg
@@ -72,7 +72,8 @@ SOFTMLKZ2ISOLAND = {'D': 'DE',
                     'RO': 'RO', # Rumaenien
                     'GB': 'UK', # Vereinigtes Koenigreich
 }
-
+# invert dictionary
+ISOLAND2SOFTMLKZ = dict([[v,k] for k,v in SOFTMLKZ2ISOLAND.items()])
 
 def land2iso(softmlaenderkennzeichen):
     """Wandelt einen SoftM Ländercode (Autokennzeichen) in einen ISO 3166-1 Alpha-2 Country Code um.
@@ -91,6 +92,21 @@ def land2iso(softmlaenderkennzeichen):
             # Vermutlich haben wir ein gueltiges ISO-Laenderkennzeichen als Parameter bekommen
             return softmlaenderkennzeichen
         raise ValueError("Unbekannter Laendercode aus SoftM: %r" % (softmlaenderkennzeichen, ))
+    return ret
+    
+
+def iso2land(isoland):
+    """Wandelt einen ISO 3166-1 Alpha-2 Country Code in einen SoftM Ländercode (Autokennzeichen) um.
+    
+    >>> iso2land('DE')
+    'D'
+    >>> iso2land('LT')
+    'LTL'
+    """
+    
+    ret = ISOLAND2SOFTMLKZ.get(isoland, None)
+    if not ret:
+        raise ValueError("Unbekannter ISO 3166-1 Alpha-2 Country Code: %r" % (isoland, ))
     return ret
     
 

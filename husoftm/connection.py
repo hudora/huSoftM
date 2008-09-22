@@ -23,6 +23,25 @@ LOG = logging.getLogger('huSoftM.sql')
 LOG.setLevel(logging.WARN)
 
 
+def _combine_date_and_time(mappings, fields, i, row, rowdict):
+    """If there is also a time field in addition to a date field combine them."""
+    basename = '_'.join(mappings[fields[i]].split('_')[:-1])
+    timefield = DATETIMEDIR[fields[i]]
+    timepos = fields.index(timefield)
+    if (timepos and row[timepos] and
+        not str(row[timepos]).startswith('99')): # Zeit = 999999: Unbestimmt
+        try:
+            if len(str(int(row[i]))) == 7:
+                rowdict[basename] = datetime.datetime(*(
+                    time.strptime(str(int(row[i])), '1%y%m%d')[:3]
+                    + time.strptime(str(int(row[timepos])), '%H%M%S')[3:6]))
+            else:
+                raise ValueError
+        except ValueError:
+            print int(row[i]), int(row[timepos])
+            raise
+    
+
 class PyRoMoftSconnection(object):
     """Represents an connection which can execute SWL on the iSeries-AS/400."""
     
@@ -59,33 +78,37 @@ class PyRoMoftSconnection(object):
                             rowdict[mappings[fields[i]]] = softm2date(row[i])
                             # check if there is also a time field
                             if fields[i] in DATETIMEDIR:
-                                basename = '_'.join(mappings[fields[i]].split('_')[:-1])
-                                timefield = DATETIMEDIR[fields[i]]
-                                timepos = fields.index(timefield)
-                                if (timepos and row[timepos] and
-                                    not str(row[timepos]).startswith('99')): # Zeit = 999999: Unbestimmt
-                                    try:
-                                        # TODO: refactor
-                                        if len(str(int(row[i]))) == 7:
-                                            rowdict[basename] = datetime.datetime(*(
-                                                time.strptime(str(int(row[i])), '1%y%m%d')[:3]
-                                                + time.strptime(str(int(row[timepos])), '%H%M%S')[3:6]))
-                                        else:
-                                            raise ValueError
-                                    except ValueError:
-                                        print int(row[i]), int(row[timepos])
-                                        raise
+                                _combine_date_and_time(mappings, fields, i, row, rowdict)
                     else:
                         rowdict[mappings[fields[i]]] = data
                 else:
                     rowdict[fields[i]] = data
             ret.append(rowdict)
         return ret
-    
+
     def _get_tablename(self, name):
         """Generates the Name of a Table on the AS/400."""
         
         return "SMKDIFP.%s" % name
+    
+    def _execute_query(self, querystr, querymappings, fields):
+        start = time.time()
+        LOG.debug(querystr)
+        try:
+            rows = self.__server.select(querystr)
+        except Exception, msg:
+            LOG.error('PyRO remote exception:' + (''.join(Pyro.util.getPyroTraceback(msg))))
+            raise
+        
+        querydelta = time.time() - start
+        start = time.time()
+        if querymappings:
+            rows = self._rows2dict(fields, querymappings, rows)
+        else:
+            rows = [[y for y in x] for x in rows]
+        mapdelta = time.time()-start
+        LOG.info("%.3fs/%.3fs, %d rows: %s" % (querydelta, mapdelta, len(rows), querystr))
+        return rows
     
     def query(self, tables=None, condition=None, fields=[], querymappings=None, grouping=[], ordering=[],
               nomapping=False):
@@ -111,6 +134,7 @@ class PyRoMoftSconnection(object):
             fields = querymappings.keys()
         if not fields:
             raise RuntimeError("can't deduce field names")
+        
         querystr = "SELECT %s FROM %s" % (','.join(fields),
                                           ','.join([self._get_tablename(x) for x in tables]))
         if condition:
@@ -120,24 +144,8 @@ class PyRoMoftSconnection(object):
         if ordering:
             querystr += ' ORDER BY %s' % (','.join(ordering), )
         
-        start = time.time()
-        LOG.debug(querystr)
-        try:
-            rows = self.__server.select(querystr)
-        except Exception, msg:
-            LOG.error('PyRO remote exception:' + (''.join(Pyro.util.getPyroTraceback(msg))))
-            raise
-        
-        querydelta = time.time() - start
-        start = time.time()
-        if querymappings:
-            rows = self._rows2dict(fields, querymappings, rows)
-        else:
-            rows = [[y for y in x] for x in rows]
-        mapdelta = time.time()-start
-        LOG.info("%.3fs/%.3fs, %d rows: %s" % (querydelta, mapdelta, len(rows), querystr))
-        return rows
-    
+        return self._execute_query(querystr, querymappings, fields)
+
     def delete(self, table, condition):
         """Delete rows from table where condition is met."""
         
@@ -168,7 +176,7 @@ class PyRoMoftSconnectionToTestDB(PyRoMoftSconnection):
     def _get_tablename(self, name):
         """Generates the Name of a Table on the AS/400-Test-Database."""
         raise RuntimeError("stale test code")
-        return "SMKDIFT.%s" % name
+        #return "SMKDIFT.%s" % name
     
     def update_test(self, query):
         """Update the Databasetable on the AS/400-Test-Database with the given query."""
@@ -221,6 +229,7 @@ class TrainingMoftSconnection(PyRoMoftSconnection):
         
     def __init__(self):
         # finds object automatically if you're running the Name Server.
+        PyRoMoftSconnection.__init__(self)
         self.__server = TestMoftSconnection.MockServer()
     
 

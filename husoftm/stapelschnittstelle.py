@@ -29,6 +29,7 @@ from husoftm.stapleschnittstelle_const import ABK00, ABA00, ABT00, ABV00, ABK00
 
 __revision__ = "$Revision$"
 
+
 class StapelSerializer(object):
     """Abstrakte Klasse zum serialisieren der verschiedenen Sätze der Stapelschnittstelle."""
     
@@ -135,7 +136,7 @@ def _create_positionssatz(positionen, vorgangsnummer, aobj_position, texte):
     position.bestellmenge = aobj_position.menge
     position.artikel = aobj_position.artnr
     position.erfassungsdatum = date2softm(datetime.date.today())
-    if aobj_position.kundenartnr:
+    if hasattr(aobj_position, 'kundenartnr') and aobj_position.kundenartnr:
         text = Text()
         texte.append(text)
         text.vorgang = vorgangsnummer
@@ -146,23 +147,24 @@ def _create_positionssatz(positionen, vorgangsnummer, aobj_position, texte):
         text.text = "Kundenartikelnummer: %s" % aobj_position.kundenartnr
     
 
-def _create_addressatz(adressen, vorgangsnummer, adresse, is_lieferadresse=True):
+def _create_addressatz(adressen, vorgangsnummer, aobj_adresse, is_lieferadresse=True):
     """Fügt einen Zusatz-Addressatz hinzu."""
     adresse = Adresse()
     if is_lieferadresse:
         adresse.adressart = 1
     adresse.vorgang = vorgangsnummer
-    adresse.name1 = getattr(adresse, 'name1', '')
-    adresse.name2 = getattr(adresse, 'name2', '')
-    adresse.name3 = getattr(adresse, 'name3', '')
+    adresse.name1 = getattr(aobj_adresse, 'name1', '')
+    adresse.name2 = getattr(aobj_adresse, 'name2', '')
+    adresse.name3 = getattr(aobj_adresse, 'name3', '')
     adresse.strasse = getattr(adresse, 'strasse', '')
-    adresse.plz = getattr(adresse, 'plz', '')
-    adresse.ort = getattr(adresse, 'ort', '')
-    adresse.laenderkennzeichen = iso2land(getattr(adresse, 'ort', 'DE'))
+    adresse.plz = getattr(aobj_adresse, 'plz', '')
+    adresse.ort = getattr(aobj_adresse, 'ort', '')
+    adresse.laenderkennzeichen = iso2land(getattr(aobj_adresse, 'land', 'DE'))
     adressen.append(adresse)
     
 
 def _auftrag2records(vorgangsnummer, auftrag):
+    """Convert a auftrag into records objects representing AS/400 SQL statements."""
     kopf = Kopf()
     kopf.vorgang = vorgangsnummer
     kopf.kundennr = '%8s' % auftrag.kundennr.split('/')[0]
@@ -204,6 +206,7 @@ def _auftrag2records(vorgangsnummer, auftrag):
         _create_positionssatz(positionen, vorgangsnummer, aobj_position, texte)
     kopf.vorgangspositionszahl = len(positionen)
     return kopf, positionen, texte, adressen
+    
 
 def auftrag2softm(auftrag, belegtexte=[]):
     """Schreibt etwas, dass dem AuftragsFormat entspricht in SoftM."""
@@ -256,10 +259,17 @@ def auftrag2softm(auftrag, belegtexte=[]):
     
 
 class _MockAuftrag(object):
+    """Represents an Auftrag."""
     pass
     
 
 class _MockAddress(object):
+    """Represents an Address."""
+    pass
+    
+
+class _MockPosition(object):
+    """Represents an orderline."""
     pass
     
 
@@ -267,6 +277,7 @@ class _GenericTests(unittest.TestCase):
     """Vermischte Tests."""
     
     def test_minimal_auftrag(self):
+        """Test if the minimal possible Auftrag can be converted to SQL."""
         vorgangsnummer = 123
         auftrag = _MockAuftrag()
         auftrag.kundennr = '17200'
@@ -278,9 +289,9 @@ class _GenericTests(unittest.TestCase):
         self.assertEqual(positionen, [])
         self.assertEqual(texte, [])
         self.assertEqual(adressen, [])
-        
     
     def test_simple_auftrag(self):
+        """Test if a Auftrag with all headerfields but without extradata can be converted to SQL."""
         vorgangsnummer = 123
         auftrag = _MockAuftrag()
         auftrag.kundennr = '17200'
@@ -301,9 +312,9 @@ class _GenericTests(unittest.TestCase):
         self.assertEqual(texte[1].to_sql(), "INSERT INTO ABT00 (BTKZLF, BTVGNR, BTVGPO, BTTART, BTFNR, "
             "BTTX60, BTLFNR, BTKZAB, BTKZRG) VALUES('0','123','0','8','01','bestelltext','2','1','0')")
         self.assertEqual(adressen, [])
-        
     
     def test_lieferadresse(self):
+        """Tests if a Lieferadresse is successfully converted to SQL."""
         vorgangsnummer = 123
         auftrag = _MockAuftrag()
         auftrag.kundennr = '17200'
@@ -311,14 +322,40 @@ class _GenericTests(unittest.TestCase):
         auftrag.positionen = []
         auftrag.lieferadresse = _MockAddress()
         auftrag.lieferadresse.name1 = 'name1'
-        auftrag.lieferadresse.ort = Röhringhausen
+        auftrag.lieferadresse.name2 = 'name2'
+        auftrag.lieferadresse.name3 = 'name3'
+        auftrag.lieferadresse.ort = 'Rade'
         auftrag.lieferadresse.land = 'DE'
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
         self.assertEqual(kopf.to_sql(), "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTKW, BKSBNR, BKVGPO, BKFNR, "
             "BKKDNR, BKAUFA) VALUES('1','123','1081230','1','0','01','   17200','')")
+        self.assertEqual(adressen[0].to_sql(), "INSERT INTO ABV00 (BVNAM2, BVNAM3, BVLKZ, BVVGNR, BVSTR, "
+            "BVKZAD, BVKZBA, BVNAME, BVPLZ, BVORT, BVAART) VALUES('name2','name3','D','123','','1','',"
+            "'name1','','Rade','1')")
         self.assertEqual(positionen, [])
         self.assertEqual(texte, [])
-        self.assertEqual(adressen, [])
+
+    def test_positionen(self):
+        """Tests if orderlines coan be converted to SQL."""
+        vorgangsnummer = 123
+        auftrag = _MockAuftrag()
+        auftrag.kundennr = '17200'
+        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
+        pos1 = _MockPosition()
+        pos1.menge = 10
+        pos1.artnr = '11111'
+        pos2 = _MockPosition()
+        pos2.menge = 20
+        pos2.artnr = '22222/09'
+        auftrag.positionen = [pos1, pos2]
+        kopf, positionen, dummy, dummy = _auftrag2records(vorgangsnummer, auftrag)
+        self.assertEqual(kopf.to_sql(), "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTKW, BKSBNR, BKVGPO, BKFNR, "
+            "BKKDNR, BKAUFA) VALUES('1','123','1081230','1','2','01','   17200','')")
+        self.assertEqual(positionen[0].to_sql(), "INSERT INTO ABA00 (BADTER, BAVGPO, BAABT, BAFNR, BAMNG, "
+            "BAARTN, BAVGNR) VALUES('1080922','1','1','01','10','11111','123')")
+        self.assertEqual(positionen[1].to_sql(), "INSERT INTO ABA00 (BADTER, BAVGPO, BAABT, BAFNR, BAMNG, "
+            "BAARTN, BAVGNR) VALUES('1080922','2','1','01','20','22222/09','123')")
+
 
 if __name__ == '__main__':
     unittest.main()

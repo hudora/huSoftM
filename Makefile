@@ -27,9 +27,10 @@ doc: build
 
 test:
 	PYTHONPATH=. python husoftm/tools.py
+	PYTHONPATH=. python husoftm/stapelschnittstelle.py
 
 install: build
-	sh -c '(cd edilib; sudo python setup.py install)'
+	sh -c 'sudo python setup.py install'
 
 clean:
 	rm -Rf build dist html test.db

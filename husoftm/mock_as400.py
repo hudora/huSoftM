@@ -31,6 +31,7 @@ querylog = []
 
 
 def sql(query, params=None):
+    """Mock execute a SQL query"""
     querylog.append((query, params))
     # return responses[(query, params)]
     return responses.get((query, params), [])

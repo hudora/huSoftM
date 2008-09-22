@@ -259,6 +259,10 @@ class _MockAuftrag(object):
     pass
     
 
+class _MockAddress(object):
+    pass
+    
+
 class _GenericTests(unittest.TestCase):
     """Vermischte Tests."""
     
@@ -297,7 +301,24 @@ class _GenericTests(unittest.TestCase):
         self.assertEqual(texte[1].to_sql(), "INSERT INTO ABT00 (BTKZLF, BTVGNR, BTVGPO, BTTART, BTFNR, "
             "BTTX60, BTLFNR, BTKZAB, BTKZRG) VALUES('0','123','0','8','01','bestelltext','2','1','0')")
         self.assertEqual(adressen, [])
+        
     
+    def test_lieferadresse(self):
+        vorgangsnummer = 123
+        auftrag = _MockAuftrag()
+        auftrag.kundennr = '17200'
+        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
+        auftrag.positionen = []
+        auftrag.lieferadresse = _MockAddress()
+        auftrag.lieferadresse.name1 = 'name1'
+        auftrag.lieferadresse.ort = Röhringhausen
+        auftrag.lieferadresse.land = 'DE'
+        kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
+        self.assertEqual(kopf.to_sql(), "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTKW, BKSBNR, BKVGPO, BKFNR, "
+            "BKKDNR, BKAUFA) VALUES('1','123','1081230','1','0','01','   17200','')")
+        self.assertEqual(positionen, [])
+        self.assertEqual(texte, [])
+        self.assertEqual(adressen, [])
 
 if __name__ == '__main__':
     unittest.main()

@@ -73,7 +73,8 @@ SOFTMLKZ2ISOLAND = {'D': 'DE',
                     'GB': 'UK', # Vereinigtes Koenigreich
 }
 # invert dictionary
-ISOLAND2SOFTMLKZ = dict([[v,k] for k,v in SOFTMLKZ2ISOLAND.items()])
+ISOLAND2SOFTMLKZ = dict([[v, k] for k, v in SOFTMLKZ2ISOLAND.items()])
+
 
 def land2iso(softmlaenderkennzeichen):
     """Wandelt einen SoftM Ländercode (Autokennzeichen) in einen ISO 3166-1 Alpha-2 Country Code um.

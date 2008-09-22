@@ -26,6 +26,8 @@ class Kunde(object):
         self.plz = plz
         self.ort = ort
         self.land = land
+        self.sortierfeld = self.fax = self.tel = self.aenderung = self.iln = self.erfassung = None
+        self.sachbearbeiter = self.mail = self.mobil = self.unsere_lieferantennr = self.adressdatei_id = None
     
     def __repr__(self):
         return str(vars(self)) # crude ...
@@ -88,8 +90,8 @@ class Kunde(object):
         return self
     
 
-def get_kundennrn():
-    """Returns a list of all 'Kudennummern'."""
+def get_kundennummern():
+    """Returns a list of all 'Kundennummern'."""
     
     rows = husoftm.connection.get_connection().query('XKD00', fields=['KDKDNR'])
     return [int(x) for x in rows]
@@ -156,14 +158,12 @@ def get_kunde_by_iln(iln):
 
 def _selftest():
     """Test basic functionality"""
-    print get_kunde_by_iln('4306544031019')
-    print get_kunde_by_iln('4306544000008')
-    return
-    print len(get_changed_after(datetime.date(2007, 1, 1)))
-    nummern = get_kundennummern()
-    print len(nummern)
-    for kdnnr in nummern:
-        print get_kunde(kdnnr=kdnnr) # ['aendertung_date']
+    get_kunde_by_iln('4306544031019')
+    get_kunde_by_iln('4306544000008')
+    get_changed_after(datetime.date(2007, 1, 1))
+    get_kundennummern()
+    #for kdnnr in nummern:
+    #    get_kunde(kdnnr=kdnnr) # ['aendertung_date']
 
 if __name__ == '__main__':
     _selftest()

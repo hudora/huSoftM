@@ -22,11 +22,12 @@ import os
 import thread
 import random
 import textwrap
+import unittest
 from husoftm.connection import get_connection
 from husoftm.tools import date2softm, sql_quote, iso2land
-
 from husoftm.stapleschnittstelle_const import ABK00, ABA00, ABT00, ABV00, ABK00
 
+__revision__ = "$Revision$"
 
 class StapelSerializer(object):
     """Abstrakte Klasse zum serialisieren der verschiedenen Sätze der Stapelschnittstelle."""
@@ -161,40 +162,35 @@ def _create_addressatz(adressen, vorgangsnummer, adresse, is_lieferadresse=True)
     adressen.append(adresse)
     
 
-def auftrag2softm(auftrag, belegtexte=[]):
-    """Schreibt etwas, dass dem AuftragsFormat entspricht in SoftM."""
-    
-    # this should be done by the caller:
-    # if kundenauftragsnummer_bekannt(auftragskennzeichen):
-    #     print "Auftragskennzeichen %r wurde bereits verwendet." % auftragskennzeichen
-    #     return None
-    # if not schnittstelle_leer():
-    #     print "In der Stapelschnittstelle befinden sich nicht verarbeitete Nachrichten."
-    #    return None
-    
-    vorgangsnummer = getnextvorgang()
+def _auftrag2records(vorgangsnummer, auftrag):
     kopf = Kopf()
     kopf.vorgang = vorgangsnummer
-    kopf.kundenauftragsnr = auftrag.kundenauftragsnr
     kopf.kundennr = '%8s' % auftrag.kundennr.split('/')[0]
     if len(auftrag.kundennr.split('/')) > 1:
         # abweichende Lieferadresse in address-zusatzdatei
         kopf.lieferadresse = int(auftrag.kundennr.split('/')[1])
-    
-    kopf.bestelldatum = auftrag.bestelldatum
+    if hasattr(auftrag, 'kundenauftragsnr'):
+        kopf.kundenauftragsnr = auftrag.kundenauftragsnr
+    if hasattr(auftrag, 'bestelldatum'):
+        kopf.bestelldatum = auftrag.bestelldatum
     
     kopf.auftragsart = ''
     kopf.sachbearbeiter = 1
-    kopf.liefertermin = date2softm(auftrag.anlieferdatum_min)
     kopf.kundenwunschtermin = date2softm(auftrag.anlieferdatum_max)
+    if hasattr(auftrag, 'anlieferdatum_min'):
+        kopf.liefertermin = date2softm(auftrag.anlieferdatum_min)
+    else:
+        kopf.liefertermin = date2softm(datetime.date.today())
     
     positionen = []
     texte = []
     
-    _create_kopftext(texte, vorgangsnummer, auftrag.infotext_kunde, auftragsbestaetigung=1, lieferschein=1,
-        rechnung=1)
-    _create_kopftext(texte, vorgangsnummer, auftrag.bestelltext, auftragsbestaetigung=1, lieferschein=0,
-        rechnung=0)
+    if hasattr(auftrag, 'infotext_kunde'):
+        _create_kopftext(texte, vorgangsnummer, auftrag.infotext_kunde, auftragsbestaetigung=1,
+                         lieferschein=1, rechnung=1)
+    if hasattr(auftrag, 'bestelltext'):
+        _create_kopftext(texte, vorgangsnummer, auftrag.bestelltext, auftragsbestaetigung=1,
+                         lieferschein=0, rechnung=0)
     
     adressen = []
     # add Lieferadresse if needed
@@ -207,6 +203,21 @@ def auftrag2softm(auftrag, belegtexte=[]):
     for aobj_position in auftrag.positionen:
         _create_positionssatz(positionen, vorgangsnummer, aobj_position, texte)
     kopf.vorgangspositionszahl = len(positionen)
+    return kopf, positionen, texte, adressen
+
+def auftrag2softm(auftrag, belegtexte=[]):
+    """Schreibt etwas, dass dem AuftragsFormat entspricht in SoftM."""
+    
+    # this should be done by the caller:
+    # if kundenauftragsnummer_bekannt(auftragskennzeichen):
+    #     print "Auftragskennzeichen %r wurde bereits verwendet." % auftragskennzeichen
+    #     return None
+    # if not schnittstelle_leer():
+    #     print "In der Stapelschnittstelle befinden sich nicht verarbeitete Nachrichten."
+    #    return None
+    
+    vorgangsnummer = getnextvorgang()
+    kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
     
     # see http://blogs.23.nu/c0re/stories/18926/ for the aproach we try here to write data into SoftM.
     # But instead of using the date for our token we use the DFSL field
@@ -242,3 +253,51 @@ def auftrag2softm(auftrag, belegtexte=[]):
                                 % vorgangsnummer, token='E~iy3*eej^')
     
     return vorgangsnummer
+    
+
+class _MockAuftrag(object):
+    pass
+    
+
+class _GenericTests(unittest.TestCase):
+    """Vermischte Tests."""
+    
+    def test_minimal_auftrag(self):
+        vorgangsnummer = 123
+        auftrag = _MockAuftrag()
+        auftrag.kundennr = '17200'
+        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
+        auftrag.positionen = []
+        kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
+        self.assertEqual(kopf.to_sql(), "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTKW, BKSBNR, BKVGPO, BKFNR, "
+            "BKKDNR, BKAUFA) VALUES('1','123','1081230','1','0','01','   17200','')")
+        self.assertEqual(positionen, [])
+        self.assertEqual(texte, [])
+        self.assertEqual(adressen, [])
+        
+    
+    def test_simple_auftrag(self):
+        vorgangsnummer = 123
+        auftrag = _MockAuftrag()
+        auftrag.kundennr = '17200'
+        auftrag.anlieferdatum_min = datetime.date(2008, 12, 30)
+        auftrag.anlieferdatum_max = datetime.date(2008, 12, 31)
+        auftrag.bestelldatum = datetime.date(2008, 12, 29)
+        auftrag.kundenauftragsnr = '0012345'
+        auftrag.infotext_kunde = 'infotext_kunde'
+        auftrag.bestelltext = 'bestelltext'
+        auftrag.positionen = []
+        kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
+        self.assertEqual(kopf.to_sql(), "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTKW, BKSBNR, BKVGPO, BKFNR, "
+            "BKNRKD, BKKDNR, BKDTKD, BKAUFA) VALUES('1','123','1081231','1','0','01','0012345','   17200',"
+            "'2008-12-29','')")
+        self.assertEqual(positionen, [])
+        self.assertEqual(texte[0].to_sql(), "INSERT INTO ABT00 (BTKZLF, BTVGNR, BTVGPO, BTTART, BTFNR, "
+            "BTTX60, BTLFNR, BTKZAB, BTKZRG) VALUES('1','123','0','8','01','infotext_kunde','1','1','1')")
+        self.assertEqual(texte[1].to_sql(), "INSERT INTO ABT00 (BTKZLF, BTVGNR, BTVGPO, BTTART, BTFNR, "
+            "BTTX60, BTLFNR, BTKZAB, BTKZRG) VALUES('0','123','0','8','01','bestelltext','2','1','0')")
+        self.assertEqual(adressen, [])
+    
+
+if __name__ == '__main__':
+    unittest.main()

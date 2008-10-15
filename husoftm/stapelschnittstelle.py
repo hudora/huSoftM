@@ -52,6 +52,14 @@ class StapelSerializer(object):
                 felddict[rowid] = getattr(self, rowconf['name'])
             elif hasattr(self, rowconf['name']):
                 felddict[rowid] = getattr(self, rowconf['name'])
+            # convert datetime
+            if rowid in felddict and hasattr(felddict[rowid], 'strftime'):
+                felddict[rowid] = date2softm(felddict[rowid])
+            
+            # remove empty fields
+            if rowid in felddict and not felddict[rowid]:
+                del felddict[rowid]
+            
         sql = "INSERT INTO %s (%s) VALUES(%s)" % (self.tablename,
                                                  ', '.join(felddict.keys()), 
                                                  ','.join([sql_quote(x) for x in felddict.values()]))
@@ -86,7 +94,7 @@ def getnextvorgang():
     """Ermittelt die nächste freie Vorgangsnummer."""
     
     rows = get_connection().query('ABK00', fields=['MAX(BKVGNR)'])
-    return rows[0][0]+1
+    return int(rows[0][0]+1)
 
 
 def kundenauftragsnummer_bekannt(kundenauftragsnummer):
@@ -173,13 +181,20 @@ def _auftrag2records(vorgangsnummer, auftrag):
         kopf.lieferadresse = int(auftrag.kundennr.split('/')[1])
     if hasattr(auftrag, 'kundenauftragsnr'):
         kopf.kundenauftragsnr = auftrag.kundenauftragsnr
-    if hasattr(auftrag, 'bestelldatum'):
-        kopf.bestelldatum = auftrag.bestelldatum
+    
+    if hasattr(auftrag, 'bestelldatum') and auftrag.bestelldatum:
+        kopf.bestelldatum = date2softm(auftrag.bestelldatum)
+    else:
+        kopf.bestelldatum = date2softm(datetime.date.today())
     
     kopf.auftragsart = ''
     kopf.sachbearbeiter = 1
-    kopf.kundenwunschtermin = date2softm(auftrag.anlieferdatum_max)
-    if hasattr(auftrag, 'anlieferdatum_min'):
+    if auftrag.anlieferdatum_max:
+        kopf.kundenwunschtermin = date2softm(auftrag.anlieferdatum_max)
+    else:
+        kopf.kundenwunschtermin = ''
+    
+    if hasattr(auftrag, 'anlieferdatum_min'): and auftrag.anlieferdatum_min
         kopf.liefertermin = date2softm(auftrag.anlieferdatum_min)
     else:
         kopf.liefertermin = date2softm(datetime.date.today())
@@ -230,8 +245,9 @@ def auftrag2softm(auftrag, belegtexte=[]):
                 % 0xFFFFFFFFFF).rstrip('L')[2:]
     
     kopf.dateifuehrungsschluessel = uuid
-    get_connection().server.update_adtastapel(vorgangsnummer, token='Ae.so=7e,S(')
-    get_connection().insert_raw(kopf.to_sql(), token='Aes.o=j7eS(')
+    get_connection().update_adtastapel(vorgangsnummer)
+    print kopf.to_sql()
+    get_connection().insert_raw(kopf.to_sql())
     rowcount = get_connection().query('ABK00', fields=['COUNT(*)'],
                                    condition="BKDFSL=%s" % sql_quote(uuid))[0][0]
     if rowcount < 1:
@@ -250,10 +266,10 @@ def auftrag2softm(auftrag, belegtexte=[]):
         sql.append(kopf.to_sql())
         for command in sql:
             print command
-            get_connection().insert_raw(command, token='Aes.o=j7eS(')
+            get_connection().insert_raw(command)
         # remove "dateifuehrungsschluessel" and set recort active
-        get_connection().update("UPDATE ABK00 SET BKKZBA=0, BKDFSL='' WHERE BKVGNR=%s" 
-                                % vorgangsnummer, token='E~iy3*eej^')
+        get_connection().update_raw("UPDATE ABK00 SET BKKZBA=0, BKDFSL='' WHERE BKVGNR=%s" 
+                                % vorgangsnummer)
     
     return vorgangsnummer
     

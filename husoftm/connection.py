@@ -163,12 +163,26 @@ class PyRoMoftSconnection(object):
         
         LOG.debug(sqlstr)
         try:
-            rows = self.__server.select(sqlstr)
+            rows = self.__server.insert(sqlstr, token='Aes.o=j7eS(')
         except Exception, msg:
             LOG.error('PyRO remote exception:' + (''.join(Pyro.util.getPyroTraceback(msg))))
             raise
         return rows
-
+    
+    def update_raw(self, sqlstr):
+        """Insert rows into a table by directly executing SQL"""
+        
+        LOG.debug(sqlstr)
+        try:
+            rows = self.__server.update2(sqlstr, token="E~iy3*eej^")
+        except Exception, msg:
+            LOG.error('PyRO remote exception:' + (''.join(Pyro.util.getPyroTraceback(msg))))
+            raise
+        return rows
+    
+    def update_adtastapel(self, vorgangsnummer):
+        self.__server.update_adtastapel(vorgangsnummer, token='Ae.so=7e,S(')
+    
 
 class PyRoMoftSconnectionToTestDB(PyRoMoftSconnection):
     """Represents an connection which can execute SWL on the Testdatabase (SMKDIFT) on the iSeries-AS/400."""

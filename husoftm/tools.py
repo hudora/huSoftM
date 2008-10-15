@@ -120,6 +120,8 @@ def date2softm(date):
     '010605'
     """
     
+    if not date:
+        return ''
     if date.year > 1999:
         return date.strftime('1%y%m%d')
     return date.strftime('%y%m%d')

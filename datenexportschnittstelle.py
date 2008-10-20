@@ -6,10 +6,20 @@
 Created 31.08.2006 by Lars Ronge
 """
 
+# this module reimplements some stuff from huTools to avoid runtime dependencies.
+
 import os
+import os.path
 import logging
 import shutil
 import time
+
+def makedirhier(dirnmame):
+    """Created 'dirname' if needes and all intermediate directories."""
+    
+    if not os.path.exists(dirnmame):
+        os.makedirs(dirnmame)
+    
 
 def rewrite_records(inputfile, outputfile):
     """Reads Data confirming to SoftM Datenausgabeschnitstelle from inputfile,
@@ -18,8 +28,8 @@ def rewrite_records(inputfile, outputfile):
     outbuf = []
     # Alle Zeilen parsen 
     for line in inputfile:
-        # Jeder Zeile ein Leerzeichen voranstellen
-        line = ' ' + line
+        # Jeder Zeile ein Leerzeichen voranstellen und newline am Ende entfernen
+        line = ' ' + line.rstrip()
         
         if line[20:22] != 'F1':
             # unbekannte Anpassung - Abkommensnummer?
@@ -48,10 +58,11 @@ def handle_file(inpath, outputdir, workdir):
     
     This function handles the moving arround of the file."""
     
-    filename = os.path.split(inpath)
-    guid = "%d-%d" % (os.getpid(), time.time()*1000)
+    filename = os.path.split(inpath)[1]
+    guid = "%d-%d" % (os.getpid(), int(time.time()*1000))
     updated_filename = '%s_UPDATED.txt' % os.path.splitext(filename)[0]
     tmp_filename = '%s_UPDATED%s.txt' % (os.path.splitext(filename)[0], guid)
+    makedirhier(os.path.join(workdir, 'tmp'))
     tmppath = os.path.join(os.path.join(workdir, 'tmp', tmp_filename))
     logging.debug('Verarbeitung %r -> %r' % (inpath, tmppath))
     inputfile = file(inpath, 'r')
@@ -65,10 +76,13 @@ def handle_file(inpath, outputdir, workdir):
     outputfile.close()
     
     # archive original file
+    makedirhier(os.path.join(workdir, 'archive/INVOIC'))
     shutil.move(inpath, os.path.join(workdir, 'archive/INVOIC', filename))
     # archive updated file
+    makedirhier(os.path.join(workdir, 'backup/INVOIC'))
     shutil.copy(tmppath, os.path.join(workdir, 'backup/INVOIC', updated_filename))
     # move file to destination
+    makedirhier(outputdir)
     shutil.move(tmppath, os.path.join(outputdir, updated_filename))
     
     logging.info("Die Datei " + filename + " wurde verarbeitet")
@@ -89,7 +103,7 @@ def main():
     # Alle Dateien im Verzeichnis durchlaufen
     for filename in os.listdir(inputdir):
         if filename.lower().endswith('.txt'):
-            handle_file(os.path.join(workdir, filename), outputdir, workdir)
+            handle_file(os.path.join(inputdir, filename), outputdir, workdir)
 
 main()
 

@@ -3,19 +3,17 @@
 # Version: 0.1
 # Date:    31.08.2006
 
-import sys
 import os
 import datetime
-import time
 import logging
 import shutil
 import string
 # import mx.ODBC, mx.ODBC.Windows
 
-sPathHuSoMosa       = 'C:/Inhouse/huSoMosa'
-sPathINVOICMosaic   = 'C:/Inhouse/INVOIC'
+sPathHuSoMosa = 'C:/Inhouse/huSoMosa'
+sPathINVOICMosaic = 'C:/Inhouse/INVOIC'
 # sPathINVOICMosaic   = 'C:/Inhouse/INVOIC_TEST'
-sPathINVOICSoftM    = 'Q:/OUT'
+sPathINVOICSoft = 'Q:/OUT'
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
@@ -45,7 +43,7 @@ else:
     
     # Alle Dateien im Verzeichnis durchlaufen
     for sFileName in s_aFilesInInhouseDir:
-        logging.debug ('Ueberpruefung der folgenden Datei: ' + sFileName)
+        logging.debug('Ueberpruefung der folgenden Datei: ' + sFileName)
         
         # Ist es eine TXT-Datei?
         if string.lower(sFileName[(len(sFileName) - 3):]) == 'txt':
@@ -54,12 +52,12 @@ else:
             # Ist es keine aktualisierte TXT-Datei?
             if string.lower(sFileName[(len(sFileName) - 12):]) <> '_updated.txt':
             
-                logging.debug ("Die Datei " + sPathINVOICSoftM + "/" + sFileName + " wird zum Lesen geoeffnet")
+                logging.debug("Die Datei " + sPathINVOICSoftM + "/" + sFileName + " wird zum Lesen geoeffnet")
                 iInputFile = file(sPathINVOICSoftM + '/' + sFileName, 'r')
-                logging.debug ("Es wird versucht, die Datei " + sFileNameBase + "_UPDATED.txt anzulegen")
+                logging.debug("Es wird versucht, die Datei " + sFileNameBase + "_UPDATED.txt anzulegen")
                 iOutputFile = file(sPathHuSoMosa + '/tmp/' + sFileNameBase + '_UPDATED.txt', 'w')
                 
-                logging.debug ("Die F1-Zeilen werden angepasst")
+                logging.debug("Die F1-Zeilen werden angepasst")
                 
                 # Alle Zeilen parsen 
                 for sActualLine in iInputFile:
@@ -77,10 +75,10 @@ else:
                     # Liefertermin setzen (falls nicht gesetzt  
                     if sActualLine[20:22] == 'F1':
                         sLiefertermin = sActualLine[70:78]
-                        logging.debug ('Liefertermin: ' + sLiefertermin)
+                        logging.debug('Liefertermin: ' + sLiefertermin)
                         if sLiefertermin == '00000000':
                             sLieferscheindatum = sActualLine[113:121]
-                            logging.debug ('Lieferscheindatum: ' + sLieferscheindatum)
+                            logging.debug('Lieferscheindatum: ' + sLieferscheindatum)
                             sActualLine = sActualLine[0:70] + sLieferscheindatum + sActualLine[78:]
                         
                     # Ratio-Nummer aendern
@@ -91,7 +89,7 @@ else:
                     # Die Zeile in die UPDATE-Datei schreiben
                     iOutputFile.write(sActualLine)
                 
-                logging.debug ("Schliessen der Dateien")
+                logging.debug("Schliessen der Dateien")
                 iInputFile.close()
                 iOutputFile.close()
                 

@@ -3,7 +3,9 @@
 
 """ Fix-up of SoftM EDI-Export files for Mosaic.
 
-Created 31.08.2006 by Lars Ronge
+Created 31.08.2006 by Lars Ronge.
+
+Needs editing of paths below.
 """
 
 # this module reimplements some stuff from huTools to avoid runtime dependencies.

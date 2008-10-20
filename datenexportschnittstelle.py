@@ -1,19 +1,18 @@
-# Dieses Skript parst einen Text
-# Author:  Lars Ronge
-# Version: 0.1
-# Date:    31.08.2006
+#!/usr/local/bin/python
+
+""" Fix-up of SoftM EDI-Export files for Mosaic.
+
+Created 31.08.2006 by Lars Ronge
+"""
 
 import os
 import datetime
 import logging
 import shutil
-import string
-# import mx.ODBC, mx.ODBC.Windows
 
 sPathHuSoMosa = 'C:/Inhouse/huSoMosa'
-sPathINVOICMosaic = 'C:/Inhouse/INVOIC'
-# sPathINVOICMosaic   = 'C:/Inhouse/INVOIC_TEST'
-sPathINVOICSoft = 'Q:/OUT'
+output_dir = 'C:/Inhouse/INVOIC'
+input_dir = 'Q:/OUT'
 
 logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(message)s',
@@ -23,37 +22,39 @@ logging.basicConfig(level=logging.DEBUG,
 logging.debug('Starting Python-Script')
 
 
-if os.path.exists(sPathINVOICMosaic + '/lock.lck'):
-    logging.info('Die INVOIC aus SoftM koennen nicht exportiert werden, da im Pfad ' + sPathINVOICMosaic + ' eine Lock-Datei lock.lck vorhanden ist')
-elif os.path.exists(sPathINVOICSoftM + '/lock.lck'):
-    logging.info('Die INVOIC koennen nicht zu Mosaic exportiert werden, da im Pfad ' + sPathINVOICSoftM + ' eine Lock-Datei lock.lck vorhanden ist')
+if os.path.exists(output_dir + '/lock.lck'):
+    logging.info('Die INVOIC aus SoftM koennen nicht exportiert werden, da im Pfad ' 
+                 + output_dir + ' eine Lock-Datei lock.lck vorhanden ist')
+elif os.path.exists(input_dir + '/lock.lck'):
+    logging.info('Die INVOIC koennen nicht zu Mosaic exportiert werden, da im Pfad '
+                 + input_dir + ' eine Lock-Datei lock.lck vorhanden ist')
 else:
     # Lock-File in MOSAIC-Pfad schreiben
-    lockfileMOSAIC = file(sPathINVOICMosaic + '/lock.lck', 'a+')
-    lockfileMOSAIC.write(str(datetime.datetime.now()) + ': Auslesen der INVOIC durch ' + __file__)
-    lockfileMOSAIC.close()
+    lockfile_mosaic = file(output_dir + '/lock.lck', 'a+')
+    lockfile_mosaic.write(str(datetime.datetime.now()) + ': Auslesen der INVOIC durch ' + __file__)
+    lockfile_mosaic.close()
     
     # Lock-File in SoftM-Pfad schreiben
-    lockfileSoftM = file(sPathINVOICSoftM + '/lock.lck', 'a+')
-    lockfileSoftM.write(str(datetime.datetime.now()) + ': Auslesen der INVOIC durch ' + __file__)
-    lockfileSoftM.close()
+    lockfile_softm = file(input_dir + '/lock.lck', 'a+')
+    lockfile_softm.write(str(datetime.datetime.now()) + ': Auslesen der INVOIC durch ' + __file__)
+    lockfile_softm.close()
     
     # Dateien im INHOUSE-Verzeichnis auslesen
-    s_aFilesInInhouseDir = os.listdir(sPathINVOICSoftM)
+    s_aFilesInInhouseDir = os.listdir(input_dir)
     
     # Alle Dateien im Verzeichnis durchlaufen
     for sFileName in s_aFilesInInhouseDir:
         logging.debug('Ueberpruefung der folgenden Datei: ' + sFileName)
         
         # Ist es eine TXT-Datei?
-        if string.lower(sFileName[(len(sFileName) - 3):]) == 'txt':
+        if sFileName.lower.endswith('.txt'):
             sFileNameBase = sFileName[:(len(sFileName) - 4)]
             
             # Ist es keine aktualisierte TXT-Datei?
-            if string.lower(sFileName[(len(sFileName) - 12):]) <> '_updated.txt':
-            
-                logging.debug("Die Datei " + sPathINVOICSoftM + "/" + sFileName + " wird zum Lesen geoeffnet")
-                iInputFile = file(sPathINVOICSoftM + '/' + sFileName, 'r')
+            if not sFileName.lower.endswith('_updated.txt'):
+                
+                logging.debug("Die Datei " + input_dir + "/" + sFileName + " wird zum Lesen geoeffnet")
+                iInputFile = file(input_dir + '/' + sFileName, 'r')
                 logging.debug("Es wird versucht, die Datei " + sFileNameBase + "_UPDATED.txt anzulegen")
                 iOutputFile = file(sPathHuSoMosa + '/tmp/' + sFileNameBase + '_UPDATED.txt', 'w')
                 
@@ -61,7 +62,6 @@ else:
                 
                 # Alle Zeilen parsen 
                 for sActualLine in iInputFile:
-                
                     # Jeder Zeile ein Leerzeichen voranstellen
                     sActualLine = ' ' + sActualLine
                     
@@ -93,17 +93,20 @@ else:
                 iInputFile.close()
                 iOutputFile.close()
                 
-                shutil.copy(sPathHuSoMosa + '/tmp/' + sFileNameBase + '_UPDATED.txt', sPathHuSoMosa + '/backup/INVOIC/' + sFileNameBase + '_UPDATED.txt')
-                shutil.move(sPathHuSoMosa + '/tmp/' + sFileNameBase + '_UPDATED.txt', sPathINVOICMosaic + '/' + sFileNameBase + '_UPDATED.txt')
-                shutil.move(sPathINVOICSoftM + '/' + sFileName, sPathHuSoMosa + '/archive/INVOIC/' + sFileName)
+                shutil.copy(os.path.join(sPathHuSoMosa, 'tmp', sFileNameBase + '_UPDATED.txt'), 
+                            os.path.join(sPathHuSoMosa, 'backup/INVOIC', sFileNameBase + '_UPDATED.txt'))
+                shutil.move(os.path.join(sPathHuSoMosa, 'tmp', sFileNameBase + '_UPDATED.txt'),
+                            os.path.join(output_dir, + sFileNameBase + '_UPDATED.txt'))
+                shutil.move(os.path.join(input_dir, sFileName),
+                            os.path.join(sPathHuSoMosa, 'archive/INVOIC', sFileName))
                 logging.info("Die Datei " + sFileName + " wurde verarbeitet")
     
     try: 
-        os.remove(sPathINVOICMosaic + '/lock.lck')
+        os.remove(output_dir + '/lock.lck')
     except:
-        logging.error('Lock-Datei konnte nicht entfernt werden: ' + sPathINVOICMosaic + '/lock.lck')
+        logging.error('Lock-Datei konnte nicht entfernt werden: ' + output_dir + '/lock.lck')
       
     try:
-        os.remove(sPathINVOICSoftM + '/lock.lck')
+        os.remove(input_dir + '/lock.lck')
     except:
-        logging.error('Lock-Datei konnte nicht entfernt werden: ' + sPathINVOICSoftM + '/lock.lck')
+        logging.error('Lock-Datei konnte nicht entfernt werden: ' + input_dir + '/lock.lck')

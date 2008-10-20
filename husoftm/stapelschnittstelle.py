@@ -194,7 +194,7 @@ def _auftrag2records(vorgangsnummer, auftrag):
     else:
         kopf.kundenwunschtermin = ''
     
-    if hasattr(auftrag, 'anlieferdatum_min'): and auftrag.anlieferdatum_min
+    if hasattr(auftrag, 'anlieferdatum_min') and auftrag.anlieferdatum_min:
         kopf.liefertermin = date2softm(auftrag.anlieferdatum_min)
     else:
         kopf.liefertermin = date2softm(datetime.date.today())

@@ -70,32 +70,41 @@ class Kopf(StapelSerializer):
     """Repräsentiert einen Auftragsstapelkopfsatz in ABK00."""
     rowmapping = ABK00
     tablename = 'ABK00'
-
+    
 
 class Position(StapelSerializer):
     """Repräsentiert einen Auftragsstapelpositionssatz in ABA00."""
     rowmapping = ABA00
     tablename = 'ABA00'
-
+    
 
 class Text(StapelSerializer):
     """Repräsentiert einen Auftragsstapeltextsatz in ABT00."""
     rowmapping = ABT00
     tablename = 'ABT00'
-
+    
 
 class Adresse(StapelSerializer):
     """Repräsentiert einen Addresszusatz in ABV00."""
     rowmapping = ABV00
     tablename = 'ABV00'
-
+    
 
 def getnextvorgang():
     """Ermittelt die nächste freie Vorgangsnummer."""
     
     rows = get_connection().query('ABK00', fields=['MAX(BKVGNR)'])
     return int(rows[0][0]+1)
+    
 
+def vorgangsnummer_bekannt(vorgangsnummer):
+    """Prüft, ob sich eine bestimmte Vorgangsnummer bereits im System befindet."""
+    rows = get_connection().query('ABK00', fields=['BKVGNR'],
+                                  condition="BKVGNR=%s" % sql_quote(vorgangsnummer))
+    if rows:
+        return True
+    return False
+    
 
 def kundenauftragsnummer_bekannt(kundenauftragsnummer):
     """Prüft, ob eine Kunden-Auftragsnummer bereits verwendet wurde."""
@@ -105,7 +114,7 @@ def kundenauftragsnummer_bekannt(kundenauftragsnummer):
     if rows:
         return True
     return False
-
+    
 
 def schnittstelle_leer():
     """Ermittelt, ob sich ungeprüfte Vorgänge in der stapelschnittstelle befinden."""
@@ -115,7 +124,7 @@ def schnittstelle_leer():
     if rows:
         return False
     return True
-
+    
 
 def _create_kopftext(texte, vorgangsnummer, newtext, auftragsbestaetigung=1, lieferschein=1, rechnung=1):
     """Fügt einen Kopftext hinzu."""
@@ -234,19 +243,37 @@ def auftrag2softm(auftrag, belegtexte=[]):
     #     print "In der Stapelschnittstelle befinden sich nicht verarbeitete Nachrichten."
     #    return None
     
-    vorgangsnummer = getnextvorgang()
-    kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
     
-    # see http://blogs.23.nu/c0re/stories/18926/ for the aproach we try here to write data into SoftM.
-    # But instead of using the date for our token we use the DFSL field
-    uuid = hex((int(time.time() * 10000) 
-                ^ (os.getpid() << 24) 
-                ^ thread.get_ident()) 
-                % 0xFFFFFFFFFF).rstrip('L')[2:]
+    while True:
+        # SoftM (Mister Hering) suggested updating Adtastapel as soon as possible to avoid 
+        # dupes - missing IDs would be no problem.
+        vorgangsnummer = getnextvorgang()
+        get_connection().update_adtastapel(vorgangsnummer)
+        
+        kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
+        
+        # see http://blogs.23.nu/c0re/stories/18926/ for the aproach we try here to write data into SoftM.
+        # But instead of using the date for our token we use the DFSL field
+        uuid = hex((int(time.time() * 10000) 
+                    ^ (os.getpid() << 24) 
+                    ^ thread.get_ident()) 
+                    % 0xFFFFFFFFFF).rstrip('L')[2:]
+        
+        kopf.dateifuehrungsschluessel = uuid
+        
+        # Do something like "Retransmission Back-Off" on Ethernet for collision avoidance:
+        # sleep for a random amount of time
+        time.sleep(random.random() / 10.0)
+        
+        #check im somobdy else has been writing to the DB.
+        if not vorgangsnummer_bekannt(vorgangsnummer):
+            # no, so we can proceed
+            break
+        
+        # else: retry while loop with a new vorgangsnummer
+        
     
-    kopf.dateifuehrungsschluessel = uuid
-    get_connection().update_adtastapel(vorgangsnummer)
-    print kopf.to_sql()
+    # start writing data into the database
     get_connection().insert_raw(kopf.to_sql())
     rowcount = get_connection().query('ABK00', fields=['COUNT(*)'],
                                    condition="BKDFSL=%s" % sql_quote(uuid))[0][0]

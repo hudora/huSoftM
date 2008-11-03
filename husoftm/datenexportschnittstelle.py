@@ -78,7 +78,7 @@ FELDERF1 = [
  dict(length=20, startpos=98, endpos=117, name='kundenbestellnummer'),
  dict(length=8, startpos=118, endpos=125, name='kundenbestelldatum', fieldclass=DateField),
  dict(length=9, startpos=126, endpos=134, name='auftragsnr', fieldclass=IntegerField),
- dict(length=8, startpos=135, endpos=142, name='auftragsdatum', fieldclass=DateField),
+ dict(length=8, startpos=135, endpos=142, name='auftrags_datum', fieldclass=DateField),
  dict(length=17, startpos=143, endpos=159, name='iln_rechnungsempfaenger', fieldclass=EanField,
       doc='119-03 bei StratEDI 119-02=IV'),
  dict(length=17, startpos=160, endpos=176, name='rechnungsempfaenger', fieldclass=IntegerField,
@@ -226,6 +226,7 @@ for feld in FELDERF2:
     feld['startpos'] = feld['startpos'] - 1
 F2satzklasse = generate_field_datensatz_class(FELDERF2, name='F2kopfdatenzusatz', length=496, doc=doctext)
 
+
 doctext = 'Rechnungs-Position (XOO00EF3)'
 FELDERF3 = [
  dict(length=5, startpos=1, endpos=5, name='positionsnr', doc='500-02 bei StratEDI'),
@@ -236,25 +237,24 @@ FELDERF3 = [
  dict(length=70, startpos=146, endpos=215, name='artikelbezeichnung', doc='500-08 und 500-09 bei StratEDI'),
  dict(length=70, startpos=216, endpos=285, name='artikelbezeichnung_kunde'),
  dict(length=15, startpos=286, endpos=300, name='menge', fieldclass=IntegerField, doc='500-12 bei StratEDI'),
- dict(length=3, startpos=301, endpos=303, name='mengeneinheit'),
- dict(length=15, startpos=304, endpos=318, name='verkaufspreis', fieldclass=DecimalFieldNoDot, precision=3),
- dict(length=1, startpos=319, endpos=319, name='verkaufspreis_vorzeichen', fieldclass=FixedField, default='+'),
- # dict(length=3, startpos=320, endpos=322, name='Mengeneinheit Preis'),
+ # dict(length=3, startpos=301, endpos=303, name='mengeneinheit'),
+ dict(length=16, startpos=304, endpos=319, name='verkaufspreis', fieldclass=DecimalFieldNoDotSigned, precision=3),
+ dict(length=3, startpos=320, endpos=322, name='Mengeneinheit Preis'),
  dict(length=1, startpos=323, endpos=323, name='preisdimension', fieldclass=FixedField, default='0'),
- dict(length=15, startpos=324, endpos=338, name='wert_netto', fieldclass=DecimalFieldNoDot, precision=3),
- dict(length=15, startpos=339, endpos=353, name='wert_brutto', fieldclass=DecimalFieldNoDot, precision=3),
- dict(length=1, startpos=354, endpos=354, name='Vorzeichen Positionswert'), # fieldclass=FixedField, default='+'),
- dict(length=2, startpos=355, endpos=356, name='mehrwertsteuer_kz'),
- dict(length=5, startpos=357, endpos=361, name='steuersatz'), # fieldclass=DecimalFieldNoDot, precision=2,
-    #  doc='500-15 bei StratEDI.'),
- dict(length=15, startpos=362, endpos=376, name='Steuerbetrag'),
- dict(length=1, startpos=377, endpos=377, name='skontierfaehig', fieldclass=IntegerField),
- dict(length=11, startpos=378, endpos=388, name='Gewicht brutto'),
- dict(length=11, startpos=389, endpos=399, name='Gewicht netto'),
- dict(length=1, startpos=400, endpos=400, name='komponentenaufloesung', fieldclass=IntegerField),
- dict(length=5, startpos=401, endpos=405, name='Anzahl Komponenten', fieldclass=IntegerField),
- dict(length=2, startpos=406, endpos=407, name='ursprungsland'),
- dict(length=88, startpos=408, endpos=495, name='Reserve'),
+ dict(length=16, startpos=324, endpos=339, name='wert_netto', fieldclass=DecimalFieldNoDotSigned, precision=3),
+ dict(length=16, startpos=340, endpos=355, name='wert_brutto', fieldclass=DecimalFieldNoDotSigned, precision=3),
+ dict(length=2, startpos=356, endpos=357, name='mehrwertsteuer_kz'),
+ dict(length=5, startpos=358, endpos=362, name='steuersatz', fieldclass=DecimalFieldNoDot, precision=2,
+      doc='500-15 bei StratEDI.'),
+ dict(length=16, startpos=363, endpos=378, name='Steuerbetrag', fieldclass=DecimalFieldNoDotSigned, precision=3),
+ dict(length=1, startpos=379, endpos=379, name='skontierfaehig', fieldclass=IntegerField),
+ dict(length=11, startpos=380, endpos=390, name='Gewicht brutto'),
+ dict(length=11, startpos=391, endpos=401, name='Gewicht netto'),
+ dict(length=1, startpos=402, endpos=402, name='komponentenaufloesung', fieldclass=IntegerField),
+ dict(length=5, startpos=403, endpos=407, name='Anzahl Komponenten', fieldclass=IntegerField),
+ dict(length=2, startpos=408, endpos=409, name='ursprungsland'),
+ dict(length=1, startpos=410, endpos=410, name='bonuswuerdig'),
+ dict(length=85, startpos=411, endpos=495, name='Reserve'),
  dict(length=1, startpos=496, endpos=496, name='Status', fieldclass=FixedField, default=' '),
 ]
 # fix difference in array counting between SoftM and Python
@@ -593,12 +593,12 @@ def parse_to_objects(filename):
         line = "% 500s" % line
         satzart, version, data = line[:2], line[2:4], line[4:]
         satzklasse = satzresolver.get(satzart, None)
-        print satzart, satzklasse
+        #print satzart, satzklasse
         if satzklasse:
             satz = satzklasse()
             satz.parse(data)
-            # ret.append((satzart, satz)
-            pprint (((satzart, satz.fields())))
+            ret.append((satzart, satz))
+            #pprint (((satzart, satz.fields())))
         else:
             print filename, repr(satzart), repr(version), repr(erstellungsdatum), len(line), len(data)
             print '...................................'

@@ -9,16 +9,19 @@ Copyright (c) 2008 HUDORA. All rights reserved.
 
 import unittest
 from husoftm.datenexportschnittstelle import *
+from edilib.cctop.invoic import interchangeheader000, transaktionskopf100, addressen119, rechnungsposition500, belegsummen900
 
 def convert_transmissionhead(transmission_records, previous_output_records):
-    rec000 = opbject() # interchangeheader000
-    rec000.sender_iln = 
+    print transmission_records
+    xh = transmission_records['XH']
+    rec000 = interchangeheader000() # interchangeheader000
+    rec000.sender_iln = '4005998000007'
     rec000.empfaenger_iln = xh.dfue_partner
     rec000.erstellungsdatum = xh.erstellungs_datum
-    rec000.erstellungszeit = xh.erstellungs_zeit
+    rec000.erstellungszeit = xh.erstellungs_zeit[:4] # remove seconds
     # Fortlaufende achtstellige Sendenummer
-    rec000.datenaustauschreferenz = XXX
-    rec000.referenznummer = xh.dateiname
+    rec000.datenaustauschreferenz = 1
+    # rec000.referenznummer = xh.dateiname
     rec000.anwendungsreferenz = xh.umgebung
     rec000.testkennzeichen = xh.testkennzeichen
     return [rec000]
@@ -26,21 +29,20 @@ def convert_transmissionhead(transmission_records, previous_output_records):
 
 
 def convert_invoice_head(invoice_records, previous_output_records):
-    rec900 = object()
-    f1 = invoicerecords['f1']
-    f2 = invoicerecords['f2']
+    f1 = invoice_records['F1']
+    f2 = invoice_records['F2']
 
-    rec100 = opbject()
-    rec119_lierferaddr = object()
-    rec119_rechnungsaddr = object()
-    rec119_verkaeferaddr = object()
+    rec100 = transaktionskopf100()
+    rec119_lierferaddr = addressen119()
+    rec119_rechnungsaddr = addressen119()
+    rec119_verkaeferaddr = addressen119()
     # Eindeutige Nachrichtenreferenz des Absenders; laufende Nummer der Nachrichten im Datenaustausch
     # beginnt mit "1" und wird für jede Rechnung/Gutschrift innerhalb einer Übertragungsdatei
     # um 1 erhöht.
-    rec100.referenz 
+    rec100.referenz = 1
     
-    rec100.belegnummer = f1.belegnummer
-    rec100.belegdatum = f1.belegdatum
+    rec100.belegnummer = f1.auftragsnr
+    rec100.belegdatum = f1.auftrags_datum
     
     # Lieferant
     rec119_verkaeferaddr.partnerart = 'SU'
@@ -145,8 +147,11 @@ def convert_invoice_head(invoice_records, previous_output_records):
 
 
 
-def convert_invoice_position():
-    rec500 = opbject()
+def convert_invoice_position(position_records, previous_output_records):
+    print position_records
+    f3 = position_records['F3']
+    
+    rec500 = rechnungsposition500()
     rec500.positionsnummer = f3.positionsnr
     rec500.ean = f3.ean
     rec500.artnr_lieferant = f3.artnr
@@ -154,12 +159,11 @@ def convert_invoice_position():
     rec500.artikelbezeichnung1 = f3.artikelbezeichnung[:35]
     rec500.artikelbezeichnung2 = f3.artikelbezeichnung[35:70]
     rec500.berechnete_menge = f3.menge
-    rec500.menge_ohne_berechnung = 0
     # rec500.waehrung
     rec500.mwstsatz = f3.steuersatz
     # rec500.nettostueckpreis
     # rec500.bruttostueckpreis
-    rec500.mengeneinheit = f3.mengeneinheit
+    # rec500.mengeneinheit = f3.mengeneinheit
     
     # MOA-5004 Nettowarenwert = Menge x Bruttopreis ./. Artikelrabatte bzw. Menge x Nettopreis (Rabatte sind im Preis eingerechnet) 
     # Bei Gutschriftspositionen ist der Nettowarenwert negativ einzustellen.
@@ -182,14 +186,16 @@ def convert_invoice_position():
     # f3.Steuerbetrag
     # f3.skontierfaehig
     # f3.ursprungsland
+    return [rec500]
 
 
 def convert_invoice_footer(invoice_records, previous_output_records):
-    rec900 = object()
-    f9 = invoicerecords['f9']
+    
+    rec900 = belegsummen900()
+    f9 = invoice_records['F9']
     
     rec900.rechnungsendbetrag = f9.gesamtbetrag
-    rec900.mwst_gesammtbetrag = f9.Mehrwertsteuer
+    rec900.mwst_gesammtbetrag = f9.mehrwertsteuer
     rec900.nettowarenwert_gesammt = f9.nettowarenwert
     rec900.steuerpflichtiger_betrag = f9.steuerpflichtig1
     rec900.skontofaehiger_betrag = f9.skontofaehig
@@ -235,26 +241,26 @@ def convert_invoice_footer(invoice_records, previous_output_records):
 def convert_invoice(softm_record_list, stratedi_records):
     
     softm_records = dict(softm_record_list)
-    stratedi_records.append(convert_invoice_head(x, stratedi_records))
+    stratedi_records.extend(convert_invoice_head(softm_records, stratedi_records))
     
     # the now we have to extract the per invoice records from softm_record_list
     # every position starts with a F3 record
     tmp_softm_record_list = softm_record_list[:] # copy list
     
     # remove everything until we hit the first F3
-    while tmp_softm_record_list[0][0] != 'F3':
+    while tmp_softm_record_list and tmp_softm_record_list[0] and tmp_softm_record_list[0][0] != 'F3':
         tmp_softm_record_list.pop(0)
     
     while tmp_softm_record_list:
         # slice of segment untill the next F3
-        position = []
-        while tmp_softm_record_list[0][0] != 'F3':
+        position = [tmp_softm_record_list.pop(0)]
+        while tmp_softm_record_list and tmp_softm_record_list[0] and tmp_softm_record_list[0][0] != 'F3':
             position.append(tmp_softm_record_list.pop(0))
         
         # process position
-        stratedi_records.append(convert_invoice_positions(position, stratedi_records))
+        stratedi_records.extend(convert_invoice_position(dict(position), stratedi_records))
     
-    stratedi_records.append(convet_invoice_footer(x, stratedi_records))
+    stratedi_records.extend(convert_invoice_footer(softm_records, stratedi_records))
     return stratedi_records
 
 def convert(softm_record_list):
@@ -262,9 +268,14 @@ def convert(softm_record_list):
     
     stratedi_records = []
     softm_records = dict(softm_record_list)
-    stratedi_records.append(convert_transmissionhead(x, stratedi_records))
-    stratedi_records.append(convert_invoice(x, stratedi_records))
+    stratedi_records.extend(convert_transmissionhead(softm_records, stratedi_records))
+    stratedi_records.extend(convert_invoice(softm_record_list, stratedi_records))
     return stratedi_records
 
 def read_softm():
     softm_record_list = parse_to_objects('INVOIC/4333936000001/RG00073.TXT')
+    l = convert(softm_record_list)
+    for x in l:
+        print x.serialize()
+    
+read_softm()

@@ -598,7 +598,7 @@ TEXTsatzklasse = generate_field_datensatz_class(FELDERTEXT, name='generic_text',
 
 
 def parse_to_objects(filename):
-    fd = open(filename)
+    inputfd = open(filename)
     satzresolver = dict(XH=XHsatzklasse,
         F1=F1satzklasse,
         F2=F2satzklasse,
@@ -620,7 +620,7 @@ def parse_to_objects(filename):
         FR=generate_field_datensatz_class(FELDERTEXT, name='positionsrabatt', length=496),
         )
     ret = []
-    for rawline in fd:
+    for rawline in inputfd:
         # remove newline & EOF
         line = rawline.rstrip('\r\n').strip(' \x1a')
         if not line:

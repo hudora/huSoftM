@@ -18,7 +18,7 @@ Aber wenn sie schwache Nerven hätten, würden sie kein SoftM einsetzen, oder?
 # Benötigt das huProtocols toolkit von http://svn1.hosted-projects.com/hudora/public/huProtocols
 import datetime
 import os
-from edilib.recordbased import *
+from edilib.recordbased import generate_field_datensatz_class, DateField, TimeField, IntegerField, DecimalFieldNoDot, DecimalFieldNoDotSigned, FixedField, EanField
 from pprint import pprint
 
 
@@ -65,13 +65,14 @@ XHsatzklasse = generate_field_datensatz_class(FELDERXH, name='XHheader', length=
 # Rechnungskopf
 
 
-
 doctext = """Kopfdaten (XOO00EF1) = Diese Satzart enthält die Kopfdaten einer Rechnung und kann beliebig
 oft pro Übertragung vorkommen."""
 FELDERF1 = [
  dict(length=3, startpos=1, endpos=3, name='belegart'),
- dict(length=35, startpos=4, endpos=38, name='rechnungsnummer', doc='100-10 bei StratEDI', fieldclass=IntegerField),
- dict(length=8, startpos=39, endpos=46, name='rechnungsnummer', doc='100-11 bei StratEDI', fieldclass=DateField),
+ dict(length=35, startpos=4, endpos=38, name='rechnungsnummer', fieldclass=IntegerField,
+      doc='100-10 bei StratEDI'),
+ dict(length=8, startpos=39, endpos=46, name='rechnungsnummer', fieldclass=DateField,
+      doc='100-11 bei StratEDI'),
  dict(length=8, startpos=47, endpos=54, name='liefertermin', fieldclass=DateField),
  dict(length=35, startpos=55, endpos=89, name='lieferscheinnr', fieldclass=IntegerField),
  dict(length=8, startpos=90, endpos=97, name='lieferscheindatum', fieldclass=DateField),
@@ -178,8 +179,8 @@ FELDERFA = [
  dict(length=35, startpos=122, endpos=156, name='rechnung_name3', doc='119-06 bei StratEDI 119-02=IV'),
  #dict(length=35, startpos=157, endpos=191, name='rechnung Name 4'),
  dict(length=35, startpos=192, endpos=226, name='rechnung_strasse', doc='119-07 bei StratEDI 119-02=IV'),
- dict(length=3, startpos=227, endpos=229,  name='rechnung_land', doc='119-12 bei StratEDI 119-02=IV'),
- dict(length=9, startpos=230, endpos=238,  name='rechnung_plz', doc='119-10 bei StratEDI 119-02=IV'),
+ dict(length=3, startpos=227, endpos=229, name='rechnung_land', doc='119-12 bei StratEDI 119-02=IV'),
+ dict(length=9, startpos=230, endpos=238, name='rechnung_plz', doc='119-10 bei StratEDI 119-02=IV'),
  dict(length=35, startpos=239, endpos=273, name='rechnung_ort', doc='119-11 bei StratEDI 119-02=IV'),
  dict(length=222, startpos=274, endpos=495, name='Reserve', fieldclass=FixedField, default=' '*222),
  dict(length=1, startpos=496, endpos=496, name='Status'),
@@ -239,15 +240,19 @@ FELDERF3 = [
  dict(length=70, startpos=216, endpos=285, name='artikelbezeichnung_kunde'),
  dict(length=15, startpos=286, endpos=300, name='menge', fieldclass=IntegerField, doc='500-12 bei StratEDI'),
  # dict(length=3, startpos=301, endpos=303, name='mengeneinheit'),
- dict(length=16, startpos=304, endpos=319, name='verkaufspreis', fieldclass=DecimalFieldNoDotSigned, precision=3),
+ dict(length=16, startpos=304, endpos=319, name='verkaufspreis',
+      fieldclass=DecimalFieldNoDotSigned, precision=3),
  dict(length=3, startpos=320, endpos=322, name='Mengeneinheit Preis'),
  dict(length=1, startpos=323, endpos=323, name='preisdimension', fieldclass=FixedField, default='0'),
- dict(length=16, startpos=324, endpos=339, name='wert_netto', fieldclass=DecimalFieldNoDotSigned, precision=3),
- dict(length=16, startpos=340, endpos=355, name='wert_brutto', fieldclass=DecimalFieldNoDotSigned, precision=3),
+ dict(length=16, startpos=324, endpos=339, name='wert_netto',
+      fieldclass=DecimalFieldNoDotSigned, precision=3),
+ dict(length=16, startpos=340, endpos=355, name='wert_brutto',
+      fieldclass=DecimalFieldNoDotSigned, precision=3),
  dict(length=2, startpos=356, endpos=357, name='mehrwertsteuer_kz'),
  dict(length=5, startpos=358, endpos=362, name='steuersatz', fieldclass=DecimalFieldNoDot, precision=2,
       doc='500-15 bei StratEDI.'),
- dict(length=16, startpos=363, endpos=378, name='Steuerbetrag', fieldclass=DecimalFieldNoDotSigned, precision=3),
+ dict(length=16, startpos=363, endpos=378, name='Steuerbetrag',
+      fieldclass=DecimalFieldNoDotSigned, precision=3),
  dict(length=1, startpos=379, endpos=379, name='skontierfaehig', fieldclass=IntegerField),
  dict(length=11, startpos=380, endpos=390, name='Gewicht brutto'),
  dict(length=11, startpos=391, endpos=401, name='Gewicht netto'),
@@ -266,43 +271,57 @@ F3satzklasse = generate_field_datensatz_class(FELDERF3, name='F3positionsdaten',
 doctext = 'Rechnungs-Position Rabatte (XOO00EF4)'
 FELDERF4 = [
  dict(length=5, startpos=1, endpos=5, name='Position'),
- dict(length=15, startpos=6, endpos=20, name='Positionsrabatt Gesamt', fieldclass=DecimalFieldNoDot, precision=3),
- dict(length=15, startpos=21, endpos=35, name='Positionsrabatt 1 in %', fieldclass=DecimalFieldNoDot, precision=3),
+ dict(length=15, startpos=6, endpos=20, name='Positionsrabatt Gesamt',
+      fieldclass=DecimalFieldNoDot, precision=3),
+ dict(length=15, startpos=21, endpos=35, name='Positionsrabatt 1 in %',
+      fieldclass=DecimalFieldNoDot, precision=3),
  dict(length=1, startpos=36, endpos=36, name='Rabattkennzeichen 1'),
  dict(length=15, startpos=37, endpos=51, name='Rabattbetrag 1', fieldclass=DecimalFieldNoDot, precision=3),
  dict(length=1, startpos=52, endpos=52, name='Vorzeichen Rabatt 1'),
  dict(length=3, startpos=53, endpos=55, name='TxtSl Rabatt 1'),
- dict(length=15, startpos=56, endpos=70, name='Positionsrabatt 2 in %', fieldclass=DecimalFieldNoDot, precision=3),
+ dict(length=15, startpos=56, endpos=70, name='Positionsrabatt 2 in %',
+      fieldclass=DecimalFieldNoDot, precision=3),
  dict(length=1, startpos=71, endpos=71, name='Rabattkennzeichen 2'),
  dict(length=15, startpos=72, endpos=86, name='Rabattbetrag 2', fieldclass=DecimalFieldNoDot, precision=3),
  dict(length=1, startpos=87, endpos=87, name='Vorzeichen Rabatt 2'),
  dict(length=3, startpos=88, endpos=90, name='TxtSl Rabatt 2'),
- dict(length=15, startpos=91, endpos=105, name='Positionsrabatt 3 in %', fieldclass=DecimalFieldNoDot, precision=3),
+ dict(length=15, startpos=91, endpos=105, name='Positionsrabatt 3 in %',
+      fieldclass=DecimalFieldNoDot, precision=3),
  dict(length=1, startpos=106, endpos=106, name='Rabattkennzeichen 3'),
- dict(length=15, startpos=107, endpos=121, name='Rabattbetrag 3', fieldclass=DecimalFieldNoDot, precision=3),
+ dict(length=15, startpos=107, endpos=121, name='Rabattbetrag 3',
+      fieldclass=DecimalFieldNoDot, precision=3),
  dict(length=1, startpos=122, endpos=122, name='Vorzeichen Rabatt 3'),
  dict(length=3, startpos=123, endpos=125, name='TxtSl Rabatt 3'),
- dict(length=15, startpos=126, endpos=140, name='Positionsrabatt 4 in %', fieldclass=DecimalFieldNoDot, precision=3),
+ dict(length=15, startpos=126, endpos=140, name='Positionsrabatt 4 in %',
+      fieldclass=DecimalFieldNoDot, precision=3),
  dict(length=1, startpos=141, endpos=141, name='Rabattkennzeichen 4'),
- dict(length=15, startpos=142, endpos=156, name='Rabattbetrag 4', fieldclass=DecimalFieldNoDot, precision=3),
+ dict(length=15, startpos=142, endpos=156, name='Rabattbetrag 4',
+      fieldclass=DecimalFieldNoDot, precision=3),
  dict(length=1, startpos=157, endpos=157, name='Vorzeichen Rabatt 4'),
  dict(length=3, startpos=158, endpos=160, name='TxtSl Rabatt 4'),
- dict(length=15, startpos=161, endpos=175, name='Positionsrabatt 5 in %', fieldclass=DecimalFieldNoDot, precision=3),
+ dict(length=15, startpos=161, endpos=175, name='Positionsrabatt 5 in %',
+      fieldclass=DecimalFieldNoDot, precision=3),
  dict(length=1, startpos=176, endpos=176, name='Rabattkennzeichen 5'),
- dict(length=15, startpos=177, endpos=191, name='Rabattbetrag 5', fieldclass=DecimalFieldNoDot, precision=3),
+ dict(length=15, startpos=177, endpos=191, name='Rabattbetrag 5',
+      fieldclass=DecimalFieldNoDot, precision=3),
  dict(length=1, startpos=192, endpos=192, name='Vorzeichen Rabatt 5'),
  dict(length=3, startpos=193, endpos=195, name='TxtSl Rabatt 5'),
- dict(length=15, startpos=196, endpos=210, name='Positionsrabatt 6 in %', fieldclass=DecimalFieldNoDot, precision=3),
+ dict(length=15, startpos=196, endpos=210, name='Positionsrabatt 6 in %',
+      fieldclass=DecimalFieldNoDot, precision=3),
  dict(length=1, startpos=211, endpos=211, name='Rabattkennzeichen 6'),
- dict(length=15, startpos=212, endpos=226, name='Rabattbetrag 6', fieldclass=DecimalFieldNoDot, precision=3),
+ dict(length=15, startpos=212, endpos=226, name='Rabattbetrag 6',
+      fieldclass=DecimalFieldNoDot, precision=3),
  dict(length=1, startpos=227, endpos=227, name='Vorzeichen Rabatt 6'),
  dict(length=3, startpos=228, endpos=230, name='TxtSl Rabatt 6'),
- dict(length=15, startpos=231, endpos=245, name='Positionsrabatt 7 in %', fieldclass=DecimalFieldNoDot, precision=3),
+ dict(length=15, startpos=231, endpos=245, name='Positionsrabatt 7 in %',
+      fieldclass=DecimalFieldNoDot, precision=3),
  dict(length=1, startpos=246, endpos=246, name='Rabattkennzeichen 7'),
- dict(length=15, startpos=247, endpos=261, name='Rabattbetrag 7', fieldclass=DecimalFieldNoDot, precision=3),
+ dict(length=15, startpos=247, endpos=261, name='Rabattbetrag 7',
+      fieldclass=DecimalFieldNoDot, precision=3),
  dict(length=1, startpos=262, endpos=262, name='Vorzeichen Rabatt 7'),
  dict(length=3, startpos=263, endpos=265, name='TxtSl Rabatt 7'),
- dict(length=15, startpos=266, endpos=280, name='Positionsrabatt 8 in %', fieldclass=DecimalFieldNoDot, precision=3),
+ dict(length=15, startpos=266, endpos=280, name='Positionsrabatt 8 in %',
+      fieldclass=DecimalFieldNoDot, precision=3),
  dict(length=1, startpos=281, endpos=281, name='Rabattkennzeichen 8'),
  dict(length=15, startpos=282, endpos=296, name='Rabattbetrag 8', fieldclass=DecimalFieldNoDot, precision=3),
  dict(length=1, startpos=297, endpos=297, name='Vorzeichen Rabatt 8'),
@@ -339,28 +358,44 @@ F8satzklasse = generate_field_datensatz_class(FELDERF8, name='F8bankverbindung',
 doctext = 'B.6.9 Rechnungs-Endedaten (XOO00EF9)'
 FELDERF9 = [
  dict(length=16, startpos=1, endpos=16, name='gesamtbetrag', fieldclass=DecimalFieldNoDotSigned, precision=3),
- dict(length=16, startpos=17, endpos=32, name='nettowarenwert', fieldclass=DecimalFieldNoDotSigned, precision=3),
- dict(length=16, startpos=33, endpos=48, name='skontofaehig', fieldclass=DecimalFieldNoDotSigned, precision=3),
- dict(length=16, startpos=49, endpos=64, name='steuerpflichtig1', fieldclass=DecimalFieldNoDotSigned, precision=3),
- dict(length=16, startpos=65, endpos=80, name='steuerpflichtig USt 2', fieldclass=FixedField, default='000000000000000+'),
- dict(length=16, startpos=81, endpos=96, name='Skonto-Abzug', fieldclass=DecimalFieldNoDotSigned, precision=3),
- dict(length=16, startpos=97, endpos=112, name='mehrwertsteuer', fieldclass=DecimalFieldNoDotSigned, precision=3),
- dict(length=5, startpos=113, endpos=117, name='Steuersatz 1', fieldclass=DecimalFieldNoDot, precision=2),
- dict(length=16, startpos=118, endpos=133, name='Steuerbetrag 1', fieldclass=DecimalFieldNoDotSigned, precision=3),
- dict(length=5, startpos=134, endpos=138, name='Steuersatz 2', fieldclass=FixedField, default='00000'),
- dict(length=16, startpos=139, endpos=154, name='Steuerbetrag 2', fieldclass=FixedField, default='000000000000000+'),
- dict(length=16, startpos=155, endpos=170, name='nettowarenwert1', fieldclass=DecimalFieldNoDotSigned, precision=3),
- dict(length=16, startpos=171, endpos=186, name='nettowarenwert2', fieldclass=FixedField, default='000000000000000+'),
- # dict(length=15, startpos=176, endpos=190, name='Versandkosten 1', fieldclass=DecimalFieldNoDot, precision=3),
+ dict(length=16, startpos=17, endpos=32, name='nettowarenwert',
+      fieldclass=DecimalFieldNoDotSigned, precision=3),
+ dict(length=16, startpos=33, endpos=48, name='skontofaehig',
+      fieldclass=DecimalFieldNoDotSigned, precision=3),
+ dict(length=16, startpos=49, endpos=64, name='steuerpflichtig1',
+      fieldclass=DecimalFieldNoDotSigned, precision=3),
+ dict(length=16, startpos=65, endpos=80, name='steuerpflichtig USt 2',
+      fieldclass=FixedField, default='000000000000000+'),
+ dict(length=16, startpos=81, endpos=96, name='Skonto-Abzug',
+      fieldclass=DecimalFieldNoDotSigned, precision=3),
+ dict(length=16, startpos=97, endpos=112, name='mehrwertsteuer',
+      fieldclass=DecimalFieldNoDotSigned, precision=3),
+ dict(length=5, startpos=113, endpos=117, name='Steuersatz 1',
+      fieldclass=DecimalFieldNoDot, precision=2),
+ dict(length=16, startpos=118, endpos=133, name='Steuerbetrag 1',
+      fieldclass=DecimalFieldNoDotSigned, precision=3),
+ dict(length=5, startpos=134, endpos=138, name='Steuersatz 2',
+      fieldclass=FixedField, default='00000'),
+ dict(length=16, startpos=139, endpos=154, name='Steuerbetrag 2', 
+      fieldclass=FixedField, default='000000000000000+'),
+ dict(length=16, startpos=155, endpos=170, name='nettowarenwert1',
+      fieldclass=DecimalFieldNoDotSigned, precision=3),
+ dict(length=16, startpos=171, endpos=186, name='nettowarenwert2',
+      fieldclass=FixedField, default='000000000000000+'),
+ # dict(length=15, startpos=176, endpos=190, name='Versandkosten 1', fieldclass=DecimalFieldNoDot,
+ #      precision=3),
  # 15   15  3  187  201 Versandkosten 1
  #      1  0  202  202 Vorz. Versandkosten 1
- # dict(length=15, startpos=191, endpos=205, name='Versandkosten 2', fieldclass=DecimalFieldNoDot, precision=3),
+ # dict(length=15, startpos=191, endpos=205, name='Versandkosten 2', fieldclass=DecimalFieldNoDot,
+ #      precision=3),
  # 15   15  3  203  217 Versandkosten 2
  #      1  0  218  218 Vorz. Versandkosten 2
- # dict(length=15, startpos=206, endpos=220, name='Verpackungskosten 1', fieldclass=DecimalFieldNoDot, precision=3),
+ # dict(length=15, startpos=206, endpos=220, name='Verpackungskosten 1', fieldclass=DecimalFieldNoDot,
+ #      precision=3),
  # 15   15  3  219  233 Verpackungskosten 1
  #      1  0  234  234 Vorz. Verpackungsk. 1 
- # dict(length=15, startpos=221, endpos=235, name='Verpackungskosten 2', fieldclass=DecimalFieldNoDot, precision=3),
+ # dict(length=15, startpos=221, endpos=235, name='Verpackungskosten 2', fieldclass=DecimalFieldNoDot,
+ #      precision=3),
  # 15   15  3  235  249 Verpackungskosten 2
  #      1  0  250  250 Vorz. Verpackungsk. 2
  # dict(length=15, startpos=236, endpos=250, name='Nebenkosten 1', fieldclass=DecimalFieldNoDot, precision=3),
@@ -369,20 +404,27 @@ FELDERF9 = [
  # dict(length=15, startpos=251, endpos=265, name='Nebenkosten 2', fieldclass=DecimalFieldNoDot, precision=3),
  # 15   15  3  267  281 Nebenkosten 2
  #      1  0  282  282 Vorz. Nebenkosten 2
- dict(length=16, startpos=283, endpos=298, name='summe_rabatte', fieldclass=DecimalFieldNoDotSigned, precision=3),
- dict(length=16, startpos=299, endpos=314, name='zuschlaege', fieldclass=DecimalFieldNoDotSigned, precision=3),
- dict(length=15, startpos=315, endpos=329, name='Kopfrabatt 1 in %', fieldclass=DecimalFieldNoDot, precision=3),
- dict(length=15, startpos=330, endpos=344, name='Kopfrabatt 2 in %', fieldclass=FixedField, default='000000000000000'),
+ dict(length=16, startpos=283, endpos=298, name='summe_rabatte',
+      fieldclass=DecimalFieldNoDotSigned, precision=3),
+ dict(length=16, startpos=299, endpos=314, name='zuschlaege',
+      fieldclass=DecimalFieldNoDotSigned, precision=3),
+ dict(length=15, startpos=315, endpos=329, name='Kopfrabatt 1 in %',
+      fieldclass=DecimalFieldNoDot, precision=3),
+ dict(length=15, startpos=330, endpos=344, name='Kopfrabatt 2 in %',
+      fieldclass=FixedField, default='000000000000000'),
  dict(length=1, startpos=345, endpos=345, name='Vorzeichen Kopfrabatt 1'),
  #     1  0  345   Vorzeichen Kopfrabatt 1
  #dict(length=1, startpos=346, endpos=346, name='Vorzeichen Kopfrabatt 2'),
  #     1  0     Vorzeichen Kopfrabatt 2
  dict(length=15, startpos=347, endpos=361, name='Kopfrabatt 1'),
- dict(length=15, startpos=362, endpos=376, name='Kopfrabatt 2', fieldclass=FixedField, default='000000000000000'),
+ dict(length=15, startpos=362, endpos=376, name='Kopfrabatt 2',
+      fieldclass=FixedField, default='000000000000000'),
  dict(length=3, startpos=377, endpos=379, name='TxtSl Kopfrabatt 1'),
  dict(length=3, startpos=380, endpos=382, name='TxtSl Kopfrabatt 2'),
- dict(length=16, startpos=383, endpos=398, name='Kopfrabatt USt 1', fieldclass=DecimalFieldNoDotSigned, precision=3),
- dict(length=16, startpos=399, endpos=414, name='Kopfrabatt USt 2', fieldclass=FixedField, default='000000000000000+'),
+ dict(length=16, startpos=383, endpos=398, name='Kopfrabatt USt 1',
+      fieldclass=DecimalFieldNoDotSigned, precision=3),
+ dict(length=16, startpos=399, endpos=414, name='Kopfrabatt USt 2',
+      fieldclass=FixedField, default='000000000000000+'),
  dict(length=11, startpos=415, endpos=425, name='Gesamtgewicht brutto', fieldclass=IntegerField),
  dict(length=11, startpos=426, endpos=436, name='Gesamtgewicht netto', fieldclass=IntegerField),
  dict(length=4, startpos=437, endpos=440, name='Anzahl Positionen', fieldclass=IntegerField),
@@ -449,7 +491,8 @@ ERsatzklasse = generate_field_datensatz_class(FELDERER, name='ERrechnungslistepo
 doctext = 'Rechnungsliste Verband (XOO00ER1)'
 FELDERR1 = [
  dict(length=17, startpos=1, endpos=17, name='verband_iln', fieldclass=EanField),
- dict(length=17, startpos=18, endpos=34, name='eigene_iln', fieldclass=FixedField, default='4005998000007    '),
+ dict(length=17, startpos=18, endpos=34, name='eigene_iln', fieldclass=FixedField,
+      default='4005998000007    '),
  dict(length=17, startpos=35, endpos=51, name='lieferantennr_verband'),
  #dict(length=17, startpos=52, endpos=68, name='Abs.: UST-Identnummer'),
  #dict(length=2, startpos=69, endpos=70, name='Firma'),
@@ -537,7 +580,7 @@ R3satzklasse = generate_field_datensatz_class(FELDERR3, name='R3verbandsrechnung
                                               length=496, doc=doctext)
 
 FELDERTEXT = [
- dict(length=60, startpos=  1, endpos= 60, name='Textzeile 1'),
+ dict(length=60, startpos=1, endpos= 60, name='Textzeile 1'),
  dict(length=60, startpos= 61, endpos=120, name='Textzeile 2'),
  dict(length=60, startpos=121, endpos=180, name='Textzeile 3'),
  dict(length=60, startpos=181, endpos=240, name='Textzeile 4'),
@@ -557,25 +600,25 @@ TEXTsatzklasse = generate_field_datensatz_class(FELDERTEXT, name='generic_text',
 def parse_to_objects(filename):
     fd = open(filename)
     satzresolver = dict(XH=XHsatzklasse,
-                        F1=F1satzklasse,
-                        F2=F2satzklasse,
-                        F8=F8satzklasse,
-                        F9=F9satzklasse,
-                        F3=F3satzklasse,
-                        F4=F4satzklasse,
-                        ER=ERsatzklasse,
-                        A1=A1satzklasse,
-                        R1=R1satzklasse,
-                        R2=R2satzklasse,
-                        R3=R3satzklasse,
-                        FA=FAsatzklasse, 
-                        FP=generate_field_datensatz_class(FELDERTEXT, name='positionstext', length=496),
-                        FK=generate_field_datensatz_class(FELDERTEXT, name='versandbedingungen', length=496),
-                        FE=generate_field_datensatz_class(FELDERTEXT, name='lieferbedingungen', length=496),
-                        F6=generate_field_datensatz_class(FELDERTEXT, name='rechnungspositionstexte', length=496),
-                        FX=generate_field_datensatz_class(FELDERTEXT, name='kopfrabatt', length=496),
-                        FR=generate_field_datensatz_class(FELDERTEXT, name='positionsrabatt', length=496),
-                        )
+        F1=F1satzklasse,
+        F2=F2satzklasse,
+        F8=F8satzklasse,
+        F9=F9satzklasse,
+        F3=F3satzklasse,
+        F4=F4satzklasse,
+        ER=ERsatzklasse,
+        A1=A1satzklasse,
+        R1=R1satzklasse,
+        R2=R2satzklasse,
+        R3=R3satzklasse,
+        FA=FAsatzklasse, 
+        FP=generate_field_datensatz_class(FELDERTEXT, name='positionstext', length=496),
+        FK=generate_field_datensatz_class(FELDERTEXT, name='versandbedingungen', length=496),
+        FE=generate_field_datensatz_class(FELDERTEXT, name='lieferbedingungen', length=496),
+        F6=generate_field_datensatz_class(FELDERTEXT, name='rechnungspositionstexte', length=496),
+        FX=generate_field_datensatz_class(FELDERTEXT, name='kopfrabatt', length=496),
+        FR=generate_field_datensatz_class(FELDERTEXT, name='positionsrabatt', length=496),
+        )
     ret = []
     for rawline in fd:
         # remove newline & EOF
@@ -606,8 +649,11 @@ def parse_to_objects(filename):
             print '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^'
     return ret
 
-if __name__ == '__main__':
+def main():
     for filename in os.listdir('INVOIC/4333936000001/'):
         if filename.lower().endswith('.txt'):
             print filename
             parse_to_objects(os.path.join('INVOIC/4333936000001/', filename))
+
+if __name__ == '__main__':
+    main()

@@ -649,6 +649,7 @@ def parse_to_objects(filename):
             print '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^'
     return ret
 
+
 def main():
     for filename in os.listdir('INVOIC/4333936000001/'):
         if filename.lower().endswith('.txt'):

@@ -119,7 +119,8 @@ FELDERF1 = [
  dict(length=10, startpos=454, endpos=463, name='Bibliothek'),
  dict(length=3, startpos=464, endpos=466, name='nettotage'),
  dict(length=14, startpos=467, endpos=480, name='steuernummer'),
- dict(length=15, startpos=481, endpos=495, name='Reserve', fieldclass=FixedField, default=' ' * 15),
+ # TODO: there seems to be something in this field!
+ dict(length=15, startpos=481, endpos=495, name='filler'), # fieldclass=FixedField, default=' ' * 15),
  dict(length=1, startpos=496, endpos=496, name='Status', fieldclass=FixedField, default=' '),
 ]
 # fix difference in array counting between SoftM and Python
@@ -447,17 +448,17 @@ ERsatzklasse = generate_field_datensatz_class(FELDERER, name='ERrechnungslistepo
 
 doctext = 'Rechnungsliste Verband (XOO00ER1)'
 FELDERR1 = [
- dict(length=17, startpos=1, endpos=17, name='ILN Verband'),
- dict(length=17, startpos=18, endpos=34, name='Abs.: eigene ILN'),
- dict(length=17, startpos=35, endpos=51, name='Abs.: unsere Nr.beim Verband'),
- dict(length=17, startpos=52, endpos=68, name='Abs.: UST-Identnummer'),
- dict(length=2, startpos=69, endpos=70, name='Firma'),
- dict(length=4, startpos=71, endpos=74, name='Abteilung'),
- dict(length=10, startpos=75, endpos=84, name='Bibliothek'),
- dict(length=200, startpos=85, endpos=284, name='Reserve 1'),
- dict(length=200, startpos=285, endpos=484, name='Reserve 2'),
- dict(length=11, startpos=485, endpos=495, name='Reserve 3'),
- dict(length=1, startpos=496, endpos=496, name='Status'),
+ dict(length=17, startpos=1, endpos=17, name='verband_iln', fieldclass=EanField),
+ dict(length=17, startpos=18, endpos=34, name='eigene_iln', fieldclass=FixedField, default='4005998000007    '),
+ dict(length=17, startpos=35, endpos=51, name='lieferantennr_verband'),
+ #dict(length=17, startpos=52, endpos=68, name='Abs.: UST-Identnummer'),
+ #dict(length=2, startpos=69, endpos=70, name='Firma'),
+ #dict(length=4, startpos=71, endpos=74, name='Abteilung'),
+ #dict(length=10, startpos=75, endpos=84, name='Bibliothek'),
+ dict(length=200, startpos=85, endpos=284, name='filler1', fieldclass=FixedField, default=' '*200),
+ dict(length=200, startpos=285, endpos=484, name='filler2', fieldclass=FixedField, default=' '*200),
+ dict(length=11, startpos=485, endpos=495, name='filler3', fieldclass=FixedField, default=' '*11),
+ dict(length=1, startpos=496, endpos=496, name='status', fieldclass=FixedField, default=' '),
 ]
 # fix difference in array counting between SoftM and Python
 for feld in FELDERR1:
@@ -468,21 +469,21 @@ R1satzklasse = generate_field_datensatz_class(FELDERR1, name='R1verbandsrechnung
 
 doctext = 'Rechnungsliste Position (XOO00ER2)'
 FELDERR2 = [
-    dict(length=17, startpos=1, endpos=17, name='ILN Rechnungsempfänger'),
-    dict(length=17, startpos=18, endpos=34, name='Mitgliedsnummer'),
-    dict(length=17, startpos=35, endpos=51, name='ILN Warenempfänger'),
-    dict(length=9, startpos=52, endpos=60, name='Rechnungsliste'),
-    dict(length=8, startpos=61, endpos=68, name='Rechnungslistendatum'),
-    dict(length=5, startpos=69, endpos=73, name='Positionsnummer'),
-    dict(length=9, startpos=74, endpos=82, name='Rechnung'),
-    dict(length=8, startpos=83, endpos=90, name='Rechnungsdatum'),
-    dict(length=8, startpos=91, endpos=98, name='Valutadatum'),
-    dict(length=9, startpos=99, endpos=107, name='Lieferschein'),
-    dict(length=8, startpos=108, endpos=115, name='Lieferdatum'),
-    dict(length=9, startpos=116, endpos=124, name='Auftragsnummer'),
-    dict(length=20, startpos=125, endpos=144, name='Kundenbestellnummer'),
-    dict(length=8, startpos=145, endpos=152, name='Kundenbestelldatum'),
-    dict(length=3, startpos=153, endpos=155, name='ISO-WSL'),
+    dict(length=17, startpos=1, endpos=17, name='rechnung_iln', fieldclass=EanField),
+    dict(length=17, startpos=18, endpos=34, name='mitgliedsnummer'),
+    dict(length=17, startpos=35, endpos=51, name='liefer_iln', fieldclass=EanField),
+    dict(length=9, startpos=52, endpos=60, name='listennr', fieldclass=IntegerField),
+    dict(length=8, startpos=61, endpos=68, name='listendatum', fieldclass=DateField),
+    #dict(length=5, startpos=69, endpos=73, name='Positionsnummer'),
+    #dict(length=9, startpos=74, endpos=82, name='Rechnung'),
+    #dict(length=8, startpos=83, endpos=90, name='Rechnungsdatum'),
+    #dict(length=8, startpos=91, endpos=98, name='Valutadatum'),
+    #dict(length=9, startpos=99, endpos=107, name='Lieferschein'),
+    #dict(length=8, startpos=108, endpos=115, name='Lieferdatum'),
+    #dict(length=9, startpos=116, endpos=124, name='Auftragsnummer'),
+    #dict(length=20, startpos=125, endpos=144, name='Kundenbestellnummer'),
+    #dict(length=8, startpos=145, endpos=152, name='Kundenbestelldatum'),
+    dict(length=3, startpos=153, endpos=155, name='waehrung'),
     dict(length=15, startpos=156, endpos=170, name='Warenwert gesamt'),
     dict(length=1, startpos=171, endpos=171, name='Vorzeichen Warenwert'),
     dict(length=15, startpos=172, endpos=186, name='Nebenkosten'),
@@ -507,8 +508,8 @@ FELDERR2 = [
     dict(length=1, startpos=322, endpos=322, name='Vorzeichen Steuer zu Prov 1'),
     dict(length=15, startpos=323, endpos=337, name='Rechnungsendbetrag'),
     dict(length=1, startpos=338, endpos=338, name='Vorzeichen Endbetrag'),
-    dict(length=157, startpos=339, endpos=495, name='Reserve'),
-    dict(length=1, startpos=496, endpos=496, name='Status'),
+    dict(length=157, startpos=339, endpos=495, name='filler', fieldclass=FixedField, default=' '*157),
+    dict(length=1, startpos=496, endpos=496, name='status', fieldclass=FixedField, default=' '),
 ]
 # fix difference in array counting between SoftM and Python
 for feld in FELDERR2:
@@ -519,16 +520,15 @@ R2satzklasse = generate_field_datensatz_class(FELDERR2, name='R2rechnungslistepo
 
 doctext = 'Rechnungsliste Summe (XOO00ER3)'
 FELDERR3 = [
- dict(length=5, startpos=1, endpos=5, name='Anzahl Positionen'),
- dict(length=15, startpos=6, endpos=20, name='Summe Rechnungsendbetrag'),
- dict(length=1, startpos=21, endpos=21, name='Vorzeichen Endbetrag'),
- dict(length=3, startpos=22, endpos=24, name='ISO-WSL'),
- dict(length=12, startpos=25, endpos=36, name='Umrechnungskurs'),
- dict(length=1, startpos=37, endpos=37, name='Faktor für Umrechnungskurs'),
- dict(length=200, startpos=38, endpos=237, name='Reserve 1'),
- dict(length=200, startpos=238, endpos=437, name='Reserve 2'),
- dict(length=58, startpos=438, endpos=495, name='Reserve 3'),
- dict(length=1, startpos=496, endpos=496, name='Status'),
+ # dict(length=5, startpos=1, endpos=5, name='Anzahl Positionen'),
+ dict(length=16, startpos=6, endpos=21, name='summe', fieldclass=DecimalFieldNoDotSigned, precision=3),
+ dict(length=3, startpos=22, endpos=24, name='waehrung'),
+ #dict(length=12, startpos=25, endpos=36, name='Umrechnungskurs'),
+ #dict(length=1, startpos=37, endpos=37, name='Faktor für Umrechnungskurs'),
+ dict(length=200, startpos=38, endpos=237, name='filler1', fieldclass=FixedField, default=' '*200),
+ dict(length=200, startpos=238, endpos=437, name='filler2', fieldclass=FixedField, default=' '*200),
+ dict(length=58, startpos=438, endpos=495, name='filler3', fieldclass=FixedField, default=' '*58),
+ dict(length=1, startpos=496, endpos=496, name='status', fieldclass=FixedField, default=' '),
 ]
 # fix difference in array counting between SoftM and Python
 for feld in FELDERR3:
@@ -552,7 +552,6 @@ FELDERTEXT = [
 for feld in FELDERTEXT:
     feld['startpos'] = feld['startpos'] - 1
 TEXTsatzklasse = generate_field_datensatz_class(FELDERTEXT, name='generic_text', length=496)
-
 
 
 def parse_to_objects(filename):

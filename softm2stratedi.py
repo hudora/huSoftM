@@ -9,10 +9,11 @@ Copyright (c) 2008 HUDORA. All rights reserved.
 
 import unittest
 from husoftm.datenexportschnittstelle import *
-from edilib.cctop.invoic import interchangeheader000, transaktionskopf100, addressen119, rechnungsposition500, belegsummen900
+from edilib.cctop.invoic import interchangeheader000, transaktionskopf100, transaktionsreferenz111
+from edilib.cctop.invoic import addressen119, zahlungsbedingungen120, rechnungsposition500
+from edilib.cctop.invoic import belegsummen900, rechnungsliste990
 
 def convert_transmissionhead(transmission_records, previous_output_records):
-    print transmission_records
     xh = transmission_records['XH']
     rec000 = interchangeheader000() # interchangeheader000
     rec000.sender_iln = '4005998000007'
@@ -27,15 +28,16 @@ def convert_transmissionhead(transmission_records, previous_output_records):
     return [rec000]
     
 
-
 def convert_invoice_head(invoice_records, previous_output_records):
     f1 = invoice_records['F1']
     f2 = invoice_records['F2']
 
     rec100 = transaktionskopf100()
+    rec111 = transaktionsreferenz111()
     rec119_lierferaddr = addressen119()
     rec119_rechnungsaddr = addressen119()
-    rec119_verkaeferaddr = addressen119()
+    rec119_verkaeuferaddr = addressen119()
+    rec119_kaeuferaddr = addressen119()
     # Eindeutige Nachrichtenreferenz des Absenders; laufende Nummer der Nachrichten im Datenaustausch
     # beginnt mit "1" und wird für jede Rechnung/Gutschrift innerhalb einer Übertragungsdatei
     # um 1 erhöht.
@@ -43,16 +45,29 @@ def convert_invoice_head(invoice_records, previous_output_records):
     
     rec100.belegnummer = f1.auftragsnr
     rec100.belegdatum = f1.auftrags_datum
+    rec111.auftragsnr = f1.auftragsnr
+    rec111.auftragsdatum = f1.auftrags_datum
+    rec111.lieferdatum = f1.liefertermin
+    rec111.lieferscheinnr = f1.lieferscheinnr
+    rec111.lieferscheindatum = f1.lieferscheindatum
+    rec111.rechnungslistennr = f1.rechnungsliste
+    rec111.rechnungslistendatum = f1.rechnungslistendatum
     
+    # Specific for EDEKA
+    rec111.abkommensnr = '20'
+        
     # Lieferant
-    rec119_verkaeferaddr.partnerart = 'SU'
-    rec119_verkaeferaddr.iln = f1.eigene_iln_beim_kunden
+    rec119_verkaeuferaddr.partnerart = 'SU'
+    rec119_verkaeuferaddr.iln = f1.eigene_iln_beim_kunden
     # TODO: was ist der Unterschied zwischen ustdid und steuernr?
-    rec119_verkaeferaddr.ustdid = f1.ustdid_absender
-    rec119_verkaeferaddr.steuernr = f1.ustdid_absender
-    rec119_verkaeferaddr.weeenr = 'DE 70323035'
-    rec119_verkaeferaddr.fax = '+49 2191 60912-50'
-    rec119_verkaeferaddr.tel = '+49 2191 60912-0'
+    rec119_verkaeuferaddr.ustdid = f1.ustdid_absender
+    rec119_verkaeuferaddr.steuernr = f1.steuernummer
+    rec119_verkaeuferaddr.weeenr = 'DE 70323035'
+    rec119_verkaeuferaddr.fax = '+49 2191 60912-50'
+    rec119_verkaeuferaddr.tel = '+49 2191 60912-0'
+    
+    if 'R1' in invoice_records:
+        rec119_verkaeuferaddr.gegebenepartnerid = invoice_records['R1'].lieferantennr_verband
 
     # Warenempfänger
     rec119_lierferaddr.partnerart = 'DP'
@@ -66,6 +81,13 @@ def convert_invoice_head(invoice_records, previous_output_records):
     rec119_lierferaddr.land = f2.liefer_land
     rec119_lierferaddr.internepartnerid = f2.warenempfaenger
 
+    # Kaeufer
+    rec119_kaeuferaddr.partnerart = 'BY'
+    if f2.besteller_iln:
+        rec119_kaeuferaddr.iln = f2.besteller_iln
+    else:
+        rec119_kaeuferaddr.iln = f2.iln_warenempfaenger
+
     # Rechnungsempfänfger
     rec119_rechnungsaddr.partnerart = 'IV'
     rec119_rechnungsaddr.iln = f1.iln_rechnungsempfaenger
@@ -74,43 +96,8 @@ def convert_invoice_head(invoice_records, previous_output_records):
     rec119_rechnungsaddr.ustdid = f1.ustdid_rechnungsempfaenger
     # rec119_rechnungsaddr.partnerabteilung
     
+    
     # Nicht genutzte Felder aus SoftM
-    # a1.Belegart'),
-    # a1.Auftrag'),
-    # a1.Auftragsdatum'),
-    # a1.AB Druckdatum'),
-    # a1.Kundenbestellnummer'),
-    # a1.Kundenbestelldatum'),
-    # a1.ILN Rechnungsempfänger'),
-    # a1.Rechnungsempfänger'),
-    # a1.USt-IDNr. RgEmpf'),
-    # a1.eigene ILN beim RgEmpf'),
-    # a1.unsere LiNr beim RgEmpf'),
-    # a1.eigene USt-IDNr.'),
-    # a1.ISO-WSL'),
-    # a1.USt 1 für Skonto'),
-    # a1.USt 2 für Skonto'),
-    # a1.Skontofähig USt 1'),
-    # a1.Skontofähig USt 2'),
-    # a1.Skontotage 1'),
-    # a1.Skonto 1'),
-    # a1.Skontobetrag 1 USt 1'),
-    # a1.Skontobetrag 1 USt 2'),
-    # a1.Skontotage 2'),
-    # a1.Skonto 2'),
-    # a1.Skontobetrag 2 USt 1'),
-    # a1.Skontobetrag 2 USt 2'),
-    # a1.Skontotext'),
-    # f1.liefertermin', fieldclass=DateField),
-    # f1.lieferscheinnr', fieldclass=IntegerField),
-    # f1.lieferscheindatum', fieldclass=DateField),
-    # f1.kundenbestellnummer'),
-    # f1.kundenbestelldatum', fieldclass=DateField),
-    # f1.auftragsnr', fieldclass=IntegerField),
-    # f1.auftragsdatum', fieldclass=DateField),
-    # f1.'rechnungsliste', fieldclass=IntegerField),
-    # f1.rechnungslistendatum', fieldclass=DateField),
-    # f1.waehrung', fieldclass=FixedField, default='EUR',
     # f1.
     # f1.ust1_fuer_skonto', fieldclass=DecimalFieldNoDot, precision=2),
     # f1.ust2_fuer_skonto', fieldclass=DecimalFieldNoDot, precision=2),
@@ -142,13 +129,13 @@ def convert_invoice_head(invoice_records, previous_output_records):
     # f2.verband', fieldclass=IntegerField),
     # f2.verband_iln', fieldclass=EanField),
     
-    return [rec100, rec119_lierferaddr, rec119_rechnungsaddr, rec119_verkaeferaddr]
+    return [rec100, rec111, rec119_lierferaddr, rec119_rechnungsaddr, rec119_kaeuferaddr, rec119_verkaeuferaddr]
 
 
-
+last_mwst = None
 
 def convert_invoice_position(position_records, previous_output_records):
-    print position_records
+    global last_mwst
     f3 = position_records['F3']
     
     rec500 = rechnungsposition500()
@@ -159,8 +146,12 @@ def convert_invoice_position(position_records, previous_output_records):
     rec500.artikelbezeichnung1 = f3.artikelbezeichnung[:35]
     rec500.artikelbezeichnung2 = f3.artikelbezeichnung[35:70]
     rec500.berechnete_menge = f3.menge
-    # rec500.waehrung
     rec500.mwstsatz = f3.steuersatz
+    if last_mwst and (last_mwst != f3.steuersatz):
+        raise RuntimeError("Wechsel im Stuersatz zwischen Auftragspositionen: %s | %s" % 
+                           (last_mwst, f3.steuersatz))
+    last_mwst = f3.steuersatz
+    
     # rec500.nettostueckpreis
     # rec500.bruttostueckpreis
     # rec500.mengeneinheit = f3.mengeneinheit
@@ -191,8 +182,12 @@ def convert_invoice_position(position_records, previous_output_records):
 
 def convert_invoice_footer(invoice_records, previous_output_records):
     
+    rec120 = zahlungsbedingungen120()
     rec900 = belegsummen900()
     f9 = invoice_records['F9']
+    
+    rec120.mwstsatz = last_mwst
+    rec120.waehrung =  invoice_records['F1'].waehrung
     
     rec900.rechnungsendbetrag = f9.gesamtbetrag
     rec900.mwst_gesammtbetrag = f9.mehrwertsteuer
@@ -235,7 +230,8 @@ def convert_invoice_footer(invoice_records, previous_output_records):
     # f9.Gesamtgewicht brutto'),
     # f9.Gesamtgewicht netto'),
     # f9.Anzahl Positionen'),
-    return [rec900]
+    rec120 = zahlungsbedingungen120()
+    return [rec120, rec900]
 
 
 def convert_invoice(softm_record_list, stratedi_records):
@@ -263,6 +259,28 @@ def convert_invoice(softm_record_list, stratedi_records):
     stratedi_records.extend(convert_invoice_footer(softm_records, stratedi_records))
     return stratedi_records
 
+def convert_invoicelist(softm_record_list, stratedi_records):
+    r1 = dict(softm_record_list)['R1']
+    r3 = dict(softm_record_list)['R3']
+    r2list = [x[1] for x in softm_record_list if x[0] == 'R2']
+    
+    rec990 = rechnungsliste990()
+    rec990.rechnungslistennr = r2list[-1].listennr
+    rec990.rechnungslistendatum = r2list[-1].listendatum
+    rec990.hudora_iln2 = rec990.hudora_iln = '4005998000007'
+    rec990.empfaenger_iln = r1.verband_iln
+    rec990.lieferantennr = r1.lieferantennr_verband
+    # rec990.zahlungsleistender_iln
+    # rec990.valutadatum
+    rec990.rechnungslistenendbetrag = r3.summe
+    # rec990.nettowarenwert = r3.summe
+    # rec990.mwst
+    # EDEKA specific
+    rec990.abkommen = '20'
+    
+    return [rec990]
+    
+
 def convert(softm_record_list):
     """Convert a SoftM Transmission to StratEDI Format"""
     
@@ -270,10 +288,11 @@ def convert(softm_record_list):
     softm_records = dict(softm_record_list)
     stratedi_records.extend(convert_transmissionhead(softm_records, stratedi_records))
     stratedi_records.extend(convert_invoice(softm_record_list, stratedi_records))
+    stratedi_records.extend(convert_invoicelist(softm_record_list, stratedi_records))
     return stratedi_records
 
 def read_softm():
-    softm_record_list = parse_to_objects('INVOIC/4333936000001/RG00073.TXT')
+    softm_record_list = parse_to_objects('INVOIC/4311502000006/RL00422_UPDATED.txt')
     l = convert(softm_record_list)
     for x in l:
         print x.serialize()

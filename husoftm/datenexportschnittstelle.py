@@ -69,9 +69,9 @@ doctext = """Kopfdaten (XOO00EF1) = Diese Satzart enthält die Kopfdaten einer R
 oft pro Übertragung vorkommen."""
 FELDERF1 = [
  dict(length=3, startpos=1, endpos=3, name='belegart'),
- dict(length=35, startpos=4, endpos=38, name='rechnungsnummer', fieldclass=IntegerField,
+ dict(length=35, startpos=4, endpos=38, name='rechnungsnr', fieldclass=IntegerField,
       doc='100-10 bei StratEDI'),
- dict(length=8, startpos=39, endpos=46, name='rechnungsnummer', fieldclass=DateField,
+ dict(length=8, startpos=39, endpos=46, name='rechnungsdatum', fieldclass=DateField,
       doc='100-11 bei StratEDI'),
  dict(length=8, startpos=47, endpos=54, name='liefertermin', fieldclass=DateField),
  dict(length=35, startpos=55, endpos=89, name='lieferscheinnr', fieldclass=IntegerField),
@@ -79,7 +79,7 @@ FELDERF1 = [
  dict(length=20, startpos=98, endpos=117, name='kundenbestellnummer'),
  dict(length=8, startpos=118, endpos=125, name='kundenbestelldatum', fieldclass=DateField),
  dict(length=9, startpos=126, endpos=134, name='auftragsnr', fieldclass=IntegerField),
- dict(length=8, startpos=135, endpos=142, name='auftrags_datum', fieldclass=DateField),
+ dict(length=8, startpos=135, endpos=142, name='auftragsdatum', fieldclass=DateField),
  dict(length=17, startpos=143, endpos=159, name='iln_rechnungsempfaenger', fieldclass=EanField,
       doc='119-03 bei StratEDI 119-02=IV'),
  dict(length=17, startpos=160, endpos=176, name='rechnungsempfaenger', fieldclass=IntegerField,

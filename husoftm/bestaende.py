@@ -10,9 +10,8 @@ __revision__ = "$Revision$"
 
 import datetime, time
 from types import *
-# from produktpass.models import Product
-import pySoftM
-from pySoftM.tools import sql_escape
+from husoftm.connection import get_connection
+from husoftm.tools import sql_escape
 
 def _int_or_0(data):
     try:
@@ -30,18 +29,16 @@ def get_lagerbestand(artnr=None, lager=0):
     """Gibt den Buchbestand eines Artikels für ein Lager zurück oder (lager=0) für alle Lager"""
     
     if not artnr:
-        rows = pySoftM.get_connection().query('XLF00', fields=['LFARTN', 'LFMGLP'],
+        rows = get_connection().query('XLF00', fields=['LFARTN', 'LFMGLP'],
                    condition="LFLGNR = %s AND LFMGLP <> 0 AND LFSTAT = ' '" % sql_escape(lager))
         ret = {}
         for artnr, menge in rows:
             ret[artnr] = int(menge)
         return ret
     else:
-        rows = pySoftM.get_connection().query('XLF00', fields=['LFMGLP'],
+        rows = get_connection().query('XLF00', fields=['LFMGLP'],
                    condition="LFLGNR=%d AND LFARTN='%s' AND LFMGLP<>0 AND LFSTAT=' '" % (int(lager), artnr))
         return _int_or_0(rows)
-    # Um die verfuegbare Menge zu berechnen muesste vom Buchbestand noch LFMGK4 abgezogen werden.
-    # d.h. LFMGLP-LFMGK4
     return rows
     
 
@@ -49,15 +46,16 @@ def get_verfuegbaremenge(artnr=None, lager=0):
     """Gibt die aktuell verfügbare Menge eines Artikels an einem Lager zurück oder (lager=0) für alle Lager"""
     
     if not artnr:
-        rows = pySoftM.get_connection().query('XLF00', fields=['LFARTN', 'LFMGLP', 'LFMGK4'],
+        rows = get_connection().query('XLF00', fields=['LFARTN', 'LFMGLP', 'LFMGK4'],
                    condition="LFLGNR=%s AND LFMGLP<>0 AND LFSTAT=' '" % (sql_escape(lager),))
         ret = {}
         for artnr, menge, lfmgk4 in rows:
             ret[artnr] = int(menge) - int(lfmgk4)
         return ret
     else:
-        rows = pySoftM.get_connection().query('XLF00', fields=['LFMGLP', 'LFMGK4', 'LFMGLP-LFMGK4'],
-                   condition="LFLGNR=%s AND LFARTN='%s' AND LFMGLP<>0 AND LFSTAT = ' '" % (sql_escape(lager), sql_escape(artnr)))
+        rows = get_connection().query('XLF00', fields=['LFMGLP', 'LFMGK4', 'LFMGLP-LFMGK4'],
+                   condition="LFLGNR=%s AND LFARTN='%s' AND LFMGLP<>0 AND LFSTAT = ' '" % (
+                        sql_escape(lager), sql_escape(artnr)))
         if rows:
             (menge, lfmgk4, foo) = rows[0]
             return _int_or_0(menge) - _int_or_0(lfmgk4)
@@ -69,7 +67,7 @@ def get_umlagerungen(artnr=None, vonlager=26):
     """Ermittelt wieviel Umlagerungen für einen Artikel unterwegs sind"""
     
     if not artnr:
-        rows = pySoftM.get_connection().query(['AAP00', 'AAK00'], fields=['APARTN', 'SUM(APMNG)'],
+        rows = get_connection().query(['AAP00', 'AAK00'], fields=['APARTN', 'SUM(APMNG)'],
                                               condition="AKAUFN=APAUFN AND APKZVA=0 AND AKKZVA=0 AND " +
                                               "APAUFA='U' AND AKSTAT<>'X' AND APSTAT<>'X' AND " +
                                               "APLGNR=%s" % sql_escape(vonlager),
@@ -79,7 +77,7 @@ def get_umlagerungen(artnr=None, vonlager=26):
             ret[artnr] = int(menge)
         return ret
     else:
-        rows = pySoftM.get_connection().query(['AAP00', 'AAK00'], fields=['SUM(APMNG)'],
+        rows = get_connection().query(['AAP00', 'AAK00'], fields=['SUM(APMNG)'],
                                               condition="AKAUFN=APAUFN AND APKZVA=0 AND AKKZVA=0 AND " +
                                               "APAUFA='U' AND AKSTAT<>'X' AND APSTAT<>'X' AND " +
                                               ("APLGNR=%s AND APARTN='%s'" % (sql_escape(vonlager), 
@@ -87,12 +85,14 @@ def get_umlagerungen(artnr=None, vonlager=26):
         # Das Auslieferungslager steht in AKLGN1, Das Ziellager steht in AKLGN2
         # Zur Zeit verwenden wir APLGNR, dass kann man dann ignorieren
         return _int_or_0(rows)
-
-# TODO: obsolete
-get_umlagerung = get_umlagerungen
+    
 
 def get_lagerbestandmitumlagerungen(artnr=None, lager=100, vonlager=26):
+    """Ermittelt den Lagerbestand inclusive der kurzum in idesem Lager eintreffenen Güter."""
+    
     bestand = get_lagerbestand(artnr=artnr, lager=lager)
+    # TODO: eigentlich ist 'vonlager' uninteressant. Hauptsache die ware kommt - woher ist ja egal.
+    # wenn wir vonlager=0 setzen, reicht das?
     umlagerungen = get_umlagerungen(artnr=artnr, vonlager=vonlager)
     if artnr:
         # sinmple: no calculation needed
@@ -105,16 +105,37 @@ def get_lagerbestandmitumlagerungen(artnr=None, lager=100, vonlager=26):
         umlagerart = set(umlagerungen.keys())
         for artnr in umlagerart.difference(lagerart):
             if artnr in bestand: # TODO: ifclause should be removed - belt and suspenders aproach
-                raise RuntimeError, "Bad Thinking!"
+                raise RuntimeError("Bad Thinking!")
             bestand[artnr] = umlagerungen[artnr]
         return bestand
+    
 
-### legacy code
+def get_bestellungen(artnr):
+    # TODO: test
+    # detailierte Informationen gibts in EWZ00
+    rows = get_connection().query('EBP00', fields=['BPARTN', 'BPDTLT', 'BPMNGB-BPMNGL'],
+                   condition="BPSTAT <> 'X' AND BPKZAK = 0 AND BPARTN = %s" % sql_quote(artnr))
+    print rows
+    
 
-from mofts.client import as400
+def get_offene_auftraege(self, artnr, lager=0):
+    """Liefert eine Liste offener Aufträge OHNE UMLAGERUNGEN."""
+    #mappings = {'APARTN': 'artnr',
+    #               'APMNG-APMNGF-APMNGG':  'menge', # das kann bei ueberlieferungen zu negativen werten fuehren
+    #                                                # und ist bei auftraegen mit mengenaenderungen gelegentlich 0 - siehe Case 227
+    #               'APMNG': 'bestellmenge',
+    #               'AKKDNR': 'kundennummer',
+    #               'AKAUFN': 'auftragsnummer',
+    #               'APDTLT': 'liefer_date',
+    #               'AKAUFA': 'art', }
+    rows = get_connection().query(['AAP00', 'AAK00'], fields=['APARTN', 'APMNG-APMNGF-APMNGG', 'APMNG', 'AKKDNR', 'AKAUFN', 'APDTLT', 'AKAUFA'],
+                   condition="AKAUFN=APAUFN AND APKZVA=0 AND AKKZVA=0 AND APAUFA<>'U' AND AKSTAT<>'X'  AND APSTAT<>'X' AND APARTN=%s AND APLGNR=%d" % (sql_quote(artnr), lager),
+                   ordering='APDTLT')
+    print rows
 
-MINIMALMENGE = 23
-WIEDERBESCHAFFUNGSZEIT = datetime.timedelta(days=60)
+
+### TODO: legacy code follows. Needs to be ported to the get_connection().query() interface.
+
 
 def bestandsentwicklung(artnr, dateformat="%Y-%m-%d"):
     """Liefert ein dictionary, dass alle zukünftigen Bewegungen für einen Artikel beinhaltet.
@@ -126,14 +147,13 @@ def bestandsentwicklung(artnr, dateformat="%Y-%m-%d"):
     softm = as400.MoftSconnection()
     bewegungen = []
     # Startwert ist der heutige Lagerbestand
-    start = softm.get_lagerbestand(artnr=artnr)
+    start = get_lagerbestand(artnr=artnr)
     if start:
         start = start[0]['menge']
     else:
         start = 0
-
-    #bewegungen.append(('2006-09-01', start))
-    for bestellung in softm.get_bestellungen(artnr=artnr):
+    
+    for bestellung in get_bestellungen(artnr=artnr):
         bewegungen.append((bestellung['liefer_date'].strftime(dateformat), bestellung['menge']))
     for auftrag in softm.get_offene_auftraege(artnr=artnr):
         bewegungen.append((auftrag['liefer_date'].strftime(dateformat), -1*auftrag['menge']))
@@ -253,5 +273,7 @@ if __name__ == '__main__':
     # print "verfuegbar_ab", verfuegbar_ab('14600/03')
     # print datetime.datetime.now() - start
     # print "verfuegbare_menge", verfuegbare_menge('14600/03')
-    print verfuegbar_am("76095/01", '2009-01-04')
-    print versionsvorschlag(200000, '14600', '2009-01-04')
+    
+    #print verfuegbar_am("76095/01", '2009-01-04')
+    #print versionsvorschlag(200000, '14600', '2009-01-04')
+    print get_bestellungen('14600/03')

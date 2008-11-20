@@ -33,7 +33,7 @@ install: build
 	sh -c 'sudo python setup.py install'
 
 clean:
-	rm -Rf build dist html test.db huSoftM.egg-info
+	rm -Rf build dist html test.db huSoftM.egg-info svn-commit.tmp
 	find . -name '*.pyc' -or -name '*.pyo' -delete
 
 .PHONY: build test

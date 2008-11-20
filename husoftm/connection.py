@@ -20,7 +20,7 @@ from types import StringType
 
 Pyro.core.initClient(banner=False)
 LOG = logging.getLogger('huSoftM.sql')
-LOG.setLevel(logging.DEBUG)
+LOG.setLevel(logging.WARN)
 
 
 def _combine_date_and_time(mappings, fields, i, row, rowdict):

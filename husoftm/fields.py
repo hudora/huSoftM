@@ -543,7 +543,7 @@ MAPPINGDIR = {
           # 'BPLIAR': 'Lieferanten-Artikel-Nr     ' ,
           # 'BPARTG': 'Artikel-Gruppe             ' ,
           # 'BPARTH': 'Artikel-Haupt-Gruppe       ' ,
-          'BPLGNR': 'lager' ,
+          'BPLGNR': 'lager',
           # 'BPWERK': 'Werksnummer                ' ,
           # 'BPEMPF': 'Empfangsstelle             ' ,
           # 'BPKZSO': 'KZ: Sonderartikel          ' ,
@@ -987,15 +987,6 @@ MAPPINGDIR = {
         # 'XAGDE ': Gemeindeschl}ssel
         # 'XAHEA ': Herkunftsart
         # 'XAHESP': Herkunftsspezifikation
-        # 'XAKZDR': Reserve 1
-        # 'XAKZR2': Reserve 2
-        # 'XAKZR3': Reserve 3
-        # 'XAKXR4': Reserve 4
-        # 'XAKZR5': Reserve 5
-        # 'XARES6': Reserve 6
-        # 'XARXS7': Reserve 7
-        # 'XARES8': Reserve 8
-        # 'XARES9': Reserve 9
         'XASANR': 'satznr',
         # 'XADTSP': Datum "Gesperrt bis"
         # 'XASBSP': Sachbearbeiter Sperre

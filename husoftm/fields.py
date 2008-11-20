@@ -140,6 +140,7 @@ MAPPINGDIR = {
          },
 
 'AAP00': { # Auftragspositionen
+          'APMNG-APMNGF-APMNGG': 'menge_offen',
            # 'APFNR ': 'Firma                       ',
            # 'APAUFN': 'Auftrags-nr             ',
            'APAUPO': 'position',

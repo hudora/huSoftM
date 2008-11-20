@@ -11,7 +11,7 @@ __revision__ = "$Revision$"
 import datetime, time
 from types import *
 from husoftm.connection import get_connection
-from husoftm.tools import sql_escape
+from husoftm.tools import sql_escape, sql_quote
 
 def _int_or_0(data):
     try:
@@ -114,12 +114,13 @@ def get_bestellungen(artnr):
     # TODO: test
     # detailierte Informationen gibts in EWZ00
     rows = get_connection().query('EBP00', fields=['BPARTN', 'BPDTLT', 'BPMNGB-BPMNGL'],
-                   condition="BPSTAT <> 'X' AND BPKZAK = 0 AND BPARTN = %s" % sql_quote(artnr))
+                   condition="BPSTAT<>'X' AND BPKZAK=0 AND BPARTN=%s" % sql_quote(artnr))
     print rows
     
 
-def get_offene_auftraege(self, artnr, lager=0):
+def get_offene_auftraege(artnr, lager=0):
     """Liefert eine Liste offener Aufträge OHNE UMLAGERUNGEN."""
+    # Achtung, hier gibt es KEIN Lager 0 in der Tabelle. D.h. APLGNR=0 gibt nix
     #mappings = {'APARTN': 'artnr',
     #               'APMNG-APMNGF-APMNGG':  'menge', # das kann bei ueberlieferungen zu negativen werten fuehren
     #                                                # und ist bei auftraegen mit mengenaenderungen gelegentlich 0 - siehe Case 227
@@ -128,9 +129,15 @@ def get_offene_auftraege(self, artnr, lager=0):
     #               'AKAUFN': 'auftragsnummer',
     #               'APDTLT': 'liefer_date',
     #               'AKAUFA': 'art', }
-    rows = get_connection().query(['AAP00', 'AAK00'], fields=['APARTN', 'APMNG-APMNGF-APMNGG', 'APMNG', 'AKKDNR', 'AKAUFN', 'APDTLT', 'AKAUFA'],
-                   condition="AKAUFN=APAUFN AND APKZVA=0 AND AKKZVA=0 AND APAUFA<>'U' AND AKSTAT<>'X'  AND APSTAT<>'X' AND APARTN=%s AND APLGNR=%d" % (sql_quote(artnr), lager),
-                   ordering='APDTLT')
+    if lager:
+        rows = get_connection().query(['AAP00', 'AAK00'], fields=['SUM(APMNG-APMNGF-APMNGG)', 'APDTLT'],
+                       condition="AKAUFN=APAUFN AND APKZVA=0 AND AKKZVA=0 AND APAUFA<>'U' AND AKSTAT<>'X' AND APSTAT<>'X' AND APARTN=%s AND APLGNR=%d" % (sql_quote(artnr), lager),
+                       ordering='APDTLT', grouping='APDTLT')
+    else:
+        rows = get_connection().query(['AAP00', 'AAK00'], fields=['SUM(APMNG-APMNGF-APMNGG)', 'APDTLT'],
+                       condition="AKAUFN=APAUFN AND APKZVA=0 AND AKKZVA=0 AND APAUFA<>'U' AND AKSTAT<>'X' AND APSTAT<>'X' AND APARTN=%s" % (sql_quote(artnr)),
+                       ordering='APDTLT', grouping='APDTLT')
+    
     print rows
 
 
@@ -277,3 +284,4 @@ if __name__ == '__main__':
     #print verfuegbar_am("76095/01", '2009-01-04')
     #print versionsvorschlag(200000, '14600', '2009-01-04')
     print get_bestellungen('14600/03')
+    print get_offene_auftraege('14600/03')

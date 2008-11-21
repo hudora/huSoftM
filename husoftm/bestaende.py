@@ -49,7 +49,6 @@ def buchbestand(artnr, lager=0):
     2345
     
     """
-    # TODO: was IST der Buchbestand? Beschreiben!
     
     rows = get_connection().query('XLF00', fields=['LFMGLP'],
                condition="LFLGNR=%d AND LFARTN='%s' AND LFMGLP<>0 AND LFSTAT=' '" % (int(lager), artnr))
@@ -58,7 +57,7 @@ def buchbestand(artnr, lager=0):
 
 def get_verfuegbaremenge(artnr=None, lager=0):
     warnings.warn("get_verfuegbaremenge() is deprecated use verfuegbar()", DeprecationWarning, stacklevel=2) 
-    return verfuegbar(artnr, lager)
+    return verfuegbare_menge(artnr, lager)
 
 
 def verfuegbare_menge(artnr, lager=0):
@@ -145,18 +144,26 @@ def auftragsmengen(artnr, lager=0):
      datetime.date(2009, 5, 4): 260,
      datetime.date(2009, 6, 2): 300}
     """
-    # Achtung, hier gibt es KEIN Lager 0 in der Tabelle. D.h. APLGNR=0 gibt nix
+    
+    condition = (
+    "AKAUFN=APAUFN"
+    " AND APAUFA<>'U'"                # kein Umlagerungsauftrag
+    " AND APARTN=%s"                  # Artikelnummer
+    " AND APSTAT<>'X'"                # Position nicht logisch gelöscht
+    " AND APKZVA=0"                   # Position nicht als 'voll ausgeliefert' markiert
+    " AND (APMNG-APMNGF-APMNGG) > 0"  # (noch) zu liefernde menge ist positiv
+    " AND AKSTAT<>'X'"                # Auftrag nicht logisch gelöscht
+    " AND AKKZVA=0")                  # Auftrag nicht als 'voll ausgeliefert' markiert
     
     if lager:
+        # Achtung, hier gibt es KEIN Lager 0 in der Tabelle. D.h. APLGNR=0 gibt nix
         rows = get_connection().query(['AAP00', 'AAK00'], fields=['APDTLT', 'SUM(APMNG-APMNGF-APMNGG)'],
-                       condition=("AKAUFN=APAUFN AND APKZVA=0 AND AKKZVA=0 AND APAUFA<>'U' AND AKSTAT<>'X'"
-                                  " AND APSTAT<>'X' AND APARTN=%s AND APLGNR=%d") % (sql_quote(artnr), lager),
+                       condition=(condition + " AND APLGNR=%d") % (sql_quote(artnr), lager),
                        ordering='APDTLT', grouping='APDTLT',
                        querymappings={'SUM(APMNG-APMNGF-APMNGG)': 'menge_offen'})
     else:
         rows = get_connection().query(['AAP00', 'AAK00'], fields=['APDTLT', 'SUM(APMNG-APMNGF-APMNGG)'],
-                       condition=("AKAUFN=APAUFN AND APKZVA=0 AND AKKZVA=0 AND APAUFA<>'U' AND AKSTAT<>'X'"
-                                  " AND APSTAT<>'X' AND APARTN=%s") % (sql_quote(artnr)),
+                       condition=condition % (sql_quote(artnr)),
                        ordering='APDTLT', grouping='APDTLT',
                        querymappings={'SUM(APMNG-APMNGF-APMNGG)': 'menge_offen', 'APDTLT': 'liefer_date'})
     return dict([(x['liefer_date'], x['menge_offen']) for x in rows if x['menge_offen'] > 0])
@@ -171,7 +178,7 @@ def versionsvorschlag(menge, artnr, date, dateformat="%Y-%m-%d"):
     
     #p = Product.objects.get(artnr=artnr)
     #artnrs.add([x.artnr for x in p.versions.all()])
-    # FIXME: versionsnummernermittlung
+    # FIXME: versionsnummernermittlung - we are missing a sensible api here
     artnrs = ['22006', '22006/02', '22006/03']
     
     ret = []
@@ -221,50 +228,60 @@ def frei_ab(menge, artnr, dateformat="%Y-%m-%d"):
     
 
 def get_umlagerungen(artnr, vonlager=26):
-    warnings.warn("get_umlagerungen() is deprecated use umlagerungen()", DeprecationWarning, stacklevel=2) 
-    return umlagerungen(artnr, anlager=100, vonlager=vonlager)
+    warnings.warn("get_umlagerungen() is deprecated use umlagermenge()", DeprecationWarning, stacklevel=2) 
+    return umlagermenge(artnr, anlager=100, vonlager=vonlager)
     
 
-def umlagerungen(artnr, anlager=100, vonlager=None):
+def umlagermenge(artnr, anlager=100, vonlager=None):
     """Ermittelt wieviel Umlagerungen für einen Artikel unterwegs sind"""
     
     # Das Auslieferungslager steht in AKLGN1, Das Ziellager steht in AKLGN2
-    # In APLGNR, steht AUCH das Abgangslager
+    # In APLGNR steht AUCH das Abgangslager
+    
+    condition = (
+    "AKAUFN=APAUFN"
+    " AND APAUFA='U'"                 # kein Umlagerungsauftrag
+    " AND APARTN=%s"                  # Artikelnummer
+    " AND APSTAT<>'X'"                # Position nicht logisch gelöscht
+    " AND APKZVA=0"                   # Position nicht als 'voll ausgeliefert' markiert
+    " AND (APMNG-APMNGF-APMNGG) > 0"  # (noch) zu liefernde menge ist positiv
+    " AND AKSTAT<>'X'"                # Auftrag nciht logisch gelöscht
+    " AND AKKZVA=0"                   # Auftrag nicht als 'voll ausgeliefert' markiert
+    " AND AKLGN2=%d")                 # Zugangslager
+    
     if vonlager:
-        rows = get_connection().query(['AAP00', 'AAK00'], fields=['SUM(APMNG)'], nomapping=True,
-            condition=("AKAUFN=APAUFN AND APKZVA=0 AND AKKZVA=0 AND APAUFA='U' AND AKSTAT<>'X' AND APSTAT<>'X'"
-                      " AND AKLGN1=%s AND AKLGN2=%s AND APARTN='%s'") % (sql_escape(vonlager),
-                      sql_escape(anlager), sql_escape(artnr))))
+        rows = get_connection().query(['AAP00', 'AAK00'], fields=['SUM(APMNG-APMNGF-APMNGG)'], nomapping=True,
+            condition=(condition + " AND AKLGN1=%s") % 
+                      (sql_quote(artnr), int(anlager), int(vonlager)))
     else:
-        rows = get_connection().query(['AAP00', 'AAK00'], fields=['SUM(APMNG)'], nomapping=True,
-            condition=("AKAUFN=APAUFN AND APKZVA=0 AND AKKZVA=0 AND APAUFA='U' AND AKSTAT<>'X' AND APSTAT<>'X'"
-                      " AND AKLGN2=%s AND APARTN='%s'") % (sql_escape(anlager), sql_escape(artnr))))
+        rows = get_connection().query(['AAP00', 'AAK00'], fields=['SUM(APMNG-APMNGF-APMNGG)'], nomapping=True,
+            condition=condition % (sql_quote(artnr), int(anlager)))
     return _int_or_0(rows)
     
 
 def get_lagerbestandmitumlagerungen(artnr, vonlager=26):
-    warnings.warn("get_lagerbestandmitumlagerungen() is deprecated use bestand()", DeprecationWarning, stacklevel=2) 
-    return umlagerungen(artnr, anlager=100, vonlager=vonlager)
+    warnings.warn("get_lagerbestandmitumlagerungen() is deprecated use bestand()",
+                  DeprecationWarning, stacklevel=2) 
+    return bestand(artnr, anlager=100, vonlager=vonlager)
     
 
 def bestand(artnr, lager=100, vonlager=None):
     """Ermittelt den Lagerbestand (Buchbestand + kurzum in diesem Lager eintreffene Güter."""
     
-    bestand = buchbestand(artnr, lager=lager)
-    umlagerungen = umlagerungen(artnr, lager, vonlager)
-    return _int_or_0(bestand) + _int_or_0(umlagerungen)
+    return buchbestand(artnr, lager=lager) + umlagermenge(artnr, lager, vonlager)
     
 
 def test():
     """Some very simple tests."""
     import pprint
-    for artnr in '76095 14600/03 14865 71554/A'.split():
+    for artnr in '76095 14600/03 14865 71554/A 01104 10106 14890 WK22002'.split():
+        print "xx", artnr, "xxxxxxxxxxxxxxxxxxxxxxxx"
         pprint.pprint(versionsvorschlag(2000, artnr, '2009-01-04'))
         pprint.pprint(buchbestand(artnr))
         pprint.pprint(verfuegbare_menge(artnr))
         pprint.pprint((bestandsentwicklung(artnr)))
-        pprint.pprint((frei_ab(artnr)))
-        pprint.pprint((umlagerungen(artnr)))
+        pprint.pprint((frei_ab(50, artnr)))
+        pprint.pprint((umlagermenge(artnr)))
         pprint.pprint((bestand(artnr)))
     
 

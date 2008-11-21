@@ -25,7 +25,7 @@ import textwrap
 import unittest
 from husoftm.connection import get_connection
 from husoftm.tools import date2softm, sql_quote, iso2land
-from husoftm.stapleschnittstelle_const import ABK00, ABA00, ABT00, ABV00, ABK00
+from husoftm.stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00, ABK00
 
 __revision__ = "$Revision$"
 
@@ -327,8 +327,8 @@ class _GenericTests(unittest.TestCase):
         auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
         auftrag.positionen = []
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
-        self.assertEqual(kopf.to_sql(), "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTKW, BKSBNR, BKVGPO, BKFNR, "
-            "BKKDNR, BKAUFA) VALUES('1','123','1081230','1','0','01','   17200','')")
+        self.assertEqual(kopf.to_sql(), "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTKW, BKSBNR, BKFNR, BKDTKD, "
+            "BKKDNR) VALUES('1','123','1081230','1','01','1081121','   17200')")
         self.assertEqual(positionen, [])
         self.assertEqual(texte, [])
         self.assertEqual(adressen, [])
@@ -346,14 +346,13 @@ class _GenericTests(unittest.TestCase):
         auftrag.bestelltext = 'bestelltext'
         auftrag.positionen = []
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
-        self.assertEqual(kopf.to_sql(), "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTKW, BKSBNR, BKVGPO, BKFNR, "
-            "BKNRKD, BKKDNR, BKDTKD, BKAUFA) VALUES('1','123','1081231','1','0','01','0012345','   17200',"
-            "'2008-12-29','')")
+        self.assertEqual(kopf.to_sql(), "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTKW, BKSBNR, BKFNR, BKNRKD, "
+            "BKDTKD, BKKDNR) VALUES('1','123','1081231','1','01','0012345','1081229','   17200')")
         self.assertEqual(positionen, [])
-        self.assertEqual(texte[0].to_sql(), "INSERT INTO ABT00 (BTKZLF, BTVGNR, BTVGPO, BTTART, BTFNR, "
-            "BTTX60, BTLFNR, BTKZAB, BTKZRG) VALUES('1','123','0','8','01','infotext_kunde','1','1','1')")
-        self.assertEqual(texte[1].to_sql(), "INSERT INTO ABT00 (BTKZLF, BTVGNR, BTVGPO, BTTART, BTFNR, "
-            "BTTX60, BTLFNR, BTKZAB, BTKZRG) VALUES('0','123','0','8','01','bestelltext','2','1','0')")
+        self.assertEqual(texte[0].to_sql(), "INSERT INTO ABT00 (BTKZLF, BTVGNR, BTTART, BTFNR, BTTX60, "
+            "BTLFNR, BTKZAB, BTKZRG) VALUES('1','123','8','01','infotext_kunde','1','1','1')")
+        self.assertEqual(texte[1].to_sql(), "INSERT INTO ABT00 (BTVGNR, BTTART, BTFNR, BTTX60, BTLFNR, "
+            "BTKZAB) VALUES('123','8','01','bestelltext','2','1')")
         self.assertEqual(adressen, [])
     
     def test_lieferadresse(self):
@@ -370,11 +369,10 @@ class _GenericTests(unittest.TestCase):
         auftrag.lieferadresse.ort = 'Rade'
         auftrag.lieferadresse.land = 'DE'
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
-        self.assertEqual(kopf.to_sql(), "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTKW, BKSBNR, BKVGPO, BKFNR, "
-            "BKKDNR, BKAUFA) VALUES('1','123','1081230','1','0','01','   17200','')")
-        self.assertEqual(adressen[0].to_sql(), "INSERT INTO ABV00 (BVNAM2, BVNAM3, BVLKZ, BVVGNR, BVSTR, "
-            "BVKZAD, BVKZBA, BVNAME, BVPLZ, BVORT, BVAART) VALUES('name2','name3','D','123','','1','',"
-            "'name1','','Rade','1')")
+        self.assertEqual(kopf.to_sql(), "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTKW, BKSBNR, BKFNR, BKDTKD, "
+            "BKKDNR) VALUES('1','123','1081230','1','01','1081121','   17200')")
+        self.assertEqual(adressen[0].to_sql(), "INSERT INTO ABV00 (BVNAM2, BVNAM3, BVLKZ, BVVGNR, BVKZAD, "
+            "BVNAME, BVORT, BVAART) VALUES('name2','name3','D','123','1','name1','Rade','1')")
         self.assertEqual(positionen, [])
         self.assertEqual(texte, [])
 
@@ -393,11 +391,11 @@ class _GenericTests(unittest.TestCase):
         auftrag.positionen = [pos1, pos2]
         kopf, positionen, dummy, dummy = _auftrag2records(vorgangsnummer, auftrag)
         self.assertEqual(kopf.to_sql(), "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTKW, BKSBNR, BKVGPO, BKFNR, "
-            "BKKDNR, BKAUFA) VALUES('1','123','1081230','1','2','01','   17200','')")
+            "BKDTKD, BKKDNR) VALUES('1','123','1081230','1','2','01','1081121','   17200')")
         self.assertEqual(positionen[0].to_sql(), "INSERT INTO ABA00 (BADTER, BAVGPO, BAABT, BAFNR, BAMNG, "
-            "BAARTN, BAVGNR) VALUES('1080922','1','1','01','10','11111','123')")
+            "BAARTN, BAVGNR) VALUES('1081121','1','1','01','10','11111','123')")
         self.assertEqual(positionen[1].to_sql(), "INSERT INTO ABA00 (BADTER, BAVGPO, BAABT, BAFNR, BAMNG, "
-            "BAARTN, BAVGNR) VALUES('1080922','2','1','01','20','22222/09','123')")
+            "BAARTN, BAVGNR) VALUES('1081121','2','1','01','20','22222/09','123')")
 
 
 if __name__ == '__main__':

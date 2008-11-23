@@ -143,7 +143,7 @@ class PyRoMoftSconnection(object):
         if condition:
             querystr += ' WHERE %s' % condition
         if grouping:
-            querystr += ' GROUP BY (%s)' % (','.join(grouping), )
+            querystr += ' GROUP BY %s' % (','.join(grouping), )
         if ordering:
             querystr += ' ORDER BY %s' % (','.join(ordering), )
         

@@ -8,9 +8,18 @@ Created by Maximillian Dornseif on 2006-10-19.
 Hier werden Warenbestände, verfügbare Mengen und dergleichen ermittelt.
 
 Für die Frage, ob wir einen Artikel verkaufen können ist freie_menge() die richtige Funktion.
-Für die Frage, ob ein bestimmter Artikel in einem bestimmten LAger ist, ist bestand() geignet.
+Für die Frage, ob ein bestimmter Artikel in einem bestimmten Lager ist, ist bestand() geignet.
 
-
+    bestellmengen(artnr)                          von uns bei Lieferanten bestellte Mengen
+    auftragsmengen(artnr, lager=0)                bei uns von Kunden bestellte Mengen
+    umlagermenge(artnr, lager, vonlager=None)     Menge, die zur Zeit von einem Lager ans andere unterwegs ist
+    buchbestand(artnr, lager=0)                   Artikel am Lager
+    freie_menge(artnr)                            Menge, die Verkauft werden kann
+    frei_ab(menge, artnr, dateformat="%Y-%m-%d")  ab wann ist eine bestimmte Menge frühstens verfügbar?
+    bestand(artnr, lager, vonlager=None)          Wieviel ist zur Zeit an einem Lager oder trifft kurzum ein?
+    besteande(lager)                              wie bestand() aber für alle Artikel
+    bestandsentwicklung(artnr, dateformat="%Y-%m-%d")            Prognose der Bestandsänderungen
+    versionsvorschlag(menge, artnr, date, dateformat="%Y-%m-%d") Vorschlag zur Versionsstückelung
 """
 
 __revision__ = "$Revision$"
@@ -157,8 +166,8 @@ def bestellmengen(artnr):
     return dict([(x['liefer_date'], x['SUM(BPMNGB-BPMNGL)']) for x in rows if x['SUM(BPMNGB-BPMNGL)'] > 0])
     
 
-def auftragsmengen(artnr, lager=0):
-    """Liefert eine Liste offener Aufträge OHNE UMLAGERUNGEN.
+def auftragsmengen(artnr, lager=None):
+    """Liefert eine Liste offener Aufträge für einen Artikel OHNE UMLAGERUNGEN.
     
     >>> auftragsmengen(14865)
     {datetime.date(2009, 3, 2): 340,
@@ -169,7 +178,7 @@ def auftragsmengen(artnr, lager=0):
     
     condition = (
     "AKAUFN=APAUFN"
-    " AND APAUFA<>'U'"                # kein Umlagerungsauftrag
+    " AND AKAUFA<>'U'"                # kein Umlagerungsauftrag
     " AND APARTN=%s"                  # Artikelnummer
     " AND APSTAT<>'X'"                # Position nicht logisch gelöscht
     " AND APKZVA=0"                   # Position nicht als 'voll ausgeliefert' markiert
@@ -179,16 +188,53 @@ def auftragsmengen(artnr, lager=0):
     
     if lager:
         # Achtung, hier gibt es KEIN Lager 0 in der Tabelle. D.h. APLGNR=0 gibt nix
-        rows = get_connection().query(['AAP00', 'AAK00'], fields=['APDTLT', 'SUM(APMNG-APMNGF-APMNGG)'],
-                       condition=(condition + " AND APLGNR=%d") % (sql_quote(artnr), lager),
-                       ordering='APDTLT', grouping='APDTLT',
-                       querymappings={'SUM(APMNG-APMNGF-APMNGG)': 'menge_offen'})
-    else:
-        rows = get_connection().query(['AAP00', 'AAK00'], fields=['APDTLT', 'SUM(APMNG-APMNGF-APMNGG)'],
-                       condition=condition % (sql_quote(artnr)),
-                       ordering='APDTLT', grouping='APDTLT',
-                       querymappings={'SUM(APMNG-APMNGF-APMNGG)': 'menge_offen', 'APDTLT': 'liefer_date'})
+        conditions = condition + (" AND APLGNR=%d" % lager)
+    rows = get_connection().query(['AAP00', 'AAK00'], fields=['APDTLT', 'SUM(APMNG-APMNGF-APMNGG)'],
+                   condition=condition % (sql_quote(artnr)),
+                   ordering='APDTLT', grouping='APDTLT',
+                   querymappings={'SUM(APMNG-APMNGF-APMNGG)': 'menge_offen', 'APDTLT': 'liefer_date'})
     return dict([(x['liefer_date'], x['menge_offen']) for x in rows if x['menge_offen'] > 0])
+    
+
+def auftragsmengen_alle_artikel(lager=0):
+    """Liefert eine Liste offener Aufträge aller Artikel OHNE UMLAGERUNGEN.
+    
+    >>> auftragsmengen_alle_artikel(34)
+    {'14550': {datetime.date(2008, 11, 30): 3450,
+               datetime.date(2008, 12, 1): 8,
+               datetime.date(2008, 12, 15): 5056},
+     '14565': {datetime.date(2009, 2, 9): 750,
+               datetime.date(2009, 3, 23): 1008,
+               datetime.date(2009, 4, 27): 625},
+     '14566': {datetime.date(2009, 2, 2): 4000,
+               datetime.date(2009, 6, 1): 400},
+     '14635': {datetime.date(2008, 11, 19): 20,
+               datetime.date(2008, 11, 24): 763,
+               datetime.date(2008, 11, 27): 200}}
+    """
+    
+    condition = (
+    "AKAUFN=APAUFN"
+    " AND AKAUFA<>'U'"                # kein Umlagerungsauftrag
+    " AND APSTAT<>'X'"                # Position nicht logisch gelöscht
+    " AND APKZVA=0"                   # Position nicht als 'voll ausgeliefert' markiert
+    " AND (APMNG-APMNGF-APMNGG) > 0"  # (noch) zu liefernde menge ist positiv
+    " AND AKSTAT<>'X'"                # Auftrag nicht logisch gelöscht
+    " AND AKKZVA=0")                  # Auftrag nicht als 'voll ausgeliefert' markiert
+    
+    if lager:
+        # Achtung, hier gibt es KEIN Lager 0 in der Tabelle. D.h. APLGNR=0 gibt nix
+        condition = condition + (" AND APLGNR=%d" % lager)
+    rows = get_connection().query(['AAP00', 'AAK00'],
+     fields=['APARTN', 'APDTLT', 'SUM(APMNG-APMNGF-APMNGG)'],
+     condition=condition,
+     ordering='APDTLT', grouping=['APARTN', 'APDTLT'],
+     querymappings={'SUM(APMNG-APMNGF-APMNGG)': 'menge_offen', 'APARTN': 'artnr', 'APDTLT': 'liefer_date'})
+    ret = {}
+    for row in rows:
+        if row['menge_offen']:
+            ret.setdefault(str(row['artnr']), {})[row['liefer_date']] = int(row['menge_offen'])
+    return ret
     
 
 def versionsvorschlag(menge, artnr, date, dateformat="%Y-%m-%d"):
@@ -275,7 +321,7 @@ def umlagermenge(artnr, lager, vonlager=None):
     condition = (
     "AKAUFN=APAUFN"
     " AND APARTN=%s"                  # Artikelnummer
-    " AND APAUFA='U'"                 # Umlagerungsauftrag
+    " AND AKAUFA='U'"                 # Umlagerungsauftrag
     " AND APSTAT<>'X'"                # Position nicht logisch gelöscht
     " AND APKZVA=0"                   # Position nicht als 'voll ausgeliefert' markiert
     " AND (APMNG-APMNGF-APMNGG) > 0"  # (noch) zu liefernde menge ist positiv
@@ -331,7 +377,7 @@ def besteande(lager):
     # Offene Umlagerungen an dieses Lager zurechnen.
     condition = (
     "AKAUFN=APAUFN"
-    " AND APAUFA='U'"                 # Umlagerungsauftrag
+    " AND AKAUFA='U'"                 # Umlagerungsauftrag
     " AND APSTAT<>'X'"                # Position nicht logisch gelöscht
     " AND APKZVA=0"                   # Position nicht als 'voll ausgeliefert' markiert
     " AND (APMNG-APMNGF-APMNGG) > 0"  # (noch) zu liefernde menge ist positiv
@@ -347,11 +393,11 @@ def besteande(lager):
     return bbesteande
 
 
-    
-
-def test():
+def _test():
     """Some very simple tests."""
     import pprint
+    print "auftragsmengen_alle_artikel(34) = ",
+    pprint.pprint(auftragsmengen_alle_artikel(34))
     print "verfuegbare_mengen(34) = ",
     pprint.pprint(verfuegbare_mengen(34))
     print "besteande(100) = ",
@@ -374,4 +420,4 @@ def test():
     
 
 if __name__ == '__main__':
-    test()
+    _test()

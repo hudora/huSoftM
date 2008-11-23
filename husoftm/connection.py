@@ -8,9 +8,12 @@ This module enables connections to a server which in turn enables ODBC connectio
 
 __revision__ = "$Revision$"
 
-import time
+from pkg_resources import require
+require("Pyro")
+
 import datetime
 import logging
+import time
 import Pyro.core
 
 from husoftm.fields import MAPPINGDIR, DATETIMEDIR

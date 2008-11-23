@@ -7,6 +7,10 @@ Created by Maximillian Dornseif on 2006-10-19.
 
 Hier werden Warenbestände, verfügbare Mengen und dergleichen ermittelt.
 
+Für die Frage, ob wir einen Artikel verkaufen können ist freie_menge() die richtige Funktion.
+Für die Frage, ob ein bestimmter Artikel in einem bestimmten LAger ist, ist bestand() geignet.
+
+
 """
 
 __revision__ = "$Revision$"
@@ -14,6 +18,7 @@ __revision__ = "$Revision$"
 import datetime
 import time
 import warnings  
+from collections import defaultdict
 from types import ListType, TupleType
 from husoftm.connection import get_connection
 from husoftm.tools import sql_escape, sql_quote
@@ -51,14 +56,14 @@ def buchbestand(artnr, lager=0):
     """
     
     rows = get_connection().query('XLF00', fields=['LFMGLP'],
-               condition="LFLGNR=%d AND LFARTN='%s' AND LFMGLP<>0 AND LFSTAT=' '" % (int(lager), artnr))
+               condition="LFLGNR=%d AND LFARTN='%s' AND LFMGLP<>0 AND LFSTAT<>'X'" % (int(lager), artnr))
     return _int_or_0(rows)
     
 
 def get_verfuegbaremenge(artnr=None, lager=0):
     warnings.warn("get_verfuegbaremenge() is deprecated use verfuegbar()", DeprecationWarning, stacklevel=2) 
     return verfuegbare_menge(artnr, lager)
-
+    
 
 def verfuegbare_menge(artnr, lager=0):
     """Gibt die aktuell verfügbare Menge eines Artikels an einem Lager zurück oder (lager=0) für alle Lager
@@ -70,13 +75,30 @@ def verfuegbare_menge(artnr, lager=0):
     """
     
     rows = get_connection().query('XLF00', fields=['LFMGLP', 'LFMGK4', 'LFMGLP-LFMGK4'],
-               condition="LFLGNR=%s AND LFARTN='%s' AND LFMGLP<>0 AND LFSTAT = ' '" % (
+               condition="LFLGNR=%s AND LFARTN='%s' AND LFMGLP<>0 AND LFSTAT<>'X'" % (
                     sql_escape(lager), sql_escape(artnr)))
     if rows:
         (menge, lfmgk4, dummy) = rows[0]
         return _int_or_0(menge) - _int_or_0(lfmgk4)
     else:
         return 0
+    
+
+def verfuegbare_mengen(lager=0):
+    """Gibt die Verfügbaren Mengen aller artikel eines Lagers zurück. Siehe auch besteande().
+    
+    >>> verfuegbare_mengen(34)
+    {'10106': 6,
+     '12551': 2854,
+     ...
+     '83165': 598}
+    """
+    
+    rows = get_connection().query('XLF00', nomapping=True, grouping=['LFARTN'],
+                                  fields=['LFARTN', 'SUM(LFMGLP)', 'SUM(LFMGK4)', 'SUM(LFMGLP-LFMGK4)'],
+                                  condition="LFLGNR=%s AND LFMGLP<>0 AND LFSTAT<>'X'" % sql_escape(lager))
+    return dict([(str(artnr), _int_or_0(menge) - _int_or_0(lfmgk4)) 
+                 for (artnr, menge, lfmgk4, dummy) in rows])
     
 
 def freie_menge(artnr, dateformat="%Y-%m-%d"):
@@ -172,8 +194,10 @@ def auftragsmengen(artnr, lager=0):
 def versionsvorschlag(menge, artnr, date, dateformat="%Y-%m-%d"):
     """Gib einen Vorschlag für Zusammenstellung von Artikeln zurück.
     
-    >>> pprint.pprint(versionsvorschlag(2000, '76095', '2009-01-04'))
-    
+    >>> versionsvorschlag(2000, '22006', '2009-01-04')
+    (True, [(1184, '22006'), (816, '22006/03')])
+    >>> versionsvorschlag(2000, '76095', '2009-01-04')
+    (False, [(0, '76095')])
     """
     
     #p = Product.objects.get(artnr=artnr)
@@ -203,14 +227,20 @@ def versionsvorschlag(menge, artnr, date, dateformat="%Y-%m-%d"):
     
 
 def frei_ab(menge, artnr, dateformat="%Y-%m-%d"):
-    """Finds the earliest date when menge is frei (available) or None if it isn't available at all."""
+    """Finds the earliest date when menge is frei (available) or None if it isn't available at all.
+    
+    >>> frei_ab(50, '76095')
+    None
+    >>> frei_ab(500, '01104')
+    datetime.date(2008, 11, 22)
+    """
     
     # Algorythmus: vom Ende der Bestandskurve nach hinten gehen, bis wir an einen punkt kommen, wo die
     # Kurve niedriger ist, als die geforderte Menge - ab da ist die Menge frei.
     
     bentwicklung = bestandsentwicklung(artnr, dateformat)
     # shortcut: the bestand never drops below menge
-    if min(bentwicklung.values()) > menge:
+    if bentwicklung and min(bentwicklung.values()) > menge:
         return datetime.date.today()
     
     bentwicklung = bentwicklung.items()
@@ -224,7 +254,7 @@ def frei_ab(menge, artnr, dateformat="%Y-%m-%d"):
             else:
                 return False
         previous_date = datum
-    return False
+    return None
     
 
 def get_umlagerungen(artnr, vonlager=26):
@@ -232,16 +262,20 @@ def get_umlagerungen(artnr, vonlager=26):
     return umlagermenge(artnr, anlager=100, vonlager=vonlager)
     
 
-def umlagermenge(artnr, anlager=100, vonlager=None):
-    """Ermittelt wieviel Umlagerungen für einen Artikel unterwegs sind"""
+def umlagermenge(artnr, lager, vonlager=None):
+    """Ermittelt wieviel Umlagerungen für einen Artikel unterwegs sind.
+    
+    >>> umlagermenge('76095', 100)
+    0
+    """
     
     # Das Auslieferungslager steht in AKLGN1, Das Ziellager steht in AKLGN2
     # In APLGNR steht AUCH das Abgangslager
     
     condition = (
     "AKAUFN=APAUFN"
-    " AND APAUFA='U'"                 # kein Umlagerungsauftrag
     " AND APARTN=%s"                  # Artikelnummer
+    " AND APAUFA='U'"                 # Umlagerungsauftrag
     " AND APSTAT<>'X'"                # Position nicht logisch gelöscht
     " AND APKZVA=0"                   # Position nicht als 'voll ausgeliefert' markiert
     " AND (APMNG-APMNGF-APMNGG) > 0"  # (noch) zu liefernde menge ist positiv
@@ -252,37 +286,91 @@ def umlagermenge(artnr, anlager=100, vonlager=None):
     if vonlager:
         rows = get_connection().query(['AAP00', 'AAK00'], fields=['SUM(APMNG-APMNGF-APMNGG)'], nomapping=True,
             condition=(condition + " AND AKLGN1=%s") % 
-                      (sql_quote(artnr), int(anlager), int(vonlager)))
+                      (sql_quote(artnr), int(lager), int(vonlager)))
     else:
         rows = get_connection().query(['AAP00', 'AAK00'], fields=['SUM(APMNG-APMNGF-APMNGG)'], nomapping=True,
-            condition=condition % (sql_quote(artnr), int(anlager)))
+            condition=condition % (sql_quote(artnr), int(lager)))
     return _int_or_0(rows)
     
 
 def get_lagerbestandmitumlagerungen(artnr, vonlager=26):
     warnings.warn("get_lagerbestandmitumlagerungen() is deprecated use bestand()",
                   DeprecationWarning, stacklevel=2) 
-    return bestand(artnr, anlager=100, vonlager=vonlager)
+    return bestand(artnr, lager=100, vonlager=vonlager)
     
 
-def bestand(artnr, lager=100, vonlager=None):
-    """Ermittelt den Lagerbestand (Buchbestand + kurzum in diesem Lager eintreffene Güter."""
+def bestand(artnr, lager, vonlager=None):
+    """Ermittelt den Lagerbestand (Buchbestand + kurzum in diesem Lager eintreffene Güter) eines Artikels.
+    
+    >>> bestand('76095')
+    53
+    """
     
     return buchbestand(artnr, lager=lager) + umlagermenge(artnr, lager, vonlager)
+    
+
+def besteande(lager):
+    """Ermittelt den Lagerbestand (Buchbestand + in diesem Lager eintreffene Güter) aller Artikel am Lager.
+    
+    >>> bestaende(100)
+    {'01013': 61,
+     '01020': 96,
+     '01022': 2197,
+     '01023': 1000,
+     '01104': 110,
+     '01104/01': 502,
+     ...
+     'WK83162': 380,
+     'WK84020': 68}
+     """
+    
+    rows = get_connection().query('XLF00', fields=['LFARTN', 'LFMGLP'],
+               condition="LFLGNR=%d AND LFMGLP<>0 AND LFSTAT<>'X'" % (int(lager)))
+    bbesteande = dict([(str(row[0]), int(row[1])) for row in rows])
+    
+    # Offene Umlagerungen an dieses Lager zurechnen.
+    condition = (
+    "AKAUFN=APAUFN"
+    " AND APAUFA='U'"                 # Umlagerungsauftrag
+    " AND APSTAT<>'X'"                # Position nicht logisch gelöscht
+    " AND APKZVA=0"                   # Position nicht als 'voll ausgeliefert' markiert
+    " AND (APMNG-APMNGF-APMNGG) > 0"  # (noch) zu liefernde menge ist positiv
+    " AND AKSTAT<>'X'"                # Auftrag nciht logisch gelöscht
+    " AND AKKZVA=0"                   # Auftrag nicht als 'voll ausgeliefert' markiert
+    " AND AKLGN2=%d")                 # Zugangslager
+    
+    rows = get_connection().query(['AAP00', 'AAK00'], fields=['APARTN', 'SUM(APMNG-APMNGF-APMNGG)'],
+                                  nomapping=True, condition=condition % int(lager), grouping=['APARTN'])
+    for artnr, umlagerungsmenge in rows:
+        print artnr, umlagerungsmenge, bbesteande.get(artnr, 0)
+        bbesteande[str(artnr)] = bbesteande.get(artnr, 0) + int(umlagerungsmenge)
+    return bbesteande
+
+
     
 
 def test():
     """Some very simple tests."""
     import pprint
+    print "verfuegbare_mengen(34) = ",
+    pprint.pprint(verfuegbare_mengen(34))
+    print "besteande(100) = ",
+    pprint.pprint(besteande(100))
     for artnr in '76095 14600/03 14865 71554/A 01104 10106 14890 WK22002'.split():
-        print "xx", artnr, "xxxxxxxxxxxxxxxxxxxxxxxx"
+        print "versionsvorschlag(2000, %r, '2009-01-04') = " % artnr,
         pprint.pprint(versionsvorschlag(2000, artnr, '2009-01-04'))
+        print "buchbestand(%r) = " % artnr,
         pprint.pprint(buchbestand(artnr))
+        print "verfuegbare_menge(%r) = " % artnr,
         pprint.pprint(verfuegbare_menge(artnr))
+        print "bestandsentwicklung(%r) = " % artnr,
         pprint.pprint((bestandsentwicklung(artnr)))
+        print "frei_ab(50, %r) = " % artnr,
         pprint.pprint((frei_ab(50, artnr)))
-        pprint.pprint((umlagermenge(artnr)))
-        pprint.pprint((bestand(artnr)))
+        print "umlagermenge(%r, 100) = " % artnr,
+        pprint.pprint((umlagermenge(artnr, 100)))
+        print "bestand(%r, 100) = " % artnr,
+        pprint.pprint((bestand(artnr, 100)))
     
 
 if __name__ == '__main__':

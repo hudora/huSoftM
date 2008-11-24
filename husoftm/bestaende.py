@@ -53,7 +53,7 @@ def _int_or_0(data):
 
 def get_lagerbestand(artnr=None, lager=0):
     warnings.warn("get_lagerbestand() is deprecated use buchbestand()", DeprecationWarning, stacklevel=2) 
-    return get_lagerbestand(artnr, lager)
+    return buchbestand(artnr, lager)
     
 
 def buchbestand(artnr, lager=0):
@@ -83,11 +83,11 @@ def verfuegbare_menge(artnr, lager=0):
     3456
     """
     
-    rows = get_connection().query('XLF00', fields=['LFMGLP', 'LFMGK4', 'LFMGLP-LFMGK4'],
+    rows = get_connection().query('XLF00', fields=['LFMGLP', 'LFMGK4'],
                condition="LFLGNR=%s AND LFARTN='%s' AND LFMGLP<>0 AND LFSTAT<>'X'" % (
                     sql_escape(lager), sql_escape(artnr)))
     if rows:
-        (menge, lfmgk4, dummy) = rows[0]
+        (menge, lfmgk4) = rows[0]
         return _int_or_0(menge) - _int_or_0(lfmgk4)
     else:
         return 0

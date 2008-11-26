@@ -21,6 +21,8 @@ def buchdurchschnittspreis(artnr):
                                   condition="LFLGNR=0 AND LFARTN=%s AND LFSTAT<>'X'" % sql_quote(artnr))
     if rows:
         return rows[0][0]
+    else:
+        return 0
     
 
 class Artikel(object):

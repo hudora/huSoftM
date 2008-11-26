@@ -14,6 +14,7 @@ Für die Frage, ob ein bestimmter Artikel in einem bestimmten Lager ist, ist bes
     auftragsmengen(artnr, lager=0)                bei uns von Kunden bestellte Mengen
     umlagermenge(artnr, lager, vonlager=None)     Menge, die zur Zeit von einem Lager ans andere unterwegs ist
     buchbestand(artnr, lager=0)                   Artikel am Lager
+    buchbestaende(lager=0)                        Alle Artikel an einem Lager 
     freie_menge(artnr)                            Menge, die Verkauft werden kann
     frei_ab(menge, artnr, dateformat="%Y-%m-%d")  ab wann ist eine bestimmte Menge frühstens verfügbar?
     bestand(artnr, lager, vonlager=None)          Wieviel ist zur Zeit an einem Lager oder trifft kurzum ein?
@@ -27,26 +28,9 @@ __revision__ = "$Revision$"
 import datetime
 import time
 import warnings  
-from collections import defaultdict
-from types import ListType, TupleType
-from husoftm.connection import get_connection
+from husoftm.connection import get_connection, int_or_0
 from husoftm.tools import sql_escape, sql_quote
 
-
-def _int_or_0(data):
-    """Helper for unwinding SoftM nested list replies."""
-    try:
-        if type(data) in (ListType, TupleType):
-            if data and data[0]:
-                if type(data[0]) in (ListType, TupleType):
-                    return int(data[0][0])
-                return int(data[0])
-        if data:
-            return int(data)
-        return 0
-    except TypeError:
-        return 0
-    
 
 # see https://cybernetics.hudora.biz/intern/trac/wiki/HudoraGlossar -> Mengen for further enlightenment
 
@@ -65,8 +49,31 @@ def buchbestand(artnr, lager=0):
     """
     
     rows = get_connection().query('XLF00', fields=['LFMGLP'],
-               condition="LFLGNR=%d AND LFARTN='%s' AND LFMGLP<>0 AND LFSTAT<>'X'" % (int(lager), artnr))
-    return _int_or_0(rows)
+               condition="LFLGNR=%d AND LFARTN=%s AND LFMGLP<>0 AND LFSTAT<>'X'" % (int(lager), 
+                                                                                      sql_quote(artnr)))
+    return int_or_0(rows)
+    
+
+def buchbestaende(lager=0):
+    """Gibt den Buchbestand aller Artikel für ein Lager zurück oder (lager=0) für alle Lager
+    
+    >>> buchbestaende()
+    {'01012': 1.0,
+     '01013': 246.0,
+     '01020': 395.0,
+     '01022': 2554.0,
+     '01023': 7672.0,
+     '01104': 109.0,
+     '01104/01': 758.0,
+     '01105': 203.0,
+     '01105/01': 799.0,
+     '01106/01': 1012.0}
+    
+    """
+    
+    rows = get_connection().query('XLF00', fields=['LFARTN', 'SUM(LFMGLP)'], grouping=['LFARTN'],
+               condition="LFLGNR=%d AND LFMGLP<>0 AND LFSTAT<>'X'" % (int(lager)))
+    return dict([(str(artnr), int(quantity)) for artnr, quantity in rows])
     
 
 def get_verfuegbaremenge(artnr=None, lager=0):
@@ -84,11 +91,11 @@ def verfuegbare_menge(artnr, lager=0):
     """
     
     rows = get_connection().query('XLF00', fields=['LFMGLP', 'LFMGK4'],
-               condition="LFLGNR=%s AND LFARTN='%s' AND LFMGLP<>0 AND LFSTAT<>'X'" % (
-                    sql_escape(lager), sql_escape(artnr)))
+               condition="LFLGNR=%s AND LFARTN=%s AND LFMGLP<>0 AND LFSTAT<>'X'" % (
+                    sql_escape(lager), sql_quote(artnr)))
     if rows:
         (menge, lfmgk4) = rows[0]
-        return _int_or_0(menge) - _int_or_0(lfmgk4)
+        return int_or_0(menge) - int_or_0(lfmgk4)
     else:
         return 0
     
@@ -106,7 +113,7 @@ def verfuegbare_mengen(lager=0):
     rows = get_connection().query('XLF00', nomapping=True, grouping=['LFARTN'],
                                   fields=['LFARTN', 'SUM(LFMGLP)', 'SUM(LFMGK4)', 'SUM(LFMGLP-LFMGK4)'],
                                   condition="LFLGNR=%s AND LFMGLP<>0 AND LFSTAT<>'X'" % sql_escape(lager))
-    return dict([(str(artnr), _int_or_0(menge) - _int_or_0(lfmgk4)) 
+    return dict([(str(artnr), int_or_0(menge) - int_or_0(lfmgk4)) 
                  for (artnr, menge, lfmgk4, dummy) in rows])
     
 
@@ -290,8 +297,7 @@ def frei_ab(menge, artnr, dateformat="%Y-%m-%d"):
         return datetime.date.today()
     
     bentwicklung = bentwicklung.items()
-    bentwicklung.sort()
-    bentwicklung.reverse()
+    bentwicklung.sort(reverse=True)
     previous_date = None
     for datum, menge_frei in bentwicklung:
         if menge_frei < menge:
@@ -336,7 +342,7 @@ def umlagermenge(artnr, lager, vonlager=None):
     else:
         rows = get_connection().query(['AAP00', 'AAK00'], fields=['SUM(APMNG-APMNGF-APMNGG)'], nomapping=True,
             condition=condition % (sql_quote(artnr), int(lager)))
-    return _int_or_0(rows)
+    return int_or_0(rows)
     
 
 def get_lagerbestandmitumlagerungen(artnr, vonlager=26):
@@ -395,28 +401,30 @@ def besteande(lager):
 
 def _test():
     """Some very simple tests."""
-    import pprint
+    from pprint import pprint
+    print "buchbestaende() =",
+    pprint(buchbestaende())
     print "auftragsmengen_alle_artikel(34) = ",
-    pprint.pprint(auftragsmengen_alle_artikel(34))
+    pprint(auftragsmengen_alle_artikel(34))
     print "verfuegbare_mengen(34) = ",
-    pprint.pprint(verfuegbare_mengen(34))
+    pprint(verfuegbare_mengen(34))
     print "besteande(100) = ",
-    pprint.pprint(besteande(100))
+    pprint(besteande(100))
     for artnr in '76095 14600/03 14865 71554/A 01104 10106 14890 WK22002'.split():
         print "versionsvorschlag(2000, %r, '2009-01-04') = " % artnr,
-        pprint.pprint(versionsvorschlag(2000, artnr, '2009-01-04'))
+        pprint(versionsvorschlag(2000, artnr, '2009-01-04'))
         print "buchbestand(%r) = " % artnr,
-        pprint.pprint(buchbestand(artnr))
+        pprint(buchbestand(artnr))
         print "verfuegbare_menge(%r) = " % artnr,
-        pprint.pprint(verfuegbare_menge(artnr))
+        pprint(verfuegbare_menge(artnr))
         print "bestandsentwicklung(%r) = " % artnr,
-        pprint.pprint((bestandsentwicklung(artnr)))
+        pprint((bestandsentwicklung(artnr)))
         print "frei_ab(50, %r) = " % artnr,
-        pprint.pprint((frei_ab(50, artnr)))
+        pprint((frei_ab(50, artnr)))
         print "umlagermenge(%r, 100) = " % artnr,
-        pprint.pprint((umlagermenge(artnr, 100)))
+        pprint((umlagermenge(artnr, 100)))
         print "bestand(%r, 100) = " % artnr,
-        pprint.pprint((bestand(artnr, 100)))
+        pprint((bestand(artnr, 100)))
     
 
 if __name__ == '__main__':

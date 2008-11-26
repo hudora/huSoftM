@@ -10,9 +10,18 @@ Copyright (c) 2007 HUDORA GmbH. All rights reserved.
 __revision__ = "$Revision$"
 
 import unittest
-from husoftm.connection import get_connection
 import husoftm
+from husoftm.connection import get_connection
+from husoftm.tools import sql_quote
 
+
+def buchdurchschnittspreis(artnr):
+    """Gibt den Buchdurchschnittspreis für einen Artikel zurück"""
+    rows = get_connection().query('XLF00', fields=['LFPRBD'],
+                                  condition="LFLGNR=0 AND LFARTN=%s AND LFSTAT<>'X'" % sql_quote(artnr))
+    if rows:
+        return rows[0][0]
+    
 
 class Artikel(object):
     
@@ -107,6 +116,7 @@ def komponentenaufloesung(mengenliste):
     return ret
     
 
+# TODO: do we need KomponentenResolver() and komponentenaufloesung?
 class KomponentenResolver(object):
     
     def __init__(self):

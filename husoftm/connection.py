@@ -15,16 +15,31 @@ import datetime
 import logging
 import time
 import Pyro.core
-
+from types import ListType, TupleType, StringType
 from husoftm.fields import MAPPINGDIR, DATETIMEDIR
-from husoftm.tools import softm2date
+from husoftm.tools import softm2date, sql_quote
 import husoftm.mock_as400
-from types import StringType
+
 
 Pyro.core.initClient(banner=False)
 LOG = logging.getLogger('huSoftM.sql')
 LOG.setLevel(logging.WARN)
 
+
+def int_or_0(data):
+    """Helper for unwinding SoftM nested list replies - not meant for public use."""
+    try:
+        if type(data) in (ListType, TupleType):
+            if data and data[0]:
+                if type(data[0]) in (ListType, TupleType):
+                    return int(data[0][0])
+                return int(data[0])
+        if data:
+            return int(data)
+        return 0
+    except TypeError:
+        return 0
+    
 
 def _combine_date_and_time(mappings, fields, i, row, rowdict):
     """If there is also a time field in addition to a date field combine them."""

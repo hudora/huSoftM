@@ -17,7 +17,7 @@ import time
 import Pyro.core
 from types import ListType, TupleType, StringType
 from husoftm.fields import MAPPINGDIR, DATETIMEDIR
-from husoftm.tools import softm2date, sql_quote
+from husoftm.tools import softm2date
 import husoftm.mock_as400
 
 

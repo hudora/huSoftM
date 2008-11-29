@@ -26,14 +26,18 @@ doc: build
 	sh -c '(cd html; pydoc -w ../husoftm/*.py)'
 
 test:
+	PYTHONPATH=. python husoftm/artikel.py
+	PYTHONPATH=. python husoftm/bestaende.py
+	PYTHONPATH=. python husoftm/kunden.py
+	PYTHONPATH=. python husoftm/lieferschein.py 
+	# PYTHONPATH=. python husoftm/stapelschnittstelle.py
 	PYTHONPATH=. python husoftm/tools.py
-	PYTHONPATH=. python husoftm/stapelschnittstelle.py
 
 install: build
 	sh -c 'sudo python setup.py install'
 
 clean:
-	rm -Rf build dist html test.db huSoftM.egg-info svn-commit.tmp
-	find . -name '*.pyc' -or -name '*.pyo' -delete
+	rm -Rf build dist html test.db huSoftM.egg-info svn-commit.tmp 
+	find . -name '*.pyc' -or -name '*.pyo' -or -name 'biketextmate.log' -delete
 
 .PHONY: build test

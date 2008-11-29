@@ -63,7 +63,7 @@ class Kunde(object):
         #self.vertreter = row.get('vertreter', '') # ': u'201'
         #self.branche = row.get('branche', '') # ': u'13'
         #self.versandart = row.get('versandart', '') # ': u''
-        self.iln = unicode(row.get('ILN', '')).strip()
+        self.iln = unicode(row.get('iln', '')).strip()
         self.land = husoftm.tools.land2iso(row['laenderkennzeichen']) # D
         if row['erfassung_date']:
             self.erfassung = row['erfassung_date']
@@ -94,7 +94,7 @@ def get_kundennummern():
     """Returns a list of all 'Kundennummern'."""
     
     rows = husoftm.connection.get_connection().query('XKD00', fields=['KDKDNR'])
-    return [int(x) for x in rows]
+    return [int(x[0]) for x in rows]
 
 
 def get_changed_after(date):
@@ -103,11 +103,11 @@ def get_changed_after(date):
     date = int(date.strftime('1%y%m%d'))
     rows = husoftm.connection.get_connection().query('XKD00', fields=['KDKDNR'],
                                           condition="KDDTER>%d OR KDDTAE>=%d" % (date, date))
-    ret = set([int(x) for x in rows])
+    ret = set([int(x[0]) for x in rows])
     # 
     rows = husoftm.connection.get_connection().query('AKZ00', fields=['KZKDNR'],
                                           condition="KZDTAE>=%d" % (date))
-    ret = ret|set([int(x) for x in rows])
+    ret = ret|set([int(x[0]) for x in rows])
     return list(ret)
 
 
@@ -138,7 +138,8 @@ def get_kunde(kdnnr):
 def get_kunde_by_iln(iln):
     """Get Kunden Address based on ILN.
     
-    See http://cybernetics.hudora.biz/projects/wiki/AddressProtocol for the structure of returned data."""
+    See http://cybernetics.hudora.biz/projects/wiki/AddressProtocol for the structure of returned data.
+    """
     
     rows = husoftm.connection.get_connection().query(['XKS00'], condition="KCE2IL='%s'" % (int(iln), ))
     if rows:

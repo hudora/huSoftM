@@ -413,9 +413,9 @@ MAPPINGDIR = {
           #'LNKZBE': 'Kz:keine Bestandsführung =1
           'LNMNGO': 'menge_offen',
           'LNDTLT': 'liefertermin_date',
-          'LNJWLT': 'liefertermin_woche',
+          #'LNJWLT': 'liefertermin_woche',
           'LNKZRK': 'rueckstand_erlaubt',
-          'LNKZZL': 'zuteilungskennzeichen',
+          #'LNKZZL': 'zuteilungskennzeichen',
           'LNKZZU': 'bevorzugte_zuteilung',
           'LNKDRG': 'rechnungsempfaenger',
           'LNKDNR': 'kundennr',
@@ -430,7 +430,7 @@ MAPPINGDIR = {
           #'LNKZFA': 'Kz:Pos.für Fakt.ausgewählt=
           #'LNKZFF': 'Kz: Pos ist fakturierbar =
           'LNDTST': 'storno_date',
-          'LNKZRE': 'lieferschein_ausloesung',
+          #'LNKZRE': 'lieferschein_ausloesung',
           'LNKBNR': 'kommissionierbelegnr',
           'LNMNGK': 'menge_komissionierbeleg',
           'LNDTKB': 'komissionierbeleg_date',
@@ -451,7 +451,7 @@ MAPPINGDIR = {
           #'LNKZUB': 'Übernahmekennzeichen
           #'LNKINF': 'Kennzeicheninfo
           #'LNAUPS': 'bezogene Position
-          'LNKZ03': 'hrl_status',
+          #'LNKZ03': 'hrl_status',
           #'LNRSN1': 'Druck-Kz für KB
           'LNDTER': 'erfassung_date',
           'LNZTER': 'erfassung_time',
@@ -549,7 +549,7 @@ MAPPINGDIR = {
           # 'BPKZSO': 'KZ: Sonderartikel          ' ,
           # 'BPKZBE': 'KZ: Ohne Bestandsf}hrung   ' ,
           # 'BPFNRK': 'Fnr/Zugriff Lief-Adresse   ' ,
-          'BPLINR': 'lieferant' ,
+          'BPLINR': 'lieferant',
           # 'BPHRST': 'Hersteller                 ' ,
           # 'BPFNRZ': 'zentrale Einkaufsfirma     ' ,
           # 'BPFNRR': 'Firma f}r Rahmen',
@@ -943,7 +943,7 @@ MAPPINGDIR = {
           #'KCSKRL': 'Skto-Ausweis RGL Verband',
           #'KCEDIL': 'LS-Daten per EDI',
           #'KCPRIA': 'Inlands-/Auslandspreise',
-          'KCE2IL': 'ILN',
+          'KCE2IL': 'iln',
           },
 
 'XXA00': {
@@ -1018,7 +1018,6 @@ DATETIMEDIR = {'LKDTLF': 'LKZTLF', # letzter_lieferschein
                'LKDTKB': 'LKZTKB', # letzter_kommissionierbeleg
                'LKDTER': 'LKZTER', # erfassung
                'LKDTAE': 'LKZTAE', # aenderung
-               'LNDTLT': 'LNJWLT', # liefertermin
                'LNDTLF': 'LNZTLF', # lieferschein
                'LNDTER': 'LNZTER', # erfassung
                'LNDTAE': 'LNZTAE', # aenderung

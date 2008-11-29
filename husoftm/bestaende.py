@@ -410,7 +410,8 @@ def _test():
     pprint(verfuegbare_mengen(34))
     print "besteande(100) = ",
     pprint(besteande(100))
-    for artnr in '76095 14600/03 14865 71554/A 01104 10106 14890 WK22002'.split():
+    # for artnr in '76095 14600/03 14865 71554/A 01104 10106 14890 WK22002'.split():
+    for artnr in '14600/03 WK22002'.split():
         print "versionsvorschlag(2000, %r, '2009-01-04') = " % artnr,
         pprint(versionsvorschlag(2000, artnr, '2009-01-04'))
         print "buchbestand(%r) = " % artnr,

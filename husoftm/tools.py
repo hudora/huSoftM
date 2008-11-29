@@ -17,7 +17,7 @@ __revision__ = "$Revision$"
 
 
 logging.basicConfig(level=logging.DEBUG)
-LOG = logging.getLogger('pySoftM.tools')
+LOG = logging.getLogger('husoftm.tools')
 
 
 # SoftM verwendet scheinbar Autokennzeichen

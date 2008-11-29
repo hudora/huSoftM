@@ -10,17 +10,46 @@ Copyright (c) 2007 HUDORA GmbH. All rights reserved.
 __revision__ = "$Revision$"
 
 import unittest
+from decimal import Decimal
 import husoftm
 from husoftm.connection import get_connection
 from husoftm.tools import sql_quote
 
 
+def _auf_zwei_stellen(floatnum):
+    """Converts a float to a Decimal() object with two digits precision.
+    
+    >>> _auf_zwei_stellen(1.0/3.0)
+    0.33
+    """
+    return Decimal(str(floatnum)).quantize(Decimal(10) ** -2)
+    
+
 def buchdurchschnittspreis(artnr):
-    """Gibt den Buchdurchschnittspreis für einen Artikel zurück"""
+    """Gibt den Buchdurchschnittspreis für einen Artikel zurück.
+    
+    >>> buchdurchschnittspreis('04711')
+    13.65
+    """
     rows = get_connection().query('XLF00', fields=['LFPRBD'],
                                   condition="LFLGNR=0 AND LFARTN=%s AND LFSTAT<>'X'" % sql_quote(artnr))
     if rows:
-        return rows[0][0]
+        return _auf_zwei_stellen(rows[0][0])
+    else:
+        return 0
+    
+
+def preis(artnr):
+    """Returns the Listenpreis - later to be extended to als find a customer specific price.
+    
+    >>> preis('04711')
+    13.65
+    """
+    
+    rows = get_connection().query('XAR00', fields=['ARPREV'],
+                                  condition="ARARTN=%s AND ARSTAT<>'X'" % sql_quote(artnr))
+    if rows:
+        return _auf_zwei_stellen(rows[0][0])
     else:
         return 0
     
@@ -119,6 +148,8 @@ def komponentenaufloesung(mengenliste):
     
 
 # TODO: do we need KomponentenResolver() and komponentenaufloesung?
+
+
 class KomponentenResolver(object):
     
     def __init__(self):
@@ -168,11 +199,13 @@ class komponentenaufloesungTests(unittest.TestCase):
 
 
 def _test():
-    import doctest
-    husoftm.MoftSconnection = husoftm.TestMoftSconnection
-    doctest.testmod()
-    unittest.main()
+    print _auf_zwei_stellen(1.0/3.0)
+    print komponentenaufloesung([(5, '00049')])
+    print buchdurchschnittspreis('14600')
+    print preis('14600')
+    # TODO: implement TestMoftSconnection
+    #husoftm.MoftSconnection = husoftm.TestMoftSconnection
+    #unittest.main()
 
 if __name__ == "__main__":
-    print komponentenaufloesung([(5, '00049')])
-    #_test()
+    _test()

@@ -7,11 +7,7 @@ Created by Maximillian Dornseif on 2008-11-25.
 Copyright (c) 2008 HUDORA. All rights reserved.
 """
 
-import sys
-import os
 import unittest
-
-import sqlobject
 from husoftm.connection import get_connection
 
 
@@ -50,6 +46,7 @@ def bestellungen():
     
 
 class miscTests(unittest.TestCase):
+    
     def test_bestellungen(self):
         from pprint import pprint
         pprint(bestellungen())

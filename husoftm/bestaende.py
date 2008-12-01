@@ -195,7 +195,7 @@ def auftragsmengen(artnr, lager=None):
     
     if lager:
         # Achtung, hier gibt es KEIN Lager 0 in der Tabelle. D.h. APLGNR=0 gibt nix
-        conditions = condition + (" AND APLGNR=%d" % lager)
+        condition = condition + (" AND APLGNR=%d" % lager)
     rows = get_connection().query(['AAP00', 'AAK00'], fields=['APDTLT', 'SUM(APMNG-APMNGF-APMNGG)'],
                    condition=condition % (sql_quote(artnr)),
                    ordering='APDTLT', grouping='APDTLT',

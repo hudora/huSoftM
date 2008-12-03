@@ -17,6 +17,13 @@ logging.basicConfig(level=logging.WARN)
 log = logging.getLogger('husoftm.lieferschein')
 
 
+def kbpos2artnr(komminr, posnr):
+    """Gibt die Artikelnummer zu einer bestimmten Position eines Kommissionierbelegs zurück."""
+    rows = get_connection().query('ALN00', fields=['LNARTN'], 
+               condition="LNKBNR=%d AND LNBELP=%d" % (int(komminr), int(posnr)))
+    return rows[0][0]
+    
+
 class Adresse(object):
     """Repräsentiert eine Kundenadresse"""
     # Sollte dem Adressprotocoll folgen - muss aber ncoh überprüft werden.
@@ -196,8 +203,8 @@ class Lieferscheinposition(object):
         return ret
     
 
-class Komissionierbeleg(Lieferschein):
-    """Bildet einen Kommissionierbeleg ab."""
+class Kommibeleg(Lieferschein):
+    """Bildet einen Komissionierbeleg ab (der datentechnisch in SoftM ein Lieferschein ist)."""
     
     def _read_base_row_from_softm(self, kbnr):
         """Liest einen Komissionierbeleg aus der AAK00."""
@@ -216,4 +223,5 @@ def _test():
     pprint(vars(l))
     
 if __name__ == '__main__':
-    _test()
+    print kbpos2artnr(3023551, 1)
+    # _test()

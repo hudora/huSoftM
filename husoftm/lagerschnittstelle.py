@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-rueckmeldeschnittstelle.py - acessing SoftM tables ISA00, ISR00.
+lagerschnittstelle.py - acessing SoftM tables ISA00, ISR00.
 
-Die Rückmeldeschnittstelle dient überwiegend der Entgegennahme von KOmissionierbelegen und dem
-anschließenden Zurückmelden.
+Die LAgerschnittstelle dient überwiegend der Entgegennahme von Kamissionierbelegen und dem
+anschließenden Zurückmelden sowie dem Verbuchen von Warenzugängen.
 
 Created by Lars Ronge, Maximillian Dornseif on 2007-12-07.
 Copyright (c) 2007 HUDORA. All rights reserved.
@@ -12,10 +12,10 @@ Copyright (c) 2007 HUDORA. All rights reserved.
 
 
 import datetime, logging, sqlite3, unittest
-from husoftm import SoftMreadOnlyTable, SoftMtable
+from husoftm.softmtables import SoftMreadOnlyTable, SoftMtable, AS400Connector_mixin
+import husoftm.lieferscheine
 
-
-class ISA00(SoftMtable):
+class ISA00(SoftMtable, AS400Connector_mixin):
     """Zugriff auf die # MyPL Schnittstelle - Komissionierbeleg."""
     
     def __init__(self):
@@ -24,17 +24,17 @@ class ISA00(SoftMtable):
         self.name_status = 'IASTAT'
         self.tablename = 'ISA00'
         self.name_schluessel = 'IAKBNR'
-        self.fieldmappings = { # MyPL Schnittstelle: Komissionierbeleg
-                       'IAFNR':  'firma',
-                       'IALGNR': 'lagernr',
-                       'IAKBNR': 'kommibelegnr',
-                       'IAAUFN': 'auftragsnr',
-                       'IADATE': 'anforderungs_date',
-                       'IATIME': 'anforderung_time',
-                       'IADFSL': 'dateifuehrungsschluessel',
-                       'IASTAT': 'status',
-                       'IASANR': 'satznr',
-                       }
+        self.fieldmappings = {
+            'IAFNR':  'firma',
+            'IALGNR': 'lagernr',
+            'IAKBNR': 'kommibelegnr',
+            'IAAUFN': 'auftragsnr',
+            'IADATE': 'anforderungs_date',
+            'IATIME': 'anforderung_time',
+            'IADFSL': 'dateifuehrungsschluessel',
+            'IASTAT': 'status',
+            'IASANR': 'satznr',
+        }
     
 
 class ALN00(SoftMreadOnlyTable):
@@ -50,89 +50,36 @@ class ALN00(SoftMreadOnlyTable):
                               }
     
 
-# FIXME: no class needed here
-class KommiArtnNrResolver():
-    """Gibt die Artnr zu einer Position eines Kommissionierbelegs zurück (ALN00)."""
+class ISK00(SoftMtable, AS400Connector_mixin):
+    """Bildet Zugänge aus Umlagerungen ab."""
     
-    def artnr_for_kommibleg_position(self, kommibelegnr, position):
-        aln00 = ALN00()
-        ret = aln00.select("LNKBNR='%d' AND LNBELP='%d'" % (int(kommibelegnr), int(position)),
-                           fields="LNARTN as artnr")
-        return ret[0][0]
+    def __init__(self):
+        super(ISK00, self).__init__()
+        self.name_dateifuehrungsschluessel = 'IKDFSL'
+        self.name_status = 'IKSTAT'
+        self.tablename = 'ISK00'
+        self.name_schluessel = 'IKSANR'
+        self.fieldmappings = {
+            'IKFNR': 'firma',
+            'IKKBNR': 'komminr',
+            'IKKPOS': 'kommiposition',
+            'IKAUFN': 'auftragsnr',
+            'IKAUPO': 'auftragsposition',
+            'IKRMNG': 'rueckmeldemenge',
+            'IKDATE': 'rueckmeldung_date',
+            'IKTIME': 'rueckmeldung_time',
+            'IKDFSL': 'dateifuehrungsschluessel',
+            'IKSTAT': 'status',
+            'IKSANR': 'satznr',
+        }
     
 
-def get_kommibleg_from_softm(kommibeleg, kommibelegnr):
-        """Enrichs an Object according to the Kommibeleg Protocol with Data from SoftM.
-        
-        See http://blogs.23.nu/HuCy/stories/16701/ for background of the protocol.
-        In extreme cases you can pass this function an "empty" object:
-        
-        >>> class Foo(object):
-        ...     pass
-        ... 
-        >>> bar = Foo()
-        >>> get_kommibleg_from_softm(bar, kommibelegnr)
-        
-        """
-        
-        kommibeleg.name1
-        kommibeleg.name2
-        kommibeleg.name3
-        kommibeleg.strasse
-        kommibeleg.land
-        kommibeleg.plz
-        kommibeleg.ort
-        kommibeleg.tel
-        kommibeleg.fax
-        kommibeleg.mail
-        kommibeleg.mobil
-        kommibeleg.anlieferdatum
-        kommibeleg.kundennr
-        kommibeleg.versanddatum
-        kommibeleg.auftragsnr
-        kommibeleg.kundenauftragsnr
-        kommibeleg.lieferscheinnr
-        kommibeleg.volumen
-        kommibeleg.paletten
-        kommibeleg.kartons
-        kommibeleg.komminr
-        kommibeleg.kommidatum
-        kommibeleg.lager
-        
-        if not beleg.anlieferdatum:
-            beleg.anlieferdatum = datetime.datetime.now()
-        
-        lieferung = SoftmLieferung()
-        if len(softm_lieferschein.positionen) > 0:
-            position_fieldnames = [position_fieldname.name for position_fieldname
-                                   in LieferscheinPosition._meta.fields]
-            for position in softm_lieferschein.positionen:
-                print position
-                new_position = LieferscheinPosition() 
-                logisticpos = SoftmItem()
-                for external_fieldname in dir(position):
-                    if external_fieldname in position_fieldnames:
-                        setattr(new_position, external_fieldname, getattr(position, external_fieldname))
-                        setattr(logisticpos, external_fieldname, getattr(new_position, external_fieldname))
-                logisticpos.versandart = self.versandart
-                logisticpos.auftragsart = 'A'
-                logisticpos.fixtermin = False
-                logisticpos.prioritaet = self.get_priority()
-                logisticpos.liefertermin = self.liefer_date
-                lieferung.itemlist.append(logisticpos)
-                self.lieferscheinposition_set.add(new_position)
-        
-        for attname in ['auftragsart', 'prioritaet',
-                        'fixtermin', 'liefertermin', 'versandart']:
-            setattr(lieferung, attname, getattr(logisticpos, attname))
-        
-        for attname in ['paletten', 'export_kartons', 'kep', 'anbruch', 'versandtermin']:
-            setattr(self, attname, getattr(lieferung, attname))
-        self.total_weight = lieferung.gewicht
-        self.total_volume = lieferung.volumen 
-        
-        self.save()
-
+def artnr_for_kommibleg_position(self, kommibelegnr, position):
+    aln00 = ALN00()
+    ret = aln00.select("LNKBNR='%d' AND LNBELP='%d'" % (int(kommibelegnr), int(position)),
+                       fields="LNARTN as artnr")
+    return ret[0][0]
+    
 
 #############################################################################
 ### Tests
@@ -280,3 +227,5 @@ def init_testtables():
 
 if __name__ == '__main__':
     unittest.main()
+
+    

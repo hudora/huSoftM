@@ -181,7 +181,7 @@ class SoftMtable(SoftMreadOnlyTable):
         """Removes all locks older than three hours.
         
         This removes all locks (Dateifuehrungsschlüssel) older than three hours."""
-        # why three hours? bacause even when timezones are fucked up (UTC vs CEST)
+        # why three hours? because even when timezones are fucked up (UTC vs CEST)
         # there should be still one hour left
         yesterday = datetime.datetime.now() - datetime.timedelta(hours=3)
         stale_key = yesterday.strftime("%m%d%H%M%S")

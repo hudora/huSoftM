@@ -1,0 +1,20 @@
+The ODBC_bridge is used to bridge between Python/HTTP and IBM iSeries/AS400 ODBC.
+It is part of huSoftM.
+
+See https://cybernetics.hudora.biz/intern/wordpress/2008/12/eine-http-odbc-bridge-in-erlang/
+for further explanation.
+
+To compile you need at least Erlang 12B-4 installed. Erlang needs to be installed with ODBC-Extensions.
+
+This code contains mochiweb r87 by Mochimedia and fragments of yaws by Claes Wikstrom.
+See http://code.google.com/p/mochiweb/ and http://yaws.hyber.org/#.
+
+To use:
+
+$ cd odbc_bridge
+$ make
+$ sh start.sh
+$ python support/test.py 
+$ cat log/access.log 
+
+Done!

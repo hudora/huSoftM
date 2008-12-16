@@ -25,7 +25,7 @@ start_link(Options) ->
 %% @doc SQL SELECT command
 -spec select(QueryStr::string()) -> {'ok', Rows::integer()} | {'error', Reason::any()}.
 select(QueryStr) when is_list(QueryStr) ->
-     gen_server:call(?MODULE, {select, QueryStr}).
+     gen_server:call(?MODULE, {select, QueryStr, 2}).
 
 %% @doc Return Server Informtion
 -spec info() -> {SuccessCount::integer(), ErrorCount::integer(), Reconnects::integer()}.
@@ -43,7 +43,7 @@ init(Options) ->
 
 %% This handles the syncrounous requests to the server.
 %% basically every function variant implements some of the API functions defined above
-handle_call({select, QueryStr}, From, State) ->
+handle_call({select, QueryStr, RecoursionCoutner}, From, State) when RecoursionCoutner > 0 ->
     % execute query
     {Time, Result} = timer:tc(odbc, sql_query, [State#state.odbcref, QueryStr]),
     case Result of
@@ -55,9 +55,11 @@ handle_call({select, QueryStr}, From, State) ->
             % the query failed because the connection has been closed:
             % reopen conection and retry by recursively call ourself
             % with updated state containing the new connection and updated counters
+            % unforunaly 'connection_closed' will also returned with certain malformed queries
+            % so we limit recursion
             odbc:disconnect(State#state.odbcref),
             {ok, Ref} = odbc:connect("DSN=" ++ State#state.dsn, []),
-            handle_call({select, QueryStr}, From,
+            handle_call({select, QueryStr, RecoursionCoutner-1}, From,
                          State#state{odbcref=Ref, reconnects=State#state.reconnects+1});
         {error, Info} ->
             % reopen conection to clean up for the next call
@@ -66,6 +68,9 @@ handle_call({select, QueryStr}, From, State) ->
             % some other error: return the error message
             {reply, {error, Info}, State#state{odbcref=Ref, errorcount=State#state.errorcount+1}}
     end;
+handle_call({select, _QueryStr, _RecoursionCoutner}, _From, State) ->
+    {reply, {error, "Crash in ODBC driver"}, State#state{errorcount=State#state.errorcount+1}};
+
 
 handle_call({info}, _From, State) ->
     {reply, {State#state.successcount, State#state.errorcount, State#state.reconnects}, State}.

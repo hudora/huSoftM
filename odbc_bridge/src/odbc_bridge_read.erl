@@ -60,8 +60,11 @@ handle_call({select, QueryStr}, From, State) ->
             handle_call({select, QueryStr}, From,
                          State#state{odbcref=Ref, reconnects=State#state.reconnects+1});
         {error, Info} ->
+            % reopen conection to clean up for the next call
+            odbc:disconnect(State#state.odbcref),
+            {ok, Ref} = odbc:connect("DSN=" ++ State#state.dsn, []),
             % some other error: return the error message
-            {reply, {error, Info}, State#state{errorcount=State#state.errorcount+1}}
+            {reply, {error, Info}, State#state{odbcref=Ref, errorcount=State#state.errorcount+1}}
     end;
 
 handle_call({info}, _From, State) ->

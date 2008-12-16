@@ -12,6 +12,7 @@ See http://code.google.com/p/mochiweb/ and http://yaws.hyber.org/#.
 To use:
 
 $ cd odbc_bridge
+$ (cd deps/mochiweb-src/ ; make)
 $ make
 $ sh start.sh
 $ python support/test.py 

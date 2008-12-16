@@ -121,7 +121,7 @@ rotate(State) when State#state.linecounter > 1000 ->
              error_logger:info_msg("Reopened log ~p",[State#state.filename]),
              write_message(State#state.fd, calendar:local_time(), "logfile reopened ==================="),
              State#state{fd = Fd2, linecounter=0};
-        X ->
+        _ ->
             State#state{linecounter=State#state.linecounter + 1}
     end;
 rotate(State) -> 

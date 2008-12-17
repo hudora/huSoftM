@@ -14,6 +14,7 @@ import datetime
 import logging
 import sqlite3
 from husoftm.tools import sql_quote
+from husoftm.connection import get_connection
 
 
 class SoftMError(RuntimeError):
@@ -55,22 +56,16 @@ class AS400Connector_mixin(object):
     
     def sql_select(self, sqlstr):
         """Execute the actual SQL query (SELECT)."""
-        import pySoftM
-        softm = pySoftM.PyRoMoftSconnection()
-        return softm.server.select(sqlstr)
+        return get_connection()._raw_sql(sqlstr)
     
     def sql_update(self, sqlstr):
         """Execute the actual SQL query (UPDATE)."""
-        import pySoftM
-        softm = pySoftM.PyRoMoftSconnection()
-        softm.server.update2(sqlstr, token='E~iy3*eej^')
+        get_connection().update_raw(sqlstr)
         return 1
     
     def sql_insert(self, sqlstr):
         """Execute the actual SQL query (INSERT)."""
-        import pySoftM
-        softm = pySoftM.PyRoMoftSconnection()
-        softm.server.insert(sqlstr, token='Aes.o=j7eS(')
+        get_connection().insert_raw(sqlstr)
         return 1
     
 

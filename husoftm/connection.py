@@ -8,24 +8,25 @@ This module enables connections to a server which in turn enables ODBC connectio
 
 __revision__ = "$Revision$"
 
-from pkg_resources import require
-require("Pyro")
 
 import datetime
 import logging
 import time
-import Pyro.core
+import httplib
+import urllib
+import Pyro, Pyro.core
+import simplejson as json
 from types import ListType, TupleType, StringType
 from husoftm.fields import MAPPINGDIR, DATETIMEDIR
 from husoftm.tools import softm2date
 import husoftm.mock_as400
 
 
-Pyro.core.initClient(banner=False)
 LOG = logging.getLogger('huSoftM.sql')
 LOG.setLevel(logging.WARN)
 
 
+# TODO: move to hutools robusttypecasts
 def int_or_0(data):
     """Helper for unwinding SoftM nested list replies - not meant for public use."""
     try:
@@ -208,6 +209,50 @@ class PyRoMoftSconnection(object):
         self.__server.update_adtastapel(vorgangsnummer, token='Ae.so=7e,S(')
     
 
+class ODBCbridgeMoftSconnection(PyRoMoftSconnection):
+    """Represents an connection which can execute SWL on the iSeries-AS/400."""
+    
+    def _select(self, query):
+        param = urllib.quote(query)
+        conn = httplib.HTTPConnection("balancer.local.hudora.biz:8000")
+        # conn.set_debuglevel(5)
+        conn.request("GET", "/select?query=" + param)
+        response = conn.getresponse()
+        if response.status != 200:
+            errorinfo = response.read()
+            # LOG.error('PyRO remote exception:' + (''.join(Pyro.util.getPyroTraceback(msg))))
+            raise RuntimeError("Server Error: %r" % errorinfo)
+        return json.loads(response.read())
+    
+    def _execute_query(self, querystr, querymappings, fields):
+        start = time.time()
+        LOG.debug(querystr)
+        rows = self._select(querystr)
+        
+        querydelta = time.time() - start
+        start = time.time()
+        if querymappings:
+            rows = self._rows2dict(fields, querymappings, rows)
+        else:
+            rows = [[y for y in x] for x in rows]
+        mapdelta = time.time()-start
+        LOG.info("%.3fs/%.3fs, %d rows: %s" % (querydelta, mapdelta, len(rows), querystr))
+        return rows
+    
+    def delete(self, table, condition):
+        raise NotImplementedError
+        
+    def insert_raw(self, sqlstr):
+        raise NotImplementedError
+    
+    def update_raw(self, sqlstr):
+        raise NotImplementedError
+    
+    def update_adtastapel(self, vorgangsnummer):
+        # this is needed bei stapelschnittstelle.py
+        raise NotImplementedError
+    
+
 class PyRoMoftSconnectionToTestDB(PyRoMoftSconnection):
     """Represents an connection which can execute SWL on the Testdatabase (SMKDIFT) on the iSeries-AS/400."""
     
@@ -281,3 +326,27 @@ def get_connection():
     
     # return MoftSconnectionToTestDB()
     return MoftSconnection()
+    return ODBCbridgeMoftSconnection()
+
+# small speedtest
+def test1():
+    ODBCbridgeMoftSconnection().query('XLF00', fields=['LFARTN', 'SUM(LFMGLP)'], grouping=['LFARTN'],
+             condition="LFLGNR=%d AND LFMGLP<>0 AND LFSTAT<>'X'" % (int(100)))
+def test2():
+    get_connection().query('XLF00', fields=['LFARTN', 'SUM(LFMGLP)'], grouping=['LFARTN'],
+             condition="LFLGNR=%d AND LFMGLP<>0 AND LFSTAT<>'X'" % (int(100)))
+
+import time
+
+def test():
+    start = time.time()
+    test1()
+    print time.time() - start
+    start = time.time()
+    test2()
+    print time.time() - start
+
+# import cProfile
+# cProfile.run("test()", sort=1)
+test()
+test()

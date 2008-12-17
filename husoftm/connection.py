@@ -109,6 +109,12 @@ class PyRoMoftSconnection(object):
         
         return "SMKDIFP.%s" % name
     
+    def _raw_sql(self, querystr):
+        """Executes an arbitary SQL - not meant for public use."""
+        
+        rows = self._execute_query(querystr, {}, [])
+        return [[self._fix_field(f) for f in r] for r in rows]
+    
     def _execute_query(self, querystr, querymappings, fields):
         start = time.time()
         LOG.debug(querystr)

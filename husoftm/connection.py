@@ -22,6 +22,7 @@ from husoftm.tools import softm2date
 import husoftm.mock_as400
 
 
+Pyro.core.initClient(banner=False)
 LOG = logging.getLogger('huSoftM.sql')
 LOG.setLevel(logging.WARN)
 
@@ -348,5 +349,4 @@ def test():
 
 # import cProfile
 # cProfile.run("test()", sort=1)
-test()
-test()
+#test()

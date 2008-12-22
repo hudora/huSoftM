@@ -111,7 +111,12 @@ class Lieferschein(object):
         self.strasse = self.lieferadresse.strasse
         self.land = land2iso(self.lieferadresse.laenderkennzeichen)
         self.plz = self.lieferadresse.plz
-        self.ort = self.lieferadresse.ort
+
+        # FIXME gab sonst probleme bei Kunde: Netto supermarkt gmbh - Mageburger Str. 2 - 14641
+        # Wustermark. Statt Wustermark stand dor Stavenhagen.
+        self.ort = self.lieferadresse.ortsname
+        if not self.ort:
+            self.ort = self.lieferadresse.ort
         
         anfangstext = []
         endetext = []

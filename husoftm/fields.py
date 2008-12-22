@@ -753,9 +753,9 @@ MAPPINGDIR = {
           'ADNAM4': 'name4',
           'ADSTR': 'strasse',
           'ADPLZ': 'plz',
-          'ADORT': 'ortsname',
+          'ADORT': 'ort',
           'ADLKZ': 'laenderkennzeichen',
-          'ADORTT': 'ortsteil',
+          #'ADORTT': 'ortsteil',
           'ADKZAD': 'adressaufbereitung',
          },
 

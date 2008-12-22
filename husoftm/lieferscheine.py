@@ -84,9 +84,32 @@ class Lieferschein(object):
             raise RuntimeError("Probleme bei der Auswahl der Lieferadresse")
         self.lieferadresse = Adresse()
         row = rows[0]
+        # bsp fuer kundennr 83000:
+        """row = {'adressdatei_id': 123665288,
+        'aenderung_date': datetime.date(2008, 10, 27),
+        'erfassung_date': datetime.date(2004, 12, 1),
+        'fax': u'+49 39954 360229',
+        'kundengruppe_id': u'20',
+        'kundennr': u'83000',
+        'laenderkennzeichen': u'D',
+        'mail': u'cs@nettosupermarkt.de',
+        'mobil': u'',
+        'name1': u'NETTO Supermarkt GmbH & Co. OHG',
+        'name2': u'',
+        'name3': u'',
+        'name4': u'',
+        'ort': u'Stavenhagen',
+        'plz': u'17153',
+        'postfach': u'',
+        'postfach_plz': u'',
+        'sortierfeld': u'NETTO  STA',
+        'strasse': u'Industriegebiet - Preezer Str. 22',
+        'tel': u'+49 39954 360202',
+        'url': u''}"""
         for key, value in row.items():
             if key.islower(): # uppercase == SoftM fild names, lowercaqse = plain-text field names
                 setattr(self.lieferadresse, key, value)
+
         
         # Wenn eine gesonderte Lieferadresse angegeben ist, self.lieferadresse damit überschreiben
         rows = get_connection().query('XAD00', condition="ADAART=1 AND ADRGNR='%d' " % int(self.auftragsnr))
@@ -94,6 +117,16 @@ class Lieferschein(object):
             raise RuntimeError("Probleme bei der Auswahl der Lieferadresse")
         elif len(rows) == 1:
             row = rows[0]
+            # bsp fuer auftragsnr 655501:
+            """row = {'adressaufbereitung': 0,
+             'laenderkennzeichen': u'D',
+             'name1': u'NETTO Supermarkt GmbH & Co. OHG',
+             'name2': u'',
+             'name3': u'',
+             'name4': u'',
+             'ort': u'Wustermark',
+             'plz': u'14641',
+             'strasse': u'Magdeburger Str. 2'}"""
             for key, value in row.items():
                 if key.islower(): # uppercase == SoftM fild names, lowercaqse = plain-text field names
                     setattr(self.lieferadresse, key, value)
@@ -111,12 +144,7 @@ class Lieferschein(object):
         self.strasse = self.lieferadresse.strasse
         self.land = land2iso(self.lieferadresse.laenderkennzeichen)
         self.plz = self.lieferadresse.plz
-
-        # FIXME gab sonst probleme bei Kunde: Netto supermarkt gmbh - Mageburger Str. 2 - 14641
-        # Wustermark. Statt Wustermark stand dor Stavenhagen.
-        self.ort = self.lieferadresse.ortsname
-        if not self.ort:
-            self.ort = self.lieferadresse.ort
+        self.ort = self.lieferadresse.ort
         
         anfangstext = []
         endetext = []

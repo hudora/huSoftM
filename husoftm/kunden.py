@@ -112,7 +112,10 @@ def get_changed_after(date):
 
 
 def get_kunde(kdnnr):
-    """Get the Kunde object representing Kundennummer <kdnnr>."""
+    """Get the Kunde object representing Kundennummer <kdnnr>.
+    
+    <kdnnr> must be an Integer in the Range 10000..99999.
+    If no data exists for that KdnNr ValueError is raised."""
     
     rows = husoftm.connection.get_connection().query(['XKD00', 'XKS00', 'AKZ00'],
            condition="KDKDNR='%8d' AND KSKDNR='%8d' AND KZKDNR LIKE '%s'" % (int(kdnnr), int(kdnnr),
@@ -132,6 +135,9 @@ def get_kunde(kdnnr):
     if len(rows) > 1:
         raise RuntimeError("Mehr als einen Kunden gefunden: %r" % kdnnr)
     
+    if not rows:
+        raise ValueError("Keine Daten für Kundennummer %r gefunden" % kdnnr)
+        
     return Kunde().fill_from_softm(rows[0])
     
 
@@ -139,6 +145,9 @@ def get_kunde_by_iln(iln):
     """Get Kunden Address based on ILN.
     
     See http://cybernetics.hudora.biz/projects/wiki/AddressProtocol for the structure of returned data.
+    
+    <kdnnr> must be an valit GLN/ILN encoded as an String.
+    If no data exists for that GLN/ILN ValueError is raised.
     """
     
     rows = husoftm.connection.get_connection().query(['XKS00'], condition="KCE2IL='%s'" % (int(iln), ))
@@ -155,6 +164,7 @@ def get_kunde_by_iln(iln):
                 kunde = Kunde().fill_from_softm(rows2[0])
                 kunde.kundennr = kunde.kundennr + ('/%03d' % int(rows[0]['versandadresssnr']))
                 return kunde
+    raise ValueError("Keine Daten für GLN/ILN %r gefunden" % iln)
     
 
 def _selftest():

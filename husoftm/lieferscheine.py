@@ -211,7 +211,7 @@ class Lieferschein(object):
                 print position, "voll_ausgeliefert", position.hrl_status
             if position.setartikel:
                 print position, "setartikel", position.setartikel
-            if hasattr(postion, "zuteilungskennzeichen") and unicode(position.zuteilungskennzeichen) != '1':
+            if hasattr(position, "zuteilungskennzeichen") and unicode(position.zuteilungskennzeichen) != '1':
                 print position, "zuteilungskennzeichen", position.zuteilungskennzeichen
             if unicode(position.lieferschein_ausloesung) != '0':
                 print position, "lieferschein_ausloesung", position.lieferschein_ausloesung

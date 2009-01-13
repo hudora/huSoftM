@@ -207,18 +207,18 @@ class Lieferschein(object):
                                                                           position.lieferscheinstorno,
                                                                           position.storno_date))
             
-            if position.voll_ausgeliefert:
-                print position, "voll_ausgeliefert", position.hrl_status
-            if position.setartikel:
-                print position, "setartikel", position.setartikel
-            if hasattr(position, "zuteilungskennzeichen") and unicode(position.zuteilungskennzeichen) != '1':
-                print position, "zuteilungskennzeichen", position.zuteilungskennzeichen
-            if unicode(position.lieferschein_ausloesung) != '0':
-                print position, "lieferschein_ausloesung", position.lieferschein_ausloesung
-            # if position.rueckstand_erlaubt:
-            #     print position, "rueckstand_erlaubt", position.rueckstand_erlaubt
-            # if position.rechnungsstatus:
-            #     print position, "rechnungsstatus", position.rechnungsstatus
+            #if position.voll_ausgeliefert:
+            #    print position, "voll_ausgeliefert", position.hrl_status
+            #if position.setartikel:
+            #    print position, "setartikel", position.setartikel
+            #if hasattr(position, "zuteilungskennzeichen") and unicode(position.zuteilungskennzeichen) != '1':
+            #    print position, "zuteilungskennzeichen", position.zuteilungskennzeichen
+            #if unicode(position.lieferschein_ausloesung) != '0':
+            #    print position, "lieferschein_ausloesung", position.lieferschein_ausloesung
+            ## if position.rueckstand_erlaubt:
+            ##     print position, "rueckstand_erlaubt", position.rueckstand_erlaubt
+            ## if position.rechnungsstatus:
+            ##     print position, "rechnungsstatus", position.rechnungsstatus
     
     def __unicode__(self):
         return u"SL%d, %d Positionen, %r" % (self.lieferscheinnr, len(self.positionen), self.liefer_date)

@@ -309,39 +309,92 @@ def frei_ab(menge, artnr, dateformat="%Y-%m-%d"):
     return None
     
 
-def get_umlagerungen(artnr, vonlager=26):
+def get_umlagerungen(artnr=None, vonlager=26):
+    """Ermittelt wieviel Umlagerungen für einen Artikel unterwegs sind"""
     warnings.warn("get_umlagerungen() is deprecated use umlagermenge()", DeprecationWarning, stacklevel=2) 
     return umlagermenge(artnr, anlager=100, vonlager=vonlager)
     
-
-def umlagermenge(artnr, lager, vonlager=None):
-    """Ermittelt wieviel Umlagerungen für einen Artikel unterwegs sind.
     
-    >>> umlagermenge('76095', 100)
-    0
+    # TODO delete
+    ''' # old scope of function. Needed it for reconstruction of functionality.
+    if not artnr:
+        condition="AKAUFN=APAUFN AND APKZVA=0 AND AKKZVA=0 AND APAUFA='U' AND AKSTAT<>'X' AND APSTAT<>'X' "
+        if vonlager:
+            condition += "AND APLGNR=%s" % sql_escape(vonlager)
+        print 'condition:', condition
+        rows = get_connection().query(['AAP00', 'AAK00'], fields=['APARTN', 'SUM(APMNG)'],
+                                      condition=condition, grouping='APARTN', nomapping=True)
+        ret = {}
+        for artnr, menge in rows:
+            ret[artnr] = int(menge)
+        return ret
+    else:
+        condition=("AKAUFN=APAUFN AND APKZVA=0 AND AKKZVA=0 AND " + "APAUFA='U' AND AKSTAT<>'X' AND APSTAT<>'X' AND "
+                  +("APLGNR=%s AND APARTN='%s'" % (sql_escape(vonlager), sql_escape(artnr))))
+        print 'condition:', condition
+        rows = get_connection().query(['AAP00', 'AAK00'], fields=['SUM(APMNG)'], condition=condition, nomapping=True)
+        # Das Auslieferungslager steht in AKLGN1, Das Ziellager steht in AKLGN2
+        # Zur Zeit verwenden wir APLGNR, dass kann man dann ignorieren
+        return int_or_0(rows)
+    '''
+    
+
+def umlagermenge(artnr, lager=100, vonlager=None):
+    """Ermittelt wieviel Umlagerungen für einen oder alle Artikel unterwegs sind.
+
+    Parmeter:
+     - artnr - 0 oder None -> alle Artikel, die sich in der Umlagerung befinden auflisten,
+               sonst die gesuchte Artikelnummer
+     - lager - Das Lager, an das die Umlagerungen unterwegs sind (default 100)
+     - vonlager - None -> alle Lager
+                - Nummer des Lagers, von dem die Umlagerung ausgeht
+
+    Rueckgabe:
+     - Wenn eine Artikelnummer angegeben wird, dann eine Menge als int
+     - Wenn keine Artikelnummer angegeben wird, dann alle Artikeln die sich von dem/den gegebenen
+       Quelllager (vonlagern) zu dem gegebenen Zugangslager (lager) unterwegs sind.
     """
     
     # Das Auslieferungslager steht in AKLGN1, Das Ziellager steht in AKLGN2
     # In APLGNR steht AUCH das Abgangslager
-    
+
+    tables = ['AAP00', 'AAK00']
+
     condition = (
     "AKAUFN=APAUFN"
-    " AND APARTN=%s"                  # Artikelnummer
     " AND AKAUFA='U'"                 # Umlagerungsauftrag
     " AND APSTAT<>'X'"                # Position nicht logisch gelöscht
     " AND APKZVA=0"                   # Position nicht als 'voll ausgeliefert' markiert
-    " AND (APMNG-APMNGF-APMNGG) > 0"  # (noch) zu liefernde menge ist positiv
-    " AND AKSTAT<>'X'"                # Auftrag nciht logisch gelöscht
+    #" AND (APMNG-APMNGF-APMNGG) > 0"  # (noch) zu liefernde menge ist positiv
+    " AND AKSTAT<>'X'"                # Auftrag nicht logisch gelöscht
     " AND AKKZVA=0"                   # Auftrag nicht als 'voll ausgeliefert' markiert
-    " AND AKLGN2=%d")                 # Zugangslager
-    
-    if vonlager:
-        rows = get_connection().query(['AAP00', 'AAK00'], fields=['SUM(APMNG-APMNGF-APMNGG)'], nomapping=True,
-            condition=(condition + " AND AKLGN1=%s") % 
-                      (sql_quote(artnr), int(lager), int(vonlager)))
+    )
+
+    fields = ['SUM(APMNG)']
+
+    grouping = []
+
+    if lager:
+        # Zugangslager
+        condition += " AND AKLGN2=%d" % int(lager)
+
+    if artnr:
+        # Artikelnummer
+        condition += " AND APARTN=%s" % sql_quote(artnr)
     else:
-        rows = get_connection().query(['AAP00', 'AAK00'], fields=['SUM(APMNG-APMNGF-APMNGG)'], nomapping=True,
-            condition=condition % (sql_quote(artnr), int(lager)))
+        fields.insert(0, 'APARTN')
+        grouping = ['APARTN']
+
+    # print 'condition:', condition
+    rows = get_connection().query(tables=tables, fields=fields, nomapping=True, condition=condition, grouping=grouping)
+
+    if not artnr:
+        # Wenn kein bestimmter Artikel abgefragt wird, dann das Abfrageergebnis in ein dict umwandeln
+        ret = {}
+        for artnr, menge in rows:
+            ret[artnr] = int(menge)
+        return ret
+
     return int_or_0(rows)
     
 
@@ -381,52 +434,69 @@ def besteande(lager):
     bbesteande = dict([(str(row[0]), int(row[1])) for row in rows])
     
     # Offene Umlagerungen an dieses Lager zurechnen.
-    condition = (
-    "AKAUFN=APAUFN"
-    " AND AKAUFA='U'"                 # Umlagerungsauftrag
-    " AND APSTAT<>'X'"                # Position nicht logisch gelöscht
-    " AND APKZVA=0"                   # Position nicht als 'voll ausgeliefert' markiert
-    " AND (APMNG-APMNGF-APMNGG) > 0"  # (noch) zu liefernde menge ist positiv
-    " AND AKSTAT<>'X'"                # Auftrag nciht logisch gelöscht
-    " AND AKKZVA=0"                   # Auftrag nicht als 'voll ausgeliefert' markiert
-    " AND AKLGN2=%d")                 # Zugangslager
-    
-    rows = get_connection().query(['AAP00', 'AAK00'], fields=['APARTN', 'SUM(APMNG-APMNGF-APMNGG)'],
-                                  nomapping=True, condition=condition % int(lager), grouping=['APARTN'])
-    for artnr, umlagerungsmenge in rows:
-        print artnr, umlagerungsmenge, bbesteande.get(artnr, 0)
+    uml = umlagermenge(None, lager=100, vonlager=None)
+    for artnr, umlagerungsmenge in uml.items():
         bbesteande[str(artnr)] = bbesteande.get(artnr, 0) + int(umlagerungsmenge)
     return bbesteande
 
 
-def _test():
-    """Some very simple tests."""
-    from pprint import pprint
-    print "buchbestaende() =",
-    pprint(buchbestaende())
-    print "auftragsmengen_alle_artikel(34) = ",
-    pprint(auftragsmengen_alle_artikel(34))
-    print "verfuegbare_mengen(34) = ",
-    pprint(verfuegbare_mengen(34))
-    print "besteande(100) = ",
-    pprint(besteande(100))
-    # for artnr in '76095 14600/03 14865 71554/A 01104 10106 14890 WK22002'.split():
-    for artnr in '14600/03 WK22002'.split():
-        print "versionsvorschlag(2000, %r, '2009-01-04') = " % artnr,
-        pprint(versionsvorschlag(2000, artnr, '2009-01-04'))
-        print "buchbestand(%r) = " % artnr,
-        pprint(buchbestand(artnr))
-        print "verfuegbare_menge(%r) = " % artnr,
-        pprint(verfuegbare_menge(artnr))
-        print "bestandsentwicklung(%r) = " % artnr,
-        pprint((bestandsentwicklung(artnr)))
-        print "frei_ab(50, %r) = " % artnr,
-        pprint((frei_ab(50, artnr)))
-        print "umlagermenge(%r, 100) = " % artnr,
-        pprint((umlagermenge(artnr, 100)))
-        print "bestand(%r, 100) = " % artnr,
-        pprint((bestand(artnr, 100)))
-    
-
 if __name__ == '__main__':
-    _test()
+
+    import unittest
+
+    def _test():
+        """Some very simple tests."""
+        from pprint import pprint
+        print "buchbestaende() =",
+        pprint(buchbestaende())
+        print "auftragsmengen_alle_artikel(34) = ",
+        pprint(auftragsmengen_alle_artikel(34))
+        print "verfuegbare_mengen(34) = ",
+        pprint(verfuegbare_mengen(34))
+        print "besteande(100) = ",
+        pprint(besteande(100))
+        # for artnr in '76095 14600/03 14865 71554/A 01104 10106 14890 WK22002'.split():
+        for artnr in '14600/03 WK22002'.split():
+            print "versionsvorschlag(2000, %r, '2009-01-04') = " % artnr,
+            pprint(versionsvorschlag(2000, artnr, '2009-01-04'))
+            print "buchbestand(%r) = " % artnr,
+            pprint(buchbestand(artnr))
+            print "verfuegbare_menge(%r) = " % artnr,
+            pprint(verfuegbare_menge(artnr))
+            print "bestandsentwicklung(%r) = " % artnr,
+            pprint((bestandsentwicklung(artnr)))
+            print "frei_ab(50, %r) = " % artnr,
+            pprint((frei_ab(50, artnr)))
+            print "umlagermenge(%r, 100) = " % artnr,
+            pprint((umlagermenge(artnr, 100)))
+            print "bestand(%r, 100) = " % artnr,
+            pprint((bestand(artnr, 100)))
+
+
+    class TestUmlagerungen(unittest.TestCase):
+        """Testet die Berechnung der Umlagerungen."""
+
+        def setUp(self):
+            pass
+        
+        def test_general(self): # FIXME how to name that function?
+            """Performs tests on several functions and compares their results.
+            
+            It performs checks for every article in stock, so it is very time consuming.
+            """
+            lager = 100
+            vonlager = None
+            bstnde = besteande(lager)
+            for artnr, menge in bstnde.items():
+                # check fnc bestand
+                bstnd = bestand(artnr, lager, vonlager=vonlager)
+                self.assertEqual(bstnd, menge)
+
+                # check fncs umlagermenge + buchbestand
+                umenge = umlagermenge(artnr, lager)
+                bbestand = buchbestand(artnr, lager)
+                self.assertEqual(bbestand+umenge, menge)
+    
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestUmlagerungen)
+    suite.addTest(unittest.FunctionTestCase(_test))
+    unittest.TextTestRunner(verbosity=2).run(suite)

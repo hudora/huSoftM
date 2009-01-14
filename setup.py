@@ -19,5 +19,6 @@ hubarcode = setup(name='huSoftM',
                    'Intended Audience :: Developers',
                    'Programming Language :: Python'],
       zip_safe=True,
-      packages = find_packages()
+      packages = find_packages(),
+      install_requires=['simplejson', 'couchdb'],
 )

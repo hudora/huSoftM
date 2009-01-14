@@ -167,8 +167,9 @@ class Lieferschein(object):
         self.auftragsnr_kunde = rows[0]["auftragsnr_kunde"]
         
         self.anlieferdatum = rows[0]['liefer_date']
+        self.anlieferdatum_min = self.anlieferdatum_max = self.anlieferdatum
         if rows[0]['kundenwunsch_date']:
-            self.anlieferdatum = rows[0]['kundenwunsch_date']
+            self.anlieferdatum_max = rows[0]['kundenwunsch_date']
         
         self.art = rows[0]['art']
         if rows[0]['fixtermin']:

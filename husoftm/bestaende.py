@@ -27,9 +27,13 @@ __revision__ = "$Revision$"
 
 import datetime
 import time
-import warnings  
+import warnings
+import couchdb.client
+
 from husoftm.connection import get_connection, int_or_0
 from husoftm.tools import sql_escape, sql_quote
+
+COUCHSERVER = "http://couchdb.local.hudora.biz:5984"
 
 
 # see https://cybernetics.hudora.biz/intern/trac/wiki/HudoraGlossar -> Mengen for further enlightenment
@@ -252,12 +256,13 @@ def versionsvorschlag(menge, artnr, date, dateformat="%Y-%m-%d"):
     >>> versionsvorschlag(2000, '76095', '2009-01-04')
     (False, [(0, '76095')])
     """
-    
-    #p = Product.objects.get(artnr=artnr)
-    #artnrs.add([x.artnr for x in p.versions.all()])
-    # FIXME: versionsnummernermittlung - we are missing a sensible api here
-    artnrs = ['22006', '22006/02', '22006/03']
-    
+        
+    server = couchdb.client.Server(COUCHSERVER)
+    db = server['eap']
+    artnrs = db.get(artnr, {}).get('alternatives', [])
+    if artnr not in artnrs:
+        artnrs.append(artnr)
+
     ret = []
     benoetigt = menge
     for artnr in sorted(artnrs):

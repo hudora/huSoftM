@@ -71,6 +71,9 @@ SOFTMLKZ2ISOLAND = {'D': 'DE',
                     'ET': 'EG', # Aegypten
                     'RO': 'RO', # Rumaenien
                     'GB': 'UK', # Vereinigtes Koenigreich
+                    'NZ': 'NZ', # Neuseeland
+                    'RI': 'ID', # Republik Indonesia
+                    ]
 }
 # invert dictionary
 ISOLAND2SOFTMLKZ = dict([[v, k] for k, v in SOFTMLKZ2ISOLAND.items()])

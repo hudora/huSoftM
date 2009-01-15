@@ -905,7 +905,7 @@ MAPPINGDIR = {
           'KDALSO': 'sortierfeld',
           # 'KDSPSL': 'Sprache', # Werte 1 & 2
           # 'KDWSL ': 'Währungs-Kennzeichen',
-          'KDKGRP': 'kundengruppe_id', # alphanum
+          'KDKGRP': 'kundengruppe', # alphanum
           'KDEMAL': 'mail',
           'KDHOME': 'url',
           'KDSANR': 'adressdatei_id',

@@ -77,6 +77,14 @@ class Kunde(object):
         #self.auslieferunglager = row.get('auslieferunglager', 0) # ': 0
         #self.interne_firmennr = row.get('interne_firmennr', '') # ': u''
         self.unsere_lieferantennr = row.get('unsere_lieferantennumemr', '')
+        self.verband = row.get('verband', '')
+        self.mitgliednr = row.get('mitgliednr', '')
+        self.ustid = row.get('ustid', '')''
+        self.kundengruppe = row.get('kundengruppe', '')
+        self.vertreter = row.get('vertreter', '')
+        self.gebiet = row.get('gebiet', '')
+        self.branche = row.get('branche', '')
+        self.distrikt = row.get('distrikt', '')
         # 'skontoschluessel': 16, 
         # 'mahnsperre': u'', 
         # 'delcredereschl\xc3\xbcssel': 0, 

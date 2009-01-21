@@ -13,6 +13,7 @@ Für die Frage, ob ein bestimmter Artikel in einem bestimmten Lager ist, ist bes
     bestellmengen(artnr)                          von uns bei Lieferanten bestellte Mengen
     auftragsmengen(artnr, lager=0)                bei uns von Kunden bestellte Mengen
     umlagermenge(artnr, lager, vonlager=None)     Menge, die zur Zeit von einem Lager ans andere unterwegs ist
+    umlagermengen(lager, vonlager=None)           Alle Artikelmengen, die zur Zeit von einem Lager ans andere unterwegs ist
     buchbestand(artnr, lager=0)                   Artikel am Lager
     buchbestaende(lager=0)                        Alle Artikel an einem Lager 
     freie_menge(artnr)                            Menge, die Verkauft werden kann
@@ -37,6 +38,63 @@ COUCHSERVER = "http://couchdb.local.hudora.biz:5984"
 
 
 # see https://cybernetics.hudora.biz/intern/trac/wiki/HudoraGlossar -> Mengen for further enlightenment
+
+
+# This is just a private helper funcion, which should only be called by umlagermenge and
+# umlagermengen. The reason therefore is, that this function has different return types, depending
+# on the artnr you provide. umlagermenge and umlagermengen are wrappers around this function.
+def _umlagermenge_helper(artnr, lager=100, vonlager=None):
+    """ Ermittelt wieviel Umlagerungen für einen oder alle Artikel unterwegs sind.
+
+    Parmeter:
+     - artnr - 0 oder None -> alle Artikel, die sich in der Umlagerung befinden auflisten,
+               sonst die gesuchte Artikelnummer
+     - lager - Das Lager, an das die Umlagerungen unterwegs sind (default 100)
+     - vonlager - None -> alle Lager
+                - Nummer des Lagers, von dem die Umlagerung ausgeht
+
+    Rueckgabe:
+     - Wenn eine Artikelnummer angegeben wird, dann eine Menge als int
+     - Wenn keine Artikelnummer angegeben wird, dann alle Artikeln die sich von dem/den gegebenen
+       Quelllager (vonlagern) zu dem gegebenen Zugangslager (lager) unterwegs sind.
+    """
+    
+    # Das Auslieferungslager steht in AKLGN1, Das Ziellager steht in AKLGN2
+    # In APLGNR steht AUCH das Abgangslager
+
+    tables = ['AAP00', 'AAK00']
+    condition = (
+    "AKAUFN=APAUFN"
+    " AND AKAUFA='U'"                 # Umlagerungsauftrag
+    " AND APSTAT<>'X'"                # Position nicht logisch gelöscht
+    " AND APKZVA=0"                   # Position nicht als 'voll ausgeliefert' markiert
+    #" AND (APMNG-APMNGF-APMNGG) > 0"  # (noch) zu liefernde menge ist positiv
+    " AND AKSTAT<>'X'"                # Auftrag nicht logisch gelöscht
+    " AND AKKZVA=0"                   # Auftrag nicht als 'voll ausgeliefert' markiert
+    )
+    fields = ['SUM(APMNG)']
+    grouping = []
+
+    if lager:
+        # Zugangslager
+        condition += " AND AKLGN2=%d" % int(lager)
+
+    if artnr:
+        # Artikelnummer
+        condition += " AND APARTN=%s" % sql_quote(artnr)
+    else:
+        fields.insert(0, 'APARTN')
+        grouping = ['APARTN']
+
+    rows = get_connection().query(tables=tables, fields=fields, nomapping=True, condition=condition, grouping=grouping)
+
+    if not artnr:
+        # Wenn kein bestimmter Artikel abgefragt wird, dann das Abfrageergebnis in ein dict umwandeln
+        ret = {}
+        for artnr, menge in rows:
+            ret[artnr] = int(menge)
+        return ret
+    return int_or_0(rows)
 
 
 def get_lagerbestand(artnr=None, lager=0):
@@ -318,90 +376,18 @@ def get_umlagerungen(artnr=None, vonlager=26):
     """Ermittelt wieviel Umlagerungen für einen Artikel unterwegs sind"""
     warnings.warn("get_umlagerungen() is deprecated use umlagermenge()", DeprecationWarning, stacklevel=2) 
     return umlagermenge(artnr, anlager=100, vonlager=vonlager)
-    
-    
-    # TODO delete
-    ''' # old scope of function. Needed it for reconstruction of functionality.
-    if not artnr:
-        condition="AKAUFN=APAUFN AND APKZVA=0 AND AKKZVA=0 AND APAUFA='U' AND AKSTAT<>'X' AND APSTAT<>'X' "
-        if vonlager:
-            condition += "AND APLGNR=%s" % sql_escape(vonlager)
-        print 'condition:', condition
-        rows = get_connection().query(['AAP00', 'AAK00'], fields=['APARTN', 'SUM(APMNG)'],
-                                      condition=condition, grouping='APARTN', nomapping=True)
-        ret = {}
-        for artnr, menge in rows:
-            ret[artnr] = int(menge)
-        return ret
-    else:
-        condition=("AKAUFN=APAUFN AND APKZVA=0 AND AKKZVA=0 AND " + "APAUFA='U' AND AKSTAT<>'X' AND APSTAT<>'X' AND "
-                  +("APLGNR=%s AND APARTN='%s'" % (sql_escape(vonlager), sql_escape(artnr))))
-        print 'condition:', condition
-        rows = get_connection().query(['AAP00', 'AAK00'], fields=['SUM(APMNG)'], condition=condition, nomapping=True)
-        # Das Auslieferungslager steht in AKLGN1, Das Ziellager steht in AKLGN2
-        # Zur Zeit verwenden wir APLGNR, dass kann man dann ignorieren
-        return int_or_0(rows)
-    '''
-    
+
+
+def umlagermengen(lager=100, vonlager=None):
+    """Ermittelt wieviel Umlagerungen aus einem oder allen Lagern nach Lager lager unterwegs sind."""
+    return _umlagermenge_helper(None, lager, vonlager)
+
 
 def umlagermenge(artnr, lager=100, vonlager=None):
-    """Ermittelt wieviel Umlagerungen für einen oder alle Artikel unterwegs sind.
+    """Ermittelt wieviel Umlagerungen für einen Artikel aus vonlager nach lager unterwegs sind."""
+    assert(artnr)
+    return _umlagermenge_helper(artnr, lager, vonlager)
 
-    Parmeter:
-     - artnr - 0 oder None -> alle Artikel, die sich in der Umlagerung befinden auflisten,
-               sonst die gesuchte Artikelnummer
-     - lager - Das Lager, an das die Umlagerungen unterwegs sind (default 100)
-     - vonlager - None -> alle Lager
-                - Nummer des Lagers, von dem die Umlagerung ausgeht
-
-    Rueckgabe:
-     - Wenn eine Artikelnummer angegeben wird, dann eine Menge als int
-     - Wenn keine Artikelnummer angegeben wird, dann alle Artikeln die sich von dem/den gegebenen
-       Quelllager (vonlagern) zu dem gegebenen Zugangslager (lager) unterwegs sind.
-    """
-    
-    # Das Auslieferungslager steht in AKLGN1, Das Ziellager steht in AKLGN2
-    # In APLGNR steht AUCH das Abgangslager
-
-    tables = ['AAP00', 'AAK00']
-
-    condition = (
-    "AKAUFN=APAUFN"
-    " AND AKAUFA='U'"                 # Umlagerungsauftrag
-    " AND APSTAT<>'X'"                # Position nicht logisch gelöscht
-    " AND APKZVA=0"                   # Position nicht als 'voll ausgeliefert' markiert
-    #" AND (APMNG-APMNGF-APMNGG) > 0"  # (noch) zu liefernde menge ist positiv
-    " AND AKSTAT<>'X'"                # Auftrag nicht logisch gelöscht
-    " AND AKKZVA=0"                   # Auftrag nicht als 'voll ausgeliefert' markiert
-    )
-
-    fields = ['SUM(APMNG)']
-
-    grouping = []
-
-    if lager:
-        # Zugangslager
-        condition += " AND AKLGN2=%d" % int(lager)
-
-    if artnr:
-        # Artikelnummer
-        condition += " AND APARTN=%s" % sql_quote(artnr)
-    else:
-        fields.insert(0, 'APARTN')
-        grouping = ['APARTN']
-
-    # print 'condition:', condition
-    rows = get_connection().query(tables=tables, fields=fields, nomapping=True, condition=condition, grouping=grouping)
-
-    if not artnr:
-        # Wenn kein bestimmter Artikel abgefragt wird, dann das Abfrageergebnis in ein dict umwandeln
-        ret = {}
-        for artnr, menge in rows:
-            ret[artnr] = int(menge)
-        return ret
-
-    return int_or_0(rows)
-    
 
 def get_lagerbestandmitumlagerungen(artnr, vonlager=26):
     warnings.warn("get_lagerbestandmitumlagerungen() is deprecated use bestand()",
@@ -439,13 +425,14 @@ def besteande(lager):
     bbesteande = dict([(str(row[0]), int(row[1])) for row in rows])
     
     # Offene Umlagerungen an dieses Lager zurechnen.
-    uml = umlagermenge(None, lager=100, vonlager=None)
+    uml = umlagermengen(lager=100, vonlager=None)
     for artnr, umlagerungsmenge in uml.items():
         bbesteande[str(artnr)] = bbesteande.get(artnr, 0) + int(umlagerungsmenge)
     return bbesteande
 
 
 if __name__ == '__main__':
+    """Call test suite when this module is opened as script."""
 
     import unittest
 

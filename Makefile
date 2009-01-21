@@ -29,7 +29,7 @@ test:
 	PYTHONPATH=. python husoftm/artikel.py
 	PYTHONPATH=. python husoftm/bestaende.py
 	PYTHONPATH=. python husoftm/kunden.py
-	PYTHONPATH=. python husoftm/lieferschein.py 
+	PYTHONPATH=. python husoftm/lieferscheine.py
 	# PYTHONPATH=. python husoftm/stapelschnittstelle.py
 	PYTHONPATH=. python husoftm/tools.py
 

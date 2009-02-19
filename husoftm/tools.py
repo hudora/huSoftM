@@ -26,7 +26,8 @@ LOG = logging.getLogger('husoftm.tools')
 # BTW: Die FIFA verwendet noch andere codes!
 
 
-SOFTMLKZ2ISOLAND = {'D': 'DE',
+SOFTMLKZ2ISOLAND = {'DE': 'DE',
+                    'D': 'DE',
                     'CC': 'CC',
                     '???': '??', # WTF
                     'A': 'AT', # Oesterreich

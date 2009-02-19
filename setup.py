@@ -18,7 +18,7 @@ hubarcode = setup(name='huSoftM',
       classifiers=['License :: OSI Approved :: BSD License',
                    'Intended Audience :: Developers',
                    'Programming Language :: Python'],
-      zip_safe=True,
+      zip_safe=False,
       packages = find_packages(),
       install_requires=['simplejson', 'couchdb'],
 )

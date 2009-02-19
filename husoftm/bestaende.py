@@ -13,7 +13,7 @@ Für die Frage, ob ein bestimmter Artikel in einem bestimmten Lager ist, ist bes
     bestellmengen(artnr)                          von uns bei Lieferanten bestellte Mengen
     auftragsmengen(artnr, lager=0)                bei uns von Kunden bestellte Mengen
     umlagermenge(artnr, lager, vonlager=None)     Menge, die zur Zeit von einem Lager ans andere unterwegs ist
-    umlagermengen(lager, vonlager=None)           Alle Artikelmengen, die zur Zeit von einem Lager ans andere unterwegs ist
+    umlagermengen(anlager, vonlager=None)           Alle Artikelmengen, die zur Zeit von einem Lager ans andere unterwegs ist
     buchbestand(artnr, lager=0)                   Artikel am Lager
     buchbestaende(lager=0)                        Alle Artikel an einem Lager 
     freie_menge(artnr)                            Menge, die Verkauft werden kann
@@ -378,15 +378,15 @@ def get_umlagerungen(artnr=None, vonlager=26):
     return umlagermenge(artnr, anlager=100, vonlager=vonlager)
 
 
-def umlagermengen(lager=100, vonlager=None):
-    """Ermittelt wieviel Umlagerungen aus einem oder allen Lagern nach Lager lager unterwegs sind."""
-    return _umlagermenge_helper(None, lager, vonlager)
+def umlagermengen(anlager=100, vonlager=None):
+    """Ermittelt wieviel Umlagerungen aus einem oder allen Lagern nach Lager anlager unterwegs sind."""
+    return _umlagermenge_helper(None, anlager, vonlager)
 
 
-def umlagermenge(artnr, lager=100, vonlager=None):
-    """Ermittelt wieviel Umlagerungen für einen Artikel aus vonlager nach lager unterwegs sind."""
+def umlagermenge(artnr, anlager=100, vonlager=None):
+    """Ermittelt wieviel Umlagerungen für einen Artikel aus vonlager nach anlager unterwegs sind."""
     assert(artnr)
-    return _umlagermenge_helper(artnr, lager, vonlager)
+    return _umlagermenge_helper(artnr, anlager, vonlager)
 
 
 def get_lagerbestandmitumlagerungen(artnr, vonlager=26):
@@ -425,7 +425,7 @@ def besteande(lager):
     bbesteande = dict([(str(row[0]), int(row[1])) for row in rows])
     
     # Offene Umlagerungen an dieses Lager zurechnen.
-    uml = umlagermengen(lager=100, vonlager=None)
+    uml = umlagermengen(anlager=lager, vonlager=None)
     for artnr, umlagerungsmenge in uml.items():
         bbesteande[str(artnr)] = bbesteande.get(artnr, 0) + int(umlagerungsmenge)
     return bbesteande

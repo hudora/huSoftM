@@ -72,7 +72,7 @@ class PyRoMoftSconnection(object):
     def _fix_field(self, data):
         """Fix field types returned by DB2/400."""
         
-        if type(data) == type('abc'): # fix strings
+        if isinstance(data, str): # fix strings
             return data.strip().decode('latin-1').encode('utf-8')
         elif type(data) == type(0.0):
             if data == int(data): # fix floats:
@@ -210,50 +210,6 @@ class PyRoMoftSconnection(object):
         self.__server.update_adtastapel(vorgangsnummer, token='Ae.so=7e,S(')
     
 
-class ODBCbridgeMoftSconnection(PyRoMoftSconnection):
-    """Represents an connection which can execute SWL on the iSeries-AS/400."""
-    
-    def _select(self, query):
-        param = urllib.quote(query)
-        conn = httplib.HTTPConnection("balancer.local.hudora.biz:8000")
-        # conn.set_debuglevel(5)
-        conn.request("GET", "/select?query=" + param)
-        response = conn.getresponse()
-        if response.status != 200:
-            errorinfo = response.read()
-            # LOG.error('PyRO remote exception:' + (''.join(Pyro.util.getPyroTraceback(msg))))
-            raise RuntimeError("Server Error: %r" % errorinfo)
-        return json.loads(response.read())
-    
-    def _execute_query(self, querystr, querymappings, fields):
-        start = time.time()
-        LOG.debug(querystr)
-        rows = self._select(querystr)
-        
-        querydelta = time.time() - start
-        start = time.time()
-        if querymappings:
-            rows = self._rows2dict(fields, querymappings, rows)
-        else:
-            rows = [[y for y in x] for x in rows]
-        mapdelta = time.time()-start
-        LOG.info("%.3fs/%.3fs, %d rows: %s" % (querydelta, mapdelta, len(rows), querystr))
-        return rows
-    
-    def delete(self, table, condition):
-        raise NotImplementedError
-        
-    def insert_raw(self, sqlstr):
-        raise NotImplementedError
-    
-    def update_raw(self, sqlstr):
-        raise NotImplementedError
-    
-    def update_adtastapel(self, vorgangsnummer):
-        # this is needed bei stapelschnittstelle.py
-        raise NotImplementedError
-    
-
 class PyRoMoftSconnectionToTestDB(PyRoMoftSconnection):
     """Represents an connection which can execute SWL on the Testdatabase (SMKDIFT) on the iSeries-AS/400."""
     
@@ -327,7 +283,7 @@ def get_connection():
     
     # return MoftSconnectionToTestDB()
     return MoftSconnection()
-    return ODBCbridgeMoftSconnection()
+    #return ODBCbridgeMoftSconnection()
 
 # small speedtest
 def test1():

@@ -251,17 +251,17 @@ def auftragsmengen(artnr, lager=None):
     " AND APARTN=%s"                  # Artikelnummer
     " AND APSTAT<>'X'"                # Position nicht logisch gelöscht
     " AND APKZVA=0"                   # Position nicht als 'voll ausgeliefert' markiert
-    " AND (APMNG-APMNGF-APMNGG) > 0"  # (noch) zu liefernde menge ist positiv
+    " AND (APMNG-APMNGF) > 0"  # (noch) zu liefernde menge ist positiv
     " AND AKSTAT<>'X'"                # Auftrag nicht logisch gelöscht
     " AND AKKZVA=0")                  # Auftrag nicht als 'voll ausgeliefert' markiert
     
     if lager:
         # Achtung, hier gibt es KEIN Lager 0 in der Tabelle. D.h. APLGNR=0 gibt nix
         condition = condition + (" AND APLGNR=%d" % lager)
-    rows = get_connection().query(['AAP00', 'AAK00'], fields=['APDTLT', 'SUM(APMNG-APMNGF-APMNGG)'],
+    rows = get_connection().query(['AAP00', 'AAK00'], fields=['APDTLT', 'SUM(APMNG-APMNGF)'],
                    condition=condition % (sql_quote(artnr)),
                    ordering='APDTLT', grouping='APDTLT',
-                   querymappings={'SUM(APMNG-APMNGF-APMNGG)': 'menge_offen', 'APDTLT': 'liefer_date'})
+                   querymappings={'SUM(APMNG-APMNGF)': 'menge_offen', 'APDTLT': 'liefer_date'})
     return dict([(x['liefer_date'], x['menge_offen']) for x in rows if x['menge_offen'] > 0])
     
 
@@ -287,7 +287,7 @@ def auftragsmengen_alle_artikel(lager=0):
     " AND AKAUFA<>'U'"                # kein Umlagerungsauftrag
     " AND APSTAT<>'X'"                # Position nicht logisch gelöscht
     " AND APKZVA=0"                   # Position nicht als 'voll ausgeliefert' markiert
-    " AND (APMNG-APMNGF-APMNGG) > 0"  # (noch) zu liefernde menge ist positiv
+    " AND (APMNG-APMNGF) > 0"         # (noch) zu liefernde menge ist positiv
     " AND AKSTAT<>'X'"                # Auftrag nicht logisch gelöscht
     " AND AKKZVA=0")                  # Auftrag nicht als 'voll ausgeliefert' markiert
     
@@ -295,10 +295,10 @@ def auftragsmengen_alle_artikel(lager=0):
         # Achtung, hier gibt es KEIN Lager 0 in der Tabelle. D.h. APLGNR=0 gibt nix
         condition = condition + (" AND APLGNR=%d" % lager)
     rows = get_connection().query(['AAP00', 'AAK00'],
-     fields=['APARTN', 'APDTLT', 'SUM(APMNG-APMNGF-APMNGG)'],
+     fields=['APARTN', 'APDTLT', 'SUM(APMNG-APMNGF)'],
      condition=condition,
      ordering='APDTLT', grouping=['APARTN', 'APDTLT'],
-     querymappings={'SUM(APMNG-APMNGF-APMNGG)': 'menge_offen', 'APARTN': 'artnr', 'APDTLT': 'liefer_date'})
+     querymappings={'SUM(APMNG-APMNGF)': 'menge_offen', 'APARTN': 'artnr', 'APDTLT': 'liefer_date'})
     ret = {}
     for row in rows:
         if row['menge_offen']:

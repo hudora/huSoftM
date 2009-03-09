@@ -7,6 +7,7 @@ build:
 
 upload: build doc
 	rsync dist/* root@cybernetics.hudora.biz:/usr/local/www/apache22/data/dist/huSoftM/
+	rsync dist/* root@cybernetics.hudora.biz:/usr/local/www/apache22/data/nonpublic/eggs/
 	rsync husoftm/fields.py root@cybernetics.hudora.biz:/usr/local/www/apache22/data/dist/huSoftM/fields.py
 	rsync -r --delete html root@cybernetics.hudora.biz:/usr/local/www/apache22/data/dist/huSoftM/
 

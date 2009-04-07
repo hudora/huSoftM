@@ -36,7 +36,7 @@ SOFTMLKZ2ISOLAND = {'': 'DE',
                     'B': 'BE', # Belgien
                     'I': 'IT', # Italien
                     'E': 'ES', # Spanien
-                    'SLO': 'SK', # Slowakei
+                    'SLO': 'SI', # Slowenien
                     'EST': 'EE', # Estland
                     'RUS': 'RU', # Rusland
                     'S': 'SE', # Schweden
@@ -61,7 +61,7 @@ SOFTMLKZ2ISOLAND = {'': 'DE',
                     'H': 'HU', # Ungarn
                     'IR': 'IR', # Iran
                     'TR': 'TR', # Tuerkei
-                    'SK': 'SK', # Slowakei (again)
+                    'SK': 'SK', # Slowakei
                     'LV': 'LV', # Lettland
                     'IS': 'IS', # Island
                     'PL': 'PL', # Polen
@@ -89,7 +89,6 @@ def land2iso(softmlaenderkennzeichen):
     >>> land2iso('LTL')
     'LT'
     """
-    
     ret = SOFTMLKZ2ISOLAND.get(softmlaenderkennzeichen, None)
     if not ret:
         if softmlaenderkennzeichen in SOFTMLKZ2ISOLAND.values():
@@ -177,11 +176,12 @@ class _GenericTests(unittest.TestCase):
     
     def test_land2iso(self):
         """Testet die Umwandlung von Länderkennzeichen."""
+        self.assertEqual(land2iso('SLO'), 'SI')
         self.assertEqual(land2iso('D'), 'DE')
         self.assertEqual(land2iso('DE'), 'DE')
         self.assertEqual(land2iso('LTL'), 'LT')
         self.assertRaises(ValueError, land2iso, 'XDE')
-        self.assertRaises(ValueError, land2iso, '')
+        self.assertEqual(land2iso(''), 'DE')
     
     def test_data_conversions(self):
         """Tested die Datumsumwandlung."""

@@ -9,6 +9,7 @@ Copyright (c) 2007 HUDORA GmbH. All rights reserved.
 
 __revision__ = "$Revision$"
 
+import re
 import unittest
 from decimal import Decimal
 import husoftm
@@ -108,16 +109,72 @@ class Artikel(object):
             self.aenderung = self.erfassung
         self.name = "%s%s%s" % (row.get('ARBEZ1', ''), row.get('ARBEZ2', ''), row.get('ARBEZ3', ''))
         return self
-    
 
-def get_artikel(artnr):
-    rows = get_connection().query(['XAR00'], condition="ARARTN='%s'" % artnr)
-    if len(rows) > 1:
-        raise RuntimeError("Mehr als einen Artikel gefunden: %r" % artnr)
-    if len(rows) == 0:
+
+def get_artikel(artnr=None, ean=None):
+    """Returns articles for artnr and/or ean, depending on what parameter is not None.
+
+    Use both parameters if ean is not unique, like in the following example.
+    This function can be used to check if an EAN and article number fit to each other.
+
+    Non-unique example:
+    >>> a = get_artikel(artnr='76095')
+    >>> b = get_artikel(artnr=None, ean=a.ean)
+    RuntimeError: Ergebnis nicht eindeutig für: Artnr None && EAN 4005998760956L"""
+
+    cond1 = "ARARTN='%s'" % artnr
+    cond2 = "AREAN='%s'" % ean
+    if artnr and ean:
+        condition = cond1+" AND "+cond2
+    elif artnr:
+        condition = cond1
+    elif ean:
+        condition = cond2
+    else:
+        raise RuntimeError("Artikel ohne EAN und Artnr nicht möglich.")
+
+    rows = get_connection().query(['XAR00'], condition=condition)
+    rowcount = len(rows)
+    if rowcount > 1:
+        raise RuntimeError("Ergebnis nicht eindeutig für: Artnr %r && EAN %r" % (artnr, ean))
+    if rowcount == 0:
         return None
     return Artikel().fill_from_softm(rows[0])
-    
+
+
+def get_artikel_by_ean(ean):
+    """Returns all articles w/ given EAN."""
+    condition = "AREAN='%s'" % ean
+    rows = get_connection().query(['XAR00'], condition=condition)
+    return [Artikel().fill_from_softm(r) for r in rows]
+
+
+def guess_artnr(ean):
+    """Try to guess an article number, for the list of artnrs given for one EAN.
+
+    Normally this are set articles or articles w/ versions or variants.
+    Returns:
+    - If it is a set article, the main article number
+    - If it is an article w/ variants or versions, the stripped artnr."""
+
+    articles = get_artikel_by_ean(ean)
+    if len(articles) == 0:
+        return None
+    if len(articles) == 1:
+        return articles[0].artnr
+    # by checking for article sets
+    candidates = [c for c in articles if c.setartikel]
+    if len(candidates) == 1:
+        return candidates.pop().artnr
+    #by removing version information
+    pattern = re.compile('(\d+)')
+    cand_artnrs = map(pattern.search, [c.artnr for c in articles])
+    cand_artnrs = set([c.group(0) for c in cand_artnrs])
+    if len(cand_artnrs) == 1:
+        return cand_artnrs.pop()
+    # no ideas left
+    return None
+
 
 _komponentencache = {}
 

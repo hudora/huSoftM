@@ -9,11 +9,15 @@ Copyright (c) 2007 HUDORA GmbH. All rights reserved.
 
 __revision__ = "$Revision$"
 
+import warnings
 import re
 import unittest
 from decimal import Decimal
 import husoftm
+import husoftm.caching
 from husoftm.connection import get_connection
+from husoftm.connection2 import get_connection as get_connection2
+from husoftm.connection2 import as400_2_int
 from husoftm.tools import sql_quote
 
 
@@ -186,15 +190,19 @@ def komponentenaufloesung(mengenliste):
     [(5, u'A42438'), (5, u'A42439'), (5, u'A42440'), (10, u'A42441'), (4, u'42050/A'), (12, u'42051/A'), (4, u'42052/A')]
     >>> komponentenaufloesung([(2, '00001')])
     [(2, '00001')]
+    
+    Achtung: Diese Funktion implementiert mehrere Tage caching
     """
     
     ret = []
     for menge, artnr in mengenliste:
-        if (menge, artnr) not in _komponentencache:
-            _komponentencache[(menge, artnr)] \
-                = get_connection().query(['ASK00'], fields=['SKLFNR', 'SKKART', 'SKMENG'],
-                                                 condition="SKARTN='%s'" % artnr)
-        rows = _komponentencache[(menge, artnr)]
+    # check if we have a cached result
+        memc = husoftm.caching.get_cache()
+        rows = memc.get('husoftm.komponentencache.%r' % (artnr))
+        if not rows:
+            rows = get_connection().query(['ASK00'], fields=['SKLFNR', 'SKKART', 'SKMENG'],
+                                          condition="SKARTN='%s'" % artnr)
+            memc.set('husoftm.komponentencache.%r' % (artnr), rows , 60*60*72) # 4 d
         if not rows:
             # kein Setartikel
             ret.append((menge, artnr))
@@ -221,6 +229,8 @@ class KomponentenResolver(object):
             self.cache[row['artnr']].append(row)
     
     def resolve(self, mengenliste):
+        warnings.warn("KomponentenResolver.resolve() is deprecated use komponentenaufloesung()",
+                      DeprecationWarning, stacklevel=2) 
         ret = []
         if not self.cache:
             self.fill_cache()
@@ -233,6 +243,44 @@ class KomponentenResolver(object):
                     ret.append((menge * row['menge_im_set'], row['komponenten_artnr']))
         return ret
     
+
+def get_umschlag(artnr):
+    """Gibt aufgeschlüsselt nach Datum zurück, wie viel Einheiten fakturiert wurden.
+    
+    >>> get_umschlag('14600')
+    [(datetime.date(2005, 1, 25), 104),
+     (datetime.date(2005, 1, 27), 8),
+     ...
+     (datetime.date(2008, 5, 29), 2),
+     (datetime.date(2009, 2, 10), 2)]
+     
+    Achtung: Diese Funktion implementiert mehrere Tage caching
+    """
+    
+    # check if we have a cached result
+    memc = husoftm.caching.get_cache()
+    cache = memc.get('husoftm.umschlag.%r' % (artnr))
+    if cache:
+        return cache
+    
+    # sum(LNLWA2) wäre der Warenwert
+    condition = (
+    "LNLFSN<>0"                 # Lieferscheinnummer wurde erzeugt
+    " AND LNSTAT<>'X'"          # Datensatz nicht gelöscht
+    " AND LNLSTO=''"            # Lieferschein wurde nicht storneirt
+    " AND LNDTLF>0"             # Lieferscheindatum ist nicht leer (SoftM Bug)
+    " AND LNARTN=%s")           # nur bestimmten Artikel beachten
+    
+    rows = get_connection2().query(['ALN00'], fields=['LNDTLF', 'MAX(LNZTLF) AS LNZTLF', 'SUM(LNMNGL)'],
+                   condition=condition % (sql_quote(artnr)),
+                   ordering='LNDTLF', grouping='LNDTLF',
+                   querymappings={'SUM(LNMNGL)': 'menge', 'LNDTLF': 'liefer_date'})
+    ret = [(x['liefer_date'], as400_2_int(x['menge'])) for x in rows if x['menge'] > 0]
+    
+    memc.set('husoftm.umschlag.%r' % (artnr), ret , 60*60*48) # 2 d
+    return ret
+
+
 
 import husoftm.mock_as400
 
@@ -256,8 +304,10 @@ class komponentenaufloesungTests(unittest.TestCase):
 
 
 def _test():
+    print get_umschlag('14600')
     print _auf_zwei_stellen(1.0/3.0)
-    print komponentenaufloesung([(5, '00049')])
+    print komponentenaufloesung([(5, '00049')]),
+    print [(5, u'A42438'), (5, u'A42439'), (5, u'A42440'), (10, u'A42441')] == komponentenaufloesung([(5, '00049')])
     print buchdurchschnittspreis('14600')
     print preis('14600')
     # TODO: implement TestMoftSconnection

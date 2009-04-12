@@ -1,0 +1,4 @@
+0.51: artikel.get_umschlag() implementiert, caching ueberarbeitet
+
+0.5: moved to odbc_bridge for bestaende.py
+     bestandsentwicklung stark optiemiert und mit caching versehen

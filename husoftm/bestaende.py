@@ -10,6 +10,7 @@ Hier werden Warenbestände, verfügbare Mengen und dergleichen ermittelt.
 Für die Frage, ob wir einen Artikel verkaufen können ist freie_menge() die richtige Funktion.
 Für die Frage, ob ein bestimmter Artikel in einem bestimmten Lager ist, ist bestand() geignet.
 
+    alternativen(artnr)                           alternativartikel / versionen
     bestellmengen(artnr)                          von uns bei Lieferanten bestellte Mengen
     auftragsmengen(artnr, lager=0)                bei uns von Kunden bestellte Mengen
     umlagermenge(artnr, lager, vonlager=None)     Menge, die zur Zeit von einem Lager ans andere unterwegs ist
@@ -26,13 +27,17 @@ Für die Frage, ob ein bestimmter Artikel in einem bestimmten Lager ist, ist bes
 
 __revision__ = "$Revision$"
 
+import couchdb.client
 import datetime
+import memcache
 import time
 import warnings
-import couchdb.client
+import husoftm.caching as caching
 
-from husoftm.connection import get_connection, int_or_0
+from husoftm.connection2 import get_connection, as400_2_int
 from husoftm.tools import sql_escape, sql_quote
+from huTools.robusttypecasts import int_or_0
+import huTools.async
 
 COUCHSERVER = "http://couchdb.local.hudora.biz:5984"
 
@@ -94,8 +99,24 @@ def _umlagermenge_helper(artnr, lager=100, vonlager=None):
         for artnr, menge in rows:
             ret[artnr] = int(menge)
         return ret
-    return int_or_0(rows)
+    return as400_2_int(rows)
+    
 
+# TODO: use cs module instead
+def alternativen(artnr):
+    """Gets a list of article numbers which are alternatives (usually versions).
+    
+    >>> alternativen('14600')
+    ['14600', '14600/01', '14600/02', '14600/03']
+    """
+    
+    server = couchdb.client.Server(COUCHSERVER)
+    db = server['eap']
+    artnrs = db.get(artnr, {}).get('alternatives', [])
+    if artnr not in artnrs:
+        artnrs.append(artnr)
+    return sorted(artnrs)
+    
 
 def get_lagerbestand(artnr=None, lager=0):
     warnings.warn("get_lagerbestand() is deprecated use buchbestand()", DeprecationWarning, stacklevel=2) 
@@ -112,8 +133,10 @@ def buchbestand(artnr, lager=0):
     
     rows = get_connection().query('XLF00', fields=['LFMGLP'],
                condition="LFLGNR=%d AND LFARTN=%s AND LFMGLP<>0 AND LFSTAT<>'X'" % (int(lager), 
-                                                                                      sql_quote(artnr)))
-    return int_or_0(rows)
+                                                                                    sql_quote(artnr)))
+    if rows:
+        return as400_2_int(rows[0][0])
+    return 0
     
 
 def buchbestaende(lager=0):
@@ -135,7 +158,7 @@ def buchbestaende(lager=0):
     
     rows = get_connection().query('XLF00', fields=['LFARTN', 'SUM(LFMGLP)'], grouping=['LFARTN'],
                condition="LFLGNR=%d AND LFMGLP<>0 AND LFSTAT<>'X'" % (int(lager)))
-    return dict([(str(artnr), int(quantity)) for artnr, quantity in rows])
+    return dict([(str(artnr), as400_2_int(quantity)) for artnr, quantity in rows])
     
 
 def get_verfuegbaremenge(artnr=None, lager=0):
@@ -157,13 +180,13 @@ def verfuegbare_menge(artnr, lager=0):
                     sql_escape(lager), sql_quote(artnr)))
     if rows:
         (menge, lfmgk4) = rows[0]
-        return int_or_0(menge) - int_or_0(lfmgk4)
+        return as400_2_int(menge) - as400_2_int(lfmgk4)
     else:
         return 0
     
 
 def verfuegbare_mengen(lager=0):
-    """Gibt die Verfügbaren Mengen aller artikel eines Lagers zurück. Siehe auch besteande().
+    """Gibt die aktuell verfügbaren Mengen aller Artikel eines Lagers zurück. Siehe auch besteande().
     
     >>> verfuegbare_mengen(34)
     {'10106': 6,
@@ -175,7 +198,7 @@ def verfuegbare_mengen(lager=0):
     rows = get_connection().query('XLF00', nomapping=True, grouping=['LFARTN'],
                                   fields=['LFARTN', 'SUM(LFMGLP)', 'SUM(LFMGK4)', 'SUM(LFMGLP-LFMGK4)'],
                                   condition="LFLGNR=%s AND LFMGLP<>0 AND LFSTAT<>'X'" % sql_escape(lager))
-    return dict([(str(artnr), int_or_0(menge) - int_or_0(lfmgk4)) 
+    return dict([(str(artnr), as400_2_int(menge) - as400_2_int(lfmgk4)) 
                  for (artnr, menge, lfmgk4, dummy) in rows])
     
 
@@ -189,14 +212,17 @@ def freie_menge(artnr, dateformat="%Y-%m-%d"):
     2345
     
     """
-    
-    return max([min(bestandsentwicklung(artnr, dateformat).values()), 0])
+    bestandse = bestandsentwicklung(artnr, dateformat).values()
+    if bestandse:
+        return max([min(bestandse), 0])
+    else:
+        return 0
     
 
 def bestandsentwicklung(artnr, dateformat="%Y-%m-%d"):
     """Liefert ein Dictionary, dass alle zukünftigen Bewegungen für einen Artikel beinhaltet.
     
-    dateformat bestimmt dabei die keys des dictionaries und steuert die Granularität. "%Y-%W" sorgt 
+    dateformat bestimmt dabei die Keys des Dictionaries und steuert die Granularität. "%Y-%W" sorgt 
     z.B. für eine wochenweise Auflösung.
     
     >>> bestandsentwicklung('14865')
@@ -204,18 +230,40 @@ def bestandsentwicklung(artnr, dateformat="%Y-%m-%d"):
      '2009-03-02': 860,
      '2009-04-01': 560,
      '2009-05-04': 300}
+     
+     Achtung: Diese Funktion implementiert bis zu 120 Sekunden caching.
     """
     
-    bewegungen = [(x[0].strftime(dateformat), x[1]) for x in bestellmengen(artnr).items()]
-    bewegungen.extend([(x[0].strftime(dateformat), -1*x[1]) for x in auftragsmengen(artnr).items()])
+    # check if we have a cached result.
+    memc = husoftm.caching.get_cache()
+    cache = memc.get('husoftm.bestandsentwicklung.%r.%r' % (artnr, dateformat))
+    if cache:
+        return cache
+    
+    # start processing all thre queries in separate threads
+    bestellmengen_future = huTools.async.Future(bestellmengen, artnr)
+    auftragsmengen_future = huTools.async.Future(auftragsmengen, artnr)
+    buchbestand_future = huTools.async.Future(buchbestand, artnr)
+    
+    # This could be sped up by using futures.
+    bewegungen = [(x[0].strftime(dateformat), int(x[1])) for x in bestellmengen_future().items()]
+    bewegungen.extend([(x[0].strftime(dateformat), -1*x[1]) for x in auftragsmengen_future().items()])
     bewegungen.sort()
     # summieren
     # Startwert ist der heutige Lagerbestand
-    menge = buchbestand(artnr)
+    menge = buchbestand_future()
     bestentwicklung = {}
     for datum, bewegungsmenge in bewegungen:
         menge += bewegungsmenge
         bestentwicklung[datum] = menge
+    
+    if not bestentwicklung:
+        # kein Bestand - diese Information länger cachen
+        memc.set('husoftm.bestandsentwicklung.%r.%r' % (artnr, dateformat), bestentwicklung , 60*60*6)
+    else:
+        # Bestand - die menge fuer 2 minuten cachen
+        memc.set('husoftm.bestandsentwicklung.%r.%r' % (artnr, dateformat), bestentwicklung , 60*2)
+    
     return bestentwicklung
     
 
@@ -232,7 +280,8 @@ def bestellmengen(artnr):
     rows = get_connection().query('EBP00', fields=['BPDTLT', 'SUM(BPMNGB-BPMNGL)'], ordering='BPDTLT',
                                  grouping='BPDTLT',
                                  condition="BPSTAT<>'X' AND BPKZAK=0 AND BPARTN=%s" % sql_quote(artnr))
-    return dict([(x['liefer_date'], x['SUM(BPMNGB-BPMNGL)']) for x in rows if x['SUM(BPMNGB-BPMNGL)'] > 0])
+    return dict([(x['liefer_date'], as400_2_int(x['SUM(BPMNGB-BPMNGL)']))
+                 for x in rows if as400_2_int(x['SUM(BPMNGB-BPMNGL)']) > 0])
     
 
 def auftragsmengen(artnr, lager=None):
@@ -262,7 +311,7 @@ def auftragsmengen(artnr, lager=None):
                    condition=condition % (sql_quote(artnr)),
                    ordering='APDTLT', grouping='APDTLT',
                    querymappings={'SUM(APMNG-APMNGF)': 'menge_offen', 'APDTLT': 'liefer_date'})
-    return dict([(x['liefer_date'], x['menge_offen']) for x in rows if x['menge_offen'] > 0])
+    return dict([(x['liefer_date'], as400_2_int(x['menge_offen'])) for x in rows if x['menge_offen'] > 0])
     
 
 def auftragsmengen_alle_artikel(lager=0):
@@ -302,11 +351,11 @@ def auftragsmengen_alle_artikel(lager=0):
     ret = {}
     for row in rows:
         if row['menge_offen']:
-            ret.setdefault(str(row['artnr']), {})[row['liefer_date']] = int(row['menge_offen'])
+            ret.setdefault(str(row['artnr']), {})[row['liefer_date']] = as400_2_int(row['menge_offen'])
     return ret
     
 
-def versionsvorschlag(menge, artnr, date, dateformat="%Y-%m-%d"):
+def versionsvorschlag(menge, orgartnr, date, dateformat="%Y-%m-%d"):
     """Gib einen Vorschlag für Zusammenstellung von Artikeln zurück.
     
     >>> versionsvorschlag(2000, '22006', '2009-01-04')
@@ -314,16 +363,10 @@ def versionsvorschlag(menge, artnr, date, dateformat="%Y-%m-%d"):
     >>> versionsvorschlag(2000, '76095', '2009-01-04')
     (False, [(0, '76095')])
     """
-        
-    server = couchdb.client.Server(COUCHSERVER)
-    db = server['eap']
-    artnrs = db.get(artnr, {}).get('alternatives', [])
-    if artnr not in artnrs:
-        artnrs.append(artnr)
-
+    
     ret = []
     benoetigt = menge
-    for artnr in sorted(artnrs):
+    for artnr in alternativen(orgartnr):
         bentwicklung = bestandsentwicklung(artnr, dateformat).items()
         if not bentwicklung:
             continue
@@ -351,7 +394,7 @@ def frei_ab(menge, artnr, dateformat="%Y-%m-%d"):
     datetime.date(2008, 11, 22)
     """
     
-    # Algorythmus: vom Ende der Bestandskurve nach hinten gehen, bis wir an einen punkt kommen, wo die
+    # Algorythmus: vom Ende der Bestandskurve nach hinten gehen, bis wir an einen punkt Kommen, wo die
     # Kurve niedriger ist, als die geforderte Menge - ab da ist die Menge frei.
     
     bentwicklung = bestandsentwicklung(artnr, dateformat)
@@ -427,7 +470,7 @@ def besteande(lager):
     # Offene Umlagerungen an dieses Lager zurechnen.
     uml = umlagermengen(anlager=lager, vonlager=None)
     for artnr, umlagerungsmenge in uml.items():
-        bbesteande[str(artnr)] = bbesteande.get(artnr, 0) + int(umlagerungsmenge)
+        bbesteande[str(artnr)] = bbesteande.get(artnr, 0) + as400_2_int(umlagerungsmenge)
     return bbesteande
 
 
@@ -435,18 +478,21 @@ if __name__ == '__main__':
     """Call test suite when this module is opened as script."""
 
     import unittest
-
+    
+    def test():
+        print bestandsentwicklung('14600/03')
+    
     def _test():
         """Some very simple tests."""
         from pprint import pprint
-        print "buchbestaende() =",
-        pprint(buchbestaende())
-        print "auftragsmengen_alle_artikel(34) = ",
-        pprint(auftragsmengen_alle_artikel(34))
-        print "verfuegbare_mengen(34) = ",
-        pprint(verfuegbare_mengen(34))
-        print "besteande(100) = ",
-        pprint(besteande(100))
+        #print "buchbestaende() =",
+        #pprint(buchbestaende())
+        #print "auftragsmengen_alle_artikel(34) = ",
+        #pprint(auftragsmengen_alle_artikel(34))
+        #print "verfuegbare_mengen(34) = ",
+        #pprint(verfuegbare_mengen(34))
+        #print "besteande(100) = ",
+        #pprint(besteande(100))
         # for artnr in '76095 14600/03 14865 71554/A 01104 10106 14890 WK22002'.split():
         for artnr in '14600/03 WK22002'.split():
             print "versionsvorschlag(2000, %r, '2009-01-04') = " % artnr,
@@ -489,6 +535,21 @@ if __name__ == '__main__':
                 bbestand = buchbestand(artnr, lager)
                 self.assertEqual(bbestand+umenge, menge)
     
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestUmlagerungen)
-    suite.addTest(unittest.FunctionTestCase(_test))
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    #_test()
+    #suite = unittest.TestLoader().loadTestsFromTestCase(TestUmlagerungen)
+    #suite.addTest(unittest.FunctionTestCase(_test))
+    #unittest.TextTestRunner(verbosity=2).run(suite)
+
+    print "starting"
+    import cProfile
+    cProfile.run("test()", sort=1)
+
+# import time
+# start = time.time()
+# alt = alternativen("14600/03")
+# print "Z", time.time() - start, alt
+# for artnr in alt:
+#     print "z", time.time() - start, artnr
+#     bentwicklung = bestandsentwicklung(artnr).items()
+#     print "z", time.time() - start
+# 

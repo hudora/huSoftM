@@ -24,11 +24,19 @@ LOG = logging.getLogger('huSoftM.sql')
 LOG.setLevel(logging.WARN)
 
 
+def as400_2_int(num):
+    """Converts u'4.000' to 4 et. al."""
+    return int(str(num).split('.')[0])
+
+
 def _combine_date_and_time(mappings, fields, i, row, rowdict):
     """If there is also a time field in addition to a date field combine them."""
     basename = '_'.join(mappings[fields[i]].split('_')[:-1])
     timefield = DATETIMEDIR[fields[i]]
-    timepos = fields.index(timefield)
+    try:
+        timepos = fields.index(timefield)
+    except ValueError:
+        return
     if (timepos and row[timepos] and
         not str(row[timepos]).startswith('99')): # Zeit = 999999: Unbestimmt
         try:

@@ -25,7 +25,7 @@ start_link(Options) ->
 %% @doc SQL SELECT command
 -spec select(QueryStr::string()) -> {'ok', Rows::integer()} | {'error', Reason::any()}.
 select(QueryStr) when is_list(QueryStr) ->
-     gen_server:call(?MODULE, {select, QueryStr, 2}).
+     gen_server:call(?MODULE, {select, QueryStr, 2}, 30000).
 
 %% @doc Return Server Informtion
 -spec info() -> {SuccessCount::integer(), ErrorCount::integer(), Reconnects::integer()}.

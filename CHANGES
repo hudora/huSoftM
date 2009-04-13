@@ -1,3 +1,6 @@
+0.51p1: artikel.get_umschlag() nutzt nun die Rechnungsdtei, nicht die Lieferscheine und ignoriert
+        Umlagerungen / deutlich längerer timeout in der odbc_bridge, eigene exception für timeouts
+
 0.51: artikel.get_umschlag() implementiert, caching ueberarbeitet
 
 0.5: moved to odbc_bridge for bestaende.py

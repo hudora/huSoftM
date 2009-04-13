@@ -24,6 +24,10 @@ LOG = logging.getLogger('huSoftM.sql')
 LOG.setLevel(logging.WARN)
 
 
+class TimeoutException(IOError):
+    pass
+    
+
 def as400_2_int(num):
     """Converts u'4.000' to 4 et. al."""
     return int(str(num).split('.')[0])
@@ -147,7 +151,8 @@ class MoftSconnection(object):
         response = conn.getresponse()
         if response.status != 200:
             errorinfo = response.read()
-            # LOG.error('PyRO remote exception:' + (''.join(Pyro.util.getPyroTraceback(msg))))
+            if errorinfo.startswith('Internal Error: {\'EXIT\',\n                    {timeout'):
+                raise TimeoutException(errorinfo)
             raise RuntimeError("Server Error: %r" % errorinfo)
         return json.loads(response.read())
     

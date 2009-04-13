@@ -263,21 +263,20 @@ def get_umschlag(artnr):
     if cache:
         return cache
     
-    # sum(LNLWA2) wäre der Warenwert
     condition = (
-    "LNLFSN<>0"                 # Lieferscheinnummer wurde erzeugt
-    " AND LNSTAT<>'X'"          # Datensatz nicht gelöscht
-    " AND LNLSTO=''"            # Lieferschein wurde nicht storneirt
-    " AND LNDTLF>0"             # Lieferscheindatum ist nicht leer (SoftM Bug)
-    " AND LNARTN=%s")           # nur bestimmten Artikel beachten
+    "FKRGNR=FURGNR"             # JOIN
+    " AND FKAUFA<>'U'"          # Keine Umlagerung
+    " AND FKSTAT<>'X'"          # nicht gelöscht
+    " AND FKDTFA > 0"           # Druckdatum nicht leer
+    " AND FUARTN=%s")           # nur bestimmten Artikel beachten
     
-    rows = get_connection2().query(['ALN00'], fields=['LNDTLF', 'MAX(LNZTLF) AS LNZTLF', 'SUM(LNMNGL)'],
+    rows = get_connection2().query(['AFU00', 'AFK00'], fields=['FKDTFA', 'SUM(FUMNG)'],
                    condition=condition % (sql_quote(artnr)),
-                   ordering='LNDTLF', grouping='LNDTLF',
-                   querymappings={'SUM(LNMNGL)': 'menge', 'LNDTLF': 'liefer_date'})
-    ret = [(x['liefer_date'], as400_2_int(x['menge'])) for x in rows if x['menge'] > 0]
+                   ordering='FKDTFA', grouping='FKDTFA',
+                   querymappings={'SUM(FUMNG)': 'menge', 'FKDTFA': 'rechnung_date'})
+    ret = [(x['rechnung_date'], as400_2_int(x['menge'])) for x in rows if x['menge'] > 0]
     
-    memc.set('husoftm.umschlag.%r' % (artnr), ret , 60*60*48) # 2 d
+    memc.set('husoftm.umschlag.%r' % (artnr), ret , 60*60*24*6) # 6 d
     return ret
 
 

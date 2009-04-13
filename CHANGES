@@ -1,3 +1,5 @@
+0.51p2: don't leave socket in memcache lying arround
+
 0.51p1: artikel.get_umschlag() nutzt nun die Rechnungsdtei, nicht die Lieferscheine und ignoriert
         Umlagerungen / deutlich längerer timeout in der odbc_bridge, eigene exception für timeouts
 

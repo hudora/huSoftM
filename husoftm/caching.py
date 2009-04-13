@@ -10,15 +10,9 @@ Copyright (c) 2009 HUDORA. All rights reserved.
 
 import memcache
 
-
-
-class Client(memcache.Client):
-    def __del__(self):
-        # see http://code.djangoproject.com/ticket/5133 for the problem we try to solve here
-        self.disconnect_all()
-        return super(Client, self).__del__()
+_cache = memcache.Client(['balancer.local.hudora.biz:11211'])
 
 # TODO: service basierte benamung memcache.local.hudora.biz + monitoring
 def get_cache():
-    return Client(['balancer.local.hudora.biz:11211'])
+    return _cache
 

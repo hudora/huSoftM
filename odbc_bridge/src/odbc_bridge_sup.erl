@@ -42,7 +42,7 @@ upgrade() ->
 %% @doc supervisor callback.
 init([]) ->
     Ip = case os:getenv("MOCHIWEB_IP") of false -> "0.0.0.0"; Any1 -> Any1 end,   
-    Dsn = case os:getenv("ODBC_DSN") of false -> "HD400"; Any2 -> Any2 end,   
+    Dsn = case os:getenv("ODBC_DSN") of false -> "HD400utf8"; Any2 -> Any2 end,   
     WebConfig = [
          {ip, Ip},
                  {port, 8000},

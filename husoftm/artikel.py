@@ -126,8 +126,8 @@ def get_artikel(artnr=None, ean=None):
     >>> b = get_artikel(artnr=None, ean=a.ean)
     RuntimeError: Ergebnis nicht eindeutig für: Artnr None && EAN 4005998760956L"""
 
-    cond1 = "ARARTN='%s'" % artnr
-    cond2 = "AREAN='%s'" % ean
+    cond1 = "ARARTN=%s" % sql_quote(artnr)
+    cond2 = "AREAN=%s" % sql_quote(ean)
     if artnr and ean:
         condition = cond1+" AND "+cond2
     elif artnr:
@@ -141,16 +141,16 @@ def get_artikel(artnr=None, ean=None):
     rowcount = len(rows)
     if rowcount > 1:
         raise RuntimeError("Ergebnis nicht eindeutig für: Artnr %r && EAN %r" % (artnr, ean))
-    if rowcount == 0:
+    elif rowcount == 0:
         return None
     return Artikel().fill_from_softm(rows[0])
 
 
 def get_artikel_by_ean(ean):
     """Returns all articles w/ given EAN."""
-    condition = "AREAN='%s'" % ean
+    condition = "AREAN=%s" % sql_quote(ean)
     rows = get_connection().query(['XAR00'], condition=condition)
-    return [Artikel().fill_from_softm(r) for r in rows]
+    return [Artikel().fill_from_softm(row) for row in rows]
 
 
 def guess_artnr(ean):
@@ -169,13 +169,13 @@ def guess_artnr(ean):
     # by checking for article sets
     candidates = [c for c in articles if c.setartikel]
     if len(candidates) == 1:
-        return candidates.pop().artnr
+        return candidates[0].artnr
     #by removing version information
     pattern = re.compile('(\d+)')
     cand_artnrs = map(pattern.search, [c.artnr for c in articles])
     cand_artnrs = set([c.group(0) for c in cand_artnrs])
     if len(cand_artnrs) == 1:
-        return cand_artnrs.pop()
+        return cand_artnrs[0]
     # no ideas left
     return None
 

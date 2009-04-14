@@ -268,6 +268,9 @@ def get_umschlag(artnr):
     " AND FKAUFA<>'U'"          # Keine Umlagerung
     " AND FKSTAT<>'X'"          # nicht gelöscht
     " AND FKDTFA > 0"           # Druckdatum nicht leer
+    " AND FUKZRV=2"             # ?
+    " AND FURGNI<>0"            # ?
+    " AND FURGNR<>0"            # es gibt eine Rechnungsnummer
     " AND FUARTN=%s")           # nur bestimmten Artikel beachten
     
     rows = get_connection2().query(['AFU00', 'AFK00'], fields=['FKDTFA', 'SUM(FUMNG)'],

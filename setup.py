@@ -20,5 +20,5 @@ hubarcode = setup(name='huSoftM',
                    'Programming Language :: Python'],
       zip_safe=False,
       packages = find_packages(),
-      install_requires=['simplejson', 'couchdb', 'python-memcached', 'huTools>=0.38p1'],
+      install_requires=['simplejson', 'couchdb', 'python-memcached', 'huTools>=0.38p1.dev'],
 )

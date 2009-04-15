@@ -235,7 +235,7 @@ def bestandsentwicklung(artnr, dateformat="%Y-%m-%d"):
     """
     
     # check if we have a cached result.
-    memc = husoftm.caching.get_cache()
+    memc = caching.get_cache()
     cache = memc.get('husoftm.bestandsentwicklung.%r.%r' % (artnr, dateformat))
     if cache:
         return cache

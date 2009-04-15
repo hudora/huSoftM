@@ -97,7 +97,7 @@ def _umlagermenge_helper(artnr, lager=100, vonlager=None):
         # Wenn kein bestimmter Artikel abgefragt wird, dann das Abfrageergebnis in ein dict umwandeln
         ret = {}
         for artnr, menge in rows:
-            ret[artnr] = int(menge)
+            ret[artnr] = as400_2_int(menge)
         return ret
     return as400_2_int(rows)
     

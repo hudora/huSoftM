@@ -167,6 +167,17 @@ def _create_positionssatz(positionen, vorgangsnummer, aobj_position, texte):
         text.auf_rechnung = 1
         text.text = "Kundenartikelnummer: %s" % aobj_position.kundenartnr
 
+    if hasattr(aobj_position, 'text_vor_position') and aobj_position.text_vor_position:
+        text = Text()
+        texte.append(text)
+        text.vorgang = vorgangsnummer
+        text.vorgangsposition = position.vorgangsposition
+        text.textart = 7 # text vor position
+        text.auf_lieferschein = 1
+        text.auf_rechnung = 1
+        # FIXME: not sure if newlines can be handled.
+        text.text = "\n".join(aobj_position.text_vor_position)
+
 
 def _create_addressatz(adressen, vorgangsnummer, aobj_adresse, is_lieferadresse=True):
     """Fügt einen Zusatz-Addressatz hinzu."""
@@ -401,6 +412,32 @@ class _GenericTests(unittest.TestCase):
         self.assertEqual(adressen[0].to_sql(), adressen_sql)
         self.assertEqual(positionen, [])
         self.assertEqual(texte, [])
+
+    def test_positionen_text(self):
+        """Tests if text of positions can be converted to SQL."""
+        vorgangsnummer = 123
+        auftrag = _MockAuftrag()
+        auftrag.kundennr = '17200'
+        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
+        pos1 = _MockPosition()
+        pos1.menge = 10
+        pos1.artnr = '11111'
+        pos1.text_vor_position = ['text for pos1', 'more text for pos1']
+        pos2 = _MockPosition()
+        pos2.menge = 20
+        pos2.text_vor_position = ['text for pos2', 'more text for pos2']
+        pos2.artnr = '22222/09'
+        auftrag.positionen = [pos1, pos2]
+        kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
+        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKVGPO, BKFNR, BKDTKD, BKKDNR) VALUES('1','123','xtodayx','1081230','1','2','01','xtodayx','   17200')"
+
+        txt0 = texte[0].to_sql()
+        txt0_sql = "INSERT INTO ABT00 (BTKZLF, BTVGNR, BTVGPO, BTTART, BTFNR, BTTX60, BTLFNR, BTKZRG) VALUES('1','123','1','7','01','text for pos1\nmore text for pos1','1','1')"
+        self.assertEqual(txt0, txt0_sql)
+
+        txt1 = texte[1].to_sql()
+        txt1_sql = "INSERT INTO ABT00 (BTKZLF, BTVGNR, BTVGPO, BTTART, BTFNR, BTTX60, BTLFNR, BTKZRG) VALUES('1','123','2','7','01','text for pos2\nmore text for pos2','1','1')"
+        self.assertEqual(txt1, txt1_sql)
 
     def test_positionen_artnr(self):
         """Tests if orderlines containing artnr can be converted to SQL."""

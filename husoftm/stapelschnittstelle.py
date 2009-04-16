@@ -177,7 +177,7 @@ def _create_addressatz(adressen, vorgangsnummer, aobj_adresse, is_lieferadresse=
     adresse.name1 = getattr(aobj_adresse, 'name1', '')
     adresse.name2 = getattr(aobj_adresse, 'name2', '')
     adresse.name3 = getattr(aobj_adresse, 'name3', '')
-    adresse.strasse = getattr(adresse, 'strasse', '')
+    adresse.strasse = getattr(aobj_adresse, 'strasse', '')
     adresse.plz = getattr(aobj_adresse, 'plz', '')
     adresse.ort = getattr(aobj_adresse, 'ort', '')
     adresse.laenderkennzeichen = iso2land(getattr(aobj_adresse, 'land', 'DE'))
@@ -386,16 +386,17 @@ class _GenericTests(unittest.TestCase):
         auftrag.lieferadresse.name1 = 'name1'
         auftrag.lieferadresse.name2 = 'name2'
         auftrag.lieferadresse.name3 = 'name3'
+        auftrag.lieferadresse.strasse = 'Nicht Vergessen Weg 1'
         auftrag.lieferadresse.ort = 'Rade'
         auftrag.lieferadresse.land = 'DE'
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
         kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKDTKD, BKKDNR) VALUES('1','123','xtodayx','1081230','1','01','xtodayx','   17200')"
         # insert date of today since this will be automatically done by _auftrag2records()
         kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
-
         self.assertEqual(kopf.to_sql(), kpf_sql)
-        self.assertEqual(adressen[0].to_sql(), "INSERT INTO ABV00 (BVNAM2, BVNAM3, BVLKZ, BVVGNR, BVKZAD, "
-            "BVNAME, BVORT, BVAART) VALUES('name2','name3','D','123','1','name1','Rade','1')")
+
+        adressen_sql = "INSERT INTO ABV00 (BVNAM2, BVNAM3, BVLKZ, BVVGNR, BVSTR, BVKZAD, BVNAME, BVORT, BVAART) VALUES('name2','name3','D','123','Nicht Vergessen Weg 1','1','name1','Rade','1')"
+        self.assertEqual(adressen[0].to_sql(), adressen_sql)
         self.assertEqual(positionen, [])
         self.assertEqual(texte, [])
 

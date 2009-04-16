@@ -25,7 +25,8 @@ import textwrap
 import unittest
 from husoftm.connection import get_connection
 from husoftm.tools import date2softm, sql_quote, iso2land
-from husoftm.stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00, ABK00
+from stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00 # TODO nur fuer entwicklung relativen pfad nutzen
+# from husoftm.stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00
 
 __revision__ = "$Revision$"
 
@@ -48,10 +49,11 @@ class StapelSerializer(object):
         felddict = {}
         # pull in required rows
         for rowid, rowconf in self.rowmapping.items():
+            name = rowconf['name']
             if rowconf.get('required', False) == True:
-                felddict[rowid] = getattr(self, rowconf['name'])
-            elif hasattr(self, rowconf['name']):
-                felddict[rowid] = getattr(self, rowconf['name'])
+                felddict[rowid] = getattr(self, name)
+            elif hasattr(self, name):
+                felddict[rowid] = getattr(self, name)
             # convert datetime
             if rowid in felddict and hasattr(felddict[rowid], 'strftime'):
                 felddict[rowid] = date2softm(felddict[rowid])
@@ -151,7 +153,9 @@ def _create_positionssatz(positionen, vorgangsnummer, aobj_position, texte):
     position.vorgang = vorgangsnummer
     position.vorgangsposition = len(positionen)
     position.bestellmenge = aobj_position.menge
-    position.artikel = aobj_position.artnr
+    position.artikel = getattr(aobj_position, 'artnr', None)
+    if hasattr(aobj_position, 'ean'):
+        position.ean = aobj_position.ean
     position.erfassungsdatum = date2softm(datetime.date.today())
     if hasattr(aobj_position, 'kundenartnr') and aobj_position.kundenartnr:
         text = Text()
@@ -188,6 +192,16 @@ def _auftrag2records(vorgangsnummer, auftrag):
     if len(auftrag.kundennr.split('/')) > 1:
         # abweichende Lieferadresse in address-zusatzdatei
         kopf.lieferadresse = int(auftrag.kundennr.split('/')[1])
+
+    if hasattr(auftrag, 'herkunft'):
+        kopf.herkunft = auftrag.herkunft
+
+    if hasattr(auftrag, 'teillieferung_zulaessig'):
+        kopf.teillieferung_zulaessig = str(int(auftrag.teillieferung_zulaessig))
+
+    if hasattr(auftrag, 'abgangslager'):
+        kopf.abgangslager = auftrag.abgangslager
+
     if hasattr(auftrag, 'kundenauftragsnr'):
         kopf.kundenauftragsnr = auftrag.kundenauftragsnr
 
@@ -204,9 +218,9 @@ def _auftrag2records(vorgangsnummer, auftrag):
         kopf.kundenwunschtermin = ''
 
     if hasattr(auftrag, 'anlieferdatum_min') and auftrag.anlieferdatum_min:
-        kopf.liefertermin = date2softm(auftrag.anlieferdatum_min)
+        kopf.anliefertermin = date2softm(auftrag.anlieferdatum_min)
     else:
-        kopf.liefertermin = date2softm(datetime.date.today())
+        kopf.anliefertermin = date2softm(datetime.date.today()) # FIXME +7 days eventually?
 
     positionen = []
     texte = []
@@ -327,8 +341,12 @@ class _GenericTests(unittest.TestCase):
         auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
         auftrag.positionen = []
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
-        self.assertEqual(kopf.to_sql(), "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTKW, BKSBNR, BKFNR, BKDTKD, "
-            "BKKDNR) VALUES('1','123','1081230','1','01','1081121','   17200')")
+
+        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKDTKD, BKKDNR) VALUES('1','123','xtodayx','1081230','1','01','xtodayx','   17200')"
+        # insert date of today since this will be automatically done by _auftrag2records()
+        kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
+
+        self.assertEqual(kopf.to_sql(), kpf_sql)
         self.assertEqual(positionen, [])
         self.assertEqual(texte, [])
         self.assertEqual(adressen, [])
@@ -346,8 +364,10 @@ class _GenericTests(unittest.TestCase):
         auftrag.bestelltext = 'bestelltext'
         auftrag.positionen = []
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
-        self.assertEqual(kopf.to_sql(), "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTKW, BKSBNR, BKFNR, BKNRKD, "
-            "BKDTKD, BKKDNR) VALUES('1','123','1081231','1','01','0012345','1081229','   17200')")
+
+        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKNRKD, BKDTKD, BKKDNR) VALUES('1','123','1081230','1081231','1','01','0012345','1081229','   17200')"
+
+        self.assertEqual(kopf.to_sql(), kpf_sql)
         self.assertEqual(positionen, [])
         self.assertEqual(texte[0].to_sql(), "INSERT INTO ABT00 (BTKZLF, BTVGNR, BTTART, BTFNR, BTTX60, "
             "BTLFNR, BTKZAB, BTKZRG) VALUES('1','123','8','01','infotext_kunde','1','1','1')")
@@ -369,15 +389,18 @@ class _GenericTests(unittest.TestCase):
         auftrag.lieferadresse.ort = 'Rade'
         auftrag.lieferadresse.land = 'DE'
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
-        self.assertEqual(kopf.to_sql(), "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTKW, BKSBNR, BKFNR, BKDTKD, "
-            "BKKDNR) VALUES('1','123','1081230','1','01','1081121','   17200')")
+        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKDTKD, BKKDNR) VALUES('1','123','xtodayx','1081230','1','01','xtodayx','   17200')"
+        # insert date of today since this will be automatically done by _auftrag2records()
+        kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
+
+        self.assertEqual(kopf.to_sql(), kpf_sql)
         self.assertEqual(adressen[0].to_sql(), "INSERT INTO ABV00 (BVNAM2, BVNAM3, BVLKZ, BVVGNR, BVKZAD, "
             "BVNAME, BVORT, BVAART) VALUES('name2','name3','D','123','1','name1','Rade','1')")
         self.assertEqual(positionen, [])
         self.assertEqual(texte, [])
 
-    def test_positionen(self):
-        """Tests if orderlines coan be converted to SQL."""
+    def test_positionen_artnr(self):
+        """Tests if orderlines containing artnr can be converted to SQL."""
         vorgangsnummer = 123
         auftrag = _MockAuftrag()
         auftrag.kundennr = '17200'
@@ -390,12 +413,127 @@ class _GenericTests(unittest.TestCase):
         pos2.artnr = '22222/09'
         auftrag.positionen = [pos1, pos2]
         kopf, positionen, dummy, dummy = _auftrag2records(vorgangsnummer, auftrag)
-        self.assertEqual(kopf.to_sql(), "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTKW, BKSBNR, BKVGPO, BKFNR, "
-            "BKDTKD, BKKDNR) VALUES('1','123','1081230','1','2','01','1081121','   17200')")
+        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKVGPO, BKFNR, BKDTKD, BKKDNR) VALUES('1','123','xtodayx','1081230','1','2','01','xtodayx','   17200')"
+
+        # insert date of today since this will be automatically done by _auftrag2records()
+        kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
+
+        self.assertEqual(kopf.to_sql(), kpf_sql)
         self.assertEqual(positionen[0].to_sql(), "INSERT INTO ABA00 (BADTER, BAVGPO, BAABT, BAFNR, BAMNG, "
-            "BAARTN, BAVGNR) VALUES('1081121','1','1','01','10','11111','123')")
+            "BAARTN, BAVGNR) VALUES('xtodayx','1','1','01','10','11111','123')".replace('xtodayx', date2softm(datetime.date.today())))
         self.assertEqual(positionen[1].to_sql(), "INSERT INTO ABA00 (BADTER, BAVGPO, BAABT, BAFNR, BAMNG, "
-            "BAARTN, BAVGNR) VALUES('1081121','2','1','01','20','22222/09','123')")
+            "BAARTN, BAVGNR) VALUES('xtodayx','2','1','01','20','22222/09','123')".replace('xtodayx', date2softm(datetime.date.today())))
+
+    def test_positionen_ean(self):
+        """Tests if orderlines containing ean can be converted to SQL."""
+        vorgangsnummer = 123
+        auftrag = _MockAuftrag()
+        auftrag.kundennr = '17200'
+        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
+        pos1 = _MockPosition()
+        pos1.menge = 10
+        pos1.ean = '11111'
+        pos2 = _MockPosition()
+        pos2.menge = 20
+        pos2.ean = '22222'
+        auftrag.positionen = [pos1, pos2]
+        kopf, positionen, dummy, dummy = _auftrag2records(vorgangsnummer, auftrag)
+        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKVGPO, BKFNR, BKDTKD, BKKDNR) VALUES('1','123','xtodayx','1081230','1','2','01','xtodayx','   17200')"
+
+        # insert date of today since this will be automatically done by _auftrag2records()
+        kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
+
+        self.assertEqual(kopf.to_sql(), kpf_sql)
+        self.assertEqual(positionen[0].to_sql(),
+                "INSERT INTO ABA00 (BADTER, BAVGPO, BAABT, BAMNG, BAVGNR, BAFNR, BAEAN) VALUES('xtodayx','1','1','10','123','01','11111')".replace(
+                    'xtodayx', date2softm(datetime.date.today())))
+        self.assertEqual(positionen[1].to_sql(),
+                "INSERT INTO ABA00 (BADTER, BAVGPO, BAABT, BAMNG, BAVGNR, BAFNR, BAEAN) VALUES('xtodayx','2','1','20','123','01','22222')".replace(
+                    'xtodayx', date2softm(datetime.date.today())))
+
+    def test_zusatz_lieferadresse(self):
+        """Tests that 'zusatzliche lieferadresse' (BKVANR) can be converted to sql"""
+        vorgangsnummer = 123
+        auftrag = _MockAuftrag()
+        auftrag.kundennr = '17200/444' # <-- 004 ist die zusätzliche lieferadresse
+        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
+        pos1 = _MockPosition()
+        pos1.menge = 10
+        pos1.artnr = '11111'
+        pos2 = _MockPosition()
+        pos2.menge = 20
+        pos2.artnr = '22222/09'
+        auftrag.positionen = [pos1, pos2]
+        kopf, positionen, dummy, dummy = _auftrag2records(vorgangsnummer, auftrag)
+        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKVGPO, BKFNR, BKDTKD, BKVANR, BKKDNR) VALUES('1','123','xtodayx','1081230','1','2','01','xtodayx','444','   17200')"
+
+        # insert date of today since this will be automatically done by _auftrag2records()
+        kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
+        self.assertEqual(kopf.to_sql(), kpf_sql)
+
+    def test_abgangslager(self):
+        """Test if the 'abgangslager' can be converted to SQL."""
+        vorgangsnummer = 123
+        auftrag = _MockAuftrag()
+        auftrag.kundennr = '17200'
+        auftrag.abgangslager = '26'
+        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
+        auftrag.positionen = []
+        kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
+
+        kpf_sql = "INSERT INTO ABK00 (BKLGNR, BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKDTKD, BKKDNR) VALUES('26','1','123','xtodayx','1081230','1','01','xtodayx','   17200')"
+        # insert date of today since this will be automatically done by _auftrag2records()
+        kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
+
+        self.assertEqual(kopf.to_sql(), kpf_sql)
+        self.assertEqual(positionen, [])
+        self.assertEqual(texte, [])
+        self.assertEqual(adressen, [])
+
+    def test_herkunft(self):
+        """Test if 'herkunft' can be converted to SQL."""
+        vorgangsnummer = 123
+        auftrag = _MockAuftrag()
+        auftrag.kundennr = '17200'
+        auftrag.herkunft = 'E' #EDI
+        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
+        auftrag.positionen = []
+        kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
+
+        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKHERK, BKDTKD, BKKDNR) VALUES('1','123','xtodayx','1081230','1','01','E','xtodayx','   17200')"
+        # insert date of today since this will be automatically done by _auftrag2records()
+        kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
+        self.assertEqual(kopf.to_sql(), kpf_sql)
+        self.assertEqual(positionen, [])
+        self.assertEqual(texte, [])
+        self.assertEqual(adressen, [])
+
+    def test_teillieferung(self):
+        """Test if 'teillieferung_zulaessig' can be converted to SQL."""
+        vorgangsnummer = 123
+        auftrag = _MockAuftrag()
+        auftrag.kundennr = '17200'
+        auftrag.teillieferung_zulaessig = True
+        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
+        auftrag.positionen = []
+        kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
+
+        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKFNR, BKDTKD, BKKDNR) VALUES('1','123','xtodayx','1081230','1','1','01','xtodayx','   17200')"
+        # insert date of today since this will be automatically done by _auftrag2records()
+        kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
+
+        self.assertEqual(kopf.to_sql(), kpf_sql)
+
+        vorgangsnummer = 124
+        auftrag.teillieferung_zulaessig = False
+        kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
+        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKFNR, BKDTKD, BKKDNR) VALUES('1','124','xtodayx','1081230','1','0','01','xtodayx','   17200')"
+        kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
+
+        self.assertEqual(kopf.to_sql(), kpf_sql)
+        self.assertEqual(positionen, [])
+        self.assertEqual(texte, [])
+        self.assertEqual(adressen, [])
 
 
 if __name__ == '__main__':

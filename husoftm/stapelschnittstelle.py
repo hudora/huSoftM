@@ -177,6 +177,7 @@ def _create_addressatz(adressen, vorgangsnummer, aobj_adresse, is_lieferadresse=
     adresse.name1 = getattr(aobj_adresse, 'name1', '')
     adresse.name2 = getattr(aobj_adresse, 'name2', '')
     adresse.name3 = getattr(aobj_adresse, 'name3', '')
+    adresse.avisieren = getattr(aobj_adresse, 'avisieren', '')
     adresse.strasse = getattr(aobj_adresse, 'strasse', '')
     adresse.plz = getattr(aobj_adresse, 'plz', '')
     adresse.ort = getattr(aobj_adresse, 'ort', '')
@@ -386,6 +387,7 @@ class _GenericTests(unittest.TestCase):
         auftrag.lieferadresse.name1 = 'name1'
         auftrag.lieferadresse.name2 = 'name2'
         auftrag.lieferadresse.name3 = 'name3'
+        auftrag.lieferadresse.avisieren = '+49 21 91 / 6 09 12-0'
         auftrag.lieferadresse.strasse = 'Nicht Vergessen Weg 1'
         auftrag.lieferadresse.ort = 'Rade'
         auftrag.lieferadresse.land = 'DE'
@@ -395,7 +397,7 @@ class _GenericTests(unittest.TestCase):
         kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
         self.assertEqual(kopf.to_sql(), kpf_sql)
 
-        adressen_sql = "INSERT INTO ABV00 (BVNAM2, BVNAM3, BVLKZ, BVVGNR, BVSTR, BVKZAD, BVNAME, BVORT, BVAART) VALUES('name2','name3','D','123','Nicht Vergessen Weg 1','1','name1','Rade','1')"
+        adressen_sql = "INSERT INTO ABV00 (BVNAM2, BVNAM3, BVLKZ, BVNAM4, BVVGNR, BVNAME, BVKZAD, BVSTR, BVORT, BVAART) VALUES('name2','name3','D','+49 21 91 / 6 09 12-0','123','name1','1','Nicht Vergessen Weg 1','Rade','1')"
         self.assertEqual(adressen[0].to_sql(), adressen_sql)
         self.assertEqual(positionen, [])
         self.assertEqual(texte, [])

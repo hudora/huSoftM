@@ -158,8 +158,11 @@ def sql_escape(data):
     >>> sql_escape("foo's bar says ''foobar''")
     "foo''s bar says ''''foobar''''"
     """
-    return str(data).replace("'", "''")
-    
+    data_cpy = data
+    if isinstance(data_cpy, unicode):
+        data_cpy = data_cpy.encode('utf-8', 'replace')
+    return str(data_cpy).replace("'", "''")
+
 
 def sql_quote(data):
     """Quotes and SQL-Escapes a string to be fed into DB2.

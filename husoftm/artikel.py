@@ -175,7 +175,7 @@ def guess_artnr(ean):
     cand_artnrs = map(pattern.search, [c.artnr for c in articles])
     cand_artnrs = set([c.group(0) for c in cand_artnrs])
     if len(cand_artnrs) == 1:
-        return cand_artnrs[0]
+        return cand_artnrs.pop()
     # no ideas left
     return None
 

@@ -74,6 +74,7 @@ SOFTMLKZ2ISOLAND = {'': 'DE',
                     'GB': 'UK', # Vereinigtes Koenigreich
                     'NZ': 'NZ', # Neuseeland
                     'RI': 'ID', # Republik Indonesia
+                    'HK': 'HK', # Hongkong
                     'RS': 'RS', # Republik Serbien
 }
 # invert dictionary

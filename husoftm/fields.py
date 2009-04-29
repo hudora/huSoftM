@@ -21,7 +21,7 @@ MAPPINGDIR = {
           # 'AKRANR': 'Rahmenvereinbarungs-Nr.',
           # 'AKKANR': 'Übergeordneter Auftrag',
           # 'AKFNRM': 'Mandanten-nr',
-          # 'AKKDNR': 'Kunden-nr/Warenempfänge',
+          'AKKDNR': 'kundennr_warenempf',
           # 'AKKDN3': 'Kunden-Nr/Verbraucher',
           # 'AKEGCD': 'Ländercode / EG',
           # 'AKUSTN': 'USt-Id-nr',

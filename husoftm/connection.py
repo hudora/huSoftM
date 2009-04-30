@@ -41,7 +41,7 @@ def int_or_0(data):
         return 0
     except TypeError:
         return 0
-    
+
 
 def _combine_date_and_time(mappings, fields, i, row, rowdict):
     """If there is also a time field in addition to a date field combine them."""
@@ -60,18 +60,18 @@ def _combine_date_and_time(mappings, fields, i, row, rowdict):
         except ValueError:
             print int(row[i]), int(row[timepos])
             raise
-    
+
 
 class PyRoMoftSconnection(object):
     """Represents an connection which can execute SWL on the iSeries-AS/400."""
-    
+
     def __init__(self):
         # finds object automatically if you're running the Name Server.
         self.__server = Pyro.core.getProxyForURI("PYRONAME://pyro-ns.local.hudora.biz/mofts_connector1")
-    
+
     def _fix_field(self, data):
         """Fix field types returned by DB2/400."""
-        
+
         if isinstance(data, str): # fix strings
             return data.strip().decode('latin-1').encode('utf-8')
         elif type(data) == type(0.0):
@@ -81,10 +81,10 @@ class PyRoMoftSconnection(object):
                 return float(data)
         else:
             return data
-    
+
     def _rows2dict(self, fields, mappings, rows):
         """Convert the list of rows we get from the server to a dict of columnames."""
-        
+
         ret = []
         for row in rows:
             rowdict = {}
@@ -108,15 +108,15 @@ class PyRoMoftSconnection(object):
 
     def _get_tablename(self, name):
         """Generates the Name of a Table on the AS/400."""
-        
+
         return "SMKDIFP.%s" % name
-    
+
     def _raw_sql(self, querystr):
         """Executes an arbitary SQL - not meant for public use."""
-        
+
         rows = self._execute_query(querystr, {}, [])
         return [[self._fix_field(f) for f in r] for r in rows]
-    
+
     def _execute_query(self, querystr, querymappings, fields):
         start = time.time()
         LOG.debug(querystr)
@@ -125,7 +125,7 @@ class PyRoMoftSconnection(object):
         except Exception, msg:
             LOG.error('PyRO remote exception:' + (''.join(Pyro.util.getPyroTraceback(msg))))
             raise
-        
+
         querydelta = time.time() - start
         start = time.time()
         if querymappings:
@@ -135,15 +135,15 @@ class PyRoMoftSconnection(object):
         mapdelta = time.time()-start
         LOG.info("%.3fs/%.3fs, %d rows: %s" % (querydelta, mapdelta, len(rows), querystr))
         return rows
-    
+
     def query(self, tables=None, condition=None, fields=[], querymappings=None, grouping=[], ordering=[],
               nomapping=False):
         """Execute a SELECT on the AS/400 turning the results in a list of dicts.
-        
+
         In fields you can give a list of fields you are interested in. If fields is left empty the engine
         generates a list of field on it own by consulting the field mapping database in from fields.MAPPINGDIR.
         """
-        
+
         if type(tables) == StringType:
             tables = [tables]
         if type(fields) == StringType:
@@ -160,7 +160,7 @@ class PyRoMoftSconnection(object):
             fields = querymappings.keys()
         if not fields:
             raise RuntimeError("can't deduce field names")
-        
+
         querystr = "SELECT %s FROM %s" % (','.join(fields),
                                           ','.join([self._get_tablename(x) for x in tables]))
         if condition:
@@ -169,12 +169,12 @@ class PyRoMoftSconnection(object):
             querystr += ' GROUP BY %s' % (','.join(grouping), )
         if ordering:
             querystr += ' ORDER BY %s' % (','.join(ordering), )
-        
+
         return self._execute_query(querystr, querymappings, fields)
 
     def delete(self, table, condition):
         """Delete rows from table where condition is met."""
-        
+
         querystr = "DELETE FROM %s WHERE %s" % (table, condition)
         LOG.debug(querystr)
         try:
@@ -183,10 +183,10 @@ class PyRoMoftSconnection(object):
             LOG.error('PyRO remote exception:' + (''.join(Pyro.util.getPyroTraceback(msg))))
             raise
         return rows
-    
+
     def insert_raw(self, sqlstr):
         """Insert rows into a table by directly executing SQL"""
-        
+
         LOG.debug(sqlstr)
         try:
             rows = self.__server.insert(sqlstr, token='Aes.o=j7eS(')
@@ -194,10 +194,10 @@ class PyRoMoftSconnection(object):
             LOG.error('PyRO remote exception:' + (''.join(Pyro.util.getPyroTraceback(msg))))
             raise
         return rows
-    
+
     def update_raw(self, sqlstr):
         """Insert rows into a table by directly executing SQL"""
-        
+
         LOG.debug(sqlstr)
         try:
             rows = self.__server.update2(sqlstr, token="E~iy3*eej^")
@@ -205,60 +205,60 @@ class PyRoMoftSconnection(object):
             LOG.error('PyRO remote exception:' + (''.join(Pyro.util.getPyroTraceback(msg))))
             raise
         return rows
-    
+
     def update_adtastapel(self, vorgangsnummer):
         self.__server.update_adtastapel(vorgangsnummer, token='Ae.so=7e,S(')
-    
+
 
 class PyRoMoftSconnectionToTestDB(PyRoMoftSconnection):
     """Represents an connection which can execute SWL on the Testdatabase (SMKDIFT) on the iSeries-AS/400."""
-    
+
     def _get_tablename(self, name):
         """Generates the Name of a Table on the AS/400-Test-Database."""
         raise RuntimeError("stale test code")
         #return "SMKDIFT.%s" % name
-    
+
     def update_test(self, query):
         """Update the Databasetable on the AS/400-Test-Database with the given query."""
         self.__server.update_test(query)
-    
+
     def insert_test(self, query):
         """Inserts the given query into the Test-Database on the i5"""
         self.__server.insert_test(query)
-    
+
 
 class TestMoftSconnection(PyRoMoftSconnection):
     """Simulation fo SoftM connection. Data is taken from mock_as400.py.
-    
+
     Use it by assigning husoftm.MoftSconnection = husoftm.TestMoftSconnection"""
-    
+
     class MockServer(object):
         """Simulated server side for testing purposes."""
-        
+
         def select(self, query, parameters=None):
             """Execute a SELECT on the AS/400 turning the results in a list of dicts. (Mock)"""
-            
+
             ret = husoftm.mock_as400.sql(query, parameters)
             return ret
-        
+
     def __init__(self):
         # finds object automatically if you're running the Name Server.
         self.__server = TestMoftSconnection.MockServer()
-    
+
 
 class TrainingMoftSconnection(PyRoMoftSconnection):
     """Simulation fo SoftM connection. Data is taken from mock_as400.py.
-    
+
     If data is not found, the "real SoftM connection is used to get the data
     and print it. Mainly used for generating test data to put into mock_as400"
     Use it by assigning husoftm.MoftSconnection = husoftm.TrainingMoftSconnection"""
-    
+
     class MockServer(object):
         """Simulated server side for testing purposes."""
-        
+
         def select(self, query, parameters=None):
             """Execute a SELECT on the AS/400 turning the results in a list of dicts. (Mock)"""
-            
+
             ret = husoftm.mock_as400.sql(query, parameters)
             if not ret:
                 print (query, parameters)
@@ -266,12 +266,12 @@ class TrainingMoftSconnection(PyRoMoftSconnection):
                 ret = self.__server.sql(query, parameters)
                 print repr(ret)
             return ret
-        
+
     def __init__(self):
         # finds object automatically if you're running the Name Server.
         PyRoMoftSconnection.__init__(self)
         self.__server = TestMoftSconnection.MockServer()
-    
+
 
 TestMoftSconnection = TrainingMoftSconnection
 MoftSconnection = PyRoMoftSconnection
@@ -280,7 +280,7 @@ MoftSconnectionToTestDB = PyRoMoftSconnectionToTestDB
 
 def get_connection():
     """Get a PyRoMoftSconnection Object. Meant to one day introduce connection pooling."""
-    
+
     # return MoftSconnectionToTestDB()
     return MoftSconnection()
     #return ODBCbridgeMoftSconnection()

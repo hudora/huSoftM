@@ -25,8 +25,7 @@ import textwrap
 import unittest
 from husoftm.connection import get_connection
 from husoftm.tools import date2softm, sql_quote, iso2land
-from stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00 # TODO nur fuer entwicklung relativen pfad nutzen
-# from husoftm.stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00
+from husoftm.stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00
 
 __revision__ = "$Revision$"
 
@@ -101,8 +100,7 @@ def getnextvorgang():
 
 def vorgangsnummer_bekannt(vorgangsnummer):
     """Prüft, ob sich eine bestimmte Vorgangsnummer bereits im System befindet."""
-    rows = get_connection().query('ABK00', fields=['BKVGNR'],
-                                  condition="BKVGNR=%s" % sql_quote(vorgangsnummer))
+    rows = get_connection().query('ABK00', fields=['BKVGNR'], condition="BKVGNR=%s" % sql_quote(vorgangsnummer))
     if rows:
         return True
     return False
@@ -110,6 +108,9 @@ def vorgangsnummer_bekannt(vorgangsnummer):
 
 def kundenauftragsnummer_bekannt(kundenauftragsnummer):
     """Prüft, ob eine Kunden-Auftragsnummer bereits verwendet wurde."""
+
+    # Achtung: Kundenauftragsnummern muessen nicht eindeutig sein. Bspw. kann KundeA die gleiche
+    # Kundenauftragsnummer vergeben wie bereits von KundeB vergeben worden ist.
 
     rows = get_connection().query('ABK00', fields=['BKVGNR'],
                                           condition="BKNRKD=%s" % sql_quote(kundenauftragsnummer))
@@ -126,6 +127,19 @@ def schnittstelle_leer():
     if rows:
         return False
     return True
+
+
+def address_transmitted(vorgangsnr):
+    """Prüft, ob zu einem gegebenen Vorgang auch die Adresse übermittelt wurde.
+
+    Dies kann zB. dann nicht erfolgt sein, wenn sich Sonderzeichen in den Adressen befanden.
+    >>> address_transmitted(13247)
+    True
+    >>> address_transmitted(13147)
+    False
+    """
+    rows = get_connection().query('ABV00', condition="BVVGNR=%s" % sql_quote(vorgangsnr))
+    return bool(rows)
 
 
 def _create_kopftext(texte, vorgangsnummer, newtext, auftragsbestaetigung=1, lieferschein=1, rechnung=1):

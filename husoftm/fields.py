@@ -10,6 +10,23 @@ Copyright (c) 2007, 2008 HUDORA GmbH. All rights reserved.
 __revision__ = "$Revision$"
 
 MAPPINGDIR = {
+'ABV00': {# Adressdaten zu Aufträgen die in die Stapelschnittstelle geschrieben werden
+          'BVVGNR': 'vorgang',
+          #'BVLFDS': 'stapelsatznummer',
+          'BVAART': 'adressart',
+          'BVNAME': 'name1',
+          'BVNAM2': 'name2',
+          'BVNAM3': 'name3',
+          'BVNAM4': 'avisieren',
+          'BVSTR': 'strasse',
+          'BVPLZ': 'plz',
+          'BVORT': 'ort',
+          'BVLKZ': 'laenderkennzeichen',
+          'BVKZBA': 'bearbeitungskennzeichen',
+          #'BVORTT': 'Ortszusatz',
+          'BVKZAD': 'Adressaufbereitung',
+        },
+
 'AAK00': {# Auftragsköpfe
           # 'AKFNR ': 'Firma',
           'AKAUFN': 'auftragsnr',

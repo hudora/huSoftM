@@ -162,7 +162,7 @@ def buchbestaende(lager=0):
     
 
 def get_verfuegbaremenge(artnr=None, lager=0):
-    warnings.warn("get_verfuegbaremenge() is deprecated use verfuegbar()", DeprecationWarning, stacklevel=2) 
+    warnings.warn("get_verfuegbaremenge() is deprecated use verfuegbare_menge()", DeprecationWarning, stacklevel=2) 
     return verfuegbare_menge(artnr, lager)
     
 
@@ -372,10 +372,10 @@ def versionsvorschlag(menge, orgartnr, date, dateformat="%Y-%m-%d"):
             continue
         bentwicklung.sort()
         # date should not be bigger than last date in bentwicklung
-        date = min([date, bentwicklung[-1][0]]) 
+        mindate = min([date, bentwicklung[-1][0]]) 
         
-        bentwicklung = [x for x in bentwicklung if x[0] >= date]
-        verfuegbar = min([quantity for date, quantity in bentwicklung])
+        bentwicklung = [x for x in bentwicklung if x[0] >= mindate]
+        verfuegbar = min([quantity for dte, quantity in bentwicklung])
         
         if verfuegbar > 0:
             ret.append((min(benoetigt, verfuegbar), artnr))

@@ -237,7 +237,11 @@ def _auftrag2records(vorgangsnummer, auftrag):
         kopf.bestelldatum = date2softm(datetime.date.today())
 
     kopf.auftragsart = ''
+    if hasattr(auftrag, 'auftragsart') and auftrag.auftragsart:
+        kopf.auftragsart = auftrag.auftragsart
+
     kopf.sachbearbeiter = 1
+
     if auftrag.anlieferdatum_max:
         kopf.kundenwunschtermin = date2softm(auftrag.anlieferdatum_max)
     else:
@@ -582,6 +586,33 @@ class _GenericTests(unittest.TestCase):
         auftrag.teillieferung_zulaessig = False
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
         kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKFNR, BKDTKD, BKKDNR) VALUES('1','124','xtodayx','1081230','1','0','01','xtodayx','   17200')"
+        kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
+
+        self.assertEqual(kopf.to_sql(), kpf_sql)
+        self.assertEqual(positionen, [])
+        self.assertEqual(texte, [])
+        self.assertEqual(adressen, [])
+
+    def test_auftragsart(self):
+        """Test if 'auftragsart' can be converted to SQL."""
+        vorgangsnummer = 123
+        auftrag = _MockAuftrag()
+        auftrag.kundennr = '17200'
+        auftrag.auftragsart = "WA"
+        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
+        auftrag.positionen = []
+        kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
+
+        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKKDNR, BKDTKD, BKAUFA) VALUES('1','123','1090505','1081230','1','01','   17200','xtodayx','WA')"
+        # insert date of today since this will be automatically done by _auftrag2records()
+        kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
+
+        self.assertEqual(kopf.to_sql(), kpf_sql)
+
+        vorgangsnummer = 124
+        auftrag.auftragsart = 'Z2'
+        kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
+        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKKDNR, BKDTKD, BKAUFA) VALUES('1','124','1090505','1081230','1','01','   17200','xtodayx','Z2')"
         kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
 
         self.assertEqual(kopf.to_sql(), kpf_sql)

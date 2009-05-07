@@ -168,7 +168,7 @@ def get_kunde_by_iln(iln):
         if rows:
             rows2 = husoftm.connection.get_connection().query(['XXA00'],
                 condition="XASANR='%s'" % (int(rows[0]['satznr']), ))
-            if rows:
+            if rows2:
                 kunde = Kunde().fill_from_softm(rows2[0])
                 kunde.kundennr = kunde.kundennr + ('/%03d' % int(rows[0]['versandadresssnr']))
                 return kunde

@@ -25,7 +25,11 @@ import textwrap
 import unittest
 from husoftm.connection import get_connection
 from husoftm.tools import date2softm, sql_quote, iso2land
-from husoftm.stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00
+if __name__ == '__main__':
+    # sonst gehen die Tests ggf. schief, da aus der installierten husoftm version importiert wird (site-packages)
+    from stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00
+else:
+    from husoftm.stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00
 
 __revision__ = "$Revision$"
 
@@ -142,21 +146,32 @@ def address_transmitted(vorgangsnr):
     return bool(rows)
 
 
-def _create_kopftext(texte, vorgangsnummer, newtext, auftragsbestaetigung=1, lieferschein=1, rechnung=1):
-    """Fügt einen Kopftext hinzu."""
-
+def _create_auftragstext(textart, vorgangsposition, texte, vorgangsnummer, text, auftragsbestaetigung, lieferschein, rechnung):
+    """Fügt einen Text zu einem Auftrag, entweder als Kopftext oder Positionstext, hinzu."""
     # split text into chunks of 60 chars
-    for line in textwrap.wrap(newtext, 60):
+    for line in textwrap.wrap(text, 60):
         text = Text()
         texte.append(text)
         text.vorgang = vorgangsnummer
-        text.vorgangsposition = 0
-        text.textart = 8
+        text.vorgangsposition = vorgangsposition
+        text.textart = textart
         text.auf_auftragsbestaetigung = auftragsbestaetigung
         text.auf_lieferschein = lieferschein
         text.auf_rechnung = rechnung
         text.text = line
+        # XXX: Positionstexte bekamen bisher keine textnummer (bisher). Kann mir aber vorstellen, dass
+        # dies bei mehrzeiligen bzw. mehreren Positionstexten notwendig wird.
         text.textnummer = len(texte)
+
+
+def _create_kopftext(texte, vorgangsnummer, text, auftragsbestaetigung=1, lieferschein=1, rechnung=1):
+    """Fügt einen Kopftext hinzu."""
+    _create_auftragstext(8, 0, texte, vorgangsnummer, text, auftragsbestaetigung, lieferschein, rechnung)
+
+
+def _create_positionstext(textart, vorgangsposition, texte, vorgangsnummer, text, auftragsbestaetigung=0, lieferschein=1, rechnung=1):
+    """Fügt einen Positionstext hinzu."""
+    _create_auftragstext(textart, vorgangsposition, texte, vorgangsnummer, text, auftragsbestaetigung, lieferschein, rechnung)
 
 
 def _create_positionssatz(positionen, vorgangsnummer, aobj_position, texte):
@@ -168,29 +183,24 @@ def _create_positionssatz(positionen, vorgangsnummer, aobj_position, texte):
     position.vorgangsposition = len(positionen)
     position.bestellmenge = aobj_position.menge
     position.artikel = getattr(aobj_position, 'artnr', None)
+    position.verkaufspreis = getattr(aobj_position, 'verkaufspreis', None)
     if hasattr(aobj_position, 'ean'):
         position.ean = aobj_position.ean
     position.erfassungsdatum = date2softm(datetime.date.today())
     if hasattr(aobj_position, 'kundenartnr') and aobj_position.kundenartnr:
-        text = Text()
-        texte.append(text)
-        text.vorgang = vorgangsnummer
-        text.vorgangsposition = position.vorgangsposition
-        text.textart = 8
-        text.auf_lieferschein = 1
-        text.auf_rechnung = 1
-        text.text = "Kundenartikelnummer: %s" % aobj_position.kundenartnr
+        text = "Kundenartikelnummer: %s" % aobj_position.kundenartnr
+        _create_positionstext(textart=8, vorgangsposition=position.vorgangsposition, texte=texte,
+                vorgangsnummer=vorgangsnummer, text=text, auftragsbestaetigung=0, lieferschein=1, rechnung=1)
 
     if hasattr(aobj_position, 'text_vor_position') and aobj_position.text_vor_position:
-        text = Text()
-        texte.append(text)
-        text.vorgang = vorgangsnummer
-        text.vorgangsposition = position.vorgangsposition
-        text.textart = 7 # text vor position
-        text.auf_lieferschein = 1
-        text.auf_rechnung = 1
-        # FIXME: not sure if newlines can be handled.
-        text.text = "\n".join(aobj_position.text_vor_position)
+        for text in aobj_position.text_vor_position:
+            _create_positionstext(textart=7, vorgangsposition=position.vorgangsposition, texte=texte,
+                    vorgangsnummer=vorgangsnummer, text=text, auftragsbestaetigung=0, lieferschein=1, rechnung=1)
+
+    if hasattr(aobj_position, 'text_nach_position') and aobj_position.text_nach_position:
+        for text in aobj_position.text_nach_position:
+            _create_positionstext(textart=8, vorgangsposition=position.vorgangsposition, texte=texte,
+                    vorgangsnummer=vorgangsnummer, text=text, auftragsbestaetigung=0, lieferschein=1, rechnung=1)
 
 
 def _create_addressatz(adressen, vorgangsnummer, aobj_adresse, is_lieferadresse=True):
@@ -449,13 +459,21 @@ class _GenericTests(unittest.TestCase):
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
         kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKVGPO, BKFNR, BKDTKD, BKKDNR) VALUES('1','123','xtodayx','1081230','1','2','01','xtodayx','   17200')"
 
+        # pos 1
         txt0 = texte[0].to_sql()
-        txt0_sql = "INSERT INTO ABT00 (BTKZLF, BTVGNR, BTVGPO, BTTART, BTFNR, BTTX60, BTLFNR, BTKZRG) VALUES('1','123','1','7','01','text for pos1\nmore text for pos1','1','1')"
+        txt0_sql = "INSERT INTO ABT00 (BTKZLF, BTVGNR, BTVGPO, BTTART, BTFNR, BTTX60, BTLFNR, BTKZRG) VALUES('1','123','1','7','01','text for pos1','1','1')"
         self.assertEqual(txt0, txt0_sql)
-
         txt1 = texte[1].to_sql()
-        txt1_sql = "INSERT INTO ABT00 (BTKZLF, BTVGNR, BTVGPO, BTTART, BTFNR, BTTX60, BTLFNR, BTKZRG) VALUES('1','123','2','7','01','text for pos2\nmore text for pos2','1','1')"
+        txt1_sql = "INSERT INTO ABT00 (BTKZLF, BTVGNR, BTVGPO, BTTART, BTFNR, BTTX60, BTLFNR, BTKZRG) VALUES('1','123','1','7','01','more text for pos1','2','1')"
         self.assertEqual(txt1, txt1_sql)
+
+        # pos 2
+        txt2 = texte[2].to_sql()
+        txt2_sql = "INSERT INTO ABT00 (BTKZLF, BTVGNR, BTVGPO, BTTART, BTFNR, BTTX60, BTLFNR, BTKZRG) VALUES('1','123','2','7','01','text for pos2','3','1')"
+        self.assertEqual(txt2, txt2_sql)
+        txt3 = texte[3].to_sql()
+        txt3_sql = "INSERT INTO ABT00 (BTKZLF, BTVGNR, BTVGPO, BTTART, BTFNR, BTTX60, BTLFNR, BTKZRG) VALUES('1','123','2','7','01','more text for pos2','4','1')"
+        self.assertEqual(txt3, txt3_sql)
 
     def test_positionen_artnr(self):
         """Tests if orderlines containing artnr can be converted to SQL."""
@@ -603,7 +621,7 @@ class _GenericTests(unittest.TestCase):
         auftrag.positionen = []
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
 
-        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKKDNR, BKDTKD, BKAUFA) VALUES('1','123','1090505','1081230','1','01','   17200','xtodayx','WA')"
+        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKKDNR, BKDTKD, BKAUFA) VALUES('1','123','xtodayx','1081230','1','01','   17200','xtodayx','WA')"
         # insert date of today since this will be automatically done by _auftrag2records()
         kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
 
@@ -612,13 +630,42 @@ class _GenericTests(unittest.TestCase):
         vorgangsnummer = 124
         auftrag.auftragsart = 'Z2'
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
-        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKKDNR, BKDTKD, BKAUFA) VALUES('1','124','1090505','1081230','1','01','   17200','xtodayx','Z2')"
+        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKKDNR, BKDTKD, BKAUFA) VALUES('1','124','xtodayx','1081230','1','01','   17200','xtodayx','Z2')"
         kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
 
         self.assertEqual(kopf.to_sql(), kpf_sql)
         self.assertEqual(positionen, [])
         self.assertEqual(texte, [])
         self.assertEqual(adressen, [])
+
+    def test_positionen_verkaufspreis(self):
+        """Tests if orderlines containing prices can be converted to SQL."""
+        vorgangsnummer = 123
+        auftrag = _MockAuftrag()
+        auftrag.kundennr = '17200'
+        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
+        pos1 = _MockPosition()
+        pos1.menge = 10
+        pos1.ean = '11111'
+        pos1.verkaufspreis = 10000.123
+        pos2 = _MockPosition()
+        pos2.menge = 20
+        pos2.ean = '22222'
+        pos2.verkaufspreis = 0.123
+        auftrag.positionen = [pos1, pos2]
+        kopf, positionen, dummy, dummy = _auftrag2records(vorgangsnummer, auftrag)
+        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKVGPO, BKFNR, BKDTKD, BKKDNR) VALUES('1','123','xtodayx','1081230','1','2','01','xtodayx','   17200')"
+
+        # insert date of today since this will be automatically done by _auftrag2records()
+        kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
+        self.assertEqual(kopf.to_sql(), kpf_sql)
+        positionen[0].to_sql()
+        self.assertEqual(positionen[0].to_sql(),
+                "INSERT INTO ABA00 (BADTER, BAPREV, BAVGPO, BAABT, BAMNG, BAVGNR, BAFNR, BAEAN) VALUES('1090528','10000.123','1','1','10','123','01','11111')".replace(
+                    'xtodayx', date2softm(datetime.date.today())))
+        self.assertEqual(positionen[1].to_sql(),
+                "INSERT INTO ABA00 (BADTER, BAPREV, BAVGPO, BAABT, BAMNG, BAVGNR, BAFNR, BAEAN) VALUES('1090528','0.123','2','1','20','123','01','22222')".replace(
+                    'xtodayx', date2softm(datetime.date.today())))
 
 
 if __name__ == '__main__':

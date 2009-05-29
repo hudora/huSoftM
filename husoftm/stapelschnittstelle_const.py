@@ -545,7 +545,7 @@ ABA00 = {
 #               doc='''* Im Standard nicht/noch nicht unterstützt *'''),
 #'BAGEWI': dict(name='Gewicht', format='P09.3',
 #               doc='''* Im Standard nicht/noch nicht unterstützt *'''),
-'BAPREV': dict(name='Verkaufspreis', format='P15.2',
+'BAPREV': dict(name='verkaufspreis', format='P15.2',
                doc='''Falls angegeben, Prüfung gegen Preisdatei. Liegt der angegebene Preis um xx,x %
                unter dem der Preisdatei, wird entsprechend der Festlegung im Parameter
                'Steuerung Stapelschnittstelle' ein W- oder ein F-Fehler ausgewiesen. Der

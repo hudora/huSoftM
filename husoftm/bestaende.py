@@ -465,7 +465,7 @@ def besteande(lager):
     
     rows = get_connection().query('XLF00', fields=['LFARTN', 'LFMGLP'],
                condition="LFLGNR=%d AND LFMGLP<>0 AND LFSTAT<>'X'" % (int(lager)))
-    bbesteande = dict([(str(row[0]), int(row[1])) for row in rows])
+    bbesteande = dict([(str(row[0]), as400_2_int(row[1])) for row in rows])
     
     # Offene Umlagerungen an dieses Lager zurechnen.
     uml = umlagermengen(anlager=lager, vonlager=None)

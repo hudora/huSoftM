@@ -259,9 +259,10 @@ def get_umschlag(artnr):
     
     # check if we have a cached result
     memc = husoftm.caching.get_cache()
-    cache = memc.get('husoftm.umschlag.%r' % (artnr))
-    if cache:
-        return cache
+    cacheddata = memc.get('husoftm.umschlag.%r' % (artnr))
+    if cacheddata:
+        del memc
+        return cacheddata
     
     condition = (
     "FKRGNR=FURGNR"             # JOIN
@@ -280,6 +281,7 @@ def get_umschlag(artnr):
     ret = [(x['rechnung_date'], as400_2_int(x['menge'])) for x in rows if x['menge'] > 0]
     
     memc.set('husoftm.umschlag.%r' % (artnr), ret , 60*60*24*6) # 6 d
+    del memc
     return ret
 
 

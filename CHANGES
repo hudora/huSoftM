@@ -2,6 +2,8 @@
 
 0.51p4: improvment of invoice analysis thanks to A. James
 
+0.51p3: nachschieber bugfix
+
 0.51p2: don't leave socket in memcache lying arround
 
 0.51p1: artikel.get_umschlag() nutzt nun die Rechnungsdtei, nicht die Lieferscheine und ignoriert

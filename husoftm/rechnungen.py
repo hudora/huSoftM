@@ -72,3 +72,13 @@ def kundenauftragsnr_to_rechnungsnr(kundenauftragsnr):
     
 #print kundenauftragsnr_to_rechnungsnr("WL0775262")
 
+def auftragsnr_to_rechnungsnr(auftragsnr):
+    """Liefert eine Liste mit Rechnungsnummern zurück, die zu einer Auftragsnummer gehören.
+
+    Die Nummern werden gemäss https://cybernetics.hudora.biz/intern/trac/wiki/NummernKreise
+    mit dem Prefix SR zurückgegeben."""
+
+    rows = get_connection().query(['AFK00'], fields=['FKRGNR'],
+                   condition="FKAUFN = %s" % (sql_quote(auftragsnr)))
+    return [("SR%s" % r[0]) for r in rows]
+

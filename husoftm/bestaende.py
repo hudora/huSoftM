@@ -220,11 +220,13 @@ def freie_menge(artnr, dateformat="%Y-%m-%d"):
     
 
 def bestandsentwicklung(artnr, dateformat="%Y-%m-%d"):
-    """Liefert ein Dictionary, dass alle zukünftigen Bewegungen für einen Artikel beinhaltet.
+    """Liefert ein Dictionary, dass alle zukünftigen, bzw. noch nicht ausgeführten Bewegungen
+    
+    für einen Artikel beinhaltet. Ist kein Bestand für den Artikel vorhanden, wird None zurückgegeben.
     
     dateformat bestimmt dabei die Keys des Dictionaries und steuert die Granularität. "%Y-%W" sorgt 
     z.B. für eine wochenweise Auflösung.
-    
+
     >>> bestandsentwicklung('14865')
     {'2009-02-20': 1200,
      '2009-03-02': 860,
@@ -246,12 +248,15 @@ def bestandsentwicklung(artnr, dateformat="%Y-%m-%d"):
     buchbestand_future = huTools.async.Future(buchbestand, artnr)
     
     # This could be sped up by using futures.
-    bewegungen = [(x[0].strftime(dateformat), int(x[1])) for x in bestellmengen_future().items()]
+    # Startwert ist der Buchbestand
+    bewegungen = [(datetime.date.today().strftime(dateformat), int(buchbestand_future()))]
+    # Bestellmengen positiv
+    bewegungen.extend([(x[0].strftime(dateformat), int(x[1])) for x in bestellmengen_future().items()])
+    # Auftragsmengen negativ
     bewegungen.extend([(x[0].strftime(dateformat), -1*x[1]) for x in auftragsmengen_future().items()])
     bewegungen.sort()
     # summieren
-    # Startwert ist der heutige Lagerbestand
-    menge = buchbestand_future()
+    menge = 0
     bestentwicklung = {}
     for datum, bewegungsmenge in bewegungen:
         menge += bewegungsmenge

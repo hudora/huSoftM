@@ -404,7 +404,7 @@ def frei_ab(menge, artnr, dateformat="%Y-%m-%d"):
     
     bentwicklung = bestandsentwicklung(artnr, dateformat)
     # shortcut: the bestand never drops below menge
-    if bentwicklung and min(bentwicklung.values()) > menge:
+    if bentwicklung and min(bentwicklung.values()) >= menge:
         return datetime.date.today()
     
     bentwicklung = bentwicklung.items()

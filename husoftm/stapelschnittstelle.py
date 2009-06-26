@@ -274,13 +274,14 @@ def _auftrag2records(vorgangsnummer, auftrag):
 
     # Für Fixtermine die Uhrzeit (oder was immer im Fixterminfeld steht) als Kopftext übertragen und das
     # Fixtermin Flag setzen
-    if hasattr(auftrag, 'fixtermin'):
+    if hasattr(auftrag, 'fixtermin') and auftrag.fixtermin:
+        txt_fixtermin = "FIX: %s" 
         if isinstance(auftrag.fixtermin, (datetime.date, datetime.datetime)):
-            txt_fixtermin = auftrag.fixtermin.strftime('%d-%m-%y %H:%M')
+            txt_fixtermin %= auftrag.fixtermin.strftime('%d-%m-%y %H:%M')
         elif isinstance(auftrag.fixtermin, datetime.time):
-            txt_fixtermin = auftrag.fixtermin.strftime('%H:%M')
+            txt_fixtermin %= auftrag.fixtermin.strftime('%H:%M')
         else:
-            txt_fixtermin = str(auftrag.fixtermin)
+            txt_fixtermin %= auftrag.fixtermin
         _create_kopftext(texte, vorgangsnummer, txt_fixtermin, auftragsbestaetigung=1,
                          lieferschein=0, rechnung=0)
         kopf.fixtermin = 1
@@ -425,7 +426,6 @@ class _GenericTests(unittest.TestCase):
         auftrag.positionen = []
         auftrag.fixtermin = datetime.datetime.now().time()
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
-        #BKLTFX
         kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKNRKD, BKLTFX, BKDTKD, BKKDNR) VALUES('1','123','1081230','1081231','1','01','0012345','1','1081229','   17200')"
 
         self.assertEqual(kopf.to_sql(), kpf_sql)
@@ -434,7 +434,20 @@ class _GenericTests(unittest.TestCase):
             "BTLFNR, BTKZAB, BTKZRG) VALUES('1','123','8','01','infotext_kunde','1','1','1')")
         self.assertEqual(texte[1].to_sql(), "INSERT INTO ABT00 (BTVGNR, BTTART, BTFNR, BTTX60, BTLFNR, "
             "BTKZAB) VALUES('123','8','01','bestelltext','2','1')")
+        self.assertEqual(texte[2].to_sql(),
+                "INSERT INTO ABT00 (BTVGNR, BTTART, BTFNR, BTTX60, BTLFNR, BTKZAB) VALUES('123','8','01','FIX: %s','3','1')" % auftrag.fixtermin.strftime('%H:%M'))
         self.assertEqual(adressen, [])
+
+        auftrag.fixtermin = ''
+        vorgangsnummer = 124
+        kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
+        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKNRKD, BKDTKD, BKKDNR) VALUES('1','124','1081230','1081231','1','01','0012345','1081229','   17200')"
+        self.assertEqual(kopf.to_sql(), kpf_sql)
+        self.assertEqual(positionen, [])
+        self.assertEqual(texte[0].to_sql(), "INSERT INTO ABT00 (BTKZLF, BTVGNR, BTTART, BTFNR, BTTX60, "
+            "BTLFNR, BTKZAB, BTKZRG) VALUES('1','124','8','01','infotext_kunde','1','1','1')")
+        self.assertEqual(texte[1].to_sql(), "INSERT INTO ABT00 (BTVGNR, BTTART, BTFNR, BTTX60, BTLFNR, "
+            "BTKZAB) VALUES('124','8','01','bestelltext','2','1')")
 
     def test_lieferadresse(self):
         """Tests if a Lieferadresse is successfully converted to SQL."""

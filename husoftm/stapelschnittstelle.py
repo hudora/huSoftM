@@ -272,6 +272,19 @@ def _auftrag2records(vorgangsnummer, auftrag):
         _create_kopftext(texte, vorgangsnummer, auftrag.bestelltext, auftragsbestaetigung=1,
                          lieferschein=0, rechnung=0)
 
+    # Für Fixtermine die Uhrzeit (oder was immer im Fixterminfeld steht) als Kopftext übertragen und das
+    # Fixtermin Flag setzen
+    if hasattr(auftrag, 'fixtermin'):
+        if isinstance(auftrag.fixtermin, (datetime.date, datetime.datetime)):
+            txt_fixtermin = auftrag.fixtermin.strftime('%d-%m-%y %H:%M')
+        elif isinstance(auftrag.fixtermin, datetime.time):
+            txt_fixtermin = auftrag.fixtermin.strftime('%H:%M')
+        else:
+            txt_fixtermin = str(auftrag.fixtermin)
+        _create_kopftext(texte, vorgangsnummer, txt_fixtermin, auftragsbestaetigung=1,
+                         lieferschein=0, rechnung=0)
+        kopf.fixtermin = 1
+
     adressen = []
     # add Lieferadresse if needed
     if (hasattr(auftrag, 'lieferadresse')
@@ -410,9 +423,10 @@ class _GenericTests(unittest.TestCase):
         auftrag.infotext_kunde = 'infotext_kunde'
         auftrag.bestelltext = 'bestelltext'
         auftrag.positionen = []
+        auftrag.fixtermin = datetime.datetime.now().time()
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
-
-        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKNRKD, BKDTKD, BKKDNR) VALUES('1','123','1081230','1081231','1','01','0012345','1081229','   17200')"
+        #BKLTFX
+        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKNRKD, BKLTFX, BKDTKD, BKKDNR) VALUES('1','123','1081230','1081231','1','01','0012345','1','1081229','   17200')"
 
         self.assertEqual(kopf.to_sql(), kpf_sql)
         self.assertEqual(positionen, [])

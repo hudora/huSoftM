@@ -20,6 +20,7 @@ hubarcode = setup(name='huSoftM',
                    'Programming Language :: Python'],
       zip_safe=False,
       packages = find_packages(),
-      install_requires=['simplejson', 'couchdb', 'python-memcached', 'huTools>=0.38p2'],
-      dependency_links = ['http://cybernetics.hudora.biz/dist/huTools/']
+      install_requires=['simplejson', 'couchdb', 'python-memcached', 'PyRo', 'huTools>=0.38p2'],
+      dependency_links = ['http://cybernetics.hudora.biz/nonpublic/eggs/',
+                          'http://cybernetics.hudora.biz/dist/huTools/']
 )

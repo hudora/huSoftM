@@ -8,13 +8,14 @@ Copyright (c) 2008 HUDORA. All rights reserved.
 """
 
 import unittest
-from husoftm.connection import get_connection
+import warnings
+from husoftm.connection2 import get_connection
 
 
 def bestellungen():
-    """Liefert eine liste mit allen Bestellten aber noch nicht gelieferten Wareneingängen.
+    """Liefert eine liste mit allen bestellten aber nicht stornierten Wareneingängen.
     
-    >>> bestellungen('14865')
+    >>> bestellungen()
     [{'artnr': u'64114',
       'bestellmenge': 300,
       'bestellnr': 43042,
@@ -39,7 +40,9 @@ def bestellungen():
     
     """
     
-    # detailierte Informationen gibts in EWZ00
+    warnings.warn("misc.bestellungen() is deprecated use module bestellungen instead",
+                  DeprecationWarning, stacklevel=2) 
+                          # detailierte Informationen gibts in EWZ00
     rows = get_connection().query('EBP00', ordering=['BPBSTN DESC', 'BPDTLT'], condition="BPSTAT<>'X'")
     # AND BPKZAK=0 to get only the open ones
     return rows

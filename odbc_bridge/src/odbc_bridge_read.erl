@@ -3,6 +3,8 @@
 %%% @doc  This module implements ODBC read (SELECT) access.
 %%% @end  
 %%%
+%%% @TODO: I have seen this process getting into an unresponsive state due to odbc errors. Perhaps we should crash on errors.
+%%%
 %%% @since 2008-12-10 by Maximillian Dornseif
 -module(odbc_bridge_read).
 -author('Maximillian Dornseif <md@hudora.de>').
@@ -69,6 +71,9 @@ handle_call({select, QueryStr, RecoursionCoutner}, From, State) when RecoursionC
             {reply, {error, Info}, State#state{odbcref=Ref, errorcount=State#state.errorcount+1}}
     end;
 handle_call({select, _QueryStr, _RecoursionCoutner}, _From, State) ->
+    % de have tried seceral times and the whole odbc stack seems to need a restart
+    % odbc:disconnect(State#state.odbcref),
+    % application:stop(odbc),
     {reply, {error, "Crash in ODBC driver"}, State#state{errorcount=State#state.errorcount+1}};
 
 

@@ -15,8 +15,9 @@ import time
 import httplib
 import urllib
 import simplejson as json
+from decimal import Decimal
 from types import ListType, TupleType, StringType
-from husoftm.fields import MAPPINGDIR, DATETIMEDIR
+from husoftm.fields import MAPPINGDIR, DATETIMEDIR, DECIMALIZE2
 from husoftm.tools import softm2date
 
 
@@ -31,7 +32,6 @@ class TimeoutException(IOError):
 def as400_2_int(num):
     """Converts u'4.000' to 4 et. al."""
     return int(str(num).split('.')[0])
-
 
 def _combine_date_and_time(mappings, fields, i, row, rowdict):
     """If there is also a time field in addition to a date field combine them."""
@@ -78,8 +78,13 @@ class MoftSconnection(object):
         for row in rows:
             rowdict = {}
             for i in range(len(fields)):
-                data = self._fix_field(row[i])
+                # fields[i] = feldname
+                if fields[i] in DECIMALIZE2:
+                    data = Decimal(str(row[i])).quantize(Decimal(10) ** -2)
+                else:
+                    data = self._fix_field(row[i])
                 if fields[i] in mappings:
+                    # special mapping of date time fields
                     if mappings[fields[i]].endswith('_date'):
                         if not row[i]:
                             rowdict[mappings[fields[i]]] = None
@@ -129,7 +134,7 @@ class MoftSconnection(object):
         if not fields:
             fields = querymappings.keys()
         if not fields:
-            raise RuntimeError("can't deduce field names")
+            raise RuntimeError("can't deduce field names, check fields.py")
         
         querystr = "SELECT %s FROM %s" % (','.join(fields),
                                           ','.join([self._get_tablename(x) for x in tables]))

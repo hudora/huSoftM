@@ -734,7 +734,7 @@ MAPPINGDIR = {
     # 'BUFNR':  'Firmennr. Sachbuchung',
     # 'BUBHKZ': 'Buchhaltungskennz. D,K,S',
     'BUPKTO': 'personenkonto',
-    'BUKTO':  'konto_sachbuchhaltung',
+    'BUKTO': 'konto_sachbuchhaltung',
     'BUBELN': 'belegnr',
     #'BUBELK': 'Beleg-Nummer Kreis',
     #'BUABKR': 'Abstimmkreis',
@@ -773,7 +773,7 @@ MAPPINGDIR = {
     # 'BUVKTO': 'Verbandskto. nr.',
     # 'BUMKTO': 'Mischkonto',
     # 'BUZAKZ': 'W{hrungsart',
-    'BUWSL':  'waehrung',
+    'BUWSL': 'waehrung',
     'BUWBBT': 'waehrungbetrag',
     'BUKURS': 'kurs',
     'BUKUFA': 'kursfaktor',
@@ -843,13 +843,13 @@ MAPPINGDIR = {
     'BUDTFL': 'faellig_date',
     'BUSABB': 'satznummer',
     # 'BUKGR2': 'K}rzungsgrund',
-    'BUR1':   'buchungsbetrag',
+    'BUR1': 'buchungsbetrag',
     # 'BUR2':   'Feld 1 A',
     # 'BUR3':   'Feld 1 A',
     # 'BUR4':   'Feld 1 A',
     # 'BUR5':   'Feld 1 A',
     # 'BUR6':   'Feld 10 A',
-    'BUR7':   'satz_date',
+    'BUR7': 'satz_date',
 },
 
 
@@ -2205,7 +2205,7 @@ DECIMALIZE2 = set(['BUR1', 'BUBUBT', 'BUNEBT', 'BUNEWB', 'BUABZU', 'BUWBBT',
                    'LBPREW', 'LBLWER', 'LBLWAK', 'LBLWKO', 'LBLWRT', 
                    'BPPREW', 'BPPRAK', 'BPPREH', 'BPWRTF', 'BLKURS',
                    'SLPREW', 'SLWRTI', 'SLFRBT', 'SLZOBT', 'SLPREW', 'SLLWKO', 'SLLWFR', 'SLLWZO',
-                   'WZBUBT', 'WZPREA', 'WZPREW',])
+                   'WZBUBT', 'WZPREA', 'WZPREW'])
 
 # maps datefield to related timefield for generating datetime objects
 DATETIMEDIR = {'LKDTLF': 'LKZTLF', # letzter_lieferschein

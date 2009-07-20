@@ -32,6 +32,7 @@ class TimeoutException(IOError):
 def as400_2_int(num):
     """Converts u'4.000' to 4 et. al."""
     return int(str(num).split('.')[0])
+    
 
 def _combine_date_and_time(mappings, fields, i, row, rowdict):
     """If there is also a time field in addition to a date field combine them."""
@@ -188,6 +189,7 @@ class MoftSconnection(object):
     def update_adtastapel(self, vorgangsnummer):
         # this is needed bei stapelschnittstelle.py
         raise NotImplementedError
+    
 
 def get_connection():
     """Get a PyRoMoftSconnection Object. Meant to one day introduce connection pooling."""

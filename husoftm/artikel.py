@@ -202,7 +202,7 @@ def komponentenaufloesung(mengenliste):
         if not rows:
             rows = get_connection().query(['ASK00'], fields=['SKLFNR', 'SKKART', 'SKMENG'],
                                           condition="SKARTN='%s'" % artnr)
-            memc.set('husoftm.komponentencache.%r' % (artnr), rows , 60*60*72) # 4 d
+            memc.set('husoftm.komponentencache.%r' % (artnr), rows, 60*60*72) # 4 d
         if not rows:
             # kein Setartikel
             ret.append((menge, artnr))
@@ -280,10 +280,9 @@ def get_umschlag(artnr):
                    querymappings={'SUM(FUMNG)': 'menge', 'FKDTFA': 'rechnung_date'})
     ret = [(x['rechnung_date'], as400_2_int(x['menge'])) for x in rows if x['menge'] > 0]
     
-    memc.set('husoftm.umschlag.%r' % (artnr), ret , 60*60*24*6) # 6 d
+    memc.set('husoftm.umschlag.%r' % (artnr), ret, 60*60*24*6) # 6 d
     del memc
     return ret
-
 
 
 import husoftm.mock_as400

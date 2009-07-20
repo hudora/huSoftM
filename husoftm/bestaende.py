@@ -45,9 +45,8 @@ COUCHSERVER = "http://couchdb.local.hudora.biz:5984"
 # see https://cybernetics.hudora.biz/intern/trac/wiki/HudoraGlossar -> Mengen for further enlightenment
 
 
-# This is just a private helper funcion, which should only be called by umlagermenge and
-# umlagermengen. The reason therefore is, that this function has different return types, depending
-# on the artnr you provide. umlagermenge and umlagermengen are wrappers around this function.
+
+
 def _umlagermenge_helper(artnr, lager=100, vonlager=None):
     """ Ermittelt wieviel Umlagerungen für einen oder alle Artikel unterwegs sind.
 
@@ -64,6 +63,10 @@ def _umlagermenge_helper(artnr, lager=100, vonlager=None):
        Quelllager (vonlagern) zu dem gegebenen Zugangslager (lager) unterwegs sind.
     """
     
+    # This is just a private helper funcion, which should only be called by umlagermenge and
+    # umlagermengen. The reason therefore is, that this function has different return types, depending
+    # on the artnr you provide. umlagermenge and umlagermengen are wrappers around this function.
+    
     # Das Auslieferungslager steht in AKLGN1, Das Ziellager steht in AKLGN2
     # In APLGNR steht AUCH das Abgangslager
 
@@ -75,8 +78,7 @@ def _umlagermenge_helper(artnr, lager=100, vonlager=None):
     " AND APKZVA=0"                   # Position nicht als 'voll ausgeliefert' markiert
     #" AND (APMNG-APMNGF-APMNGG) > 0"  # (noch) zu liefernde menge ist positiv
     " AND AKSTAT<>'X'"                # Auftrag nicht logisch gelöscht
-    " AND AKKZVA=0"                   # Auftrag nicht als 'voll ausgeliefert' markiert
-    )
+    " AND AKKZVA=0")                 # Auftrag nicht als 'voll ausgeliefert' markiert
     fields = ['SUM(APMNG)']
     grouping = []
 
@@ -103,6 +105,8 @@ def _umlagermenge_helper(artnr, lager=100, vonlager=None):
     
 
 # TODO: use cs module instead
+
+
 def alternativen(artnr):
     """Gets a list of article numbers which are alternatives (usually versions).
     
@@ -264,10 +268,10 @@ def bestandsentwicklung(artnr, dateformat="%Y-%m-%d"):
     
     if not bestentwicklung:
         # kein Bestand - diese Information länger cachen
-        memc.set('husoftm.bestandsentwicklung.%r.%r' % (artnr, dateformat), bestentwicklung , 60*60*6)
+        memc.set('husoftm.bestandsentwicklung.%r.%r' % (artnr, dateformat), bestentwicklung, 60*60*6)
     else:
         # Bestand - die menge fuer 2 minuten cachen
-        memc.set('husoftm.bestandsentwicklung.%r.%r' % (artnr, dateformat), bestentwicklung , 60*2)
+        memc.set('husoftm.bestandsentwicklung.%r.%r' % (artnr, dateformat), bestentwicklung, 60*2)
     
     return bestentwicklung
     
@@ -514,7 +518,6 @@ if __name__ == '__main__':
             pprint((umlagermenge(artnr, 100)))
             print "bestand(%r, 100) = " % artnr,
             pprint((bestand(artnr, 100)))
-
 
     class TestUmlagerungen(unittest.TestCase):
         """Testet die Berechnung der Umlagerungen."""

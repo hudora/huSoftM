@@ -71,7 +71,7 @@ SOFTMLKZ2ISOLAND = {'': 'DE',
                     'RA': 'AR', # Argentinien
                     'ET': 'EG', # Aegypten
                     'RO': 'RO', # Rumaenien
-                    'GB': 'UK', # Vereinigtes Koenigreich
+                    'GB': 'GB', # Vereinigtes Koenigreich # UK ist erlaubt aber nicht empfohlen
                     'NZ': 'NZ', # Neuseeland
                     'RI': 'ID', # Republik Indonesia
                     'HK': 'HK', # Hongkong

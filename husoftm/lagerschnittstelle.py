@@ -25,7 +25,7 @@ class ISA00(SoftMtable, AS400Connector_mixin):
         self.tablename = 'ISA00'
         self.name_schluessel = 'IAKBNR'
         self.fieldmappings = {
-            'IAFNR':  'firma',
+            'IAFNR': 'firma',
             'IALGNR': 'lagernr',
             'IAKBNR': 'kommibelegnr',
             'IAAUFN': 'auftragsnr',

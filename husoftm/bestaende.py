@@ -14,7 +14,7 @@ Für die Frage, ob ein bestimmter Artikel in einem bestimmten Lager ist, ist bes
     bestellmengen(artnr)                          von uns bei Lieferanten bestellte Mengen
     auftragsmengen(artnr, lager=0)                bei uns von Kunden bestellte Mengen
     umlagermenge(artnr, lager, vonlager=None)     Menge, die zur Zeit von einem Lager ans andere unterwegs ist
-    umlagermengen(anlager, vonlager=None)           Alle Artikelmengen, die zur Zeit von einem Lager ans andere unterwegs ist
+    umlagermengen(anlager, vonlager=None)         Alle Artikelmengen, die zur Zeit von einem Lager ans andere unterwegs ist
     buchbestand(artnr, lager=0)                   Artikel am Lager
     buchbestaende(lager=0)                        Alle Artikel an einem Lager 
     freie_menge(artnr)                            Menge, die Verkauft werden kann
@@ -29,22 +29,19 @@ __revision__ = "$Revision$"
 
 import couchdb.client
 import datetime
-import memcache
 import time
 import warnings
 import husoftm.caching as caching
 
 from husoftm.connection2 import get_connection, as400_2_int
 from husoftm.tools import sql_escape, sql_quote
-from huTools.robusttypecasts import int_or_0
 import huTools.async
+
 
 COUCHSERVER = "http://couchdb.local.hudora.biz:5984"
 
 
 # see https://cybernetics.hudora.biz/intern/trac/wiki/HudoraGlossar -> Mengen for further enlightenment
-
-
 
 
 def _umlagermenge_helper(artnr, lager=100, vonlager=None):
@@ -93,7 +90,8 @@ def _umlagermenge_helper(artnr, lager=100, vonlager=None):
         fields.insert(0, 'APARTN')
         grouping = ['APARTN']
 
-    rows = get_connection().query(tables=tables, fields=fields, nomapping=True, condition=condition, grouping=grouping)
+    rows = get_connection().query(tables=tables, fields=fields, nomapping=True, condition=condition,
+                                  grouping=grouping)
 
     if not artnr:
         # Wenn kein bestimmter Artikel abgefragt wird, dann das Abfrageergebnis in ein dict umwandeln
@@ -114,6 +112,9 @@ def alternativen(artnr):
     ['14600', '14600/01', '14600/02', '14600/03']
     """
     
+    warnings.warn("hudoftm.bestaende.alternativen() is deprecated,"
+                  + " use cs.masterdata.article.alternatives() instead",
+                  DeprecationWarning, stacklevel=2) 
     server = couchdb.client.Server(COUCHSERVER)
     db = server['eap']
     artnrs = db.get(artnr, {}).get('alternatives', [])
@@ -166,7 +167,8 @@ def buchbestaende(lager=0):
     
 
 def get_verfuegbaremenge(artnr=None, lager=0):
-    warnings.warn("get_verfuegbaremenge() is deprecated use verfuegbare_menge()", DeprecationWarning, stacklevel=2) 
+    warnings.warn("get_verfuegbaremenge() is deprecated use verfuegbare_menge()",
+                  DeprecationWarning, stacklevel=2) 
     return verfuegbare_menge(artnr, lager)
     
 
@@ -216,7 +218,11 @@ def freie_menge(artnr, dateformat="%Y-%m-%d"):
     2345
     
     """
-    bestandse = bestandsentwicklung(artnr, dateformat).values()
+    
+    today = datetime.date.today().strftime("%Y-%m-%d")
+    bestandse = bestandsentwicklung(artnr, dateformat)
+    # remove historic data, since this tends to be negative
+    bestandse = [x[1] for x in bestandse.items() if x[0] >= today]
     if bestandse:
         return max([min(bestandse), 0])
     else:
@@ -384,7 +390,7 @@ def versionsvorschlag(menge, orgartnr, date, dateformat="%Y-%m-%d"):
         mindate = min([date, bentwicklung[-1][0]]) 
         
         bentwicklung = [x for x in bentwicklung if x[0] >= mindate]
-        verfuegbar = min([quantity for dte, quantity in bentwicklung])
+        verfuegbar = min([quantity for dummy, quantity in bentwicklung])
         
         if verfuegbar > 0:
             ret.append((min(benoetigt, verfuegbar), artnr))
@@ -406,16 +412,20 @@ def frei_ab(menge, artnr, dateformat="%Y-%m-%d"):
     # Algorythmus: vom Ende der Bestandskurve nach hinten gehen, bis wir an einen punkt Kommen, wo die
     # Kurve niedriger ist, als die geforderte Menge - ab da ist die Menge frei.
     
+    today = datetime.date.today().strftime("%Y-%m-%d")
     bentwicklung = bestandsentwicklung(artnr, dateformat)
+    # remove historic data, since this tends to be negative
+    bentwicklung = dict([x for x in bentwicklung.items() if x[0] >= today])
+    
     # shortcut: the bestand never drops below menge
-    if bentwicklung and min(bentwicklung.values()) >= menge:
+    if bentwicklung and min(bentwicklung.values()) >= int(menge):
         return datetime.date.today()
     
     bentwicklung = bentwicklung.items()
     bentwicklung.sort(reverse=True)
     previous_date = None
     for datum, menge_frei in bentwicklung:
-        if menge_frei < menge:
+        if menge_frei < int(menge):
             if previous_date:
                 return datetime.date.fromtimestamp(time.mktime(time.strptime(previous_date, dateformat)))
             else:
@@ -489,7 +499,7 @@ if __name__ == '__main__':
     import unittest
     
     def test():
-        print bestandsentwicklung('14600/03')
+        return frei_ab(1000, '14600/03')
     
     def _test():
         """Some very simple tests."""
@@ -548,9 +558,10 @@ if __name__ == '__main__':
     #suite.addTest(unittest.FunctionTestCase(_test))
     #unittest.TextTestRunner(verbosity=2).run(suite)
 
-    print "starting"
-    import cProfile
-    cProfile.run("test()", sort=1)
+    #print "starting"
+    #import cProfile
+    #cProfile.run("test()", sort=1)
+    print test()
 
 # import time
 # start = time.time()

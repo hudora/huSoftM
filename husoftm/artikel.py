@@ -166,12 +166,17 @@ def guess_artnr(ean):
         return None
     if len(articles) == 1:
         return articles[0].artnr
+    
+    pattern = re.compile('(\d+)')
+
     # by checking for article sets
     candidates = [c for c in articles if c.setartikel]
+    candidates = map(pattern.search, [c.artnr for c in candidates])
+    candidates = set([c.group(0) for c in candidates])
     if len(candidates) == 1:
-        return candidates[0].artnr
+        return candidates.pop()
+
     #by removing version information
-    pattern = re.compile('(\d+)')
     cand_artnrs = map(pattern.search, [c.artnr for c in articles])
     cand_artnrs = set([c.group(0) for c in cand_artnrs])
     if len(cand_artnrs) == 1:

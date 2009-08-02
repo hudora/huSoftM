@@ -60,6 +60,7 @@ from husoftm.tools import sql_escape, sql_quote
 from huTools.robusttypecasts import int_or_0
 import huTools.async
 
+
 def kundenauftragsnr_to_rechnungsnr(kundenauftragsnr):
     """Liefert eine Liste mit Rechnungsnummern zurück, die zu einer Kundenauftragsnummer gehören.
     
@@ -70,7 +71,6 @@ def kundenauftragsnr_to_rechnungsnr(kundenauftragsnr):
                    condition="FKNRKD = %s" % (sql_quote(kundenauftragsnr)))
     return [("SR%s" % r[0]) for r in rows]
     
-#print kundenauftragsnr_to_rechnungsnr("WL0775262")
 
 def auftragsnr_to_rechnungsnr(auftragsnr):
     """Liefert eine Liste mit Rechnungsnummern zurück, die zu einer Auftragsnummer gehören.
@@ -81,4 +81,3 @@ def auftragsnr_to_rechnungsnr(auftragsnr):
     rows = get_connection().query(['AFK00'], fields=['FKRGNR'],
                    condition="FKAUFN = %s" % (sql_quote(auftragsnr)))
     return [("SR%s" % r[0]) for r in rows]
-

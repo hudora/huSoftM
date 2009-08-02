@@ -273,10 +273,10 @@ def bestandsentwicklung(artnr, dateformat="%Y-%m-%d"):
         bestentwicklung[datum] = menge
     
     if not bestentwicklung:
-        # kein Bestand - diese Information länger cachen
+        # kein Bestand - diese Information 6 Stunden cachen
         memc.set('husoftm.bestandsentwicklung.%r.%r' % (artnr, dateformat), bestentwicklung, 60*60*6)
     else:
-        # Bestand - die menge fuer 2 minuten cachen
+        # Bestand - die menge fuer 2 Minuten cachen
         memc.set('husoftm.bestandsentwicklung.%r.%r' % (artnr, dateformat), bestentwicklung, 60*2)
     
     return bestentwicklung

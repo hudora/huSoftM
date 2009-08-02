@@ -3,8 +3,10 @@
 """
 fields.py - describes the SoftM table structure. Part of huSoftM.
 
+See also http://cybernetics.hudora.biz/projects/wiki/SoftMtabellen
+
 Created by Maximillian Dornseif on 2007-03-18. Based on code named "MoftS" from Summer 2005.
-Copyright (c) 2007, 2008 HUDORA GmbH. All rights reserved.
+Copyright (c) 2007, 2008, 2009 HUDORA GmbH. All rights reserved.
 """
 
 __revision__ = "$Revision$"
@@ -2002,6 +2004,107 @@ MAPPINGDIR = {
           'KCE2IL': 'iln',
           },
 
+'XPN00': { # Konditionen / Preise
+    # 'PNFNR ': 'Firma',
+    # 'PNANW ': 'Anwendung',
+    'PNSANR': 'Satznummer (gepackt)',
+    # 'PNABK ': 'Sprung-Kriterium',
+    'PNPRB ': 'preis',
+    # 'PNPROV': 'ProvisionsKZ',
+    # 'PNKZTX': 'Textschl. Artikelbez.',
+    # 'PNKZPR': 'Preisdimension',
+    # 'PNSBER': 'Sachb. Erfassung',
+    # 'PNX3RB': 'Rabatttextschl}ssel',
+    # 'PNX4RB': 'allg. Textschl}ssel',
+    # 'PNBPER': 'BenutzerPr.Erfassung',
+    # 'PNDTER': 'Datum Erfassung CJJMMTT',
+    # 'PNZTER': 'Uhrzeit der Erfassung',
+    # 'PNSBAE': 'Sachb.letzte ¢nderung  ',
+    # 'PNBPAE': 'BenutzerPr.letzte ¢nderung',
+    # 'PNDTAE': 'Datum l. ¢nderung CJJMMTT',
+    # 'PNZTAE': 'Uhrzeit letzte ¢nderung',
+    # 'PNSTAT': 'Satzstatus',
+    # 'PNDFSL': 'dateifuehrungsschluessel',
+
+},
+
+'XPR00': { # Koditionen / Preise
+    'PRFNR': 'firma',
+    'PRANW': 'anwendung', # 'E' == Einkauf
+    # 'PRIB': 'Datenart',
+    # 'PRANW1': 'Preismodul',
+    'PRSANR': 'satznr_xpn00',
+    # 'PRKTYP': 'Konditionstyp',
+    # 'PRKDNR': 'Kunde',
+    'PRARTN': 'artnr',
+    'PRLINR': 'lieferant',
+    # 'PRPROB': 'Objekt',
+    # 'PRPROJ': 'Projekt',
+    # 'PRVRT': 'Vertreter',
+    # 'PRPRLK': 'Preisliste Kunde',
+    # 'PRPRLL': 'Preisliste Lieferant',
+    #'PRPGRP': 'Preisgruppe Vertrieb',
+    # 'PRPGRL': 'Preisgruppe Einkauf',
+    # 'PRARTG': 'Artikelgruppe',
+    # 'PRARTH': 'Artikelhauptgruppe',
+    # 'PRLGNR': 'Lager',
+    # 'PRFABG': 'Leistungsart',
+    # 'PRFKEY': 'freie Zuordnung',
+    # 'PRABT': 'Abteilung',
+    'PRDTVO': 'gueltig_ab_date',
+    'PRDTBI': 'gueltig_bis_date',
+    #'PRIAKZ': 'Inland/Ausland',
+    #'PRKZBO': 'bonusw}rdig',
+    #'PRKZSK': 'skontierf{hig',
+    #'PRKZRB': 'Vorgangsrabatt',
+    #'PRBART': 'Bonusartikel',
+    #'PRTURN': 'Turnus',
+    #'PRNART': 'Naturalrabattart',
+    #'PRSTOP': 'Ende KZ',
+    #'PRKZSM': 'Sortimentsrabatt',
+    #'PRKZRL': 'Rabatt l¦schen',
+    #'PRHKAR': 'Herkunft',
+    #'PRHKNR': 'Kalkulations-Nr.',
+    'PRWSL': 'waehrung',
+    #'PRMESL': 'Mengeneinheit',
+    'PRSANO': 'SatzNr Preisdatei Original',
+    'PRKZKA': 'KZ Massenkonditions{nderung',
+    'PRSBER': 'Sachb. Erfassung',
+    'PRBPER': 'BenutzerPr.Erfassung',
+    'PRDTER': 'Datum Erfassung CJJMMTT',
+    'PRZTER': 'Uhrzeit der Erfassung',
+    'PRSBAE': 'Sachb.letzte ¢nderung',
+    'PRBPAE': 'BenutzerPr.letzte ¢nderung',
+    'PRDTAE': 'Datum l. ¢nderung CJJMMTT',
+    'PRZTAE': 'Uhrzeit letzte ¢nderung',
+    # 'PRRSA1': 'Reserve 1 1A',
+    # 'PRRSA2': 'Reserve 2 1A',
+    # 'PRRSA3': 'Reserve 3 1A',
+    # 'PRRSA4': 'Reserve 4 1A',
+    # 'PRRSA5': 'Reserve 5 1A',
+    # 'PRRSA6': 'Reserve 6 10A',
+    # 'PRRSA7': 'Reserve 7 10A',
+    # 'PRRSN1': 'Reserve 1 1S0',
+    # 'PRRSN2': 'Reserve 2 1S0',
+    # 'PRRSN3': 'Reserve 3 1S0',
+    # 'PRRSN4': 'Reserve 4 1S0',
+    # 'PRRSN5': 'Reserve 5 1S0',
+    # 'PRIK01': 'Indv1 1A',
+    # 'PRIK02': 'Indv2 1A',
+    # 'PRIK03': 'Indv3 1A',
+    # 'PRIK04': 'Indv4 1A',
+    # 'PRIK05': 'Indv5 1A',
+    # 'PRIK06': 'Indv1 3A',
+    # 'PRIK07': 'Indv2 3A',
+    # 'PRIK08': 'Indv3 3A ',
+    # 'PRIK09': 'Indv4 3A',
+    # 'PRIK10': 'Indv5 3A',
+    # 'PRIK11': 'Indv 10A',
+    # 'PRIK12': 'Indv 20A',
+    'PRSTAT': 'Satzstatus',
+    'PRDFSL': 'Dateif}hrungs-Schl}ssel',
+},
+
 'XXA00': {
         # 'XAFNR ': Firma
         'XAKDNR': 'kundennr',
@@ -2099,7 +2202,7 @@ MAPPINGDIR = {
         # 'LBLGNE': 'Transit: Endlager', # immer 0
         'LBPREW': 'wert',
         # 'LBKZWR': 'bewegungswert_angegeben_kz', # scheinbar immer 9
-        'LBWSL':  'waehrung',
+        'LBWSL': 'waehrung',
         'LBKURS': 'kurs',
         'LBKUFA': 'kursfaktor',
         # 'LBRPRZ': 'Rabatt-%-Satz',

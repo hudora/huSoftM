@@ -146,6 +146,8 @@ def softm2date(date):
     date = str(date).strip()
     if date.endswith('.0'):
         date = date[:-2]
+    if date.endswith('999999'):
+        return datetime.date(9999, 12, 31)
     if date:
         if len(date) == 7:
             return datetime.date(*time.strptime(str(int(date)), '1%y%m%d')[:3])

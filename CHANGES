@@ -1,3 +1,9 @@
+0.53: preise_ek.preisentwicklung() implementiert.
+      erste umrisse des 'bestellungen' moduls.
+      Wir koennen nun mit Datumsfeldern mit dem Inhalt '999999' umgehen.
+      Bug bei freie_menge() behoben, der bei Aufträgen im Rueckstand
+        immer zu dem Wert 0 fuehrte
+
 0.52p2: Bugfix
 
 0.52p1: Zahlreiche Tabellen für Bestellungen (Einkauf) zugefügt

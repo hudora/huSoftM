@@ -46,14 +46,3 @@ def bestellungen():
     rows = get_connection().query('EBP00', ordering=['BPBSTN DESC', 'BPDTLT'], condition="BPSTAT<>'X'")
     # AND BPKZAK=0 to get only the open ones
     return rows
-    
-
-class miscTests(unittest.TestCase):
-    
-    def test_bestellungen(self):
-        from pprint import pprint
-        pprint(bestellungen())
-
-
-if __name__ == '__main__':
-    unittest.main()

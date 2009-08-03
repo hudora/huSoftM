@@ -12,10 +12,8 @@ __revision__ = "$Revision$"
 import datetime
 import logging
 import time
-import httplib
-import urllib
-import Pyro, Pyro.core
-import simplejson as json
+import Pyro
+import Pyro.core
 from types import ListType, TupleType, StringType
 from husoftm.fields import MAPPINGDIR, DATETIMEDIR
 from husoftm.tools import softm2date
@@ -28,6 +26,8 @@ LOG.setLevel(logging.WARN)
 
 
 # TODO: move to hutools robusttypecasts
+
+
 def int_or_0(data):
     """Helper for unwinding SoftM nested list replies - not meant for public use."""
     try:
@@ -118,22 +118,16 @@ class PyRoMoftSconnection(object):
         return [[self._fix_field(f) for f in r] for r in rows]
 
     def _execute_query(self, querystr, querymappings, fields):
-        start = time.time()
-        LOG.debug(querystr)
         try:
             rows = self.__server.select(querystr)
         except Exception, msg:
             LOG.error('PyRO remote exception:' + (''.join(Pyro.util.getPyroTraceback(msg))))
             raise
 
-        querydelta = time.time() - start
-        start = time.time()
         if querymappings:
             rows = self._rows2dict(fields, querymappings, rows)
         else:
             rows = [[y for y in x] for x in rows]
-        mapdelta = time.time()-start
-        LOG.info("%.3fs/%.3fs, %d rows: %s" % (querydelta, mapdelta, len(rows), querystr))
         return rows
 
     def query(self, tables=None, condition=None, fields=[], querymappings=None, grouping=[], ordering=[],
@@ -280,29 +274,6 @@ MoftSconnectionToTestDB = PyRoMoftSconnectionToTestDB
 
 def get_connection():
     """Get a PyRoMoftSconnection Object. Meant to one day introduce connection pooling."""
-
+    
     # return MoftSconnectionToTestDB()
     return MoftSconnection()
-    #return ODBCbridgeMoftSconnection()
-
-# small speedtest
-def test1():
-    ODBCbridgeMoftSconnection().query('XLF00', fields=['LFARTN', 'SUM(LFMGLP)'], grouping=['LFARTN'],
-             condition="LFLGNR=%d AND LFMGLP<>0 AND LFSTAT<>'X'" % (int(100)))
-def test2():
-    get_connection().query('XLF00', fields=['LFARTN', 'SUM(LFMGLP)'], grouping=['LFARTN'],
-             condition="LFLGNR=%d AND LFMGLP<>0 AND LFSTAT<>'X'" % (int(100)))
-
-import time
-
-def test():
-    start = time.time()
-    test1()
-    print time.time() - start
-    start = time.time()
-    test2()
-    print time.time() - start
-
-# import cProfile
-# cProfile.run("test()", sort=1)
-#test()

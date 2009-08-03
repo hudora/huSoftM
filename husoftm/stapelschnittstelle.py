@@ -25,11 +25,7 @@ import textwrap
 import unittest
 from husoftm.connection import get_connection
 from husoftm.tools import date2softm, sql_quote, iso2land
-if __name__ == '__main__':
-    # sonst gehen die Tests ggf. schief, da aus der installierten husoftm version importiert wird (site-packages)
-    from stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00
-else:
-    from husoftm.stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00
+from husoftm.stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00
 
 __revision__ = "$Revision$"
 
@@ -159,10 +155,8 @@ def _create_auftragstext(textart, vorgangsposition, texte, vorgangsnummer, text,
         text.auf_lieferschein = lieferschein
         text.auf_rechnung = rechnung
         text.text = line
-        # XXX: Positionstexte bekamen bisher keine textnummer (bisher). Kann mir aber vorstellen, dass
-        # dies bei mehrzeiligen bzw. mehreren Positionstexten notwendig wird.
         text.textnummer = len(texte)
-
+    
 
 def _create_kopftext(texte, vorgangsnummer, text, auftragsbestaetigung=1, lieferschein=1, rechnung=1):
     """Fügt einen Kopftext hinzu."""

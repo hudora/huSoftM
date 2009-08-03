@@ -10,6 +10,8 @@ Copyright (c) 2009 HUDORA. All rights reserved.
 """
 
 
+import doctest
+import sys
 from decimal import Decimal
 from husoftm.connection2 import get_connection
 from husoftm.tools import sql_quote
@@ -42,16 +44,15 @@ def preisentwicklung(artnrs):
     """
     
     artnrsstr = ','.join([sql_quote(artnr) for artnr in artnrs])
-    rows = get_connection().query(['XPN00', 'XPR00'], fields=['PNPRB', 'PRDTVO', 'PRDTBI', 'PRARTN'],
-        ordering='PRDTVO',
+    rows = get_connection().query(['XPN00', 'XPR00'], ordering='PRDTVO',
         condition=("PNSANR=PRSANR and PRANW='E' and PRSTAT=' ' and PNSTAT=' '"
                    " and PRARTN IN (%s)" % artnrsstr))
     return [(row['gueltig_ab_date'],
              row['gueltig_bis_date'],
              row['artnr'],
-             (Decimal(str(row['PNPRB'])).quantize(Decimal(10) ** -2))) for row in rows]
+             (Decimal(str(row['preis'])).quantize(Decimal(10) ** -2))) for row in rows]
     
 
 if __name__ == '__main__':
-    import doctest
-    doctest.testmod()
+    failure_count, test_count = doctest.testmod()
+    sys.exit(failure_count)

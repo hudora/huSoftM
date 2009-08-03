@@ -6,8 +6,8 @@ huSoftM ist eine Sammlung von Funktionen um Zugriff auf Daten der "SoftM Suite" 
 AS/400|iSeries|i5 allerdings verkauft SoftM auch eine "Windows Version", die auf einem
 AS/400 Emulator namens AxWare unter NTff läuft. AxWare stammt von PKS Software GmbH und
 ist eine "Legacy Migration" Produkt. Wir selbst haben von AX/ware zurück zur "echten"
-AS/400 migriert. pySoftM ist nur mit einer echten AX/400 Umgebung getestet. Als Client
-nutzen wir FreeBSD 5.x, 6.x, 7.x mit Python 2.4 und 2.5.
+AS/400 migriert. pySoftM ist nur mit einer echten AS/400 Umgebung getestet. Als Client
+nutzen wir FreeBSD 5.x, 6.x, 7.x mit Python 2.4, 2.5 und 2.6.
 
 Um den Kontakt mit der AS/400 herzustellen nutzen wir einen Stub, der unter Unix und 
 unter Windows laufen kann und das IBM "iSeries Access" Toolkit nutzt. Dieses bietet

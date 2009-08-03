@@ -27,12 +27,17 @@ doc: build
 	sh -c '(cd html; pydoc -w ../husoftm/*.py)'
 
 test:
-	PYTHONPATH=. python husoftm/artikel.py
-	PYTHONPATH=. python husoftm/bestaende.py
-	PYTHONPATH=. python husoftm/kunden.py
-	PYTHONPATH=. python husoftm/lieferscheine.py
-	# PYTHONPATH=. python husoftm/stapelschnittstelle.py
-	PYTHONPATH=. python husoftm/tools.py
+	python husoftm/artikel.py
+	python husoftm/bestaende.py
+	python husoftm/connection2.py
+	python husoftm/kunden.py
+	# python husoftm/lagerschnittstelle.py
+	python husoftm/lieferscheine.py
+	python husoftm/misc.py
+	python husoftm/preise_ek.py
+	python husoftm/softmtables.py
+	python husoftm/stapelschnittstelle.py
+	python husoftm/tools.py
 
 install: build
 	sh -c 'sudo python setup.py install'

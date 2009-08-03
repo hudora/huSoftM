@@ -13,13 +13,16 @@ Für die Frage, ob ein bestimmter Artikel in einem bestimmten Lager ist, ist bes
     alternativen(artnr)                           alternativartikel / versionen
     bestellmengen(artnr)                          von uns bei Lieferanten bestellte Mengen
     auftragsmengen(artnr, lager=0)                bei uns von Kunden bestellte Mengen
-    umlagermenge(artnr, lager, vonlager=None)     Menge, die zur Zeit von einem Lager ans andere unterwegs ist
-    umlagermengen(anlager, vonlager=None)         Alle Artikelmengen, die zur Zeit von einem Lager ans andere unterwegs ist
+    umlagermenge(artnr, lager, vonlager=None)     Menge, die zur Zeit von einem Lager ans andere
+                                                  unterwegs ist
+    umlagermengen(anlager, vonlager=None)         Alle Artikelmengen, die zur Zeit von einem Lager
+                                                  ans andere unterwegs ist
     buchbestand(artnr, lager=0)                   Artikel am Lager
     buchbestaende(lager=0)                        Alle Artikel an einem Lager 
     freie_menge(artnr)                            Menge, die Verkauft werden kann
     frei_ab(menge, artnr, dateformat="%Y-%m-%d")  ab wann ist eine bestimmte Menge frühstens verfügbar?
-    bestand(artnr, lager, vonlager=None)          Wieviel ist zur Zeit an einem Lager oder trifft kurzum ein?
+    bestand(artnr, lager, vonlager=None)          Wieviel ist zur Zeit an einem Lager oder trifft
+                                                  kurzum ein?
     besteande(lager)                              wie bestand() aber für alle Artikel
     bestandsentwicklung(artnr, dateformat="%Y-%m-%d")            Prognose der Bestandsänderungen
     versionsvorschlag(menge, artnr, date, dateformat="%Y-%m-%d") Vorschlag zur Versionsstückelung
@@ -102,7 +105,7 @@ def _umlagermenge_helper(artnr, lager=100, vonlager=None):
     return as400_2_int(rows)
     
 
-# TODO: use cs module instead
+# TODO: use cs module instead of alternativen()
 
 
 def alternativen(artnr):
@@ -201,10 +204,10 @@ def verfuegbare_mengen(lager=0):
      '83165': 598}
     """
     
-    rows = get_connection().query('XLF00', nomapping=True, grouping=['LFARTN'],
+    rows = get_connection().query('XLF00', grouping=['LFARTN'], querymappings={},
                                   fields=['LFARTN', 'SUM(LFMGLP)', 'SUM(LFMGK4)', 'SUM(LFMGLP-LFMGK4)'],
                                   condition="LFLGNR=%s AND LFMGLP<>0 AND LFSTAT<>'X'" % sql_escape(lager))
-    return dict([(str(artnr), as400_2_int(menge) - as400_2_int(lfmgk4)) 
+    return dict([(str(artnr), as400_2_int(menge) - as400_2_int(lfmgk4))
                  for (artnr, menge, lfmgk4, dummy) in rows])
     
 
@@ -493,7 +496,7 @@ def besteande(lager):
     return bbesteande
 
 
-if __name__ == '__main__':
+def _do_tests():
     """Call test suite when this module is opened as script."""
 
     import unittest
@@ -503,31 +506,30 @@ if __name__ == '__main__':
     
     def _test():
         """Some very simple tests."""
-        from pprint import pprint
         #print "buchbestaende() =",
-        #pprint(buchbestaende())
+        (buchbestaende())
         #print "auftragsmengen_alle_artikel(34) = ",
-        #pprint(auftragsmengen_alle_artikel(34))
+        (auftragsmengen_alle_artikel(34))
         #print "verfuegbare_mengen(34) = ",
-        #pprint(verfuegbare_mengen(34))
+        (verfuegbare_mengen(34))
         #print "besteande(100) = ",
-        #pprint(besteande(100))
+        (besteande(100))
         # for artnr in '76095 14600/03 14865 71554/A 01104 10106 14890 WK22002'.split():
         for artnr in '14600/03 WK22002'.split():
-            print "versionsvorschlag(2000, %r, '2009-01-04') = " % artnr,
-            pprint(versionsvorschlag(2000, artnr, '2009-01-04'))
-            print "buchbestand(%r) = " % artnr,
-            pprint(buchbestand(artnr))
-            print "verfuegbare_menge(%r) = " % artnr,
-            pprint(verfuegbare_menge(artnr))
-            print "bestandsentwicklung(%r) = " % artnr,
-            pprint((bestandsentwicklung(artnr)))
-            print "frei_ab(50, %r) = " % artnr,
-            pprint((frei_ab(50, artnr)))
-            print "umlagermenge(%r, 100) = " % artnr,
-            pprint((umlagermenge(artnr, 100)))
-            print "bestand(%r, 100) = " % artnr,
-            pprint((bestand(artnr, 100)))
+            #print "versionsvorschlag(2000, %r, '2009-01-04') = " % artnr,
+            (versionsvorschlag(2000, artnr, '2009-01-04'))
+            #print "buchbestand(%r) = " % artnr,
+            (buchbestand(artnr))
+            #print "verfuegbare_menge(%r) = " % artnr,
+            (verfuegbare_menge(artnr))
+            #print "bestandsentwicklung(%r) = " % artnr,
+            ((bestandsentwicklung(artnr)))
+            #print "frei_ab(50, %r) = " % artnr,
+            ((frei_ab(50, artnr)))
+            #print "umlagermenge(%r, 100) = " % artnr,
+            ((umlagermenge(artnr, 100)))
+            #print "bestand(%r, 100) = " % artnr,
+            ((bestand(artnr, 100)))
 
     class TestUmlagerungen(unittest.TestCase):
         """Testet die Berechnung der Umlagerungen."""
@@ -557,11 +559,14 @@ if __name__ == '__main__':
     #suite = unittest.TestLoader().loadTestsFromTestCase(TestUmlagerungen)
     #suite.addTest(unittest.FunctionTestCase(_test))
     #unittest.TextTestRunner(verbosity=2).run(suite)
-
+    
     #print "starting"
     #import cProfile
     #cProfile.run("test()", sort=1)
-    print test()
+    test()
+
+if __name__ == '__main__':
+    _do_tests()
 
 # import time
 # start = time.time()

@@ -115,6 +115,10 @@ class Artikel(object):
         return self
 
 
+# TODO: remove
+# wird ausschliesslich in trunk/web/MoftS/produktpass/bin/softmsync genutzt
+
+
 def get_artikel(artnr=None, ean=None):
     """Returns articles for artnr and/or ean, depending on what parameter is not None.
 
@@ -312,13 +316,13 @@ class komponentenaufloesungTests(unittest.TestCase):
 
 
 def _test():
-    print get_umschlag('14600')
-    print _auf_zwei_stellen(1.0/3.0)
-    print komponentenaufloesung([(5, '00049')]),
-    print ([(5, u'A42438'), (5, u'A42439'), (5, u'A42440'), (10, u'A42441')]
-              == komponentenaufloesung([(5, '00049')]))
-    print buchdurchschnittspreis('14600')
-    print preis('14600')
+    get_umschlag('14600')
+    _auf_zwei_stellen(1.0/3.0)
+    komponentenaufloesung([(5, '00049')]),
+    ([(5, u'A42438'), (5, u'A42439'), (5, u'A42440'), (10, u'A42441')]
+        == komponentenaufloesung([(5, '00049')]))
+    buchdurchschnittspreis('14600')
+    preis('14600')
     # TODO: implement TestMoftSconnection
     #husoftm.MoftSconnection = husoftm.TestMoftSconnection
     #unittest.main()

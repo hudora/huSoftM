@@ -10,9 +10,8 @@ Copyright (c) 2009 HUDORA. All rights reserved.
 import types
 import unittest
 from decimal import Decimal
-from husoftm.connection2 import get_connection, as400_2_int
+from husoftm.connection2 import get_connection
 from husoftm.tools import sql_escape, sql_quote
-from pprint import pprint
 
 
 class Bestellung(object):
@@ -158,23 +157,6 @@ def get_bestellungen_artnr(artnr):
     return kursfaktorkorrektur(ret)
     
 
-def bestellmengen(artnr):
-    """Liefert eine liste mit allen Bestellten aber noch nicht gelieferten Wareneingängen.
-    
-    >>> bestellmengen('14865')
-    
-    {datetime.date(2009, 2, 20): 1200,
-     datetime.date(2009, 5, 5): 300}
-    """
-    
-    # detailierte Informationen gibts in EWZ00
-    rows = get_connection().query('EBP00', fields=['BPDTLT', 'SUM(BPMNGB-BPMNGL)'], ordering='BPDTLT',
-                                 grouping='BPDTLT',
-                                 condition="BPSTAT<>'X' AND BPKZAK=0 AND BPARTN=%s" % sql_quote(artnr))
-    return dict([(x['liefer_date'], as400_2_int(x['SUM(BPMNGB-BPMNGL)']))
-                 for x in rows if as400_2_int(x['SUM(BPMNGB-BPMNGL)']) > 0])
-    
-
 def bestellungen():
     """Liefert eine Liste mit allen bestellten aber nicht stornierten Wareneingängen.
     
@@ -227,7 +209,7 @@ class tablesTests(unittest.TestCase):
 
 def testbestellung():
     fieldwidth = 13
-    bestellungen = get_bestellungen_artnr('10167')
+    bestellungen_artnr = get_bestellungen_artnr('10167')
     
     print "B=Bestellposition, Z=Warenzugang S=Lagerstapelschnittstelle L=Lagerbuchung"
     bestellfelder = ['erfassung_date', 'artnr', 'kurs', 'lager', 'bestellmenge', 'gelieferte_menge', 
@@ -317,7 +299,7 @@ def testbestellung():
 
     
     bestellungen = get_bestellungen_artnr('10167')
-    for bestellung in bestellungen:
+    for bestellung in bestellungen_artnr:
         print "B   ",
         for feldname in bestellfelder:
             if feldname is not None:
@@ -359,8 +341,8 @@ def testbestellung():
 
 
 if __name__ == '__main__':
-    #pprint(get_bestellung(43248))
-    #pprint(get_zugaenge(41971))
-    #pprint(get_zugaenge(43072))
+    (get_bestellung(43248))
+    (get_zugaenge(41971))
+    (get_zugaenge(43072))
     #testbestellung()
     unittest.main()

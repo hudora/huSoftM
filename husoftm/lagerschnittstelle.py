@@ -11,9 +11,11 @@ Copyright (c) 2007 HUDORA. All rights reserved.
 """
 
 
-import datetime, logging, sqlite3, unittest
-from husoftm.softmtables import SoftMreadOnlyTable, SoftMtable, AS400Connector_mixin
 import husoftm.lieferscheine
+import sqlite3
+import unittest
+from husoftm.softmtables import SoftMreadOnlyTable, SoftMtable, AS400Connector_mixin
+
 
 class ISA00(SoftMtable, AS400Connector_mixin):
     """Zugriff auf die # MyPL Schnittstelle - Komissionierbeleg."""
@@ -92,7 +94,6 @@ class Isa00tests(unittest.TestCase):
         """Set up data and environment for testing."""
         init_testtables()
         self.table = ISA00()
-        
     
     def test_basic_select(self):
         """Test ISA00().select()."""
@@ -102,7 +103,6 @@ class Isa00tests(unittest.TestCase):
                          ["SELECT IAKBNR, IAAUFN, IASANR FROM ISA00 WHERE IAFNR='01' AND IALGNR='100'"
                           " AND IADFSL='' AND IASTAT=''"])
         self.assertEqual(len(rows), 1)
-        
     
     def test_locking(self):
         """Test ISA00().lock() and friends."""
@@ -116,7 +116,6 @@ class Isa00tests(unittest.TestCase):
         # check how many unlocked rows exist
         rows = self.table.select("IADFSL='' AND IASTAT=''", fields="IAKBNR, IAAUFN, IASANR")
         self.assertEqual(len(rows), 1)
-        
     
     def test_deleting(self):
         """Test ISA00().delete()."""
@@ -127,7 +126,6 @@ class Isa00tests(unittest.TestCase):
         # check how many unlocked & undeleted rows exist
         rows = self.table.select("IADFSL='' AND IASTAT=''", fields="IAKBNR, IAAUFN, IASANR")
         self.assertEqual(len(rows), 0)
-        
     
     def test_available_rows(self):
         """Test ISA00().available_rows()."""
@@ -138,7 +136,6 @@ class Isa00tests(unittest.TestCase):
         self.assertEqual(len(rows[0]), 1)
         rows = self.table.available_rows(fields="IAKBNR, IAAUFN")
         self.assertEqual(len(rows[0]), 2)
-        
     
     def test_removing_locks(self):
         """Test ISA00().clean_stale_locks()."""
@@ -227,5 +224,3 @@ def init_testtables():
 
 if __name__ == '__main__':
     unittest.main()
-
-    

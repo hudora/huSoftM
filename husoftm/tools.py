@@ -8,10 +8,11 @@ Created by Maximillian Dornseif on 2007-03-29.
 Copyright (c) 2007 HUDORA GmbH. All rights reserved.
 """
 
-import unittest
-import logging
 import datetime
+import doctest
+import logging
 import time
+import unittest
 
 __revision__ = "$Revision$"
 
@@ -143,16 +144,19 @@ def softm2date(date):
     datetime.date(1974, 8, 21)
     """
     
-    date = str(date).strip()
-    if date.endswith('.0'):
-        date = date[:-2]
-    if date.endswith('999999'):
-        return datetime.date(9999, 12, 31)
-    if date:
-        if len(date) == 7:
-            return datetime.date(*time.strptime(str(int(date)), '1%y%m%d')[:3])
-        if len(date) == 6:
-            return datetime.date(*time.strptime(str(int(date)), '%y%m%d')[:3])
+    try:
+        date = str(date).strip()
+        if date.endswith('.0'):
+            date = date[:-2]
+        if date.endswith('999999'): # Datum = 999999: Unbestimmt
+            return datetime.date(9999, 12, 31)
+        if date:
+            if len(date) == 7:
+                return datetime.date(*time.strptime(str(int(date)), '1%y%m%d')[:3])
+            if len(date) == 6:
+                return datetime.date(*time.strptime(str(int(date)), '%y%m%d')[:3])
+    except ValueError, msg:
+        raise ValueError("can't convert %s to date: %s" % (date, msg))
     return None
     
 
@@ -201,6 +205,6 @@ class _GenericTests(unittest.TestCase):
     
 
 if __name__ == '__main__':
-    import doctest
-    doctest.testmod()
+    failure_count, test_count = doctest.testmod()
+    sys.exit(failure_count)
     unittest.main()

@@ -18,7 +18,6 @@ import urllib
 import simplejson as json
 import sys
 from decimal import Decimal
-from types import StringType
 from husoftm.fields import MAPPINGDIR, DATETIMEDIR, DECIMALIZE2
 from husoftm.tools import softm2date
 

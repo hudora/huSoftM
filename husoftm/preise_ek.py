@@ -21,26 +21,26 @@ from pprint import pprint # used for doctests
 def preisentwicklung(artnrs):
     """Ermittelt alle Preise für eine Liste von Artikelnummern.
     
-    ACHTUNG: erwartet eine Liste von Artikelnummern. In der regel will man die Preise
+    ACHTUNG: erwartet eine Liste von Artikelnummern. In der Regel will man die Preise
     für alle Versionen auf einmal ermitteln.
     
-    >>> pprint(preisentwicklung(['14600', '14600/00', '14600/01']))
-    [(datetime.date(2004, 12, 16),
-      datetime.date(2005, 4, 12),
-      '14600',
-      Decimal("16.10")),
-     (datetime.date(2005, 4, 13),
-      datetime.date(2006, 3, 22),
-      '14600',
-      Decimal("16.60")),
-     (datetime.date(2006, 3, 23),
-      datetime.date(9999, 12, 31),
-      '14600',
-      Decimal("17.43")),
-     (datetime.date(2006, 9, 19),
-      datetime.date(9999, 12, 31),
-      '14600/01',
-      Decimal("17.43"))]
+    >>> pprint(preisentwicklung(['77068', '77068/00'])[:4])
+    [(datetime.date(2005, 9, 1),
+      datetime.date(2006, 7, 3),
+      '77068',
+      Decimal("0.06")),
+     (datetime.date(2006, 7, 4),
+      datetime.date(2007, 7, 24),
+      '77068',
+      Decimal("0.07")),
+     (datetime.date(2007, 7, 4),
+      datetime.date(2008, 3, 31),
+      '77068/00',
+      Decimal("0.07")),
+     (datetime.date(2007, 7, 24),
+      datetime.date(2008, 3, 31),
+      '77068',
+      Decimal("0.12"))]
     """
     
     artnrsstr = ','.join([sql_quote(artnr) for artnr in artnrs])

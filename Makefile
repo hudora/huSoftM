@@ -3,6 +3,7 @@ default: check test
 check: clean
 	find husoftm -name '*.py'  -exec pep8 --ignore=E501,W291 --repeat {} \;
 	pylint husoftm
+	clonedigger husoftm
 
 build:
 	python setup.py build sdist bdist_egg

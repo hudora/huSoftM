@@ -11,6 +11,7 @@ Copyright (c) 2007 HUDORA GmbH. All rights reserved.
 import datetime
 import doctest
 import logging
+import sys
 import time
 import unittest
 
@@ -206,5 +207,5 @@ class _GenericTests(unittest.TestCase):
 
 if __name__ == '__main__':
     failure_count, test_count = doctest.testmod()
-    sys.exit(failure_count)
     unittest.main()
+    sys.exit(failure_count)

@@ -50,7 +50,8 @@ def preisentwicklung(artnrs):
     return [(row['gueltig_ab_date'],
              row['gueltig_bis_date'],
              row['artnr'],
-             (Decimal(str(row['preis'])).quantize(Decimal(10) ** -2))) for row in rows]
+             (Decimal(str(row['preis'])).quantize(Decimal(10) ** -2)),
+             row['waehrung']) for row in rows]
     
 
 if __name__ == '__main__':

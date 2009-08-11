@@ -1,3 +1,6 @@
+0.53p1: build prozess ueberarbeitet, preise_ek.preisentwicklung()
+        liefert jetzt Waehrungen mit
+
 0.53: preise_ek.preisentwicklung() implementiert.
       erste umrisse des 'Bestellungen' moduls.
       Wir koennen nun mit Datumsfeldern mit dem Inhalt '999999' umgehen.

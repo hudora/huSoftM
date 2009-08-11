@@ -1,11 +1,11 @@
 # setting the PATH seems only to work in GNUmake not in BSDmake
 PATH:=testenv/bin:$(PATH)
 
-default: dependencies check test
+default: dependencies check test statistics
 
 check:
 	find husoftm -name '*.py' | xargs /usr/local/hudorakit/bin/hd_pep8
-	/usr/local/hudorakit/bin/hd_pylint husoftm
+	/usr/local/hudorakit/bin/hd_pylint -f parseable husoftm | tee pylint.out
 
 build:
 	python setup.py build sdist bdist_egg
@@ -26,6 +26,9 @@ test:
 dependencies:
 	virtualenv testenv
 	pip -q install -E testenv -r requirements.txt
+
+statistics:
+	sloccount --wide --details . | grep -v -E '(testenv|build|.svn)/' | tee sloccount.sc
 
 upload: build doc
 	rsync dist/* root@cybernetics.hudora.biz:/usr/local/www/apache22/data/dist/huSoftM/
@@ -52,7 +55,7 @@ install: build
 	sh -c 'sudo python setup.py install'
 
 clean:
-	rm -Rf testenv build dist html test.db huSoftM.egg-info svn-commit.tmp 
+	rm -Rf testenv build dist html test.db huSoftM.egg-info svn-commit.tmp pylint.out sloccount.sc pip-log.txt
 	find . -name '*.pyc' -or -name '*.pyo' -or -name 'biketextmate.log' -delete
 
 .PHONY: build test

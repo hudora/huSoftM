@@ -47,7 +47,7 @@ class StapelSerializer(object):
         """Generate SQL command for this Object"""
         felddict = {}
         # pull in required rows
-        for rowid, rowconf in self.rowmapping.items():
+        for rowid, rowconf in sorted(self.rowmapping.items()):
             name = rowconf['name']
             if rowconf.get('required', False) == True:
                 felddict[rowid] = getattr(self, name)
@@ -419,28 +419,31 @@ class _GenericTests(unittest.TestCase):
         auftrag.positionen = []
         auftrag.fixtermin = datetime.datetime.now().time()
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
-        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKNRKD, BKLTFX, BKDTKD, BKKDNR) VALUES('1','123','1081230','1081231','1','01','0012345','1','1081229','   17200')"
-
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKNRKD, BKLTFX, BKDTKD,"
+            " BKKDNR) VALUES('1','123','1081230','1081231','1','01','0012345','1','1081229','   17200')")
+        
         self.assertEqual(kopf.to_sql(), kpf_sql)
         self.assertEqual(positionen, [])
-        self.assertEqual(texte[0].to_sql(), "INSERT INTO ABT00 (BTKZLF, BTVGNR, BTTART, BTFNR, BTTX60, "
-            "BTLFNR, BTKZAB, BTKZRG) VALUES('1','123','8','01','infotext_kunde','1','1','1')")
-        self.assertEqual(texte[1].to_sql(), "INSERT INTO ABT00 (BTVGNR, BTTART, BTFNR, BTTX60, BTLFNR, "
-            "BTKZAB) VALUES('123','8','01','bestelltext','2','1')")
+        self.assertEqual(texte[0].to_sql(), "INSERT INTO ABT00 (BTKZLF, BTKZAB, BTTART, BTFNR, BTTX60,"
+            " BTLFNR, BTKZRG, BTVGNR) VALUES('1','1','8','01','infotext_kunde','1','1','123')")
+        self.assertEqual(texte[1].to_sql(), "INSERT INTO ABT00 (BTKZAB, BTTART, BTFNR, BTTX60, BTLFNR,"
+            " BTVGNR) VALUES('1','8','01','bestelltext','2','123')")
         self.assertEqual(texte[2].to_sql(),
-                "INSERT INTO ABT00 (BTVGNR, BTTART, BTFNR, BTTX60, BTLFNR, BTKZAB) VALUES('123','8','01','FIX: %s','3','1')" % auftrag.fixtermin.strftime('%H:%M'))
+                "INSERT INTO ABT00 (BTKZAB, BTTART, BTFNR, BTTX60, BTLFNR, BTVGNR) VALUES('1','8','01',"
+                    "'FIX: %s','3','123')" % auftrag.fixtermin.strftime('%H:%M'))
         self.assertEqual(adressen, [])
 
         auftrag.fixtermin = ''
         vorgangsnummer = 124
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
-        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKNRKD, BKDTKD, BKKDNR) VALUES('1','124','1081230','1081231','1','01','0012345','1081229','   17200')"
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKNRKD, BKDTKD, BKKDNR)"
+            " VALUES('1','124','1081230','1081231','1','01','0012345','1081229','   17200')")
         self.assertEqual(kopf.to_sql(), kpf_sql)
         self.assertEqual(positionen, [])
-        self.assertEqual(texte[0].to_sql(), "INSERT INTO ABT00 (BTKZLF, BTVGNR, BTTART, BTFNR, BTTX60, "
-            "BTLFNR, BTKZAB, BTKZRG) VALUES('1','124','8','01','infotext_kunde','1','1','1')")
-        self.assertEqual(texte[1].to_sql(), "INSERT INTO ABT00 (BTVGNR, BTTART, BTFNR, BTTX60, BTLFNR, "
-            "BTKZAB) VALUES('124','8','01','bestelltext','2','1')")
+        self.assertEqual(texte[0].to_sql(), "INSERT INTO ABT00 (BTKZLF, BTKZAB, BTTART, BTFNR, BTTX60,"
+            " BTLFNR, BTKZRG, BTVGNR) VALUES('1','1','8','01','infotext_kunde','1','1','124')")
+        self.assertEqual(texte[1].to_sql(), "INSERT INTO ABT00 (BTKZAB, BTTART, BTFNR, BTTX60, BTLFNR,"
+            " BTVGNR) VALUES('1','8','01','bestelltext','2','124')")
 
     def test_lieferadresse(self):
         """Tests if a Lieferadresse is successfully converted to SQL."""
@@ -458,12 +461,15 @@ class _GenericTests(unittest.TestCase):
         auftrag.lieferadresse.ort = 'Rade'
         auftrag.lieferadresse.land = 'DE'
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
-        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKDTKD, BKKDNR) VALUES('1','123','1090811','1081230','1','01','1090811','   17200')"
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKDTKD, BKKDNR)"
+            " VALUES('1','123','1090811','1081230','1','01','1090811','   17200')")
         # insert date of today since this will be automatically done by _auftrag2records()
         kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
         self.assertEqual(kopf.to_sql(), kpf_sql)
         
-        adressen_sql = "INSERT INTO ABV00 (BVNAM2, BVNAM3, BVKZAD, BVNAM4, BVVGNR, BVNAME, BVLKZ, BVSTR, BVORT, BVAART) VALUES('name2','name3','1','+49 21 91 / 6 09 12-0','123','name1','D','Nicht Vergessen Weg 1','Rade','1')"
+        adressen_sql = ("INSERT INTO ABV00 (BVNAM2, BVNAM3, BVKZAD, BVNAM4, BVVGNR, BVSTR, BVLKZ, BVNAME,"
+            " BVORT, BVAART) VALUES('name2','name3','1','+49 21 91 / 6 09 12-0','123',"
+            "'Nicht Vergessen Weg 1','D','name1','Rade','1')")
         self.assertEqual(adressen[0].to_sql(), adressen_sql)
         self.assertEqual(positionen, [])
         self.assertEqual(texte, [])
@@ -484,12 +490,15 @@ class _GenericTests(unittest.TestCase):
         auftrag.rechnungsadresse.ort = 'Rade'
         auftrag.rechnungsadresse.land = 'DE'
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
-        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKDTKD, BKKDNR) VALUES('1','123','xtodayx','1081230','1','01','xtodayx','   17200')"
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKDTKD, BKKDNR)"
+            " VALUES('1','123','xtodayx','1081230','1','01','xtodayx','   17200')")
         # insert date of today since this will be automatically done by _auftrag2records()
         kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
         self.assertEqual(kopf.to_sql(), kpf_sql)
 
-        adressen_sql = "INSERT INTO ABV00 (BVNAM2, BVNAM3, BVKZAD, BVNAM4, BVVGNR, BVNAME, BVLKZ, BVSTR, BVORT) VALUES('name2','name3','1','+49 21 91 / 6 09 12-0','123','name1','D','Nicht Vergessen Weg 1','Rade')"
+        adressen_sql = ("INSERT INTO ABV00 (BVNAM2, BVNAM3, BVKZAD, BVNAM4, BVVGNR, BVSTR, BVLKZ, BVNAME,"
+            " BVORT) VALUES('name2','name3','1','+49 21 91 / 6 09 12-0','123','Nicht Vergessen Weg 1'"
+            ",'D','name1','Rade')")
         self.assertEqual(adressen[0].to_sql(), adressen_sql)
         self.assertEqual(positionen, [])
         self.assertEqual(texte, [])
@@ -510,22 +519,27 @@ class _GenericTests(unittest.TestCase):
         pos2.artnr = '22222/09'
         auftrag.positionen = [pos1, pos2]
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
-        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKVGPO, BKFNR, BKDTKD, BKKDNR) VALUES('1','123','xtodayx','1081230','1','2','01','xtodayx','   17200')"
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKVGPO, BKFNR, BKDTKD, BKKDNR)"
+            " VALUES('1','123','xtodayx','1081230','1','2','01','xtodayx','   17200')")
 
         # pos 1
         txt0 = texte[0].to_sql()
-        txt0_sql = "INSERT INTO ABT00 (BTKZLF, BTVGNR, BTVGPO, BTTART, BTFNR, BTTX60, BTLFNR, BTKZRG) VALUES('1','123','1','7','01','text for pos1','1','1')"
+        txt0_sql = ("INSERT INTO ABT00 (BTKZLF, BTVGNR, BTVGPO, BTTART, BTFNR, BTTX60, BTLFNR, BTKZRG)"
+            " VALUES('1','123','1','7','01','text for pos1','1','1')")
         self.assertEqual(txt0, txt0_sql)
         txt1 = texte[1].to_sql()
-        txt1_sql = "INSERT INTO ABT00 (BTKZLF, BTVGNR, BTVGPO, BTTART, BTFNR, BTTX60, BTLFNR, BTKZRG) VALUES('1','123','1','7','01','more text for pos1','2','1')"
+        txt1_sql = ("INSERT INTO ABT00 (BTKZLF, BTVGNR, BTVGPO, BTTART, BTFNR, BTTX60, BTLFNR, BTKZRG)"
+            " VALUES('1','123','1','7','01','more text for pos1','2','1')")
         self.assertEqual(txt1, txt1_sql)
 
         # pos 2
         txt2 = texte[2].to_sql()
-        txt2_sql = "INSERT INTO ABT00 (BTKZLF, BTVGNR, BTVGPO, BTTART, BTFNR, BTTX60, BTLFNR, BTKZRG) VALUES('1','123','2','7','01','text for pos2','3','1')"
+        txt2_sql = ("INSERT INTO ABT00 (BTKZLF, BTVGNR, BTVGPO, BTTART, BTFNR, BTTX60, BTLFNR, BTKZRG)"
+            " VALUES('1','123','2','7','01','text for pos2','3','1')")
         self.assertEqual(txt2, txt2_sql)
         txt3 = texte[3].to_sql()
-        txt3_sql = "INSERT INTO ABT00 (BTKZLF, BTVGNR, BTVGPO, BTTART, BTFNR, BTTX60, BTLFNR, BTKZRG) VALUES('1','123','2','7','01','more text for pos2','4','1')"
+        txt3_sql = ("INSERT INTO ABT00 (BTKZLF, BTVGNR, BTVGPO, BTTART, BTFNR, BTTX60, BTLFNR, BTKZRG)"
+            " VALUES('1','123','2','7','01','more text for pos2','4','1')")
         self.assertEqual(txt3, txt3_sql)
 
     def test_positionen_artnr(self):
@@ -542,16 +556,19 @@ class _GenericTests(unittest.TestCase):
         pos2.artnr = '22222/09'
         auftrag.positionen = [pos1, pos2]
         kopf, positionen, dummy, dummy = _auftrag2records(vorgangsnummer, auftrag)
-        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKVGPO, BKFNR, BKDTKD, BKKDNR) VALUES('1','123','xtodayx','1081230','1','2','01','xtodayx','   17200')"
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKVGPO, BKFNR, BKDTKD, BKKDNR)"
+            " VALUES('1','123','xtodayx','1081230','1','2','01','xtodayx','   17200')")
 
         # insert date of today since this will be automatically done by _auftrag2records()
         kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
 
         self.assertEqual(kopf.to_sql(), kpf_sql)
         self.assertEqual(positionen[0].to_sql(), "INSERT INTO ABA00 (BADTER, BAVGPO, BAABT, BAFNR, BAMNG, "
-            "BAARTN, BAVGNR) VALUES('xtodayx','1','1','01','10','11111','123')".replace('xtodayx', date2softm(datetime.date.today())))
+            "BAARTN, BAVGNR) VALUES('xtodayx','1','1','01','10','11111','123')".replace('xtodayx',
+             date2softm(datetime.date.today())))
         self.assertEqual(positionen[1].to_sql(), "INSERT INTO ABA00 (BADTER, BAVGPO, BAABT, BAFNR, BAMNG, "
-            "BAARTN, BAVGNR) VALUES('xtodayx','2','1','01','20','22222/09','123')".replace('xtodayx', date2softm(datetime.date.today())))
+            "BAARTN, BAVGNR) VALUES('xtodayx','2','1','01','20','22222/09','123')".replace('xtodayx',
+             date2softm(datetime.date.today())))
 
     def test_positionen_ean(self):
         """Tests if orderlines containing ean can be converted to SQL."""
@@ -567,17 +584,20 @@ class _GenericTests(unittest.TestCase):
         pos2.ean = '22222'
         auftrag.positionen = [pos1, pos2]
         kopf, positionen, dummy, dummy = _auftrag2records(vorgangsnummer, auftrag)
-        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKVGPO, BKFNR, BKDTKD, BKKDNR) VALUES('1','123','xtodayx','1081230','1','2','01','xtodayx','   17200')"
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKVGPO, BKFNR, BKDTKD, BKKDNR)"
+            " VALUES('1','123','xtodayx','1081230','1','2','01','xtodayx','   17200')")
 
         # insert date of today since this will be automatically done by _auftrag2records()
         kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
 
         self.assertEqual(kopf.to_sql(), kpf_sql)
         self.assertEqual(positionen[0].to_sql(),
-                "INSERT INTO ABA00 (BADTER, BAVGPO, BAABT, BAMNG, BAVGNR, BAFNR, BAEAN) VALUES('xtodayx','1','1','10','123','01','11111')".replace(
+                "INSERT INTO ABA00 (BADTER, BAVGPO, BAABT, BAMNG, BAVGNR, BAFNR, BAEAN)"
+                " VALUES('xtodayx','1','1','10','123','01','11111')".replace(
                     'xtodayx', date2softm(datetime.date.today())))
         self.assertEqual(positionen[1].to_sql(),
-                "INSERT INTO ABA00 (BADTER, BAVGPO, BAABT, BAMNG, BAVGNR, BAFNR, BAEAN) VALUES('xtodayx','2','1','20','123','01','22222')".replace(
+                "INSERT INTO ABA00 (BADTER, BAVGPO, BAABT, BAMNG, BAVGNR, BAFNR, BAEAN)"
+                " VALUES('xtodayx','2','1','20','123','01','22222')".replace(
                     'xtodayx', date2softm(datetime.date.today())))
 
     def test_zusatz_lieferadresse(self):
@@ -594,7 +614,8 @@ class _GenericTests(unittest.TestCase):
         pos2.artnr = '22222/09'
         auftrag.positionen = [pos1, pos2]
         kopf, positionen, dummy, dummy = _auftrag2records(vorgangsnummer, auftrag)
-        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKVGPO, BKFNR, BKDTKD, BKVANR, BKKDNR) VALUES('1','123','xtodayx','1081230','1','2','01','xtodayx','444','   17200')"
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKVGPO, BKFNR, BKDTKD, BKVANR,"
+            " BKKDNR) VALUES('1','123','xtodayx','1081230','1','2','01','xtodayx','444','   17200')")
 
         # insert date of today since this will be automatically done by _auftrag2records()
         kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
@@ -610,7 +631,8 @@ class _GenericTests(unittest.TestCase):
         auftrag.positionen = []
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
 
-        kpf_sql = "INSERT INTO ABK00 (BKLGNR, BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKDTKD, BKKDNR) VALUES('26','1','123','xtodayx','1081230','1','01','xtodayx','   17200')"
+        kpf_sql = ("INSERT INTO ABK00 (BKLGNR, BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKDTKD, BKKDNR)"
+            " VALUES('26','1','123','xtodayx','1081230','1','01','xtodayx','   17200')")
         # insert date of today since this will be automatically done by _auftrag2records()
         kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
 
@@ -629,7 +651,8 @@ class _GenericTests(unittest.TestCase):
         auftrag.positionen = []
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
 
-        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKHERK, BKDTKD, BKKDNR) VALUES('1','123','xtodayx','1081230','1','01','E','xtodayx','   17200')"
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKHERK, BKDTKD, BKKDNR)"
+            " VALUES('1','123','xtodayx','1081230','1','01','E','xtodayx','   17200')")
         # insert date of today since this will be automatically done by _auftrag2records()
         kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
         self.assertEqual(kopf.to_sql(), kpf_sql)
@@ -647,7 +670,8 @@ class _GenericTests(unittest.TestCase):
         auftrag.positionen = []
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
 
-        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKFNR, BKDTKD, BKKDNR) VALUES('1','123','xtodayx','1081230','1','1','01','xtodayx','   17200')"
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKFNR, BKDTKD, BKKDNR)"
+            " VALUES('1','123','xtodayx','1081230','1','1','01','xtodayx','   17200')")
         # insert date of today since this will be automatically done by _auftrag2records()
         kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
 
@@ -656,7 +680,8 @@ class _GenericTests(unittest.TestCase):
         vorgangsnummer = 124
         auftrag.teillieferung_zulaessig = False
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
-        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKFNR, BKDTKD, BKKDNR) VALUES('1','124','xtodayx','1081230','1','0','01','xtodayx','   17200')"
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKFNR, BKDTKD, BKKDNR)"
+            " VALUES('1','124','xtodayx','1081230','1','0','01','xtodayx','   17200')")
         kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
 
         self.assertEqual(kopf.to_sql(), kpf_sql)
@@ -674,7 +699,8 @@ class _GenericTests(unittest.TestCase):
         auftrag.positionen = []
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
 
-        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKKDNR, BKDTKD, BKAUFA) VALUES('1','123','xtodayx','1081230','1','01','   17200','xtodayx','WA')"
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKKDNR, BKDTKD, BKAUFA)"
+            " VALUES('1','123','xtodayx','1081230','1','01','   17200','xtodayx','WA')")
         # insert date of today since this will be automatically done by _auftrag2records()
         kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
 
@@ -683,7 +709,8 @@ class _GenericTests(unittest.TestCase):
         vorgangsnummer = 124
         auftrag.auftragsart = 'Z2'
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
-        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKKDNR, BKDTKD, BKAUFA) VALUES('1','124','xtodayx','1081230','1','01','   17200','xtodayx','Z2')"
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKKDNR, BKDTKD, BKAUFA)"
+            " VALUES('1','124','xtodayx','1081230','1','01','   17200','xtodayx','Z2')")
         kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
 
         self.assertEqual(kopf.to_sql(), kpf_sql)
@@ -707,17 +734,20 @@ class _GenericTests(unittest.TestCase):
         pos2.verkaufspreis = 0.123
         auftrag.positionen = [pos1, pos2]
         kopf, positionen, dummy, dummy = _auftrag2records(vorgangsnummer, auftrag)
-        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKVGPO, BKFNR, BKDTKD, BKKDNR) VALUES('1','123','xtodayx','1081230','1','2','01','xtodayx','   17200')"
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKVGPO, BKFNR, BKDTKD, BKKDNR)"
+            " VALUES('1','123','xtodayx','1081230','1','2','01','xtodayx','   17200')")
 
         # insert date of today since this will be automatically done by _auftrag2records()
         kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
         self.assertEqual(kopf.to_sql(), kpf_sql)
         positionen[0].to_sql()
         self.assertEqual(positionen[0].to_sql(),
-                "INSERT INTO ABA00 (BADTER, BAPREV, BAVGPO, BAABT, BAMNG, BAVGNR, BAFNR, BAEAN) VALUES('xtodayx','10000.123','1','1','10','123','01','11111')".replace(
+                "INSERT INTO ABA00 (BADTER, BAPREV, BAVGPO, BAABT, BAMNG, BAVGNR, BAFNR, BAEAN)"
+                " VALUES('xtodayx','10000.123','1','1','10','123','01','11111')".replace(
                     'xtodayx', date2softm(datetime.date.today())))
         self.assertEqual(positionen[1].to_sql(),
-                "INSERT INTO ABA00 (BADTER, BAPREV, BAVGPO, BAABT, BAMNG, BAVGNR, BAFNR, BAEAN) VALUES('xtodayx','0.123','2','1','20','123','01','22222')".replace(
+                "INSERT INTO ABA00 (BADTER, BAPREV, BAVGPO, BAABT, BAMNG, BAVGNR, BAFNR, BAEAN)"
+                " VALUES('xtodayx','0.123','2','1','20','123','01','22222')".replace(
                     'xtodayx', date2softm(datetime.date.today())))
 
 

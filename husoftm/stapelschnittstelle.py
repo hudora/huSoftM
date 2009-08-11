@@ -311,8 +311,7 @@ def auftrag2softm(auftrag, belegtexte=[]):
     # if not schnittstelle_leer():
     #     print "In der Stapelschnittstelle befinden sich nicht verarbeitete Nachrichten."
     #    return None
-
-
+    
     while True:
         # SoftM (Mister Hering) suggested updating Adtastapel as soon as possible to avoid
         # dupes - missing IDs would be no problem.
@@ -459,12 +458,12 @@ class _GenericTests(unittest.TestCase):
         auftrag.lieferadresse.ort = 'Rade'
         auftrag.lieferadresse.land = 'DE'
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
-        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKDTKD, BKKDNR) VALUES('1','123','xtodayx','1081230','1','01','xtodayx','   17200')"
+        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKDTKD, BKKDNR) VALUES('1','123','1090811','1081230','1','01','1090811','   17200')"
         # insert date of today since this will be automatically done by _auftrag2records()
         kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
         self.assertEqual(kopf.to_sql(), kpf_sql)
-
-        adressen_sql = "INSERT INTO ABV00 (BVNAM2, BVNAM3, BVLKZ, BVNAM4, BVVGNR, BVNAME, BVKZAD, BVSTR, BVORT, BVAART) VALUES('name2','name3','D','+49 21 91 / 6 09 12-0','123','name1','1','Nicht Vergessen Weg 1','Rade','1')"
+        
+        adressen_sql = "INSERT INTO ABV00 (BVNAM2, BVNAM3, BVKZAD, BVNAM4, BVVGNR, BVNAME, BVLKZ, BVSTR, BVORT, BVAART) VALUES('name2','name3','1','+49 21 91 / 6 09 12-0','123','name1','D','Nicht Vergessen Weg 1','Rade','1')"
         self.assertEqual(adressen[0].to_sql(), adressen_sql)
         self.assertEqual(positionen, [])
         self.assertEqual(texte, [])
@@ -490,7 +489,7 @@ class _GenericTests(unittest.TestCase):
         kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
         self.assertEqual(kopf.to_sql(), kpf_sql)
 
-        adressen_sql = "INSERT INTO ABV00 (BVNAM2, BVNAM3, BVLKZ, BVNAM4, BVVGNR, BVNAME, BVKZAD, BVSTR, BVORT) VALUES('name2','name3','D','+49 21 91 / 6 09 12-0','123','name1','1','Nicht Vergessen Weg 1','Rade')"
+        adressen_sql = "INSERT INTO ABV00 (BVNAM2, BVNAM3, BVKZAD, BVNAM4, BVVGNR, BVNAME, BVLKZ, BVSTR, BVORT) VALUES('name2','name3','1','+49 21 91 / 6 09 12-0','123','name1','D','Nicht Vergessen Weg 1','Rade')"
         self.assertEqual(adressen[0].to_sql(), adressen_sql)
         self.assertEqual(positionen, [])
         self.assertEqual(texte, [])

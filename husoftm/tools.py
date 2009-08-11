@@ -27,7 +27,6 @@ LOG = logging.getLogger('husoftm.tools')
 # Wir verwenden fuer alles neue ISO 3166-1 Alpha-2 Country Codes siehe http://en.wikipedia.org/wiki/ISO_3166-1
 # BTW: Die FIFA verwendet noch andere codes!
 
-
 SOFTMLKZ2ISOLAND = {'': 'DE',
                     'D': 'DE',
                     'CC': 'CC',

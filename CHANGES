@@ -1,8 +1,11 @@
 0.53: preise_ek.preisentwicklung() implementiert.
-      erste umrisse des 'bestellungen' moduls.
+      erste umrisse des 'Bestellungen' moduls.
       Wir koennen nun mit Datumsfeldern mit dem Inhalt '999999' umgehen.
       Bug bei freie_menge() behoben, der bei Aufträgen im Rueckstand
-        immer zu dem Wert 0 fuehrte
+          immer zu dem Wert 0 fuehrte
+      connection2 aggressiv refactored und dokumentiert. Einige bordercases
+          liefern jetzt andere werte zurueck. Wandlung in Decimal()
+          funktioniert jetzt wie gewünscht.
 
 0.52p2: Bugfix
 

@@ -28,19 +28,19 @@ def preisentwicklung(artnrs):
     [(datetime.date(2005, 9, 1),
       datetime.date(2006, 7, 3),
       '77068',
-      Decimal("0.06")),
+      (Decimal('0.06'), 'USD')),
      (datetime.date(2006, 7, 4),
       datetime.date(2007, 7, 24),
       '77068',
-      Decimal("0.07")),
+      (Decimal('0.07'), 'USD')),
      (datetime.date(2007, 7, 4),
       datetime.date(2008, 3, 31),
       '77068/00',
-      Decimal("0.07")),
+      (Decimal('0.07'), 'USD')),
      (datetime.date(2007, 7, 24),
       datetime.date(2008, 3, 31),
       '77068',
-      Decimal("0.12"))]
+      (Decimal('0.12'), 'USD'))]
     """
     
     artnrsstr = ','.join([sql_quote(artnr) for artnr in artnrs])
@@ -50,8 +50,8 @@ def preisentwicklung(artnrs):
     return [(row['gueltig_ab_date'],
              row['gueltig_bis_date'],
              row['artnr'],
-             (Decimal(str(row['preis'])).quantize(Decimal(10) ** -2)),
-             row['waehrung']) for row in rows]
+             ((Decimal(str(row['preis'])).quantize(Decimal(10) ** -2)),
+             row['waehrung'])) for row in rows]
     
 
 if __name__ == '__main__':

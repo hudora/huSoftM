@@ -60,7 +60,7 @@ def _rows2dict_field_helper(fields, i, row, mappings, rowdict):
     >>> _rows2dict_field_helper(['LFARTN'], 0, [12345], {}, {'stuff': 'ruff'})
     {'LFARTN': 12345, 'stuff': 'ruff'}
     >>> _rows2dict_field_helper(['PNPRB'], 0, [12345], {}, {})
-    {'PNPRB': Decimal("12345.00")}
+    {'PNPRB': Decimal('12345.00')}
     """
     
     feldname = fields[i]
@@ -146,20 +146,20 @@ class MoftSconnection(object):
         
         To suppress mapping provide querymappings={} and fields=[].
         >>> MoftSconnection().query(tables=['XPN00'], condition="PNSANR=2255")
-        [{'satznummer': 2255, 'preis': Decimal("16.10")}]
+        [{'satznummer': 2255, 'preis': Decimal('16.10')}]
         >>> MoftSconnection().query(tables=['XPN00'], condition="PNSANR=2255",
         ... fields=['PNSANR', 'PNPRB'], querymappings={})
-        [(2255, Decimal("16.10"))]
+        [(2255, Decimal('16.10'))]
         
         To get only certain fields give a list of fieldnames in fields=[...].
         >>> MoftSconnection().query(tables=['XPN00'], condition="PNSANR=2255",
         ... fields=['PNPRB'])
-        [(Decimal("16.10"),)]
+        [(Decimal('16.10'),)]
         
         Joins are straightforward if used with condition="<expression>":
         >>> MoftSconnection().query(['XPN00', 'XPR00'], condition="PNSANR=PRSANR and PNSANR=2255",
         ... fields=['PRDTVO', 'PNPRB'])
-        [{'preis': Decimal("16.10"), 'gueltig_ab_date': datetime.date(2004, 12, 16)}]
+        [{'preis': Decimal('16.10'), 'gueltig_ab_date': datetime.date(2004, 12, 16)}]
         
         Aggregate functions can be created by using the "grouping" keyword:
         >>> MoftSconnection().query('XLF00', fields=['LFARTN', 'SUM(LFMGLP)'], grouping=['LFARTN'],

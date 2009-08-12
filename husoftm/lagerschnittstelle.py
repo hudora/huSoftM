@@ -12,7 +12,6 @@ Copyright (c) 2007 HUDORA. All rights reserved.
 
 
 import datetime
-import husoftm.lieferscheine
 import sqlite3
 import unittest
 from husoftm.softmtables import SoftMreadOnlyTable, SoftMtable, SqliteConnector_mixin, AS400Connector_mixin
@@ -90,6 +89,10 @@ class ISK00(SoftMtable, AS400Connector_mixin):
     
 
 def artnr_for_kommibleg_position(self, kommibelegnr, position):
+    """Wandelt eine Artikelnummer in eine Kommibelegpositionsnummer.
+    
+    Führt zu Problemen, wenn ein Artikelmehrfach auf einem Komissioneirbeleg erscheint."""
+    
     aln00 = ALN00()
     ret = aln00.select("LNKBNR='%d' AND LNBELP='%d'" % (int(kommibelegnr), int(position)),
                        fields="LNARTN as artnr")

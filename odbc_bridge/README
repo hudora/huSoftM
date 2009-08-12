@@ -5,6 +5,7 @@ See https://cybernetics.hudora.biz/intern/wordpress/2008/12/eine-http-odbc-bridg
 for further explanation.
 
 To compile you need at least Erlang 12B-4 installed. Erlang needs to be installed with ODBC-Extensions.
+It also needs the IBM iSeries Access Toolkit for Linux installed and configured to get ODBC connectivity.
 
 This code contains mochiweb r87 by Mochimedia and fragments of yaws by Claes Wikstrom.
 See http://code.google.com/p/mochiweb/ and http://yaws.hyber.org/#.

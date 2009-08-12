@@ -167,8 +167,8 @@ class SoftMtable(SoftMreadOnlyTable):
         actual_set = self.select("%(dffeld)s='%(lock_key)s'"
                                  " AND %(schluesselfeld)s='%(schluessel)s'" % sqldict)
         if not actual_set:
-            logging.warning("Dateifuehrungsschluesselkonflikt fuer %(schluessel)s bei %(table)s.%(dffeld)s='%(lock_key)s'" 
-                            % sqldict)
+            logging.warning("Dateifuehrungsschluesselkonflikt fuer "
+                            "%(schluessel)s bei %(table)s.%(dffeld)s='%(lock_key)s'" % sqldict)
             return None
         return (lock_key, schluessel)
     

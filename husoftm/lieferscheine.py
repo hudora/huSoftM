@@ -10,7 +10,7 @@ Copyright (c) 2007 HUDORA GmbH. All rights reserved.
 __revision__ = "$Revision$"
 
 import logging
-from husoftm.connection import get_connection
+from husoftm.connection2 import get_connection
 from husoftm.tools import land2iso
 
 logging.basicConfig(level=logging.WARN)
@@ -127,7 +127,7 @@ class Lieferschein(object):
     
     def _get_lieferadresse(self):
         """'Normale' Lieferadresse zu einem Lieferschein extraieren."""
-        # Lieferadresse lesen
+        # Lieferadresse lesen, LIKE ist wegen diverser SQL issues nötig
         rows = get_connection().query('XKD00', condition="KDKDNR LIKE '%s'" % 
                                ('%' + unicode(int(self.warenempfaenger)), ))
         if len(rows) != 1:

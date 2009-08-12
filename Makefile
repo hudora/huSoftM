@@ -6,6 +6,7 @@ default: dependencies check test statistics
 check:
 	find husoftm -name '*.py' | xargs /usr/local/hudorakit/bin/hd_pep8
 	/usr/local/hudorakit/bin/hd_pylint -f parseable husoftm | tee pylint.out
+	# (cd odbc_bridge; make check)
 
 build:
 	python setup.py build sdist bdist_egg

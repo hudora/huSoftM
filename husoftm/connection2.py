@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# encoding: utf-8
 
 """husoftm is a toolkit for accessing a AS/400 running SoftM Suite.
 
@@ -82,7 +82,7 @@ def _rows2dict_field_helper(fields, i, row, mappings, rowdict):
             rowdict[finalkey] = softm2date(data)
             # check if there is also a time field
             if feldname in DATETIMEDIR:
-                rowdict.update(_combine_date_and_time(mappings, fieldname, data, fields, row))
+                rowdict.update(_combine_date_and_time(mappings, feldname, data, fields, row))
     else:
         # key ist der "schöne" feldname
         rowdict[finalkey] = data
@@ -96,8 +96,16 @@ def _fix_field(data, feldname):
     if feldname in DECIMALIZE2:
         # convert to 2 digits significant Decimal()
         return Decimal(str(data)).quantize(Decimal(10) ** -2)
-    elif isinstance(data, basestring): # fix strings
-        return data.strip().decode('latin-1').encode('utf-8')
+    elif isinstance(data, unicode): # fix strings
+        # due to various levels of braindamage in various programs we get unicode objects with latin-1
+        # strings in them. So we first force unocode() -> str() and then decode to unicse
+        try:
+            data = data.decode('latin-1')
+        except UnicodeEncodeError:
+            rawdata = repr(data).strip('u')
+            data = eval(rawdata) # this allows the odbc_bridge to 0wn us
+            data = data.decode('latin-1')
+        return data.strip()
     else:
         return data
     
@@ -138,11 +146,14 @@ class MoftSconnection(object):
     
     def query(self, tables=None, condition=None, fields=None, querymappings=None,
               grouping=None, ordering=[]):
-        """Execute a SELECT on the AS/400 turning the results in a list of dicts.
+        r"""Execute a SELECT on the AS/400 turning the results in a list of dicts.
         
         In fields you can give a list of fields you are interested in. If fields is left empty the engine
         generates a list of field on it own by consulting the field mapping database in from 
         fields.MAPPINGDIR.
+        
+        >>> MoftSconnection().query('ALK00', condition="LKLFSN = 4034544") #doctest: +ELLIPSIS
+        [{'lager': 100, 'versandart': '013', ...}]
         
         To suppress mapping provide querymappings={} and fields=[].
         >>> MoftSconnection().query(tables=['XPN00'], condition="PNSANR=2255")
@@ -168,9 +179,13 @@ class MoftSconnection(object):
         
         If desired "querymappings" can be used to return a list of dicts:
         >>> MoftSconnection().query('XLF00', fields=['LFARTN', 'SUM(LFMGLP)'], grouping=['LFARTN'],
-        ... condition="LFLGNR=3", querymappings={'LFARTN': 'artnr', 'SUM(LFMGLP)': 'menge'})
-        [{'menge': '0', 'artnr': '65166/01'}, {'menge': '0', 'artnr': '65198'}, {'menge': '0', 'artnr': '76095'}, {'menge': '0', 'artnr': 'ED76095'}, {'menge': '0', 'artnr': '76102'}]
-
+        ... condition="LFLGNR=3", querymappings={'LFARTN': 'artnr',
+        ... 'SUM(LFMGLP)': 'menge'}) #doctest: +ELLIPSIS
+        [{'menge': '0', 'artnr': '65166/01'}, {'menge': '0', 'artnr': '65198'}, ...]
+        
+        We also should be - to a certain degree - be Unicode aware:
+        >>> MoftSconnection().query(u'XKD00', u"KDKDNR LIKE '%18287'")[0]['ort'].encode('utf8')
+        'G\xc3\xbcnzburg'
         """
         
         # fixup sloppy parameter passing

@@ -100,7 +100,8 @@ def getnextvorgang():
 
 def vorgangsnummer_bekannt(vorgangsnummer):
     """Prüft, ob sich eine bestimmte Vorgangsnummer bereits im System befindet."""
-    rows = get_connection().query('ABK00', fields=['BKVGNR'], condition="BKVGNR=%s" % sql_quote(vorgangsnummer))
+    rows = get_connection().query('ABK00', fields=['BKVGNR'], condition="BKVGNR=%s"
+                                  % sql_quote(vorgangsnummer))
     if rows:
         return True
     return False
@@ -142,7 +143,8 @@ def address_transmitted(vorgangsnr):
     return bool(rows)
 
 
-def _create_auftragstext(textart, vorgangsposition, texte, vorgangsnummer, text, auftragsbestaetigung, lieferschein, rechnung):
+def _create_auftragstext(textart, vorgangsposition, texte, vorgangsnummer, text, auftragsbestaetigung,
+        lieferschein, rechnung):
     """Fügt einen Text zu einem Auftrag, entweder als Kopftext oder Positionstext, hinzu."""
     # split text into chunks of 60 chars
     for line in textwrap.wrap(text, 60):
@@ -163,9 +165,11 @@ def _create_kopftext(texte, vorgangsnummer, text, auftragsbestaetigung=1, liefer
     _create_auftragstext(8, 0, texte, vorgangsnummer, text, auftragsbestaetigung, lieferschein, rechnung)
 
 
-def _create_positionstext(textart, vorgangsposition, texte, vorgangsnummer, text, auftragsbestaetigung=0, lieferschein=1, rechnung=1):
+def _create_positionstext(textart, vorgangsposition, texte, vorgangsnummer, text, auftragsbestaetigung=0,
+    lieferschein=1, rechnung=1):
     """Fügt einen Positionstext hinzu."""
-    _create_auftragstext(textart, vorgangsposition, texte, vorgangsnummer, text, auftragsbestaetigung, lieferschein, rechnung)
+    _create_auftragstext(textart, vorgangsposition, texte, vorgangsnummer, text, auftragsbestaetigung,
+        lieferschein, rechnung)
 
 
 def _create_positionssatz(positionen, vorgangsnummer, aobj_position, texte):
@@ -184,17 +188,17 @@ def _create_positionssatz(positionen, vorgangsnummer, aobj_position, texte):
     if hasattr(aobj_position, 'kundenartnr') and aobj_position.kundenartnr:
         text = "Kundenartikelnummer: %s" % aobj_position.kundenartnr
         _create_positionstext(textart=8, vorgangsposition=position.vorgangsposition, texte=texte,
-                vorgangsnummer=vorgangsnummer, text=text, auftragsbestaetigung=0, lieferschein=1, rechnung=1)
+            vorgangsnummer=vorgangsnummer, text=text, auftragsbestaetigung=0, lieferschein=1, rechnung=1)
 
     if hasattr(aobj_position, 'text_vor_position') and aobj_position.text_vor_position:
         for text in aobj_position.text_vor_position:
             _create_positionstext(textart=7, vorgangsposition=position.vorgangsposition, texte=texte,
-                    vorgangsnummer=vorgangsnummer, text=text, auftragsbestaetigung=0, lieferschein=1, rechnung=1)
+                vorgangsnummer=vorgangsnummer, text=text, auftragsbestaetigung=0, lieferschein=1, rechnung=1)
 
     if hasattr(aobj_position, 'text_nach_position') and aobj_position.text_nach_position:
         for text in aobj_position.text_nach_position:
             _create_positionstext(textart=8, vorgangsposition=position.vorgangsposition, texte=texte,
-                    vorgangsnummer=vorgangsnummer, text=text, auftragsbestaetigung=0, lieferschein=1, rechnung=1)
+                vorgangsnummer=vorgangsnummer, text=text, auftragsbestaetigung=0, lieferschein=1, rechnung=1)
 
 
 def _create_addressatz(adressen, vorgangsnummer, aobj_adresse, is_lieferadresse=True):
@@ -396,7 +400,8 @@ class _GenericTests(unittest.TestCase):
         auftrag.positionen = []
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
 
-        kpf_sql = "INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKDTKD, BKKDNR) VALUES('1','123','xtodayx','1081230','1','01','xtodayx','   17200')"
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKDTKD, BKKDNR)"
+                   " VALUES('1','123','xtodayx','1081230','1','01','xtodayx','   17200')")
         # insert date of today since this will be automatically done by _auftrag2records()
         kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
 
@@ -461,7 +466,8 @@ class _GenericTests(unittest.TestCase):
         auftrag.lieferadresse.ort = 'Rade'
         auftrag.lieferadresse.land = 'DE'
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
-        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKDTKD, BKKDNR) VALUES('1','123','1090812','1081230','1','01','1090812','   17200')")
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKDTKD, BKKDNR)"
+                   " VALUES('1','123','1090812','1081230','1','01','1090812','   17200')")
         # insert date of today since this will be automatically done by _auftrag2records()
         kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
         self.assertEqual(kopf.to_sql(), kpf_sql)

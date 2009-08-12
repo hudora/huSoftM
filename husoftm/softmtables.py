@@ -167,7 +167,7 @@ class SoftMtable(SoftMreadOnlyTable):
         actual_set = self.select("%(dffeld)s='%(lock_key)s'"
                                  " AND %(schluesselfeld)s='%(schluessel)s'" % sqldict)
         if not actual_set:
-            logging.warning("Dateifuehrungsschluesselkonflikt bei %(table)s.%(dffeld)s='%(lock_key)s'" 
+            logging.warning("Dateifuehrungsschluesselkonflikt fuer %(schluessel)s bei %(table)s.%(dffeld)s='%(lock_key)s'" 
                             % sqldict)
             return None
         return (lock_key, schluessel)
@@ -195,6 +195,7 @@ class SoftMtable(SoftMreadOnlyTable):
     
     def delete(self, lock_handle):
         """Marks a record in table as deleted (XXSTAT='X')."""
+        assert isinstance(lock_handle, tuple)
         lock_key, schluessel = lock_handle
         sqldict = self.tabledict
         sqldict.update({'lock_key': lock_key, 'schluessel': schluessel})
@@ -207,6 +208,7 @@ class SoftMtable(SoftMreadOnlyTable):
         """Unlocks a row in table.
         
         Expects the lock_handle returned by lock."""
+        assert isinstance(lock_handle, tuple)
         lock_key, schluessel = lock_handle
         sqldict = self.tabledict
         sqldict.update({'lock_key': lock_key, 'schluessel': schluessel})

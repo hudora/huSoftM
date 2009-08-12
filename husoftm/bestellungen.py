@@ -190,23 +190,6 @@ def bestellungen():
     return rows
     
 
-class tablesTests(unittest.TestCase):
-    
-    def test(self):
-        self.assertEqual(kursfaktorkorrektur([{'kurs': 751, 'kursfaktor': 4}]),
-                         [{'kurs': Decimal("13.3156"), 'kursfaktor': 4}])
-        self.assertEqual(kursfaktorkorrektur({'kurs': 751, 'kursfaktor': 4}),
-                         [{'kurs': Decimal("13.3156"), 'kursfaktor': 4}])
-        self.assertEqual(kursfaktorkorrektur({'kurs': 751.0, 'kursfaktor': 3}),
-                         [{'kurs': Decimal("1.3316"), 'kursfaktor': 3}])
-        self.assertEqual(kursfaktorkorrektur({'kurs': 751, 'kursfaktor': 2}),
-                         [{'kurs': Decimal("0.1332"), 'kursfaktor': 2}])
-        self.assertEqual(kursfaktorkorrektur({'kurs': 1000, 'kursfaktor': 1}),
-                         [{'kurs': Decimal("0.0100"), 'kursfaktor': 1}])
-        self.assertEqual(kursfaktorkorrektur({'kurs': 1000, 'kursfaktor': 0}),
-                         [{'kurs': Decimal("0.0010"), 'kursfaktor': 0}])
-    
-
 def testbestellung():
     fieldwidth = 13
     bestellungen_artnr = get_bestellungen_artnr('10167')
@@ -339,6 +322,24 @@ def testbestellung():
                 print
         print
 
+
+class MiscTests(unittest.TestCase):
+    
+    def test_kursfaktorkorrektur(self):
+        raise
+        self.assertEqual(kursfaktorkorrektur([{'kurs': 751, 'kursfaktor': 4}]),
+                         [{'kurs': Decimal("13.3156"), 'kursfaktor': 4}])
+        self.assertEqual(kursfaktorkorrektur({'kurs': 751, 'kursfaktor': 4}),
+                         [{'kurs': Decimal("13.3156"), 'kursfaktor': 4}])
+        self.assertEqual(kursfaktorkorrektur({'kurs': 751.0, 'kursfaktor': 3}),
+                         [{'kurs': Decimal("1.3316"), 'kursfaktor': 3}])
+        self.assertEqual(kursfaktorkorrektur({'kurs': 751, 'kursfaktor': 2}),
+                         [{'kurs': Decimal("0.1332"), 'kursfaktor': 2}])
+        self.assertEqual(kursfaktorkorrektur({'kurs': 1000, 'kursfaktor': 1}),
+                         [{'kurs': Decimal("0.0100"), 'kursfaktor': 1}])
+        self.assertEqual(kursfaktorkorrektur({'kurs': 1000, 'kursfaktor': 0}),
+                         [{'kurs': Decimal("0.0010"), 'kursfaktor': 0}])
+    
 
 if __name__ == '__main__':
     (get_bestellung(43248))

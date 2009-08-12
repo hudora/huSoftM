@@ -13,26 +13,32 @@ Für die Frage, ob ein bestimmter Artikel in einem bestimmten Lager ist, ist bes
     alternativen(artnr)                           alternativartikel / versionen
     bestellmengen(artnr)                          von uns bei Lieferanten bestellte Mengen
     auftragsmengen(artnr, lager=0)                bei uns von Kunden bestellte Mengen
-    umlagermenge(artnr, lager, vonlager=None)     Menge, die zur Zeit von einem Lager ans andere
+    umlagermenge(artnr, lager)                    Menge, die zur Zeit von einem Lager ans andere
                                                   unterwegs ist
-    umlagermengen(anlager, vonlager=None)         Alle Artikelmengen, die zur Zeit von einem Lager
+    umlagermengen(anlager)                        Alle Artikelmengen, die zur Zeit von einem Lager
                                                   ans andere unterwegs ist
     buchbestand(artnr, lager=0)                   Artikel am Lager
     buchbestaende(lager=0)                        Alle Artikel an einem Lager 
     freie_menge(artnr)                            Menge, die Verkauft werden kann
     frei_ab(menge, artnr, dateformat="%Y-%m-%d")  ab wann ist eine bestimmte Menge frühstens verfügbar?
-    bestand(artnr, lager, vonlager=None)          Wieviel ist zur Zeit an einem Lager oder trifft
+    bestand(artnr, lager)                         Wieviel ist zur Zeit an einem Lager oder trifft
                                                   kurzum ein?
     besteande(lager)                              wie bestand() aber für alle Artikel
     bestandsentwicklung(artnr, dateformat="%Y-%m-%d")            Prognose der Bestandsänderungen
     versionsvorschlag(menge, artnr, date, dateformat="%Y-%m-%d") Vorschlag zur Versionsstückelung
+    
+
+Siehe auch https://cybernetics.hudora.biz/intern/trac/wiki/HudoraGlossar zu den Bezeichnungen.
+
 """
 
 __revision__ = "$Revision$"
 
 import couchdb.client
+import cs.masterdata.article
 import datetime
 import time
+import unittest
 import warnings
 import husoftm.caching as caching
 
@@ -44,23 +50,18 @@ import huTools.async
 COUCHSERVER = "http://couchdb.local.hudora.biz:5984"
 
 
-# see https://cybernetics.hudora.biz/intern/trac/wiki/HudoraGlossar -> Mengen for further enlightenment
-
-
-def _umlagermenge_helper(artnr, lager=100, vonlager=None):
+def _umlagermenge_helper(artnr, lager=100):
     """ Ermittelt wieviel Umlagerungen für einen oder alle Artikel unterwegs sind.
 
     Parmeter:
      - artnr - 0 oder None -> alle Artikel, die sich in der Umlagerung befinden auflisten,
                sonst die gesuchte Artikelnummer
      - lager - Das Lager, an das die Umlagerungen unterwegs sind (default 100)
-     - vonlager - None -> alle Lager
-                - Nummer des Lagers, von dem die Umlagerung ausgeht
 
     Rueckgabe:
      - Wenn eine Artikelnummer angegeben wird, dann eine Menge als int
-     - Wenn keine Artikelnummer angegeben wird, dann alle Artikeln die sich von dem/den gegebenen
-       Quelllager (vonlagern) zu dem gegebenen Zugangslager (lager) unterwegs sind.
+     - Wenn keine Artikelnummer angegeben wird, dann alle Artikeln die sich
+       zu dem gegebenen Zugangslager (lager) unterwegs sind.
     """
     
     # This is just a private helper funcion, which should only be called by umlagermenge and
@@ -93,7 +94,7 @@ def _umlagermenge_helper(artnr, lager=100, vonlager=None):
         fields.insert(0, 'APARTN')
         grouping = ['APARTN']
 
-    rows = get_connection().query(tables=tables, fields=fields, nomapping=True, condition=condition,
+    rows = get_connection().query(tables=tables, fields=fields, querymappings={}, condition=condition,
                                   grouping=grouping)
 
     if not artnr:
@@ -102,7 +103,10 @@ def _umlagermenge_helper(artnr, lager=100, vonlager=None):
         for artnr, menge in rows:
             ret[artnr] = as400_2_int(menge)
         return ret
-    return as400_2_int(rows)
+    else:
+        if rows and rows[0] and rows[0][0]:
+            return as400_2_int(rows[0][0])
+    return 0
     
 
 # TODO: use cs module instead of alternativen()
@@ -127,6 +131,7 @@ def alternativen(artnr):
     
 
 def get_lagerbestand(artnr=None, lager=0):
+    """Deprecheated, don't use anymore."""
     warnings.warn("get_lagerbestand() is deprecated use buchbestand()", DeprecationWarning, stacklevel=2) 
     return buchbestand(artnr, lager)
     
@@ -170,6 +175,7 @@ def buchbestaende(lager=0):
     
 
 def get_verfuegbaremenge(artnr=None, lager=0):
+    """Deprecheated, don't use anymore."""
     warnings.warn("get_verfuegbaremenge() is deprecated use verfuegbare_menge()",
                   DeprecationWarning, stacklevel=2) 
     return verfuegbare_menge(artnr, lager)
@@ -384,7 +390,7 @@ def versionsvorschlag(menge, orgartnr, date, dateformat="%Y-%m-%d"):
     
     ret = []
     benoetigt = menge
-    for artnr in alternativen(orgartnr):
+    for artnr in cs.masterdata.article.alternatives(orgartnr):
         bentwicklung = bestandsentwicklung(artnr, dateformat).items()
         if not bentwicklung:
             continue
@@ -437,37 +443,38 @@ def frei_ab(menge, artnr, dateformat="%Y-%m-%d"):
     return None
     
 
-def get_umlagerungen(artnr=None, vonlager=26):
+def get_umlagerungen(artnr=None):
     """Ermittelt wieviel Umlagerungen für einen Artikel unterwegs sind"""
     warnings.warn("get_umlagerungen() is deprecated use umlagermenge()", DeprecationWarning, stacklevel=2) 
-    return umlagermenge(artnr, anlager=100, vonlager=vonlager)
+    return umlagermenge(artnr, anlager=100)
 
 
-def umlagermengen(anlager=100, vonlager=None):
+def umlagermengen(anlager=100):
     """Ermittelt wieviel Umlagerungen aus einem oder allen Lagern nach Lager anlager unterwegs sind."""
-    return _umlagermenge_helper(None, anlager, vonlager)
+    return _umlagermenge_helper(None, anlager)
 
 
-def umlagermenge(artnr, anlager=100, vonlager=None):
-    """Ermittelt wieviel Umlagerungen für einen Artikel aus vonlager nach anlager unterwegs sind."""
+def umlagermenge(artnr, anlager=100):
+    """Ermittelt wieviel Umlagerungen für einen Artikel der nach anlager unterwegs sind."""
     assert(artnr)
-    return _umlagermenge_helper(artnr, anlager, vonlager)
+    return _umlagermenge_helper(artnr, anlager)
 
 
-def get_lagerbestandmitumlagerungen(artnr, vonlager=26):
+def get_lagerbestandmitumlagerungen(artnr):
+    """Deprecheated, don't use anymore."""
     warnings.warn("get_lagerbestandmitumlagerungen() is deprecated use bestand()",
                   DeprecationWarning, stacklevel=2) 
-    return bestand(artnr, lager=100, vonlager=vonlager)
+    return bestand(artnr, lager=100)
     
 
-def bestand(artnr, lager, vonlager=None):
+def bestand(artnr, lager):
     """Ermittelt den Lagerbestand (Buchbestand + kurzum in diesem Lager eintreffene Güter) eines Artikels.
     
     >>> bestand('76095')
     53
     """
     
-    return buchbestand(artnr, lager=lager) + umlagermenge(artnr, lager, vonlager)
+    return buchbestand(artnr, lager=lager) + umlagermenge(artnr, lager)
     
 
 def besteande(lager):
@@ -490,90 +497,62 @@ def besteande(lager):
     bbesteande = dict([(str(row[0]), as400_2_int(row[1])) for row in rows])
     
     # Offene Umlagerungen an dieses Lager zurechnen.
-    uml = umlagermengen(anlager=lager, vonlager=None)
+    uml = umlagermengen(anlager=lager)
     for artnr, umlagerungsmenge in uml.items():
         bbesteande[str(artnr)] = bbesteande.get(artnr, 0) + as400_2_int(umlagerungsmenge)
     return bbesteande
-
-
-def _do_tests():
-    """Call test suite when this module is opened as script."""
-
-    import unittest
     
-    def test():
-        return frei_ab(1000, '14600/03')
+
+class TestUmlagerungen(unittest.TestCase):
+    """Testet die Berechnung der Umlagerungen."""
     
-    def _test():
-        """Some very simple tests."""
-        #print "buchbestaende() =",
-        (buchbestaende())
-        #print "auftragsmengen_alle_artikel(34) = ",
-        (auftragsmengen_alle_artikel(34))
-        #print "verfuegbare_mengen(34) = ",
-        (verfuegbare_mengen(34))
-        #print "besteande(100) = ",
-        (besteande(100))
-        # for artnr in '76095 14600/03 14865 71554/A 01104 10106 14890 WK22002'.split():
-        for artnr in '14600/03 WK22002'.split():
-            #print "versionsvorschlag(2000, %r, '2009-01-04') = " % artnr,
-            (versionsvorschlag(2000, artnr, '2009-01-04'))
-            #print "buchbestand(%r) = " % artnr,
-            (buchbestand(artnr))
-            #print "verfuegbare_menge(%r) = " % artnr,
-            (verfuegbare_menge(artnr))
-            #print "bestandsentwicklung(%r) = " % artnr,
-            ((bestandsentwicklung(artnr)))
-            #print "frei_ab(50, %r) = " % artnr,
-            ((frei_ab(50, artnr)))
-            #print "umlagermenge(%r, 100) = " % artnr,
-            ((umlagermenge(artnr, 100)))
-            #print "bestand(%r, 100) = " % artnr,
-            ((bestand(artnr, 100)))
-
-    class TestUmlagerungen(unittest.TestCase):
-        """Testet die Berechnung der Umlagerungen."""
-
-        def setUp(self):
-            pass
+    def test_misc(self):
+        """Performs tests on several functions and compares their results.
         
-        def test_general(self): # FIXME how to name that function?
-            """Performs tests on several functions and compares their results.
+        It performs checks for every article in stock, so it is very time consuming.
+        """
+        
+        lager = 100
+        bstnde = besteande(lager)
+        for artnr, menge in bstnde.items():
+            # check fnc bestand
+            bstnd = bestand(artnr, lager)
+            self.assertEqual(bstnd, menge)
             
-            It performs checks for every article in stock, so it is very time consuming.
-            """
-            lager = 100
-            vonlager = None
-            bstnde = besteande(lager)
-            for artnr, menge in bstnde.items():
-                # check fnc bestand
-                bstnd = bestand(artnr, lager, vonlager=vonlager)
-                self.assertEqual(bstnd, menge)
+            # check fncs umlagermenge + buchbestand
+            umenge = umlagermenge(artnr, lager)
+            bbestand = buchbestand(artnr, lager)
+            self.assertEqual(bbestand+umenge, menge)
 
-                # check fncs umlagermenge + buchbestand
-                umenge = umlagermenge(artnr, lager)
-                bbestand = buchbestand(artnr, lager)
-                self.assertEqual(bbestand+umenge, menge)
+def _test():
+    """Some very simple tests."""
+    #print "buchbestaende() =",
+    (buchbestaende())
+    #print "auftragsmengen_alle_artikel(34) = ",
+    (auftragsmengen_alle_artikel(34))
+    #print "verfuegbare_mengen(34) = ",
+    (verfuegbare_mengen(34))
+    #print "besteande(100) = ",
+    (besteande(100))
+    # for artnr in '76095 14600/03 14865 71554/A 01104 10106 14890 WK22002'.split():
+    for artnr in ['14600/03', 'WK22002', '00000']:
+        #print "versionsvorschlag(2000, %r, '2009-01-04') = " % artnr,
+        (versionsvorschlag(2000, artnr, '2009-01-04'))
+        #print "buchbestand(%r) = " % artnr,
+        (buchbestand(artnr))
+        #print "verfuegbare_menge(%r) = " % artnr,
+        (verfuegbare_menge(artnr))
+        #print "bestandsentwicklung(%r) = " % artnr,
+        ((bestandsentwicklung(artnr)))
+        #print "frei_ab(50, %r) = " % artnr,
+        ((frei_ab(50, artnr)))
+        #print "umlagermenge(%r, 100) = " % artnr,
+        ((umlagermenge(artnr, 100)))
+        #print "bestand(%r, 100) = " % artnr,
+        ((bestand(artnr, 100)))
+    return frei_ab(1000, '14600/03')
     
-    #_test()
-    #suite = unittest.TestLoader().loadTestsFromTestCase(TestUmlagerungen)
-    #suite.addTest(unittest.FunctionTestCase(_test))
-    #unittest.TextTestRunner(verbosity=2).run(suite)
-    
-    #print "starting"
-    #import cProfile
-    #cProfile.run("test()", sort=1)
-    test()
 
 if __name__ == '__main__':
-    _do_tests()
-
-# import time
-# start = time.time()
-# alt = alternativen("14600/03")
-# print "Z", time.time() - start, alt
-# for artnr in alt:
-#     print "z", time.time() - start, artnr
-#     bentwicklung = bestandsentwicklung(artnr).items()
-#     print "z", time.time() - start
-# 
+    _test()
+    unittest.main()

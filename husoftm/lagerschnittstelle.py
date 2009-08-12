@@ -11,17 +11,20 @@ Copyright (c) 2007 HUDORA. All rights reserved.
 """
 
 
+import datetime
 import husoftm.lieferscheine
 import sqlite3
 import unittest
-from husoftm.softmtables import SoftMreadOnlyTable, SoftMtable, AS400Connector_mixin
+from husoftm.softmtables import SoftMreadOnlyTable, SoftMtable, SqliteConnector_mixin, AS400Connector_mixin
 
 
-class ISA00(SoftMtable, AS400Connector_mixin):
-    """Zugriff auf die # MyPL Schnittstelle - Komissionierbeleg."""
+class ISA00_abstract(SoftMtable):
+    """Zugriff auf die # MyPL Schnittstelle - Komissionierbeleg / Abstrakte Basisklasse.
+    
+    ISA00_test() und ISA00() sind die tatsächlichen Implementerungen."""
     
     def __init__(self):
-        super(ISA00, self).__init__()
+        super(ISA00_abstract, self).__init__()
         self.name_dateifuehrungsschluessel = 'IADFSL'
         self.name_status = 'IASTAT'
         self.tablename = 'ISA00'
@@ -37,6 +40,16 @@ class ISA00(SoftMtable, AS400Connector_mixin):
             'IASTAT': 'status',
             'IASANR': 'satznr',
         }
+    
+
+class ISA00_test(ISA00_abstract, SqliteConnector_mixin):
+    """Zugriff auf die # MyPL Schnittstelle - Komissionierbeleg / Testdaten."""
+    pass
+    
+
+class ISA00(ISA00_abstract, AS400Connector_mixin):
+    """Zugriff auf die # MyPL Schnittstelle - Komissionierbeleg / Lifesystem."""
+    pass
     
 
 class ALN00(SoftMreadOnlyTable):
@@ -93,7 +106,7 @@ class Isa00tests(unittest.TestCase):
     def setUp(self):
         """Set up data and environment for testing."""
         init_testtables()
-        self.table = ISA00()
+        self.table = ISA00_test()
     
     def test_basic_select(self):
         """Test ISA00().select()."""
@@ -139,6 +152,13 @@ class Isa00tests(unittest.TestCase):
     
     def test_removing_locks(self):
         """Test ISA00().clean_stale_locks()."""
+        
+        # generate stale lock keys
+        yesterday = datetime.datetime.now() - datetime.timedelta(hours=6)
+        stale_key = yesterday.strftime("%m%d%H%M%S")
+        self.table.update("IADFSL='%s'" % stale_key, "IADFSL<>''")
+        
+        # test cleaning them
         rows = self.table.select("IADFSL='' AND IASTAT=''", fields="IAKBNR, IAAUFN, IASANR")
         self.assertEqual(len(rows), 1)
         self.table.clean_stale_locks()
@@ -166,7 +186,7 @@ def _fill_table(cursor, name, data):
 def init_testtables():
     """Initialize a testing table using sqlite."""
     
-    conn = sqlite3.connect('./mypl-sqlite-test.db')
+    conn = sqlite3.connect('./as400-sqlite-test.db')
     cursor = conn.cursor()
 
     testdata1 = """

@@ -1,5 +1,8 @@
 simplejson
 couchdb
 python-memcached
-http://downloads.sourceforge.net/project/pyro/Pyro/3.9.1/Pyro-3.9.1.tar.gz#egg=pyro
+Pyro
+ -f http://downloads.sourceforge.net/project/pyro/Pyro/3.9.1/Pyro-3.9.1.tar.gz#egg=pyro
 huTools>=0.38p2
+cs
+ -f http://cybernetics.hudora.biz/nonpublic/eggs/#egg=cs

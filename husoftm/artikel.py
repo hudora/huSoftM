@@ -60,6 +60,7 @@ def preis(artnr):
     
 
 class Artikel(object):
+    """Tepräsentiert einen Artikel in SoftM."""
     
     def fill_from_softm(self, row):
         self.artnr = row.get('artnr', '') # u'14600'
@@ -297,7 +298,7 @@ def get_umschlag(artnr):
 import husoftm.mock_as400
 
 
-class komponentenaufloesungTests(unittest.TestCase):
+class KomponentenaufloesungTests(unittest.TestCase):
 
     def test_komponentenaufloesung(self):
         self.assertEqual(komponentenaufloesung([(5, '00049')]),
@@ -316,6 +317,7 @@ class komponentenaufloesungTests(unittest.TestCase):
 
 
 def _test():
+    """Diverse einfache Tests."""
     get_umschlag('14600')
     _auf_zwei_stellen(1.0/3.0)
     komponentenaufloesung([(5, '00049')]),
@@ -323,9 +325,7 @@ def _test():
         == komponentenaufloesung([(5, '00049')]))
     buchdurchschnittspreis('14600')
     preis('14600')
-    # TODO: implement TestMoftSconnection
-    #husoftm.MoftSconnection = husoftm.TestMoftSconnection
-    #unittest.main()
+    unittest.main()
 
 if __name__ == "__main__":
     _test()

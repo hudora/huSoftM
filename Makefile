@@ -1,11 +1,15 @@
 # setting the PATH seems only to work in GNUmake not in BSDmake
 PATH:=testenv/bin:$(PATH)
 
-default: dependencies check test statistics
+default: dependencies check test
+
+hudson: dependencies test statistics
+	find husoftm -name '*.py' | xargs /usr/local/hudorakit/bin/hd_pep8
+	/usr/local/hudorakit/bin/hd_pylint -f parseable husoftm | tee pylint.out
 
 check:
 	find husoftm -name '*.py' | xargs /usr/local/hudorakit/bin/hd_pep8
-	/usr/local/hudorakit/bin/hd_pylint -f parseable husoftm | tee pylint.out
+	/usr/local/hudorakit/bin/hd_pylint husoftm
 	# (cd odbc_bridge; make check)
 
 build:
@@ -56,7 +60,7 @@ install: build
 	sh -c 'sudo python setup.py install'
 
 clean:
-	rm -Rf testenv build dist html test.db huSoftM.egg-info svn-commit.tmp pylint.out sloccount.sc pip-log.txt
+	rm -Rf testenv build dist html test.db huSoftM.egg-info svn-commit.tmp pylint.out sloccount.sc pip-log.txt as400-sqlite-test.db
 	find . -name '*.pyc' -or -name '*.pyo' -or -name 'biketextmate.log' -delete
 
 .PHONY: build test

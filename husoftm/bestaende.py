@@ -111,7 +111,6 @@ def _umlagermenge_helper(artnr, lager=100):
 
 # TODO: use cs module instead of alternativen()
 
-
 def alternativen(artnr):
     """Gets a list of article numbers which are alternatives (usually versions).
     
@@ -503,26 +502,26 @@ def besteande(lager):
     return bbesteande
     
 
-class TestUmlagerungen(unittest.TestCase):
-    """Testet die Berechnung der Umlagerungen."""
+# class TestUmlagerungen(unittest.TestCase):
+#     """Testet die Berechnung der Umlagerungen."""
+#     
+#     def test_misc(self):
+#         """Performs tests on several functions and compares their results.
+#         
+#         It performs checks for every article in stock, so it is very time consuming and can only work during
+#         low activity periods because of constant changes in stock during daytime.
+#         """
+#         
+#         lager = 100
+#         bstnde = besteande(lager)
+#         for artnr, menge in bstnde.items():
+#             bstnd = bestand(artnr, lager)
+#             self.assertEqual(bstnd, menge)
+#             
+#             umenge = umlagermenge(artnr, lager)
+#             bbestand = buchbestand(artnr, lager)
+#             self.assertEqual(bbestand+umenge, menge)
     
-    def test_misc(self):
-        """Performs tests on several functions and compares their results.
-        
-        It performs checks for every article in stock, so it is very time consuming.
-        """
-        
-        lager = 100
-        bstnde = besteande(lager)
-        for artnr, menge in bstnde.items():
-            # check fnc bestand
-            bstnd = bestand(artnr, lager)
-            self.assertEqual(bstnd, menge)
-            
-            # check fncs umlagermenge + buchbestand
-            umenge = umlagermenge(artnr, lager)
-            bbestand = buchbestand(artnr, lager)
-            self.assertEqual(bbestand+umenge, menge)
 
 def _test():
     """Some very simple tests."""

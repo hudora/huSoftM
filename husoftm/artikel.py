@@ -15,9 +15,7 @@ import unittest
 from decimal import Decimal
 import husoftm
 import husoftm.caching
-from husoftm.connection import get_connection
-from husoftm.connection2 import get_connection as get_connection2
-from husoftm.connection2 import as400_2_int
+from husoftm.connection2 import get_connection, as400_2_int
 from husoftm.tools import sql_quote
 
 
@@ -118,7 +116,6 @@ class Artikel(object):
 
 # TODO: remove
 # wird ausschliesslich in trunk/web/MoftS/produktpass/bin/softmsync genutzt
-
 
 def get_artikel(artnr=None, ean=None):
     """Returns articles for artnr and/or ean, depending on what parameter is not None.
@@ -224,7 +221,6 @@ def komponentenaufloesung(mengenliste):
 
 # TODO: do we need KomponentenResolver() and komponentenaufloesung?
 
-
 class KomponentenResolver(object):
     
     def __init__(self):
@@ -284,7 +280,7 @@ def get_umschlag(artnr):
     " AND FURGNR<>0"            # es gibt eine Rechnungsnummer
     " AND FUARTN=%s")           # nur bestimmten Artikel beachten
     
-    rows = get_connection2().query(['AFU00', 'AFK00'], fields=['FKDTFA', 'SUM(FUMNG)'],
+    rows = get_connection().query(['AFU00', 'AFK00'], fields=['FKDTFA', 'SUM(FUMNG)'],
                    condition=condition % (sql_quote(artnr)),
                    ordering='FKDTFA', grouping='FKDTFA',
                    querymappings={'SUM(FUMNG)': 'menge', 'FKDTFA': 'rechnung_date'})
@@ -325,7 +321,7 @@ def _test():
         == komponentenaufloesung([(5, '00049')]))
     buchdurchschnittspreis('14600')
     preis('14600')
-    unittest.main()
 
 if __name__ == "__main__":
     _test()
+    unittest.main()

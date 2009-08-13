@@ -27,7 +27,6 @@ LOG.setLevel(logging.WARN)
 
 # TODO: move to hutools robusttypecasts
 
-
 def int_or_0(data):
     """Helper for unwinding SoftM nested list replies - not meant for public use."""
     try:

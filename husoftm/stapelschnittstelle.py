@@ -305,7 +305,7 @@ def _auftrag2records(vorgangsnummer, auftrag):
     return kopf, positionen, texte, adressen
 
 
-def auftrag2softm(auftrag, belegtexte=[]):
+def auftrag2softm(auftrag, belegtexte=None):
     """Schreibt etwas, dass dem AuftragsFormat entspricht in SoftM."""
 
     # this should be done by the caller:
@@ -315,6 +315,9 @@ def auftrag2softm(auftrag, belegtexte=[]):
     # if not schnittstelle_leer():
     #     print "In der Stapelschnittstelle befinden sich nicht verarbeitete Nachrichten."
     #    return None
+    
+    if not belegtexte:
+        belegtexte = []
     
     while True:
         # SoftM (Mister Hering) suggested updating Adtastapel as soon as possible to avoid
@@ -467,7 +470,7 @@ class _GenericTests(unittest.TestCase):
         auftrag.lieferadresse.land = 'DE'
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
         kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKDTKD, BKKDNR)"
-                   " VALUES('1','123','1090812','1081230','1','01','1090812','   17200')")
+                   " VALUES('1','123','xtodayx','1081230','1','01','xtodayx','   17200')")
         # insert date of today since this will be automatically done by _auftrag2records()
         kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
         self.assertEqual(kopf.to_sql(), kpf_sql)

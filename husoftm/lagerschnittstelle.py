@@ -99,9 +99,7 @@ def artnr_for_kommibleg_position(self, kommibelegnr, position):
     return ret[0][0]
     
 
-#############################################################################
 ### Tests
-
 
 class Isa00tests(unittest.TestCase):
     """Testcaseses for the ISA00 class."""

@@ -209,7 +209,6 @@ class PyRoMoftSconnectionToTestDB(PyRoMoftSconnection):
     def _get_tablename(self, name):
         """Generates the Name of a Table on the AS/400-Test-Database."""
         raise RuntimeError("stale test code")
-        #return "SMKDIFT.%s" % name
 
     def update_test(self, query):
         """Update the Databasetable on the AS/400-Test-Database with the given query."""

@@ -37,7 +37,6 @@ def _read_base_row_from_softm_lieferschein(lsnr):
 class Adresse(object):
     """Repräsentiert eine Kundenadresse"""
     # Sollte dem Adressprotokoll folgen - muss aber noch überprüft werden.
-    
     def __repr__(self):
         return repr(vars(self))
     

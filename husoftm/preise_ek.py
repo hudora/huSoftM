@@ -43,6 +43,9 @@ def preisentwicklung(artnrs):
       (Decimal('0.12'), 'USD'))]
     """
     
+    # common error: providing a string, not a list
+    assert not isinstance(artnrs, basestring)
+    
     artnrsstr = ','.join([sql_quote(artnr) for artnr in artnrs])
     rows = get_connection().query(['XPN00', 'XPR00'], ordering='PRDTVO',
         condition=("PNSANR=PRSANR and PRANW='E' and PRSTAT=' ' and PNSTAT=' '"

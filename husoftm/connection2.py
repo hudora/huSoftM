@@ -152,7 +152,7 @@ class MoftSconnection(object):
         generates a list of field on it own by consulting the field mapping database in from 
         fields.MAPPINGDIR.
         
-        >>> MoftSconnection().query('ALK00', condition="LKLFSN = 4034544") #doctest: +ELLIPSIS
+        >>> MoftSconnection().query('ALK00', condition="LKLFSN=4034544") #doctest: +ELLIPSIS
         [{'lager': 100, 'versandart': '013', ...}]
         
         To suppress mapping provide querymappings={} and fields=[].
@@ -163,8 +163,7 @@ class MoftSconnection(object):
         [(2255, Decimal('16.10'))]
         
         To get only certain fields give a list of fieldnames in fields=[...].
-        >>> MoftSconnection().query(tables=['XPN00'], condition="PNSANR=2255",
-        ... fields=['PNPRB'])
+        >>> MoftSconnection().query(tables=['XPN00'], condition="PNSANR=2255", fields=['PNPRB'])
         [(Decimal('16.10'),)]
         
         Joins are straightforward if used with condition="<expression>":

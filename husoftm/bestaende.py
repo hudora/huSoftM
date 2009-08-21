@@ -521,7 +521,6 @@ def besteande(lager):
 #             umenge = umlagermenge(artnr, lager)
 #             bbestand = buchbestand(artnr, lager)
 #             self.assertEqual(bbestand+umenge, menge)
-    
 
 def _test():
     """Some very simple tests."""

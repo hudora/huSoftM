@@ -2108,11 +2108,11 @@ MAPPINGDIR = {
     #'PRDFSL': 'Dateif}hrungs-Schl}ssel',
 },
 
-'XXA00': {
+'XXA00': { # Adressen von Kunden und Lieferanten
         # 'XAFNR ': Firma
         'XAKDNR': 'kundennr',
         # 'XAKZKD': Kz Kunde
-        # 'XALINR': Lieferanten-nr
+        'XALINR': 'lieferantennr',
         # 'XAKZLI': Kz Lieferant
         # 'XAKZIT': Kz Interessent
         # 'XANRRS': Freie nr

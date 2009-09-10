@@ -35,5 +35,3 @@ def auftragsnr_to_rechnungsnr(auftragsnr):
     rows = get_connection().query(['AFK00'], fields=['FKRGNR'],
                    condition="FKAUFN = %s" % (sql_quote(auftragsnr)))
     return [("SR%s" % r[0]) for r in rows]
-
-

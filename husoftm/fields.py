@@ -1972,6 +1972,7 @@ MAPPINGDIR = {
           'KDSANR': 'adressdatei_id',
           'KDDTER': 'erfassung_date',
           'KDDTAE': 'aenderung_date',
+          #'KDSTAT': 'satzstatus',
           },
 
 'XKS00': { # Kundenzusatzdaten
@@ -2303,7 +2304,50 @@ MAPPINGDIR = {
 # LFMGB4   P   11    6  3  339  344 Verbuchte Mg: Fertigung    
 # LFMGK1   P   11    6  3  345  350 Fertigung: Reserv. Mg. WBZ
 # LFMGK2   P   11    6  3  351  356 Fertigung: Reserv. Mg. EDZ
-# 
+# LFMGK3   P   11    6  3  357  362 Fertigung: Gesamt-Reservier 
+# LFMGK4   P   11    6  3  363  368 Zugeteilt für Lieferschein  
+# LFMGOP   P   11    6  3  369  374 Gesamte OP-Menge            
+# LFMGQU   P   11    6  3  375  380 Bestand in QltPrf           
+# LFMGQ2   P   11    6  3  381  386 Bestand in QltPrf 2         
+# LFLWA1   P   15    8  2  387  394 Gesamter Auftragswert       
+# LFLWA2   P   15    8  2  395  402 Lieferschein-Wert           
+# LFLWA3   P   15    8  2  403  410 vorabvermerkter Wert        
+# LFNARB   P    3    2  0  411  412 Numerisches Arbeitsfeld     
+# LFDTIN   P    7    4  0  413  416 Datum letzte Inventur       
+# LFKZIN   S    1    1  0  417  417 KZ Inventur-Sperre          
+# LFMGIB   P   11    6  3  418  423 Bestand bei Inventur-Beginn 
+# LFLWIB   P   15    8  2  424  431 Lagerwert nach Inventur     
+# LFEKIB   P   15    8  2  432  439 LEK bei Inventur-Beginn     
+# LFBELI   P    9    5  0  440  444 Beleg-Nr/Inventur           
+# LFMGIN   P   11    6  3  445  450 Inventur-Bestand            
+# LFDTIE   P    7    4  0  451  454 Datum der Inventurliste     
+# LFKZWR   S    1    1  0  455  455 Preisdimension Lager        
+# LFKZIA   S    1    1  0  456  456 Kz. Inventurabwicklung      
+# LFKZCS   S    1    1  0  457  457 KZ Chargenzuordnung         
+# LFKZPS   S    1    1  0  458  458 KZ Programmsperre           
+# LFDTLZ   P    7    4  0  459  462 Datum letzter Lagerzugang   
+# LFDTLA   P    7    4  0  463  466 Datum letzter Lagerabgang   
+# LFF1A1   A         1  0  467  467 Reservefeld 1 1A            
+# LFF1A2   A         1  0  468  468 Reservefeld 2 1A            
+# LFF1A3   A         1  0  469  469 Reservefeld 3 1A            
+# LFF1A4   A         1  0  470  470 Reservefeld 4 1A            
+# LFF1A5   A         1  0  471  471 Reservefeld 5 1A            
+# LFFDT1   P    7    4  0  472  475 Reservefeld 1 Datum         
+# LFFDT2   P    7    4  0  476  479 Reservefeld 2 Datum         
+# LFFA10   A        10  0  480  489 Reservefeld 1 10A           
+# LFFWR1   P   15    8  2  490  497 Reservefeld Wert 1 15P2     
+# LFFWR2   P   15    8  2  498  505 Reservefeld Wert 2 15P2  
+# LFFWR3   P   15    8  2  506  513 Reservefeld Wert 3 15P2  
+# LFFWR4   P   15    8  2  514  521 Reservefeld Wert 4 15P2  
+# LFFMG1   P   13    7  3  522  528 Reservefeld Menge 1 13P3 
+# LFFMG2   P   13    7  3  529  535 Reservefeld Menge 2 13P3 
+# LFFMG3   P   13    7  3  536  542 Reservefeld Menge 3 13P3 
+# LFFMG4   P   13    7  3  543  549 Reservefeld Menge 4 13P3 
+# LFFK20   A        20  0  550  569 Kundenindividuelles Feld 
+# LFDTAE   P    7    4  0  570  573 Datum letzte Änderung    
+# LFKZAK   S    1    1  0  574  574 KZ Aktualität            
+# LFDFSL   A        10  0  575  584 Dateiführungs-Schlüssel  
+# LFSTAT   A         1  0  585  585 Satzstatus               
 }
 
 # decides which fields should be convertet to decimal, 2 digits

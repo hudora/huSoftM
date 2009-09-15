@@ -95,6 +95,7 @@ class Kunde(object):
         # 'offener_aftragswert': 2.7000000000000002, 
         # 'kreditlimit': 2.7000000000000002, 
         # 'inland_ausland': 0, 
+        # self.satzstatus = row.get('satzstatus', '')
         return self
     
 

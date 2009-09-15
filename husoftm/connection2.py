@@ -172,14 +172,14 @@ class MoftSconnection(object):
         [{'preis': Decimal('16.10'), 'gueltig_ab_date': datetime.date(2004, 12, 16)}]
         
         Aggregate functions can be created by using the "grouping" keyword:
-        >>> MoftSconnection().query('XLF00', fields=['LFARTN', 'SUM(LFMGLP)'], grouping=['LFARTN'],
-        ... condition="LFLGNR=3")
-        [('65166/01', '0'), ('65198', '0'), ('76095', '0'), ('ED76095', '0'), ('76102', '0')]
+        >>> sorted(MoftSconnection().query('XLF00', fields=['LFARTN', 'SUM(LFMGLP)'], grouping=['LFARTN'],
+        ... condition="LFLGNR=3"))
+        [('65166/01', '0'), ('65198', '0'), ('76095', '0'), ('76102', '0'), ('ED76095', '0')]
         
         If desired "querymappings" can be used to return a list of dicts:
-        >>> MoftSconnection().query('XLF00', fields=['LFARTN', 'SUM(LFMGLP)'], grouping=['LFARTN'],
+        >>> sorted(MoftSconnection().query('XLF00', fields=['LFARTN', 'SUM(LFMGLP)'], grouping=['LFARTN'],
         ... condition="LFLGNR=3", querymappings={'LFARTN': 'artnr',
-        ... 'SUM(LFMGLP)': 'menge'}) #doctest: +ELLIPSIS
+        ... 'SUM(LFMGLP)': 'menge'})) #doctest: +ELLIPSIS
         [{'menge': '0', 'artnr': '65166/01'}, {'menge': '0', 'artnr': '65198'}, ...]
         
         We also should be - to a certain degree - be Unicode aware:

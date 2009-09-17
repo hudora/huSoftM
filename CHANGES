@@ -1,3 +1,6 @@
+0.55p1: Wenn Rechnungen ins EU-Ausland gestellt werden, dann wird jetzt der EU-Ländrecode
+        mit an die Stapelschnittstelle übergeben
+
 0.55: husoftm.lieferanten implementiert
 
 0.53p1: build prozess ueberarbeitet, preise_ek.preisentwicklung()

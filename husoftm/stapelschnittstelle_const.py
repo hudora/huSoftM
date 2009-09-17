@@ -136,7 +136,7 @@ ABK00 = {
                       Übernahme vergebene Auftragsnummer hinterlegt.'''),
 'BKAWRT': dict(name='Auftragswert', format='P15.2',
                doc='''Angabe in Hauptwährung.'''),
-'BKEGCD': dict(name='EU-Ländercode', format='A2',
+'BKEGCD': dict(name='eu_laendercode', format='A2',
                doc='''ISO ANZFELDART: UPTYP10 Hier ist der Sitz des Unternehmens zu hinterlegen. Für das
                       eigene Heimatland muss das Feld leer bleiben, da sonst eine steuerliche Behandlung wie
                       EU-Ausland durchgeführt würde.'''),

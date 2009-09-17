@@ -24,7 +24,7 @@ import random
 import textwrap
 import unittest
 from husoftm.connection import get_connection
-from husoftm.tools import date2softm, sql_quote, iso2land
+from husoftm.tools import date2softm, sql_quote, iso2land, EU_COUNTRIES
 from husoftm.stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00
 
 __revision__ = "$Revision$"
@@ -201,21 +201,34 @@ def _create_positionssatz(positionen, vorgangsnummer, aobj_position, texte):
                 vorgangsnummer=vorgangsnummer, text=text, auftragsbestaetigung=0, lieferschein=1, rechnung=1)
 
 
-def _create_addressatz(adressen, vorgangsnummer, aobj_adresse, is_lieferadresse=True):
-    """Fügt einen Zusatz-Addressatz hinzu."""
-    adresse = Adresse()
-    if is_lieferadresse:
-        adresse.adressart = 1
-    adresse.vorgang = vorgangsnummer
-    adresse.name1 = getattr(aobj_adresse, 'name1', '')
-    adresse.name2 = getattr(aobj_adresse, 'name2', '')
-    adresse.name3 = getattr(aobj_adresse, 'name3', '')
-    adresse.avisieren = getattr(aobj_adresse, 'avisieren', '')
-    adresse.strasse = getattr(aobj_adresse, 'strasse', '')
-    adresse.plz = getattr(aobj_adresse, 'plz', '')
-    adresse.ort = getattr(aobj_adresse, 'ort', '')
-    adresse.laenderkennzeichen = iso2land(getattr(aobj_adresse, 'land', 'DE'))
-    adressen.append(adresse)
+def _create_addressentries(adressen, vorgangsnummer, aobj):
+    """Adds entries for invoice and deliveryaddress, if given for this order.
+
+    Returns the country code of the invoice address w/ a fallback to country of delivery address.
+    """
+    land = 'DE'
+    for addresstype in ['lieferadresse', 'rechnungsadresse']:
+        aobj_adresse = getattr(aobj, addresstype, None)
+        if not aobj_adresse:
+            continue
+        if (hasattr(aobj_adresse, 'name1') and hasattr(aobj_adresse, 'ort') and
+                hasattr(aobj_adresse, 'land')) == False:
+            continue
+        adresse = Adresse()
+        if addresstype == 'lieferadresse':
+            adresse.adressart = 1
+        adresse.vorgang = vorgangsnummer
+        adresse.name1 = getattr(aobj_adresse, 'name1', '')
+        adresse.name2 = getattr(aobj_adresse, 'name2', '')
+        adresse.name3 = getattr(aobj_adresse, 'name3', '')
+        adresse.avisieren = getattr(aobj_adresse, 'avisieren', '')
+        adresse.strasse = getattr(aobj_adresse, 'strasse', '')
+        adresse.plz = getattr(aobj_adresse, 'plz', '')
+        adresse.ort = getattr(aobj_adresse, 'ort', '')
+        land = getattr(aobj_adresse, 'land', 'DE')
+        adresse.laenderkennzeichen = iso2land(land)
+        adressen.append(adresse)
+    return land
 
 
 def _auftrag2records(vorgangsnummer, auftrag):
@@ -285,19 +298,11 @@ def _auftrag2records(vorgangsnummer, auftrag):
         kopf.fixtermin = 1
 
     adressen = []
-    # add Lieferadresse if needed
-    if (hasattr(auftrag, 'lieferadresse')
-        and hasattr(auftrag.lieferadresse, 'name1')
-        and hasattr(auftrag.lieferadresse, 'ort')
-        and hasattr(auftrag.lieferadresse, 'land')):
-        _create_addressatz(adressen, vorgangsnummer, auftrag.lieferadresse)
 
-    # add Rechnungsadresse if needed
-    if (hasattr(auftrag, 'rechnungsadresse')
-        and hasattr(auftrag.rechnungsadresse, 'name1')
-        and hasattr(auftrag.rechnungsadresse, 'ort')
-        and hasattr(auftrag.rechnungsadresse, 'land')):
-        _create_addressatz(adressen, vorgangsnummer, auftrag.rechnungsadresse, False)
+    # add Lieferadresse and Rechungsadresse and create eu country code if neccessary
+    land = _create_addressentries(adressen, vorgangsnummer, auftrag)
+    if land != 'DE' and land in dict(EU_COUNTRIES):
+        kopf.eu_laendercode = iso2land(land)
 
     for aobj_position in auftrag.positionen:
         _create_positionssatz(positionen, vorgangsnummer, aobj_position, texte)
@@ -507,6 +512,63 @@ class _GenericTests(unittest.TestCase):
         adressen_sql = ("INSERT INTO ABV00 (BVNAM2, BVNAM3, BVKZAD, BVNAM4, BVVGNR, BVSTR, BVLKZ, BVNAME,"
             " BVORT) VALUES('name2','name3','1','+49 21 91 / 6 09 12-0','123','Nicht Vergessen Weg 1'"
             ",'D','name1','Rade')")
+        self.assertEqual(adressen[0].to_sql(), adressen_sql)
+        self.assertEqual(positionen, [])
+        self.assertEqual(texte, [])
+
+    def test_rechnungsadresse_eu(self):
+        """Tests if a Rechnungsadresse from an european country is successfully converted to SQL."""
+        vorgangsnummer = 123
+        auftrag = _MockAuftrag()
+        auftrag.kundennr = '17200'
+        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
+        auftrag.positionen = []
+        auftrag.rechnungsadresse = _MockAddress()
+        auftrag.rechnungsadresse.name1 = 'name1'
+        auftrag.rechnungsadresse.name2 = 'name2'
+        auftrag.rechnungsadresse.name3 = 'name3'
+        auftrag.rechnungsadresse.avisieren = '+49 21 91 / 6 09 12-0'
+        auftrag.rechnungsadresse.strasse = 'Nicht Vergessen Weg 1'
+        auftrag.rechnungsadresse.ort = 'Rade'
+        auftrag.rechnungsadresse.land = 'NL'
+        kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKEGCD, BKDTLT, BKDTKW, BKSBNR, BKVGNR, BKFNR, BKDTKD, BKKDNR) VALUES('1','NL','1090917','1081230','1','123','01','1090917','   17200')")
+        # insert date of today since this will be automatically done by _auftrag2records()
+        kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
+        self.assertEqual(kopf.to_sql(), kpf_sql)
+
+        adressen_sql = ("INSERT INTO ABV00 (BVNAM2, BVNAM3, BVKZAD, BVNAM4, BVVGNR, BVSTR, BVLKZ, BVNAME,"
+            " BVORT) VALUES('name2','name3','1','+49 21 91 / 6 09 12-0','123','Nicht Vergessen Weg 1'"
+            ",'NL','name1','Rade')")
+        self.assertEqual(adressen[0].to_sql(), adressen_sql)
+        self.assertEqual(positionen, [])
+        self.assertEqual(texte, [])
+
+    def test_rechnungsadresse_non_eu(self):
+        """Tests if a Rechnungsadresse from an outer-european country is successfully converted to SQL."""
+        vorgangsnummer = 123
+        auftrag = _MockAuftrag()
+        auftrag.kundennr = '17200'
+        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
+        auftrag.positionen = []
+        auftrag.rechnungsadresse = _MockAddress()
+        auftrag.rechnungsadresse.name1 = 'name1'
+        auftrag.rechnungsadresse.name2 = 'name2'
+        auftrag.rechnungsadresse.name3 = 'name3'
+        auftrag.rechnungsadresse.avisieren = '+49 21 91 / 6 09 12-0'
+        auftrag.rechnungsadresse.strasse = 'Nicht Vergessen Weg 1'
+        auftrag.rechnungsadresse.ort = 'Rade'
+        auftrag.rechnungsadresse.land = 'CH'
+        kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKDTKD, BKKDNR)"
+            " VALUES('1','123','xtodayx','1081230','1','01','xtodayx','   17200')")
+        # insert date of today since this will be automatically done by _auftrag2records()
+        kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
+        self.assertEqual(kopf.to_sql(), kpf_sql)
+
+        adressen_sql = ("INSERT INTO ABV00 (BVNAM2, BVNAM3, BVKZAD, BVNAM4, BVVGNR, BVSTR, BVLKZ, BVNAME,"
+            " BVORT) VALUES('name2','name3','1','+49 21 91 / 6 09 12-0','123','Nicht Vergessen Weg 1'"
+            ",'CH','name1','Rade')")
         self.assertEqual(adressen[0].to_sql(), adressen_sql)
         self.assertEqual(positionen, [])
         self.assertEqual(texte, [])

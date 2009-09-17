@@ -23,8 +23,9 @@ import thread
 import random
 import textwrap
 import unittest
+import huTools.world
 from husoftm.connection import get_connection
-from husoftm.tools import date2softm, sql_quote, iso2land, EU_COUNTRIES
+from husoftm.tools import date2softm, sql_quote, iso2land
 from husoftm.stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00
 
 __revision__ = "$Revision$"
@@ -301,7 +302,7 @@ def _auftrag2records(vorgangsnummer, auftrag):
 
     # add Lieferadresse and Rechungsadresse and create eu country code if neccessary
     land = _create_addressentries(adressen, vorgangsnummer, auftrag)
-    if land != 'DE' and land in dict(EU_COUNTRIES):
+    if land != 'DE' and huTools.world.in_european_union(land):
         kopf.eu_laendercode = iso2land(land)
 
     for aobj_position in auftrag.positionen:

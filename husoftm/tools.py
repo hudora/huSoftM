@@ -22,34 +22,6 @@ logging.basicConfig(level=logging.DEBUG)
 LOG = logging.getLogger('husoftm.tools')
 
 
-EU_COUNTRIES = [(u"AT", u"Österreich"),
-                (u"BE", u"Belgien"),
-                (u"BG", u"Bulgarien"),
-                (u"CY", u"Zypern Zypern"),
-                (u"CZ", u"Tschechien"),
-                (u"DE", u"Deutschland"),
-                (u"DK", u"Dänemark"),
-                (u"EE", u"Estland"),
-                (u"ES", u"Spanien"),
-                (u"FI", u"Finnland"),
-                (u"FR", u"Frankreich"),
-                (u"GB", u"Vereinigtes Königreich"),
-                (u"GR", u"Griechenland"),
-                (u"HU", u"Ungarn"),
-                (u"IE", u"Irland"),
-                (u"IT", u"Italien"),
-                (u"LT", u"Litauen"),
-                (u"LU", u"Luxemburg"),
-                (u"LV", u"Lettland"),
-                (u"MT", u"Malta"),
-                (u"NL", u"Niederlande"),
-                (u"PL", u"Polen"),
-                (u"PT", u"Portugal"),
-                (u"RO", u"Rumänien"),
-                (u"SE", u"Schweden"),
-                (u"SI", u"Slowenien"),
-                (u"SK", u"Slowakei")]
-
 # SoftM verwendet scheinbar Autokennzeichen
 # http://en.wikipedia.org/wiki/List_of_international_license_plate_codes
 # Wir verwenden fuer alles neue ISO 3166-1 Alpha-2 Country Codes siehe http://en.wikipedia.org/wiki/ISO_3166-1

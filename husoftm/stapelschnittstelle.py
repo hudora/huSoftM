@@ -303,7 +303,7 @@ def _auftrag2records(vorgangsnummer, auftrag):
     # add Lieferadresse and Rechungsadresse and create eu country code if neccessary
     land = _create_addressentries(adressen, vorgangsnummer, auftrag)
     if land != 'DE' and huTools.world.in_european_union(land):
-        kopf.eu_laendercode = iso2land(land)
+        kopf.eu_laendercode = land
 
     for aobj_position in auftrag.positionen:
         _create_positionssatz(positionen, vorgangsnummer, aobj_position, texte)
@@ -359,7 +359,7 @@ def auftrag2softm(auftrag, belegtexte=None):
     rowcount = get_connection().query('ABK00', fields=['COUNT(*)'],
                                    condition="BKDFSL=%s" % sql_quote(uuid))[0][0]
     if rowcount < 1:
-        raise RuntimeError("Internal Server error: insertation into ABK00 failed: uuid=%r" % uuid)
+        raise RuntimeError("Internal Server error: insertation into ABK00 failed: uuid=%r\nSQL Statement: %r" % (uuid, kopf.to_sql()))
     elif rowcount > 1:
         # the race condition has hit - remove our entry and retry
         get_connection().delete('ABK00', 'BKDFSL=%s' % sql_quote(uuid))
@@ -531,16 +531,16 @@ class _GenericTests(unittest.TestCase):
         auftrag.rechnungsadresse.avisieren = '+49 21 91 / 6 09 12-0'
         auftrag.rechnungsadresse.strasse = 'Nicht Vergessen Weg 1'
         auftrag.rechnungsadresse.ort = 'Rade'
-        auftrag.rechnungsadresse.land = 'NL'
+        auftrag.rechnungsadresse.land = 'SI'
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
-        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKEGCD, BKDTLT, BKDTKW, BKSBNR, BKVGNR, BKFNR, BKDTKD, BKKDNR) VALUES('1','NL','1090917','1081230','1','123','01','1090917','   17200')")
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKEGCD, BKDTLT, BKDTKW, BKSBNR, BKVGNR, BKFNR, BKDTKD, BKKDNR) VALUES('1','SI','xtodayx','1081230','1','123','01','xtodayx','   17200')")
         # insert date of today since this will be automatically done by _auftrag2records()
         kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
         self.assertEqual(kopf.to_sql(), kpf_sql)
 
         adressen_sql = ("INSERT INTO ABV00 (BVNAM2, BVNAM3, BVKZAD, BVNAM4, BVVGNR, BVSTR, BVLKZ, BVNAME,"
             " BVORT) VALUES('name2','name3','1','+49 21 91 / 6 09 12-0','123','Nicht Vergessen Weg 1'"
-            ",'NL','name1','Rade')")
+            ",'SLO','name1','Rade')")
         self.assertEqual(adressen[0].to_sql(), adressen_sql)
         self.assertEqual(positionen, [])
         self.assertEqual(texte, [])

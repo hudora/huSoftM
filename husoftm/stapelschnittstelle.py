@@ -99,6 +99,19 @@ def getnextvorgang():
     return int(rows[0][0]+1)
 
 
+def loesche_vorgang(vorgangsnr):
+    """Setzt einen Vorgang auf Status gelöscht'."""
+    get_connection().update_raw("UPDATE ABK00 SET BKSTAT='X' WHERE BKVGNR=%s AND BKAUFN = 0 AND BKSTAT <> 'X' AND BKKZBA <> 0" % vorgangsnr)
+    get_connection().update_raw("UPDATE ABA00 SET BASTAT='X' WHERE BKVGNR=%s AND BKAUFN = 0 AND BKSTAT <> 'X' AND BKKZBA <> 0" % vorgangsnr)
+
+
+def feststeckende_jobs():
+    """Returns a list of jobs that got stuck in s17e."""
+    rows = get_connection().query('ABK00', fields=['BKKDNR', 'BKVGNR', 'BKNRKD', 'BKKZBA'], condition="BKAUFN = 0 AND BKSTAT <> 'X' AND BKKZBA <> 0")
+    fields = ('kundennr', 'vorgangsnr', 'kundenauftragsnr', 'fehlercode')
+    return [dict(zip(fields, row)) for row in rows]
+
+
 def vorgangsnummer_bekannt(vorgangsnummer):
     """Prüft, ob sich eine bestimmte Vorgangsnummer bereits im System befindet."""
     rows = get_connection().query('ABK00', fields=['BKVGNR'], condition="BKVGNR=%s"
@@ -376,8 +389,7 @@ def auftrag2softm(auftrag, belegtexte=None):
             print command
             get_connection().insert_raw(command)
         # remove "dateifuehrungsschluessel" and set recort active
-        get_connection().update_raw("UPDATE ABK00 SET BKKZBA=0, BKDFSL='' WHERE BKVGNR=%s"
-                                % vorgangsnummer)
+        get_connection().update_raw("UPDATE ABK00 SET BKKZBA=0, BKDFSL='' WHERE BKVGNR=%s" % vorgangsnummer)
 
     return vorgangsnummer
 

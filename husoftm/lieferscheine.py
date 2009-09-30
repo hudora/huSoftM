@@ -53,9 +53,13 @@ class Lieferschein(object):
     def __init__(self, lsnr=None):
         self._read_from_softm(lsnr)
     
+    def _read_base_row_from_softm(self, lsnr):
+        rows = _read_base_row_from_softm_lieferschein(lsnr)
+        return rows
+
     def _read_from_softm(self, lsnr):
         """Basierend auf der ALK00 wird ein Datensatz aus allen verwandten Tabellen extraiert."""
-        rows = _read_base_row_from_softm_lieferschein(lsnr)
+        rows = self._read_base_row_from_softm(lsnr)
         row = rows[0]
         for key, value in row.items():
             if key.islower(): # uppercase == SoftM field names, lowercaqse = plain-text field names
@@ -219,6 +223,7 @@ class Kommibeleg(Lieferschein):
     
 
 def _test():
+    Kommibeleg(3023551)
     (vars(Lieferschein(4034544)))
     kbpos2artnr(3023551, 1)
     

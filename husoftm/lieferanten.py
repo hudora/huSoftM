@@ -32,7 +32,7 @@ def alle_lieferanten():
     """Gibt alle Lieferantennummer zurück.
     
     >>> alle_lieferanten() #doctest: +ELLIPSIS
-    ['40000', '50000', '50001', ... '90191', '90500', '99999']
+    ['40000', '50000', '50001', ... '99999']
     """
     
     rows = get_connection().query(['XXA00'], fields=['XALINR'], condition=("XASTAT=' ' and XALINR<>''"))

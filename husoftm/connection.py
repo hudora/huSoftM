@@ -25,23 +25,6 @@ LOG = logging.getLogger('huSoftM.sql')
 LOG.setLevel(logging.WARN)
 
 
-# TODO: move to hutools robusttypecasts
-
-def int_or_0(data):
-    """Helper for unwinding SoftM nested list replies - not meant for public use."""
-    try:
-        if type(data) in (ListType, TupleType):
-            if data and data[0]:
-                if type(data[0]) in (ListType, TupleType):
-                    return int(data[0][0])
-                return int(data[0])
-        if data:
-            return int(data)
-        return 0
-    except TypeError:
-        return 0
-
-
 def _combine_date_and_time(mappings, fields, i, row, rowdict):
     """If there is also a time field in addition to a date field combine them."""
     basename = '_'.join(mappings[fields[i]].split('_')[:-1])
@@ -73,13 +56,12 @@ class PyRoMoftSconnection(object):
 
         if isinstance(data, str): # fix strings
             return data.strip().decode('latin-1').encode('utf-8')
-        elif type(data) == type(0.0):
+        elif isinstance(data, float):
             if data == int(data): # fix floats:
                 return int(data)
             else:
                 return float(data)
-        else:
-            return data
+        return data
 
     def _rows2dict(self, fields, mappings, rows):
         """Convert the list of rows we get from the server to a dict of columnames."""

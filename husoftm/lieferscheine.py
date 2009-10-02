@@ -16,6 +16,24 @@ from husoftm.tools import land2iso
 logging.basicConfig(level=logging.WARN)
 log = logging.getLogger('husoftm.lieferschein')
 
+def set_attributes(src, dest):
+    """
+    Set attributes of an object taken from a dictionary(-like) object.
+    
+    >>> class testobject(object):
+    ...     pass
+    ...
+    >>> obj = testobject()
+    >>> attribs = {'value': 0xaffe, 'name': 'ck', 'Hobby': 'horse riding'}
+    >>> set_attributes(attribs, obj)
+    >>> vars(obj)
+    {'name': 'ck', 'value': 45054}
+    """
+    
+    for key, value in src.items():
+        if key.islower(): # uppercase: SoftM fild names, lowercase: plain-text field names
+            setattr(dest, key, value)
+
 
 def kbpos2artnr(komminr, posnr):
     """Gibt die Artikelnummer zu einer bestimmten Position eines Kommissionierbelegs zurück."""
@@ -27,11 +45,11 @@ def kbpos2artnr(komminr, posnr):
 def _read_base_row_from_softm_lieferschein(lsnr):
     """Liest einen satz aus der ALK00."""
     
-    rows = get_connection().query('ALK00', condition="LKLFSN = %d" % (int(lsnr), ))
+    rows = get_connection().query('ALK00', condition="LKLFSN = %d" % lsnr)
     if len(rows) != 1:
-        raise IndexError("Probleme bei der Auswahl des Lieferscheins - kein Datensatz mit LKLFSN"
-                         + " = %d | %r" % (int(lsnr), rows))
-    return rows
+        raise RuntimeError("Probleme bei der Auswahl des Lieferscheins - kein Datensatz mit LKLFSN"
+                         + " = %d | %r" % (lsnr, rows))
+    return rows[0]
     
 
 class Adresse(object):
@@ -50,35 +68,30 @@ class Lieferschein(object):
     <Lieferschein object>
     """
     
-    def __init__(self, lsnr=None):
-        self._read_from_softm(lsnr)
+    def __init__(self, lsnr): # Kommibeleg: lsnr = None? (ist subklasse)
+        self._read_from_softm(int(lsnr))
     
     def _read_base_row_from_softm(self, lsnr):
         rows = _read_base_row_from_softm_lieferschein(lsnr)
         return rows
 
     def _read_from_softm(self, lsnr):
-        """Basierend auf der ALK00 wird ein Datensatz aus allen verwandten Tabellen extraiert."""
-        rows = self._read_base_row_from_softm(lsnr)
-        row = rows[0]
-        for key, value in row.items():
-            if key.islower(): # uppercase == SoftM field names, lowercaqse = plain-text field names
-                setattr(self, key, value)
+        """Basierend auf der ALK00 wird ein Datensatz aus allen verwandten Tabellen extrahiert."""
+        lieferschein = self._read_base_row_from_softm_lieferschein(lsnr) # Warum self, ist doch wirklich nur ein Wrapper, keine Verwendung von self
+        set_attributes(lieferschein, self)
         
         pos_key = self.satznr
         if self.bezogener_kopf:
             pos_key = self.bezogener_kopf
         # positionen lesen
         self.positionen = []
-        rows = get_connection().query('ALN00', condition="LNSANK = %d" % (int(pos_key), ))
+        rows = get_connection().query('ALN00', condition="LNSANK = %d" % int(pos_key))
         
         for row in rows:
             position = Lieferscheinposition()
-            for key, value in row.items():
-                if key.islower(): # uppercase == SoftM field names, lowercaqse = plain-text field names
-                    setattr(position, key, value)
-            position.menge = position.menge
-            position.artnr = position.artnr
+            set_attributes(row, position)
+            #position.menge = position.menge # ???
+            #position.artnr = position.artnr # ???
             self.positionen.append(position)
         
         self._get_lieferadresse()
@@ -136,7 +149,6 @@ class Lieferschein(object):
         if len(rows) != 1:
             raise RuntimeError("Probleme bei der Auswahl der Lieferadresse")
         self.lieferadresse = Adresse()
-        row = rows[0]
         # bsp fuer kundennr 83000:
         # row = {'adressdatei_id': 123665288,
         # 'aenderung_date': datetime.date(2008, 10, 27),
@@ -159,9 +171,7 @@ class Lieferschein(object):
         # 'strasse': u'Industriegebiet - Preezer Str. 22',
         # 'tel': u'+49 39954 360202',
         # 'url': u''}
-        for key, value in row.items():
-            if key.islower(): # uppercase == SoftM fild names, lowercaqse = plain-text field names
-                setattr(self.lieferadresse, key, value)
+        set_attributes(rows[0], self.lieferadresse)
     
     def _get_abweichendelieferadresse(self):
         """Abweichende Lieferadresse wenn vorhanden extraieren."""
@@ -182,9 +192,7 @@ class Lieferschein(object):
             #  'ort': u'Wustermark',
             #  'plz': u'14641',
             #  'strasse': u'Magdeburger Str. 2'}
-            for key, value in row.items():
-                if key.islower(): # uppercase == SoftM fild names, lowercaqse = plain-text field names
-                    setattr(self.lieferadresse, key, value)
+            set_attributes(row, self.lieferadresse)
             
             # Diese felder nur füllen wen eine gesonderte Lieferadresse angegeben ist.
             self.tel = self.lieferadresse.tel
@@ -214,13 +222,12 @@ class Kommibeleg(Lieferschein):
     def _read_base_row_from_softm(self, kbnr):
         """Liest einen Komissionierbeleg aus der AAK00."""
         
-        rows = get_connection().query('ALK00', condition="LKKBNR = %d AND LKSANB= 0" % (int(kbnr), ))
-        
+        rows = get_connection().query('ALK00', condition="LKKBNR = %d AND LKSANB = 0" % (int(kbnr), ))
         if len(rows) != 1:
-            raise IndexError(("Probleme bei der Auswahl des Lieferscheins - kein Datensatz mit LKKBNR"
-                             + " = %d | %r") % (int(kbnr), rows))
+            raise RuntimeError(("Probleme bei der Auswahl des Lieferscheins - kein Datensatz mit LKKBNR"
+                               + " = %d | %r") % (int(kbnr), rows))
         return rows
-    
+
 
 def _test():
     Kommibeleg(3023551)

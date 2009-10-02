@@ -39,8 +39,8 @@ def buchdurchschnittspreis(artnr):
     if rows:
         return _auf_zwei_stellen(rows[0][0])
     else:
-        return 0
-    
+        return Decimal()
+
 
 def preis(artnr):
     """Returns the Listenpreis - later to be extended to als find a customer specific price.

@@ -42,16 +42,6 @@ def kbpos2artnr(komminr, posnr):
     return rows[0][0]
     
 
-def _read_base_row_from_softm_lieferschein(lsnr):
-    """Liest einen satz aus der ALK00."""
-    
-    rows = get_connection().query('ALK00', condition="LKLFSN = %d" % lsnr)
-    if len(rows) != 1:
-        raise RuntimeError("Probleme bei der Auswahl des Lieferscheins - kein Datensatz mit LKLFSN"
-                         + " = %d | %r" % (lsnr, rows))
-    return rows[0]
-    
-
 class Adresse(object):
     """Repräsentiert eine Kundenadresse"""
     # Sollte dem Adressprotokoll folgen - muss aber noch überprüft werden.
@@ -67,17 +57,21 @@ class Lieferschein(object):
     >>> Lieferschein(4034544)
     <Lieferschein object>
     """
+
+    condition = "LKLFSN = %d"   
     
-    def __init__(self, lsnr): # Kommibeleg: lsnr = None? (ist subklasse)
+    def __init__(self, lsnr=None):
         self._read_from_softm(int(lsnr))
-    
-    def _read_base_row_from_softm(self, lsnr):
-        rows = _read_base_row_from_softm_lieferschein(lsnr)
-        return rows
 
     def _read_from_softm(self, lsnr):
         """Basierend auf der ALK00 wird ein Datensatz aus allen verwandten Tabellen extrahiert."""
-        lieferschein = self._read_base_row_from_softm_lieferschein(lsnr) # Warum self, ist doch wirklich nur ein Wrapper, keine Verwendung von self
+        
+        rows = get_connection().query('ALK00', condition=self.condition % lsnr)
+        if len(rows) != 1:
+            raise RuntimeError("Probleme bei der Auswahl des Lieferscheins - kein Datensatz mit %s" %
+                                (self.condition % lsnr))
+        lieferschein = rows[0]
+
         set_attributes(lieferschein, self)
         
         pos_key = self.satznr
@@ -218,15 +212,8 @@ class Lieferscheinposition(object):
 
 class Kommibeleg(Lieferschein):
     """Bildet einen Komissionierbeleg ab (der datentechnisch in SoftM ein Lieferschein ist)."""
-    
-    def _read_base_row_from_softm(self, kbnr):
-        """Liest einen Komissionierbeleg aus der AAK00."""
-        
-        rows = get_connection().query('ALK00', condition="LKKBNR = %d AND LKSANB = 0" % (int(kbnr), ))
-        if len(rows) != 1:
-            raise RuntimeError(("Probleme bei der Auswahl des Lieferscheins - kein Datensatz mit LKKBNR"
-                               + " = %d | %r") % (int(kbnr), rows))
-        return rows
+
+    condition = "LKKBNR = %d AND LKSANB = 0" 
 
 
 def _test():

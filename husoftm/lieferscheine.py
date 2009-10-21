@@ -16,6 +16,7 @@ from husoftm.tools import land2iso
 logging.basicConfig(level=logging.WARN)
 log = logging.getLogger('husoftm.lieferschein')
 
+
 def set_attributes(src, dest):
     """
     Set attributes of an object taken from a dictionary(-like) object.

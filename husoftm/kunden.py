@@ -8,7 +8,8 @@ Copyright (c) 2007 HUDORA GmbH. All rights reserved.
 """
 
 import datetime
-import husoftm.connection
+import husoftm.connection2
+import cs.caching as caching
 import husoftm.tools
 
 
@@ -102,7 +103,7 @@ class Kunde(object):
 def get_kundennummern():
     """Returns a list of all 'Kundennummern'."""
     
-    rows = husoftm.connection.get_connection().query('XKD00', fields=['KDKDNR'])
+    rows = husoftm.connection2.get_connection().query('XKD00', fields=['KDKDNR'])
     return [int(x[0]) for x in rows]
 
 
@@ -110,36 +111,37 @@ def get_changed_after(date):
     """Returns a list of all Kundennummern where the underlaying Data has changed since <date>."""
     
     date = int(date.strftime('1%y%m%d'))
-    rows = husoftm.connection.get_connection().query('XKD00', fields=['KDKDNR'],
+    rows = husoftm.connection2.get_connection().query('XKD00', fields=['KDKDNR'],
                                           condition="KDDTER>%d OR KDDTAE>=%d" % (date, date))
     ret = set([int(x[0]) for x in rows])
     # 
-    rows = husoftm.connection.get_connection().query('AKZ00', fields=['KZKDNR'],
+    rows = husoftm.connection2.get_connection().query('AKZ00', fields=['KZKDNR'],
                                           condition="KZDTAE>=%d" % (date))
     ret = ret|set([int(x[0]) for x in rows])
     return list(ret)
 
 
+@caching.cache_function(60*60*2)
 def get_kunde(kdnnr):
     """Get the Kunde object representing Kundennummer <kdnnr>.
     
     <kdnnr> must be an Integer in the Range 10000..99999.
     If no data exists for that KdnNr ValueError is raised."""
     
-    rows = husoftm.connection.get_connection().query(['XKD00', 'XKS00', 'AKZ00'],
+    rows = husoftm.connection2.get_connection().query(['XKD00', 'XKS00', 'AKZ00'],
            condition="KDKDNR='%8d' AND KSKDNR='%8d' AND KZKDNR LIKE '%s'" % (int(kdnnr), int(kdnnr),
                      '%' + str(kdnnr)))
     if not rows:
         # no AKZ00 entry
-        rows = husoftm.connection.get_connection().query(['XKD00', 'XKS00'],
+        rows = husoftm.connection2.get_connection().query(['XKD00', 'XKS00'],
                condition="KDKDNR='%8d' AND KSKDNR='%8d'" % (int(kdnnr), int(kdnnr)))
     if not rows:
         # no XKS00 entry
-        rows = husoftm.connection.get_connection().query(['XKD00', 'AKZ00'],
+        rows = husoftm.connection2.get_connection().query(['XKD00', 'AKZ00'],
                condition="KDKDNR='%8d' AND KZKDNR='%8d'" % (int(kdnnr), int(kdnnr)))
     if not rows:
         # no AKZ and XKS00 entry
-        rows = husoftm.connection.get_connection().query(['XKD00'],
+        rows = husoftm.connection2.get_connection().query(['XKD00'],
                condition="KDKDNR='%8d'" % (int(kdnnr)))
     if len(rows) > 1:
         raise RuntimeError("Mehr als einen Kunden gefunden: %r" % kdnnr)
@@ -150,6 +152,7 @@ def get_kunde(kdnnr):
     return Kunde().fill_from_softm(rows[0])
     
 
+@caching.cache_function(60*60*2)
 def get_kunde_by_iln(iln):
     """Get Kunden Address based on ILN.
     
@@ -159,15 +162,15 @@ def get_kunde_by_iln(iln):
     If no data exists for that GLN/ILN ValueError is raised.
     """
     
-    rows = husoftm.connection.get_connection().query(['XKS00'], condition="KCE2IL='%s'" % (int(iln), ))
+    rows = husoftm.connection2.get_connection().query(['XKS00'], condition="KCE2IL='%s'" % (int(iln), ))
     if rows:
         # stammadresse
         return get_kunde(rows[0]['kundennr'])
     else:
         # abweichende Lieferadresse
-        rows = husoftm.connection.get_connection().query(['AVA00'], condition="VAILN='%s'" % (int(iln), ))
+        rows = husoftm.connection2.get_connection().query(['AVA00'], condition="VAILN='%s'" % (int(iln), ))
         if rows:
-            rows2 = husoftm.connection.get_connection().query(['XXA00'],
+            rows2 = husoftm.connection2.get_connection().query(['XXA00'],
                 condition="XASANR='%s'" % (int(rows[0]['satznr']), ))
             if rows2:
                 kunde = Kunde().fill_from_softm(rows2[0])
@@ -176,8 +179,19 @@ def get_kunde_by_iln(iln):
     raise ValueError("Keine Daten für GLN/ILN %r gefunden" % iln)
     
 
+@caching.cache_function(60*60*2)
+def get_kundenbetreuer(kundennr):
+    """'Liefert einen String, der den Betreuer im Hause für einen bestimmten Kunden identifizert oder ''."""
+    rows = husoftm.connection2.get_connection().query(['AKZ00'], fields=['KZINFO'],
+           condition="KZKDNR LIKE '%s'" % ('%' + str(kundennr)))
+    if rows:
+        return rows[0][0]
+    return ''
+    
+
 def _selftest():
     """Test basic functionality"""
+    ßget_kundenbetreuer('17200')
     get_kunde_by_iln('4306544031019')
     get_kunde_by_iln('4306544000008')
     get_changed_after(datetime.date(2007, 1, 1))

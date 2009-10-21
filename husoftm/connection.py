@@ -12,9 +12,10 @@ __revision__ = "$Revision$"
 import datetime
 import logging
 import time
+import warnings
 import Pyro
 import Pyro.core
-from types import ListType, TupleType, StringType
+from types import StringType
 from husoftm.fields import MAPPINGDIR, DATETIMEDIR
 from husoftm.tools import softm2date
 import husoftm.mock_as400
@@ -50,6 +51,8 @@ class PyRoMoftSconnection(object):
     def __init__(self):
         # finds object automatically if you're running the Name Server.
         self.__server = Pyro.core.getProxyForURI("PYRONAME://pyro-ns.local.hudora.biz/mofts_connector1")
+        warnings.warn("hudoftm.connection is deprecated use hudoftm.connection2 instead",
+                      DeprecationWarning, stacklevel=2) 
 
     def _fix_field(self, data):
         """Fix field types returned by DB2/400."""

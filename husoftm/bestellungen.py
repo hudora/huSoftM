@@ -97,6 +97,7 @@ def get_bestellung(bestellnr):
     
 
 def _get_zugaenge_helper(rows):
+    """Sammeld daten zu einer Bestellung aus verschiedenen Tabellen."""
     rows = kursfaktorkorrektur(rows, 'kurs_zugang', 'kursfaktor_zugang')
     ret = []
     for row in rows:
@@ -136,6 +137,7 @@ def get_zugaenge_bestellnr(bestellnr):
     
 
 def get_bestellungen_artnr(artnr):
+    """Liefert alle Warenzugaenge einer Artikelnummer."""
     
     # BZT00 - zusatztexte
     positionen = get_connection().query(['EBP00', 'EBL00'], ordering=['BPDTLT'],
@@ -191,6 +193,8 @@ def bestellungen():
     
 
 def testbestellung():
+    """Experimental code for understandign SoftM."""
+    
     fieldwidth = 13
     bestellungen_artnr = get_bestellungen_artnr('10167')
     
@@ -281,7 +285,6 @@ def testbestellung():
     print
 
     
-    bestellungen = get_bestellungen_artnr('10167')
     for bestellung in bestellungen_artnr:
         print "B   ",
         for feldname in bestellfelder:
@@ -343,7 +346,7 @@ class MiscTests(unittest.TestCase):
 
 if __name__ == '__main__':
     (get_bestellung(43248))
-    (get_zugaenge(41971))
-    (get_zugaenge(43072))
+    (get_zugaenge_bestellnr(41971))
+    (get_zugaenge_bestellnr(43072))
     #testbestellung()
     unittest.main()

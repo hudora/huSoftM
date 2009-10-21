@@ -101,13 +101,16 @@ def getnextvorgang():
 
 def loesche_vorgang(vorgangsnr):
     """Setzt einen Vorgang auf Status gelöscht'."""
-    get_connection().update_raw("UPDATE ABK00 SET BKSTAT='X' WHERE BKVGNR=%s AND BKAUFN = 0 AND BKSTAT <> 'X' AND BKKZBA <> 0" % vorgangsnr)
-    get_connection().update_raw("UPDATE ABA00 SET BASTAT='X' WHERE BKVGNR=%s AND BKAUFN = 0 AND BKSTAT <> 'X' AND BKKZBA <> 0" % vorgangsnr)
+    get_connection().update_raw("UPDATE ABK00 SET BKSTAT='X' WHERE BKVGNR=%s AND BKAUFN = 0 AND"
+                                " BKSTAT <> 'X' AND BKKZBA <> 0" % vorgangsnr)
+    get_connection().update_raw("UPDATE ABA00 SET BASTAT='X' WHERE BKVGNR=%s AND BKAUFN = 0 AND"
+                                " BKSTAT <> 'X' AND BKKZBA <> 0" % vorgangsnr)
 
 
 def feststeckende_jobs():
     """Returns a list of jobs that got stuck in s17e."""
-    rows = get_connection().query('ABK00', fields=['BKKDNR', 'BKVGNR', 'BKNRKD', 'BKKZBA'], condition="BKAUFN = 0 AND BKSTAT <> 'X' AND BKKZBA <> 0")
+    rows = get_connection().query('ABK00', fields=['BKKDNR', 'BKVGNR', 'BKNRKD', 'BKKZBA'],
+                                  condition="BKAUFN = 0 AND BKSTAT <> 'X' AND BKKZBA <> 0")
     fields = ('kundennr', 'vorgangsnr', 'kundenauftragsnr', 'fehlercode')
     return [dict(zip(fields, row)) for row in rows]
 
@@ -372,7 +375,8 @@ def auftrag2softm(auftrag, belegtexte=None):
     rowcount = get_connection().query('ABK00', fields=['COUNT(*)'],
                                    condition="BKDFSL=%s" % sql_quote(uuid))[0][0]
     if rowcount < 1:
-        raise RuntimeError("Internal Server error: insertation into ABK00 failed: uuid=%r\nSQL Statement: %r" % (uuid, kopf.to_sql()))
+        raise RuntimeError("Internal Server error: insertation into ABK00 failed: "
+                           "uuid=%r\n SQL Statement: %r" % (uuid, kopf.to_sql()))
     elif rowcount > 1:
         # the race condition has hit - remove our entry and retry
         get_connection().delete('ABK00', 'BKDFSL=%s' % sql_quote(uuid))
@@ -545,7 +549,8 @@ class _GenericTests(unittest.TestCase):
         auftrag.rechnungsadresse.ort = 'Rade'
         auftrag.rechnungsadresse.land = 'SI'
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
-        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKEGCD, BKDTLT, BKDTKW, BKSBNR, BKVGNR, BKFNR, BKDTKD, BKKDNR) VALUES('1','SI','xtodayx','1081230','1','123','01','xtodayx','   17200')")
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKEGCD, BKDTLT, BKDTKW, BKSBNR, BKVGNR, BKFNR, BKDTKD, BKKDNR)"
+                   " VALUES('1','SI','xtodayx','1081230','1','123','01','xtodayx','   17200')")
         # insert date of today since this will be automatically done by _auftrag2records()
         kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
         self.assertEqual(kopf.to_sql(), kpf_sql)

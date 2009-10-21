@@ -7,7 +7,6 @@ Created by Maximillian Dornseif on 2008-11-25.
 Copyright (c) 2008 HUDORA. All rights reserved.
 """
 
-import unittest
 import warnings
 from husoftm.connection2 import get_connection
 

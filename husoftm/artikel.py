@@ -9,14 +9,14 @@ Copyright (c) 2007 HUDORA GmbH. All rights reserved.
 
 __revision__ = "$Revision$"
 
-import warnings
-import re
-import unittest
 from decimal import Decimal
-import husoftm
-import husoftm.caching
 from husoftm.connection2 import get_connection, as400_2_int
 from husoftm.tools import sql_quote
+import cs.caching as caching
+import husoftm
+import re
+import unittest
+import warnings
 
 
 def _auf_zwei_stellen(floatnum):
@@ -187,9 +187,6 @@ def guess_artnr(ean):
     return None
 
 
-_komponentencache = {}
-
-
 def komponentenaufloesung(mengenliste):
     """Lößt Artikel in ihre Komponenten auf.
     
@@ -204,7 +201,7 @@ def komponentenaufloesung(mengenliste):
     ret = []
     for menge, artnr in mengenliste:
     # check if we have a cached result
-        memc = husoftm.caching.get_cache()
+        memc = caching.get_cache()
         rows = memc.get('husoftm.komponentencache.%r' % (artnr))
         if not rows:
             rows = get_connection().query(['ASK00'], fields=['SKLFNR', 'SKKART', 'SKMENG'],
@@ -264,7 +261,7 @@ def get_umschlag(artnr):
     """
     
     # check if we have a cached result
-    memc = husoftm.caching.get_cache()
+    memc = caching.get_cache()
     cacheddata = memc.get('husoftm.umschlag.%r' % (artnr))
     if cacheddata:
         del memc

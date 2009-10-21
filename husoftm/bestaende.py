@@ -34,17 +34,16 @@ Siehe auch https://cybernetics.hudora.biz/intern/trac/wiki/HudoraGlossar zu den 
 
 __revision__ = "$Revision$"
 
+from husoftm.connection2 import get_connection, as400_2_int
+from husoftm.tools import sql_escape, sql_quote
 import couchdb.client
+import cs.caching as caching
 import cs.masterdata.article
 import datetime
+import huTools.async
 import time
 import unittest
 import warnings
-import husoftm.caching as caching
-
-from husoftm.connection2 import get_connection, as400_2_int
-from husoftm.tools import sql_escape, sql_quote
-import huTools.async
 
 
 COUCHSERVER = "http://couchdb.local.hudora.biz:5984"

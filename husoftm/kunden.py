@@ -191,7 +191,7 @@ def get_kundenbetreuer(kundennr):
 
 def _selftest():
     """Test basic functionality"""
-    ßget_kundenbetreuer('17200')
+    get_kundenbetreuer('17200')
     get_kunde_by_iln('4306544031019')
     get_kunde_by_iln('4306544000008')
     get_changed_after(datetime.date(2007, 1, 1))

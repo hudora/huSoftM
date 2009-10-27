@@ -334,7 +334,35 @@ def auftragsmengen(artnr, lager=None):
                    ordering='APDTLT', grouping='APDTLT',
                    querymappings={'SUM(APMNG-APMNGF)': 'menge_offen', 'APDTLT': 'liefer_date'})
     return dict([(x['liefer_date'], as400_2_int(x['menge_offen'])) for x in rows if x['menge_offen'] > 0])
+
+
+def get_offene_auftraege(lager=100):
+    """Liefert eine Liste offener Aufträge OHNE UMLAGERUNGEN.
     
+    Ported to connection2 from MoftS.lib.mofts.client.as400.py to be used in logistik/versandauslastung
+    """
+    # TODO: merge w/ auftragsmengen_alle_artikel()
+    mappings = {
+            'APARTN': 'artnr',
+            # das kann bei ueberlieferungen zu negativen werten fuehren 
+            # und ist bei auftraegen mit mengenaenderungen gelegentlich 0 - siehe Case 227:
+            'APMNG-APMNGF-APMNGG': 'menge',
+            'APMNG': 'bestellmenge',
+            'AKKDNR': 'kundennummer',
+            'AKAUFN': 'auftragsnummer',
+            'APDTLT': 'liefer_date',
+            'AKAUFA': 'art'}
+    fields = mappings.keys()
+    condition = "AKAUFN=APAUFN AND APKZVA=0 AND AKKZVA=0 AND AKAUFA<>'U' AND AKSTAT<>'X' AND APSTAT<>'X' AND APLGNR=%s" % lager
+    ordering = 'AKAUFN'
+    rows = get_connection().query(['AAP00', 'AAK00'],
+            fields=fields,
+            condition=condition,
+            ordering='APDTLT',
+            #grouping=['APARTN', 'APDTLT'], # das funktioniert nicht
+            querymappings=mappings)
+    return rows
+
 
 def auftragsmengen_alle_artikel(lager=0):
     """Liefert eine Liste offener Aufträge aller Artikel OHNE UMLAGERUNGEN.
@@ -366,10 +394,10 @@ def auftragsmengen_alle_artikel(lager=0):
         # Achtung, hier gibt es KEIN Lager 0 in der Tabelle. D.h. APLGNR=0 gibt nix
         condition = condition + (" AND APLGNR=%d" % lager)
     rows = get_connection().query(['AAP00', 'AAK00'],
-     fields=['APARTN', 'APDTLT', 'SUM(APMNG-APMNGF)'],
-     condition=condition,
-     ordering='APDTLT', grouping=['APARTN', 'APDTLT'],
-     querymappings={'SUM(APMNG-APMNGF)': 'menge_offen', 'APARTN': 'artnr', 'APDTLT': 'liefer_date'})
+            fields=['APARTN', 'APDTLT', 'SUM(APMNG-APMNGF)'],
+            condition=condition,
+            ordering='APDTLT', grouping=['APARTN', 'APDTLT'],
+            querymappings={'SUM(APMNG-APMNGF)': 'menge_offen', 'APARTN': 'artnr', 'APDTLT': 'liefer_date'})
     ret = {}
     for row in rows:
         if row['menge_offen']:

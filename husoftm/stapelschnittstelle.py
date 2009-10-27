@@ -140,8 +140,7 @@ def kundenauftragsnummer_bekannt(kundenauftragsnummer):
 def schnittstelle_leer():
     """Ermittelt, ob sich ungeprüfte Vorgänge in der stapelschnittstelle befinden."""
 
-    rows = get_connection().query('ABK00', fields=['BKVGNR'],
-                                          condition="BKAUFN = 0 AND BKKZBA = 0")
+    rows = get_connection().query('ABK00', fields=['BKVGNR'], condition="BKAUFN = 0 AND BKKZBA = 0")
     if rows:
         return False
     return True

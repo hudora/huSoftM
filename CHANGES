@@ -1,3 +1,4 @@
+0.56p1: Hostname gefixed 
 0.56: neu: kunden.get_kundenbetreuer(), kunden.py nutzt jetzt connection2
 
 0.55p1: Wenn Rechnungen ins EU-Ausland gestellt werden, dann wird jetzt der EU-Ländrecode

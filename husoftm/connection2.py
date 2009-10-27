@@ -230,7 +230,7 @@ class MoftSconnection(object):
     
     def _select(self, query):
         param = urllib.quote(query)
-        conn = httplib.HTTPConnection("odbc_bridge.local.hudora.biz:8000")
+        conn = httplib.HTTPConnection("odbcbridge.local.hudora.biz:8000")
         # conn.set_debuglevel(5)
         conn.request("GET", "/select?query=" + param)
         response = conn.getresponse()

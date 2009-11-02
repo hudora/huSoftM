@@ -9,12 +9,41 @@ Copyright (c) 2007 HUDORA GmbH. All rights reserved.
 
 __revision__ = "$Revision$"
 
-import logging
 from husoftm.connection2 import get_connection
 from husoftm.tools import land2iso
+import cs.caching
+import logging
 
 logging.basicConfig(level=logging.WARN)
 log = logging.getLogger('husoftm.lieferschein')
+
+
+def get_lieferscheinnrs_for_lager(lager):
+    "Liefert eine Liste mit allen nicht voll ausgelieferten Lieferscheinnummern für ein Lager."""
+    rows = get_connection().query("ALK00", fields=["LKLFSN"],
+                                  condition="LKLGNR=%r AND LKLFSN>0 AND LKKZVA=0 AND LKSTAT <> 'X'" % lager)
+    return sorted(set((int(row[0]) for row in rows)))
+
+
+def get_lieferscheine_rechnungsstatus(lieferscheinnrs):
+    """Liefert den minimalen Rechnungsstatus aller Positionen einer Liste von Lieferscheinen zurück.
+    
+    lieferscheinnrs is expected to be a list.
+
+    Returns a list containing tuples w/ lieferscheinnr and its rechnungsstatus
+    """
+
+    mappings = {'LKLFSN': 'lieferscheinnummer',
+                'MIN(LNRGST)': 'rechnungsstatus'}
+    
+    if lieferscheinnrs:
+        condition="LKSANK=LNSANK AND (LKLFSN IN (%s))" % ", ".join(str(lsnr) for lsnr in lieferscheinnrs)
+        rows = get_connection().query(["ALK00", "ALN00"], fields=mappings.keys(),
+                                      condition=condition,
+                                      grouping=["LKLFSN"],
+                                      querymappings=mappings)
+        return [(int(row['lieferscheinnummer']), int(row['rechnungsstatus'])) for row in rows]
+    return []
 
 
 def set_attributes(src, dest):
@@ -36,9 +65,10 @@ def set_attributes(src, dest):
             setattr(dest, key, value)
 
 
+@cs.caching.cache_function(60*60*72) # 4 days
 def kbpos2artnr(komminr, posnr):
     """Gibt die Artikelnummer zu einer bestimmten Position eines Kommissionierbelegs zurück."""
-    rows = get_connection().query('ALN00', fields=['LNARTN'], 
+    rows = get_connection().query('ALN00', fields=['LNARTN'],
                condition="LNKBNR=%d AND LNBELP=%d" % (int(komminr), int(posnr)))
     return rows[0][0]
     

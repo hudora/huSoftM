@@ -1,3 +1,5 @@
+0.57: get_lieferscheinnrs_for_lager und get_lieferscheine_rechnungsstatus aus 
+      MoftS.lib.mofts.client.as400.MoftSConnnection hierher portiert
 0.56p1: Hostname gefixed 
 0.56: neu: kunden.get_kundenbetreuer(), kunden.py nutzt jetzt connection2
 

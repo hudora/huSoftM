@@ -73,6 +73,13 @@ def kbpos2artnr(komminr, posnr):
     return rows[0][0]
     
 
+@cs.caching.cache_function(60*60*72) # 4 days
+def kbpos2artnr_lager(komminr, posnr):
+    """Gibt die Artikelnummer und das Lager zu einer bestimmten Position eines Kommissionierbelegs zurück."""
+    rows = get_connection().query('ALN00', fields=['LNARTN', 'LNLGNR'],
+               condition="LNKBNR=%d AND LNBELP=%d" % (int(komminr), int(posnr)))
+    return rows[0]
+
 class Adresse(object):
     """Repräsentiert eine Kundenadresse"""
     # Sollte dem Adressprotokoll folgen - muss aber noch überprüft werden.

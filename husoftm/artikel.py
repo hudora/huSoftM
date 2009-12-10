@@ -200,10 +200,10 @@ def komponentenaufloesung(mengenliste):
     
     ret = []
     for menge, artnr in mengenliste:
-    # check if we have a cached result
+        # check if we have a cached result
         memc = caching.get_cache()
         rows = memc.get('husoftm.komponentencache.%r' % (artnr))
-        if not rows:
+        if rows == None: # empty lists are cached too, so check against None here
             rows = get_connection().query(['ASK00'], fields=['SKLFNR', 'SKKART', 'SKMENG'],
                                           condition="SKARTN='%s'" % artnr)
             memc.set('husoftm.komponentencache.%r' % (artnr), rows, 60*60*72) # 4 d

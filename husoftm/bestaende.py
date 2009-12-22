@@ -36,6 +36,7 @@ __revision__ = "$Revision$"
 
 from husoftm.connection2 import get_connection, as400_2_int
 from husoftm.tools import sql_escape, sql_quote
+import husoftm.artikel
 import couchdb.client
 import cs.caching as caching
 import cs.masterdata.article
@@ -234,25 +235,13 @@ def freie_menge(artnr, dateformat="%Y-%m-%d"):
         return max([min(bestandse), 0])
     else:
         return 0
-    
 
-def bestandsentwicklung(artnr, dateformat="%Y-%m-%d"):
-    """Liefert ein Dictionary, dass alle zukünftigen, bzw. noch nicht ausgeführten Bewegungen
-    
-    für einen Artikel beinhaltet. Ist kein Bestand für den Artikel vorhanden, wird None zurückgegeben.
-    
-    dateformat bestimmt dabei die Keys des Dictionaries und steuert die Granularität. "%Y-%W" sorgt 
-    z.B. für eine wochenweise Auflösung.
 
-    >>> bestandsentwicklung('14865')
-    {'2009-02-20': 1200,
-     '2009-03-02': 860,
-     '2009-04-01': 560,
-     '2009-05-04': 300}
-     
-     Achtung: Diese Funktion implementiert bis zu 120 Sekunden caching.
+def _bestandsentwicklung(artnr, dateformat="%Y-%m-%d"):
+    """Hilfsfunktion für bestandsentwicklung.
+
+    Hier wird für einen einzelnen Artikel der Bestand abgefragt.
     """
-    
     # check if we have a cached result.
     memc = caching.get_cache()
     cache = memc.get('husoftm.bestandsentwicklung.%r.%r' % (artnr, dateformat))
@@ -288,6 +277,53 @@ def bestandsentwicklung(artnr, dateformat="%Y-%m-%d"):
     
     return bestentwicklung
     
+
+def bestandsentwicklung(artnr, dateformat="%Y-%m-%d"):
+    """Liefert ein Dictionary, dass alle zukünftigen, bzw. noch nicht ausgeführten Bewegungen
+    
+    für einen Artikel beinhaltet. Ist kein Bestand für den Artikel vorhanden, wird None zurückgegeben.
+    
+    dateformat bestimmt dabei die Keys des Dictionaries und steuert die Granularität. "%Y-%W" sorgt 
+    z.B. für eine wochenweise Auflösung.
+
+    >>> bestandsentwicklung('14865')
+    {'2009-02-20': 1200,
+     '2009-03-02': 860,
+     '2009-04-01': 560,
+     '2009-05-04': 300}
+     
+     Achtung: Diese Funktion implementiert bis zu 120 Sekunden caching.
+    """
+
+    # Auflösung von Set-Artikeln in ihre Unterartikel.
+    # Die Bestandsentwicklung des Sets der Bestandsentwicklung der Unterartikel divdiert durch
+    # die jeweilige Anzahl der Unterartikel pro Set entsprechen.
+    components = husoftm.artikel.komponentenaufloesung([(1, artnr)])
+    bentw_all = []
+    for mng_set, artnr_set in components:
+        bentw = dict(((datum, mng/mng_set) for (datum, mng) in
+                      _bestandsentwicklung(artnr_set, dateformat).items()))
+        bentw_all.append(bentw)
+
+    # consistency check: alle Entwicklungen sollten den selben Zeitstempel haben
+    keys = [sorted(dct.keys()) for dct in bentw_all]
+    for ks1, ks2 in zip(keys, keys[1:]):
+        assert(ks1 == ks2)
+
+    # consistency check: alle entwicklungen sollten nach meinem Verständnis identisch sein
+    # FIXME: oder evtl. nicht (Fehlmengen, Bruch, ...) sollten doch da eigentlich nix mit zu tun haben
+    # funktioniert aber nicht, siehe art 65153
+    #for bentw1, benw2 in zip(bentw_all, bentw_all[1:]):
+        #assert(bentw1 == benw2)
+
+    # Rückgabe wert ist die größte Menge eines Sub-Artikels pro Datum, eigentlich sollten diese Mengen identisch sein,
+    # sind sie aber nicht immer, sihe obigen Kommentar (artnr 65153)
+    ret = {}
+    for key in keys[0]:
+        ret[key] = max(dct[key] for dct in bentw_all)
+
+    return ret
+
 
 def bestellmengen(artnr):
     """Liefert eine liste mit allen Bestellten aber noch nicht gelieferten Wareneingängen.
@@ -413,27 +449,71 @@ def versionsvorschlag(menge, orgartnr, date, dateformat="%Y-%m-%d"):
     >>> versionsvorschlag(2000, '76095', '2009-01-04')
     (False, [(0, '76095')])
     """
-    
     ret = []
     benoetigt = menge
     for artnr in cs.masterdata.article.alternatives(orgartnr):
-        bentwicklung = bestandsentwicklung(artnr, dateformat).items()
-        if not bentwicklung:
-            continue
-        bentwicklung.sort()
-        # date should not be bigger than last date in bentwicklung
-        mindate = min([date, bentwicklung[-1][0]]) 
-        
-        bentwicklung = [x for x in bentwicklung if x[0] >= mindate]
-        verfuegbar = min([quantity for dummy, quantity in bentwicklung])
-        
-        if verfuegbar > 0:
-            ret.append((min(benoetigt, verfuegbar), artnr))
-            benoetigt -= verfuegbar
+        dummy, untermenge = frei_am(benoetigt, artnr, date, dateformat)
+        if untermenge:
+            ret.append((min(benoetigt, untermenge), artnr))
+            benoetigt -= untermenge
         if benoetigt <= 0:
             return True, ret
     return False, ret
     
+
+def frei_am(menge, artnr, date, dateformat="%Y-%m-%d"):
+    """Ermittelt, ob die Menge für einen Artikel zu dem Datum date frei ist.
+    
+    Rückgabewert ist ein Tupel. Dessen erster Eintrag gibt an, ob die Menge vorhanden ist,
+    der zweite Eintrag entspricht der gesamt freien Menge zu diesem Datum.
+    """
+    bentwicklung = bestandsentwicklung(artnr, dateformat).items()
+    if bentwicklung:
+        bentwicklung.sort()
+        # date should not be bigger than last date in bentwicklung
+        mindate = min((date, bentwicklung[-1][0]))
+        bentwicklung = (x for x in bentwicklung if x[0] >= mindate)
+        verfuegbar = min(quantity for dummy, quantity in bentwicklung)
+        return (verfuegbar >= menge), verfuegbar
+    return False, 0
+
+
+# XXX: Diese Funktion sollte mit der Einführung der Bestandsentwicklung eigentlich redundant sein.
+# Habe sie aber mal fürs REview drin gelassen.
+def frei_am_sets(menge, artnr, date, dateformat="%Y-%m-%d"):
+    """Ermittelt für Set-Artikel, ob die gegene Menge für einen Artikel zu dem Datum date frei ist.
+    
+    Rückgabewert ist ein Tupel. Dessen erster Eintrag gibt an, ob der gesamte Set in dieser Menge da ist,
+    der zweite Eintrag ist eine Liste von Tupeln, die jeweils für den Unterartikel die Lieferbarkeit,
+    Menge und Artikelnummer enthalten.
+
+    >>> husoftm.bestaende.frei_am_sets(2000, '00537', '20010-01-04')
+    (False, [(False, 0, '42050/A'), (False, 0, '42051/A'), (False, 0, '42052/A')])
+    
+    """
+    components = husoftm.artikel.komponentenaufloesung([(menge, artnr)])
+    tmp = [frei_am(cmeng, cartnr, date, dateformat) + (cartnr, ) for cmeng, cartnr in components]
+    frei = all(frei_[0] for frei_ in tmp)
+    return frei, tmp
+
+
+# XXX: Diese Funktion sollte mit der Einführung der Bestandsentwicklung eigentlich redundant sein.
+# Habe sie aber mal fürs REview drin gelassen.
+def frei_ab_sets(menge, artnr, dateformat="%Y-%m-%d"):
+    """Finds the earliest date when menge is frei (available) or None if it isn't available at all.
+
+    >>> frei_ab(50, '76095')
+    None
+    >>> frei_ab(500, '01104')
+    datetime.date(2008, 11, 22)
+
+    """
+    components = husoftm.artikel.komponentenaufloesung([(menge, artnr)])
+    entries = [frei_ab(cmeng, cartnr, dateformat) for cmeng, cartnr in components]
+    if all(entries):
+        return max(entries)
+    return None
+
 
 def frei_ab(menge, artnr, dateformat="%Y-%m-%d"):
     """Finds the earliest date when menge is frei (available) or None if it isn't available at all.

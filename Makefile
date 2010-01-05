@@ -78,10 +78,15 @@ publish:
 	rsync dist/* root@cybernetics.hudora.biz:/usr/local/www/apache22/data/dist/huSoftM/
 	echo "now bump version number in setup.py and commit"
 
-doc: build
+testenv_pydoc: dependencies
+	echo '#!/usr/bin/env python' > testenv/bin/pydoc.x
+	cat `which pydoc` >> testenv/bin/pydoc.x
+	chmod +x testenv/bin/pydoc.x
+
+doc: build testenv_pydoc
 	rm -Rf html
 	mkdir -p html
-	sh -c '(cd html; pydoc -w ../husoftm/*.py)'
+	sh -c '(PYTHONPATH=$(PWD) cd html; pydoc.x -w ../husoftm/*.py)'
 
 install: build
 	sh -c 'sudo python setup.py install'

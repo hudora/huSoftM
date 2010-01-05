@@ -1,44 +1,31 @@
+0.57p2: published again
 0.57p1: kbpos2artnr_lager() zugefuegt
-0.57: get_lieferscheinnrs_for_lager und get_lieferscheine_rechnungsstatus aus 
-      MoftS.lib.mofts.client.as400.MoftSConnnection hierher portiert
+0.57:   get_lieferscheinnrs_for_lager und get_lieferscheine_rechnungsstatus aus 
+        MoftS.lib.mofts.client.as400.MoftSConnnection hierher portiert
 0.56p1: Hostname gefixed 
-0.56: neu: kunden.get_kundenbetreuer(), kunden.py nutzt jetzt connection2
-
+0.56:   neu: kunden.get_kundenbetreuer(), kunden.py nutzt jetzt connection2
 0.55p1: Wenn Rechnungen ins EU-Ausland gestellt werden, dann wird jetzt der EU-Ländrecode
         mit an die Stapelschnittstelle übergeben
-
-0.55: husoftm.lieferanten implementiert
-
+0.55:   husoftm.lieferanten implementiert
 0.53p1: build prozess ueberarbeitet, preise_ek.preisentwicklung()
         liefert jetzt Waehrungen mit
-
-0.53: preise_ek.preisentwicklung() implementiert.
-      erste umrisse des 'Bestellungen' moduls.
-      Wir koennen nun mit Datumsfeldern mit dem Inhalt '999999' umgehen.
-      Bug bei freie_menge() behoben, der bei Aufträgen im Rueckstand
-          immer zu dem Wert 0 fuehrte
-      connection2 aggressiv refactored und dokumentiert. Einige bordercases
-          liefern jetzt andere werte zurueck. Wandlung in Decimal()
-          funktioniert jetzt wie gewünscht.
-
+0.53:   preise_ek.preisentwicklung() implementiert.
+        erste umrisse des 'Bestellungen' moduls.
+        Wir koennen nun mit Datumsfeldern mit dem Inhalt '999999' umgehen.
+        Bug bei freie_menge() behoben, der bei Aufträgen im Rueckstand
+            immer zu dem Wert 0 fuehrte
+        connection2 aggressiv refactored und dokumentiert. Einige bordercases
+            liefern jetzt andere werte zurueck. Wandlung in Decimal()
+            funktioniert jetzt wie gewünscht.
 0.52p2: Bugfix
-
 0.52p1: Zahlreiche Tabellen für Bestellungen (Einkauf) zugefügt
-
-0.52: kundenauftragsnr_to_rechnungsnr() implementiert
-
+0.52:   kundenauftragsnr_to_rechnungsnr() implementiert
 0.51p5: calculation problem based on strange AS/400 number format
-
 0.51p4: improvment of invoice analysis thanks to A. James
-
 0.51p3: nachschieber bugfix
-
 0.51p2: don't leave socket in memcache lying arround
-
 0.51p1: artikel.get_umschlag() nutzt nun die Rechnungsdtei, nicht die Lieferscheine und ignoriert
         Umlagerungen / deutlich längerer timeout in der odbc_bridge, eigene exception für timeouts
-
-0.51: artikel.get_umschlag() implementiert, caching ueberarbeitet
-
-0.5: moved to odbc_bridge for bestaende.py
-     bestandsentwicklung stark optiemiert und mit caching versehen
+0.51:   artikel.get_umschlag() implementiert, caching ueberarbeitet
+0.5:    moved to odbc_bridge for bestaende.py
+        bestandsentwicklung stark optiemiert und mit caching versehen

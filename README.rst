@@ -26,5 +26,5 @@ Get it at https://github.com/hudora/huSoftM
 Changes
 -------
 
-0.2 - added husoftm.bestaende
-0.01 - first public release based on internal packages "pySoftM" and mofts.client.as400 .
+* 0.2 - added husoftm.bestaende
+* 0.01 - first public release based on internal packages "pySoftM" and mofts.client.as400 .

@@ -13,7 +13,7 @@ hubarcode = setup(name='huSoftM',
       url='https://cybernetics.hudora.biz/projects/wiki/HuSoftm',
       version='0.57p2',
       description='communication with the SoftM Suite on an AS/400',
-      long_description=codecs.open('README.rst', "r", "utf-8").read()
+      long_description=codecs.open('README.rst', "r", "utf-8").read(),
       classifiers=['License :: OSI Approved :: BSD License',
                    'Intended Audience :: Developers',
                    'Programming Language :: Python'],

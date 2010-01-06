@@ -73,12 +73,24 @@ def kbpos2artnr(komminr, posnr):
     return rows[0][0]
     
 
-@cs.caching.cache_function(60*60*72) # 4 days
+#@cs.caching.cache_function(60*60*24) # 1 day
 def kbpos2artnr_lager(komminr, posnr):
-    """Gibt die Artikelnummer und das Lager zu einer bestimmten Position eines Kommissionierbelegs zurück."""
+    """Gibt die Artikelnummer und das Abgangs-Lager zu einer bestimmten Position eines Kommissionierbelegs zurück."""
     rows = get_connection().query('ALN00', fields=['LNARTN', 'LNLGNR'],
                condition="LNKBNR=%d AND LNBELP=%d" % (int(komminr), int(posnr)))
-    return rows[0]
+    return rows[0]['artnr'], rows[0]['lager']
+
+
+#@cs.caching.cache_function(60*60*24) # 1 day
+def kbpos2artnr_zugangslager(komminr, posnr):
+    """Gibt die Artikelnummer und das ZUGANGS-Lager zu einer bestimmten Position eines Kommissionierbelegs zurück."""
+    # Read auftragsnr_kunde
+    rows = get_connection().query('ALN00', fields=['LNARTN', 'LNAUFN'],
+               condition="LNKBNR=%d AND LNBELP=%d" % (int(komminr), int(posnr)))
+    artnr, auftragsnr = rows[0]['artnr'], rows[0]['auftragsnr']
+    rows = get_connection().query('AAK00', condition="AKAUFN='%d'" % int(auftragsnr))
+    return artnr, rows[0]["zugangslager"]
+
 
 class Adresse(object):
     """Repräsentiert eine Kundenadresse"""

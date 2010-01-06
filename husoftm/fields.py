@@ -90,7 +90,7 @@ MAPPINGDIR = {
           # 'AKPRZA': 'Aufteilungs-%-Satz',
           # 'AKBZRG': 'Bezogene RG-nr',
           # 'AKLGN1': 'Auslieferungslager',
-          # 'AKLGN2': 'Zugangslager',
+          'AKLGN2': 'zugangslager',
           # 'AKTRNR': 'Touren-nr',
           # 'AKLINR': 'Lieferant bei Strecke',
           # 'AKSPED': 'Spediteur',

@@ -1,0 +1,277 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module softmtables</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>softmtables</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="http://github.com/hudora/huSoftM/blob/master/husoftm/softmtables.py">github.com/hudora/huSoftM/blob/master/husoftm/softmtables.py</a></font></td></tr></table>
+    <p><tt>softmtables.py&nbsp;-&nbsp;acessing&nbsp;SoftM&nbsp;tables&nbsp;abstract&nbsp;classes.<br>
+&nbsp;<br>
+This&nbsp;abstract&nbsp;class&nbsp;comes&nbsp;without&nbsp;unittests.&nbsp;Child&nbsp;classes&nbsp;are&nbsp;expected&nbsp;to&nbsp;include&nbsp;extensive&nbsp;testcases.<br>
+&nbsp;<br>
+Created&nbsp;by&nbsp;Lars&nbsp;Ronge,&nbsp;Maximillian&nbsp;Dornseif&nbsp;on&nbsp;2007-12-07.<br>
+Copyright&nbsp;(c)&nbsp;2007&nbsp;HUDORA.&nbsp;All&nbsp;rights&nbsp;reserved.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="datetime.html">datetime</a><br>
+</td><td width="25%" valign=top><a href="logging.html">logging</a><br>
+</td><td width="25%" valign=top><a href="sqlite3.html">sqlite3</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="softmtables.html#AS400Connector_mixin">AS400Connector_mixin</a>
+</font></dt><dt><font face="helvetica, arial"><a href="softmtables.html#SoftMreadOnlyTable">SoftMreadOnlyTable</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="softmtables.html#SoftMtable">SoftMtable</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="softmtables.html#SqliteConnector_mixin">SqliteConnector_mixin</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="exceptions.html#RuntimeError">exceptions.RuntimeError</a>(<a href="exceptions.html#StandardError">exceptions.StandardError</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="softmtables.html#SoftMError">SoftMError</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="AS400Connector_mixin">class <strong>AS400Connector_mixin</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>This&nbsp;Mixin&nbsp;connects&nbsp;a&nbsp;SoftM&nbsp;Table&nbsp;Object&nbsp;ti&nbsp;the&nbsp;real&nbsp;AS/400&nbsp;database.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="AS400Connector_mixin-sql_insert"><strong>sql_insert</strong></a>(self, sqlstr)</dt><dd><tt>Execute&nbsp;the&nbsp;actual&nbsp;SQL&nbsp;query&nbsp;(INSERT).</tt></dd></dl>
+
+<dl><dt><a name="AS400Connector_mixin-sql_select"><strong>sql_select</strong></a>(self, sqlstr)</dt><dd><tt>Execute&nbsp;the&nbsp;actual&nbsp;SQL&nbsp;query&nbsp;(SELECT).</tt></dd></dl>
+
+<dl><dt><a name="AS400Connector_mixin-sql_update"><strong>sql_update</strong></a>(self, sqlstr)</dt><dd><tt>Execute&nbsp;the&nbsp;actual&nbsp;SQL&nbsp;query&nbsp;(UPDATE).</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="SoftMError">class <strong>SoftMError</strong></a>(<a href="exceptions.html#RuntimeError">exceptions.RuntimeError</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Represents&nbsp;an&nbsp;error&nbsp;within&nbsp;the&nbsp;SoftM&nbsp;connection.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="softmtables.html#SoftMError">SoftMError</a></dd>
+<dd><a href="exceptions.html#RuntimeError">exceptions.RuntimeError</a></dd>
+<dd><a href="exceptions.html#StandardError">exceptions.StandardError</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Methods inherited from <a href="exceptions.html#RuntimeError">exceptions.RuntimeError</a>:<br>
+<dl><dt><a name="SoftMError-__init__"><strong>__init__</strong></a>(...)</dt><dd><tt>x.<a href="#SoftMError-__init__">__init__</a>(...)&nbsp;initializes&nbsp;x;&nbsp;see&nbsp;x.__class__.__doc__&nbsp;for&nbsp;signature</tt></dd></dl>
+
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#RuntimeError">exceptions.RuntimeError</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object at 0x307c60&gt;<dd><tt>T.<a href="#SoftMError-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="SoftMError-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#SoftMError-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="SoftMError-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#SoftMError-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="SoftMError-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#SoftMError-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="SoftMError-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#SoftMError-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="SoftMError-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="SoftMError-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#SoftMError-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="SoftMError-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#SoftMError-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="SoftMError-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="SoftMError-__str__"><strong>__str__</strong></a>(...)</dt><dd><tt>x.<a href="#SoftMError-__str__">__str__</a>()&nbsp;&lt;==&gt;&nbsp;str(x)</tt></dd></dl>
+
+<dl><dt><a name="SoftMError-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="SoftMreadOnlyTable">class <strong>SoftMreadOnlyTable</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>This&nbsp;is&nbsp;a&nbsp;generic&nbsp;engine&nbsp;to&nbsp;access&nbsp;SoftM&nbsp;interface&nbsp;tables.<br>
+&nbsp;<br>
+This&nbsp;means&nbsp;data&nbsp;exchange&nbsp;tables&nbsp;which&nbsp;are&nbsp;accessed&nbsp;purely&nbsp;in&nbsp;an&nbsp;row&nbsp;oriented&nbsp;manner&nbsp;and&nbsp;use<br>
+deploy&nbsp;'Dateiführungsschlüssel"&nbsp;fields&nbsp;and&nbsp;logical&nbsp;deletions&nbsp;usint&nbsp;the&nbsp;'XXSTAT'&nbsp;column.<br>
+&nbsp;<br>
+The&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;supports&nbsp;locking&nbsp;rows&nbsp;and&nbsp;automatic&nbsp;removal&nbsp;of&nbsp;stale&nbsp;locks&nbsp;after&nbsp;three&nbsp;hours&nbsp;-&nbsp;so&nbsp;you&nbsp;must<br>
+finish&nbsp;your&nbsp;work&nbsp;within&nbsp;60&nbsp;minutes.<br>
+&nbsp;<br>
+All&nbsp;SoftM&nbsp;tables&nbsp;need&nbsp;a&nbsp;mixin&nbsp;class&nbsp;to&nbsp;implement&nbsp;the&nbsp;actual&nbsp;database&nbsp;access.&nbsp;See&nbsp;<a href="#SqliteConnector_mixin">SqliteConnector_mixin</a>&nbsp;and<br>
+<a href="#AS400Connector_mixin">AS400Connector_mixin</a>&nbsp;for&nbsp;examples.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="SoftMreadOnlyTable-__init__"><strong>__init__</strong></a>(self)</dt><dd><tt>Method&nbsp;should&nbsp;be&nbsp;overwritten&nbsp;by&nbsp;subclasses.</tt></dd></dl>
+
+<dl><dt><a name="SoftMreadOnlyTable-available_rows"><strong>available_rows</strong></a>(self, fields<font color="#909090">='*'</font>, conditions<font color="#909090">='1=1'</font>)</dt><dd><tt>Get&nbsp;non-locked,&nbsp;non-deleted&nbsp;rows.<br>
+&nbsp;<br>
+You&nbsp;can&nbsp;give&nbsp;a&nbsp;list&nbsp;of&nbsp;fields&nbsp;you&nbsp;want&nbsp;to&nbsp;get&nbsp;returned.<br>
+You&nbsp;can&nbsp;also&nbsp;give&nbsp;a&nbsp;list&nbsp;of&nbsp;additional&nbsp;conditiones&nbsp;as&nbsp;SQL.</tt></dd></dl>
+
+<dl><dt><a name="SoftMreadOnlyTable-generate_select_sql"><strong>generate_select_sql</strong></a>(self, condition, fields)</dt><dd><tt>Generate&nbsp;the&nbsp;SQL-string&nbsp;for&nbsp;executing&nbsp;a&nbsp;select&nbsp;command.</tt></dd></dl>
+
+<dl><dt><a name="SoftMreadOnlyTable-select"><strong>select</strong></a>(self, condition<font color="#909090">='INVALID'</font>, fields<font color="#909090">='*'</font>)</dt><dd><tt>Call&nbsp;to&nbsp;do&nbsp;a&nbsp;select&nbsp;on&nbsp;the&nbsp;table.</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>tabledict</strong></dt>
+<dd><tt>Returns&nbsp;a&nbsp;dict&nbsp;with&nbsp;names&nbsp;of&nbsp;various&nbsp;fields&nbsp;for&nbsp;this&nbsp;table&nbsp;-&nbsp;mostly&nbsp;used&nbsp;for&nbsp;SQL&nbsp;generation.</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="SoftMtable">class <strong>SoftMtable</strong></a>(<a href="softmtables.html#SoftMreadOnlyTable">SoftMreadOnlyTable</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>This&nbsp;is&nbsp;a&nbsp;generic&nbsp;engine&nbsp;to&nbsp;access&nbsp;SoftM&nbsp;interface&nbsp;tables.<br>
+&nbsp;<br>
+This&nbsp;means&nbsp;data&nbsp;exchange&nbsp;tables&nbsp;which&nbsp;are&nbsp;accessed&nbsp;purely&nbsp;in&nbsp;an&nbsp;row&nbsp;oriented&nbsp;manner&nbsp;and&nbsp;use<br>
+deploy&nbsp;'Dateiführungsschlüssel"&nbsp;fields&nbsp;and&nbsp;logical&nbsp;deletions&nbsp;usint&nbsp;the&nbsp;'XXSTAT'&nbsp;column.<br>
+&nbsp;<br>
+The&nbsp;<a href="__builtin__.html#object">object</a>&nbsp;supports&nbsp;locking&nbsp;rows&nbsp;and&nbsp;automatic&nbsp;removal&nbsp;of&nbsp;stale&nbsp;locks&nbsp;after&nbsp;three&nbsp;hours&nbsp;-&nbsp;so&nbsp;you&nbsp;must<br>
+finish&nbsp;your&nbsp;work&nbsp;within&nbsp;60&nbsp;minutes.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="softmtables.html#SoftMtable">SoftMtable</a></dd>
+<dd><a href="softmtables.html#SoftMreadOnlyTable">SoftMreadOnlyTable</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="SoftMtable-clean_stale_locks"><strong>clean_stale_locks</strong></a>(self)</dt><dd><tt>Removes&nbsp;all&nbsp;locks&nbsp;older&nbsp;than&nbsp;three&nbsp;hours.<br>
+&nbsp;<br>
+This&nbsp;removes&nbsp;all&nbsp;locks&nbsp;(Dateifuehrungsschlüssel)&nbsp;older&nbsp;than&nbsp;three&nbsp;hours.</tt></dd></dl>
+
+<dl><dt><a name="SoftMtable-delete"><strong>delete</strong></a>(self, lock_handle)</dt><dd><tt>Marks&nbsp;a&nbsp;record&nbsp;in&nbsp;table&nbsp;as&nbsp;deleted&nbsp;(XXSTAT='X').</tt></dd></dl>
+
+<dl><dt><a name="SoftMtable-generate_insert_sql"><strong>generate_insert_sql</strong></a>(self, fields, values)</dt><dd><tt>Generate&nbsp;the&nbsp;SQL-string&nbsp;for&nbsp;executing&nbsp;a&nbsp;insert&nbsp;command.</tt></dd></dl>
+
+<dl><dt><a name="SoftMtable-generate_update_sql"><strong>generate_update_sql</strong></a>(self, fieldupdate, condition)</dt><dd><tt>Generate&nbsp;the&nbsp;SQL-string&nbsp;for&nbsp;executing&nbsp;a&nbsp;update&nbsp;command.</tt></dd></dl>
+
+<dl><dt><a name="SoftMtable-insert"><strong>insert</strong></a>(self, fields, values)</dt><dd><tt>Call&nbsp;to&nbsp;do&nbsp;an&nbsp;insert&nbsp;into&nbsp;the&nbsp;table.</tt></dd></dl>
+
+<dl><dt><a name="SoftMtable-lock"><strong>lock</strong></a>(self, schluessel)</dt><dd><tt>Locks&nbsp;a&nbsp;row&nbsp;in&nbsp;the&nbsp;Table.<br>
+&nbsp;<br>
+Expects&nbsp;a&nbsp;key,&nbsp;(see&nbsp;self.<strong>name_schluesselfeld</strong>)&nbsp;returns&nbsp;a&nbsp;lock_handle&nbsp;to&nbsp;be&nbsp;used&nbsp;<br>
+with&nbsp;other&nbsp;functions&nbsp;or&nbsp;None&nbsp;if&nbsp;the&nbsp;row&nbsp;couldn't&nbsp;be&nbsp;locked.</tt></dd></dl>
+
+<dl><dt><a name="SoftMtable-unlock"><strong>unlock</strong></a>(self, lock_handle)</dt><dd><tt>Unlocks&nbsp;a&nbsp;row&nbsp;in&nbsp;table.<br>
+&nbsp;<br>
+Expects&nbsp;the&nbsp;lock_handle&nbsp;returned&nbsp;by&nbsp;lock.</tt></dd></dl>
+
+<dl><dt><a name="SoftMtable-update"><strong>update</strong></a>(self, fieldupdate<font color="#909090">='abc'</font>, condition<font color="#909090">='INVALID'</font>)</dt><dd><tt>Call&nbsp;to&nbsp;do&nbsp;a&nbsp;update&nbsp;on&nbsp;the&nbsp;table.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="softmtables.html#SoftMreadOnlyTable">SoftMreadOnlyTable</a>:<br>
+<dl><dt><a name="SoftMtable-__init__"><strong>__init__</strong></a>(self)</dt><dd><tt>Method&nbsp;should&nbsp;be&nbsp;overwritten&nbsp;by&nbsp;subclasses.</tt></dd></dl>
+
+<dl><dt><a name="SoftMtable-available_rows"><strong>available_rows</strong></a>(self, fields<font color="#909090">='*'</font>, conditions<font color="#909090">='1=1'</font>)</dt><dd><tt>Get&nbsp;non-locked,&nbsp;non-deleted&nbsp;rows.<br>
+&nbsp;<br>
+You&nbsp;can&nbsp;give&nbsp;a&nbsp;list&nbsp;of&nbsp;fields&nbsp;you&nbsp;want&nbsp;to&nbsp;get&nbsp;returned.<br>
+You&nbsp;can&nbsp;also&nbsp;give&nbsp;a&nbsp;list&nbsp;of&nbsp;additional&nbsp;conditiones&nbsp;as&nbsp;SQL.</tt></dd></dl>
+
+<dl><dt><a name="SoftMtable-generate_select_sql"><strong>generate_select_sql</strong></a>(self, condition, fields)</dt><dd><tt>Generate&nbsp;the&nbsp;SQL-string&nbsp;for&nbsp;executing&nbsp;a&nbsp;select&nbsp;command.</tt></dd></dl>
+
+<dl><dt><a name="SoftMtable-select"><strong>select</strong></a>(self, condition<font color="#909090">='INVALID'</font>, fields<font color="#909090">='*'</font>)</dt><dd><tt>Call&nbsp;to&nbsp;do&nbsp;a&nbsp;select&nbsp;on&nbsp;the&nbsp;table.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="softmtables.html#SoftMreadOnlyTable">SoftMreadOnlyTable</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>tabledict</strong></dt>
+<dd><tt>Returns&nbsp;a&nbsp;dict&nbsp;with&nbsp;names&nbsp;of&nbsp;various&nbsp;fields&nbsp;for&nbsp;this&nbsp;table&nbsp;-&nbsp;mostly&nbsp;used&nbsp;for&nbsp;SQL&nbsp;generation.</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="SqliteConnector_mixin">class <strong>SqliteConnector_mixin</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>This&nbsp;Mixin&nbsp;connects&nbsp;a&nbsp;SoftM&nbsp;Table&nbsp;Object&nbsp;to&nbsp;a&nbsp;local&nbsp;SQLite&nbsp;db&nbsp;--&nbsp;ideal&nbsp;for&nbsp;testing.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="SqliteConnector_mixin-sql_insert"><strong>sql_insert</strong></a>(self, sqlstr)</dt><dd><tt>Execute&nbsp;the&nbsp;actual&nbsp;SQL&nbsp;query&nbsp;(INSERT).</tt></dd></dl>
+
+<dl><dt><a name="SqliteConnector_mixin-sql_select"><strong>sql_select</strong></a>(self, sqlstr)</dt><dd><tt>Execute&nbsp;the&nbsp;actual&nbsp;SQL&nbsp;query&nbsp;(SELECT).</tt></dd></dl>
+
+<dl><dt><a name="SqliteConnector_mixin-sql_update"><strong>sql_update</strong></a>(self, sqlstr)</dt><dd><tt>Execute&nbsp;the&nbsp;actual&nbsp;SQL&nbsp;query&nbsp;(UPDATE).</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>

@@ -1,0 +1,29 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module fields</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>fields</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="http://github.com/hudora/huSoftM/blob/master/husoftm/fields.py">github.com/hudora/huSoftM/blob/master/husoftm/fields.py</a></font></td></tr></table>
+    <p><tt>fields.py&nbsp;-&nbsp;describes&nbsp;the&nbsp;SoftM&nbsp;table&nbsp;structure.&nbsp;Part&nbsp;of&nbsp;huSoftM.<br>
+&nbsp;<br>
+See&nbsp;also&nbsp;<a href="http://cybernetics.hudora.biz/projects/wiki/SoftMtabellen">http://cybernetics.hudora.biz/projects/wiki/SoftMtabellen</a><br>
+&nbsp;<br>
+Created&nbsp;by&nbsp;Maximillian&nbsp;Dornseif&nbsp;on&nbsp;2007-03-18.&nbsp;Based&nbsp;on&nbsp;code&nbsp;named&nbsp;"MoftS"&nbsp;from&nbsp;Summer&nbsp;2005.<br>
+Copyright&nbsp;(c)&nbsp;2007,&nbsp;2008,&nbsp;2009&nbsp;HUDORA&nbsp;GmbH.&nbsp;All&nbsp;rights&nbsp;reserved.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>DATETIMEDIR</strong> = {'CKANFD': 'CKANFZ', 'CKENDD': 'CKENDZ', 'IKDATE': 'IKTIME', 'IZDTWZ': 'IZTIME', 'LKDTAE': 'LKZTAE', 'LKDTER': 'LKZTER', 'LKDTKB': 'LKZTKB', 'LKDTLF': 'LKZTLF', 'LNDTAE': 'LNZTAE', 'LNDTER': 'LNZTER', ...}<br>
+<strong>DECIMALIZE2</strong> = set(['BLKURS', 'BPPRAK', 'BPPREH', 'BPPREW', 'BPWRTF', 'BUABZU', ...])<br>
+<strong>MAPPINGDIR</strong> = {'AAK00': {'AKAUFA': 'art', 'AKAUFN': 'auftragsnr', 'AKDTKD': 'auftragsdatum_kunde', 'AKDTKW': 'kundenwunsch_date', 'AKDTLT': 'liefer_date', 'AKIK01': 'fixtermin', 'AKKBCO': 'anzahl_kommissionierbelege', 'AKKDNR': 'kundennr_warenempf', 'AKKZTF': 'teillieferung', 'AKKZVA': 'voll_ausgeliefert', ...}, 'AAP00': {'APARTN': 'artnr', 'APAUPO': 'position', 'APDTKD': 'kundenwunsch_date', 'APDTLN': 'neuliefer_date', 'APDTLT': 'liefer_date', 'APDTZU': 'Datum Zuteilung', 'APFA4A': 'Teil-Zuteilungs-Verbot', 'APFWRT': 'fakturierter Wert', 'APJNZU': 'Jobnr Zuteilung', 'APKZAE': 'geaendert', ...}, 'AAT00': {'ATAUFN': 'auftragsnr', 'ATAUPO': 'auftragsposition', 'ATKZAB': 'andruck_ab', 'ATKZLF': 'andruck_ls', 'ATKZRG': 'andruck_re', 'ATLFNR': 'nr', 'ATTART': 'textart', 'ATTX60': 'text'}, 'ABV00': {'BVAART': 'adressart', 'BVKZAD': 'Adressaufbereitung', 'BVKZBA': 'bearbeitungskennzeichen', 'BVLKZ': 'laenderkennzeichen', 'BVNAM2': 'name2', 'BVNAM3': 'name3', 'BVNAM4': 'avisieren', 'BVNAME': 'name1', 'BVORT': 'ort', 'BVPLZ': 'plz', ...}, 'AFK00': {'FKAUFA': 'auftragsart', 'FKAUFN': 'auftragsnummer', 'FKBRUT': 'brutto', 'FKDTER': 'erfassung_date', 'FKDTFA': 'druck_date', 'FKDTVS': 'versand_date', 'FKFNR ': 'firma', 'FKFORM': 'rechnungsart', 'FKKZIB': 'interner_beleg', 'FKNETT': 'netto', ...}, 'AFU00': {'FUARTN': 'artnr', 'FUDTER': 'erfassung_date', 'FUFNR': 'firma', 'FUMNG': 'menge', 'FURGNR': 'rechnungsnr', 'FUZTER': 'erfassung_time'}, 'AKZ00': {'KZBRAN': 'branche', 'KZDSTK': 'distrikt', 'KZDTAE': 'updated_at', 'KZGEB': 'gebiet', 'KZINFO': 'sachbearbeiter', 'KZKDNR': 'Kunden-nr', 'KZLGNR': 'auslieferunglager', 'KZVRT': 'vertreter', 'KZX3LB': 'lieferbedingung', 'KZX3VP': 'verpackungsvorschrift', ...}, 'ALK00': {'LKAUFS': 'auftragsnr', 'LKBELN': 'belegnr_freigabe', 'LKDFSL': 'dateifuehrungsschluessel', 'LKDTAE': 'aenderung_date', 'LKDTER': 'erfassung_date', 'LKDTFG': 'freigabe_date', 'LKDTKB': 'letzter_kommissionierbeleg_date', 'LKDTLF': 'letzter_lieferschein_date', 'LKDTLT': 'liefer_date', 'LKDTST': 'lieferschein_storno_date', ...}, 'ALN00': {'LNARTN': 'artnr', 'LNAUFN': 'auftragsnr', 'LNAUPO': 'auftrags_position', 'LNBELP': 'kommissionierbeleg_position', 'LNBSTN': 'bestellnr', 'LNBSTP': 'bestellposition', 'LNDFSL': 'dateif<font color="#c040c0">\xc3\xbc</font>hrungsschluessel', 'LNDTAE': 'aenderung_date', 'LNDTER': 'erfassung_date', 'LNDTKB': 'komissionierbeleg_date', ...}, 'ASK00': {'SKARTN': 'artnr', 'SKKART': 'komponenten_artnr', 'SKLFNR': 'laufende_nr', 'SKMENG': 'menge_im_set'}, ...}<br>
+<strong>__revision__</strong> = '$Revision$'</td></tr></table>
+</body></html>

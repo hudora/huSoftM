@@ -1,0 +1,260 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module stapelschnittstelle</title>
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>stapelschnittstelle</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="http://github.com/hudora/huSoftM/blob/master/husoftm/stapelschnittstelle.py">github.com/hudora/huSoftM/blob/master/husoftm/stapelschnittstelle.py</a></font></td></tr></table>
+    <p><tt>stapelschnittstelle.py&nbsp;-&nbsp;Ansprechen&nbsp;der&nbsp;SoftM&nbsp;Auftrags-Stapelschnittstelle.<br>
+&nbsp;<br>
+ACHTUNG:&nbsp;Die&nbsp;SoftM&nbsp;Stapel-Schnittstelle&nbsp;ist&nbsp;-&nbsp;dürftig&nbsp;dokumentiert.&nbsp;Das<br>
+bedeutet,&nbsp;dass&nbsp;dieser&nbsp;Code&nbsp;grosse&nbsp;Chancen&nbsp;bietet,&nbsp;nicht&nbsp;wie&nbsp;erwartet&nbsp;zu&nbsp;funktionieren.&nbsp;Er&nbsp;ist&nbsp;nur&nbsp;für<br>
+experimentelle&nbsp;Zwecke&nbsp;geeignet&nbsp;-&nbsp;oder&nbsp;für&nbsp;Leute&nbsp;mit&nbsp;starken&nbsp;Nerven.<br>
+Aber&nbsp;wenn&nbsp;sie&nbsp;schwache&nbsp;Nerven&nbsp;hätten,&nbsp;würden&nbsp;sie&nbsp;kein&nbsp;SoftM&nbsp;einsetzen,&nbsp;oder?<br>
+&nbsp;<br>
+Die&nbsp;SoftM&nbsp;Stapelschnittstelle&nbsp;auch&nbsp;von&nbsp;SoftM&nbsp;umfangreich&nbsp;genutzt:&nbsp;so&nbsp;ist&nbsp;die&nbsp;EDI-Schnittstelle&nbsp;eigentlich&nbsp;nur<br>
+ein&nbsp;Umsetzer,&nbsp;der&nbsp;die&nbsp;Daten&nbsp;in&nbsp;die&nbsp;Stapelschnittstelle&nbsp;schreibt.&nbsp;Mit&nbsp;der&nbsp;Stapelschnittstelle&nbsp;kann&nbsp;man&nbsp;nahezu<br>
+alle&nbsp;Prameter&nbsp;eines&nbsp;Auftrages&nbsp;beschreiben.<br>
+&nbsp;<br>
+Created&nbsp;by&nbsp;Maximillian&nbsp;Dornseif&nbsp;on&nbsp;2007-05-16.<br>
+Copyright&nbsp;(c)&nbsp;2007,&nbsp;2008&nbsp;HUDORA&nbsp;GmbH.&nbsp;All&nbsp;rights&nbsp;reserved.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="datetime.html">datetime</a><br>
+<a href="huTools.html">huTools</a><br>
+</td><td width="25%" valign=top><a href="os.html">os</a><br>
+<a href="random.html">random</a><br>
+</td><td width="25%" valign=top><a href="textwrap.html">textwrap</a><br>
+<a href="thread.html">thread</a><br>
+</td><td width="25%" valign=top><a href="time.html">time</a><br>
+<a href="unittest.html">unittest</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="__builtin__.html#object">__builtin__.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="stapelschnittstelle.html#StapelSerializer">StapelSerializer</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="stapelschnittstelle.html#Adresse">Adresse</a>
+</font></dt><dt><font face="helvetica, arial"><a href="stapelschnittstelle.html#Kopf">Kopf</a>
+</font></dt><dt><font face="helvetica, arial"><a href="stapelschnittstelle.html#Position">Position</a>
+</font></dt><dt><font face="helvetica, arial"><a href="stapelschnittstelle.html#Text">Text</a>
+</font></dt></dl>
+</dd>
+</dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Adresse">class <strong>Adresse</strong></a>(<a href="stapelschnittstelle.html#StapelSerializer">StapelSerializer</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Repräsentiert&nbsp;einen&nbsp;Addresszusatz&nbsp;in&nbsp;ABV00.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="stapelschnittstelle.html#Adresse">Adresse</a></dd>
+<dd><a href="stapelschnittstelle.html#StapelSerializer">StapelSerializer</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>rowmapping</strong> = {'BVAART': {'default': '', 'doc': 'G<font color="#c040c0">\xc3\xbc</font>ltige Werte sind: *ZERO Rechnungsadresse, 1 Lieferadresse', 'format': 'S1.0', 'name': 'adressart'}, 'BVKZAD': {'default': 1, 'doc': 'Der Datenbestand kann gleichzeitig Adressen enth...g<font color="#c040c0">\n</font>                      1 neue Adressaufbereitung', 'format': 'S1.0', 'name': 'Adressaufbereitung'}, 'BVKZBA': {'default': '', 'doc': 'G<font color="#c040c0">\xc3\xbc</font>ltige Werte sind: *ZERO nicht gepr<font color="#c040c0">\xc3\xbc</font>ft<font color="#c040c0">\n</font>      ...erden<font color="#c040c0">\n</font>                        4 wurde <font color="#c040c0">\xc3\xbc</font>bernommen', 'format': 'S1.0', 'name': 'bearbeitungskennzeichen'}, 'BVLKZ': {'default': '', 'doc': '', 'format': 'A3', 'name': 'laenderkennzeichen'}, 'BVNAM2': {'default': '', 'doc': '', 'format': 'A40', 'name': 'name2'}, 'BVNAM3': {'default': '', 'doc': '', 'format': 'A40', 'name': 'name3'}, 'BVNAM4': {'default': '', 'doc': '', 'format': 'A40', 'name': 'avisieren'}, 'BVNAME': {'default': '', 'doc': '', 'format': 'A40', 'name': 'name1'}, 'BVORT': {'default': '', 'doc': '', 'format': 'A40', 'name': 'ort'}, 'BVPLZ': {'default': '', 'doc': '', 'format': 'A15', 'name': 'plz'}, ...}</dl>
+
+<dl><dt><strong>tablename</strong> = 'ABV00'</dl>
+
+<hr>
+Methods inherited from <a href="stapelschnittstelle.html#StapelSerializer">StapelSerializer</a>:<br>
+<dl><dt><a name="Adresse-__init__"><strong>__init__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Adresse-to_sql"><strong>to_sql</strong></a>(self)</dt><dd><tt>Generate&nbsp;SQL&nbsp;command&nbsp;for&nbsp;this&nbsp;Object</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="stapelschnittstelle.html#StapelSerializer">StapelSerializer</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Kopf">class <strong>Kopf</strong></a>(<a href="stapelschnittstelle.html#StapelSerializer">StapelSerializer</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Repräsentiert&nbsp;einen&nbsp;Auftragsstapelkopfsatz&nbsp;in&nbsp;ABK00.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="stapelschnittstelle.html#Kopf">Kopf</a></dd>
+<dd><a href="stapelschnittstelle.html#StapelSerializer">StapelSerializer</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>rowmapping</strong> = {'BKABT': {'default': 1, 'doc': 'Pr<font color="#c040c0">\xc3\xbc</font>fung: Abteilungsdatei', 'format': 'S4.0', 'name': 'abteilung', 'required': True}, 'BKANNR': {'doc': "F<font color="#c040c0">\xc3\xbc</font>r Auftr<font color="#c040c0">\xc3\xa4</font>ge aus dem Einkauf (BKF20A 4-8 = '*X...                      verursachende Bestellnummer", 'format': 'P7.0', 'name': 'Angebot'}, 'BKAUFA': {'doc': 'Als Auftragsart darf nur ein Wert angegeben werd...bei HUDORA: U=Umlagerungsauftrag, WA=WerbeAuftrag', 'format': 'A2', 'name': 'auftragsart'}, 'BKAUFN': {'doc': 'Nummer des Auftrags Angabe wird per Programm gef...  <font color="#c040c0">\xc3\x9c</font>bernahme vergebene Auftragsnummer hinterlegt.', 'format': 'P7.0', 'name': 'auftrag'}, 'BKAWRT': {'doc': 'Angabe in Hauptw<font color="#c040c0">\xc3\xa4</font>hrung.', 'format': 'P15.2', 'name': 'Auftragswert'}, 'BKBZRG': {'doc': 'Bei Gutschriftsvorg<font color="#c040c0">\xc3\xa4</font>ngen kann hier die bezogene Rechnungsnummer <font color="#c040c0">\xc3\xbc</font>bergeben werden.', 'format': 'P9.0', 'name': 'Bezogene Rechnung'}, 'BKDFSL': {'doc': 'Dieses Feld wird von dem Programm, das eine <font color="#c040c0">\xc3\x84</font>nd...dernden<font color="#c040c0">\n</font>                      Bildschirms belegt.', 'format': 'A10', 'name': 'dateifuehrungsschluessel'}, 'BKDTER': {'doc': 'Datum der Erfassung/Erstellung des Datensatzes.', 'format': 'P7.0', 'name': 'erfassungsdatum'}, 'BKDTKD': {'doc': 'AAK00.AKDTKD Datum, das der Kunde bei der Auftra... Wird zum Teil auch "Kundenauftragsdatum" genannt', 'format': 'P7.0', 'name': 'bestelldatum'}, 'BKDTKW': {'doc': 'AAK00.AKDTKW Termin, zu dem der Kunde die Ware e...inermittlung bei der Erfassung vorbesetzt werden.', 'format': 'P7.0', 'name': 'kundenwunschtermin'}, ...}</dl>
+
+<dl><dt><strong>tablename</strong> = 'ABK00'</dl>
+
+<hr>
+Methods inherited from <a href="stapelschnittstelle.html#StapelSerializer">StapelSerializer</a>:<br>
+<dl><dt><a name="Kopf-__init__"><strong>__init__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Kopf-to_sql"><strong>to_sql</strong></a>(self)</dt><dd><tt>Generate&nbsp;SQL&nbsp;command&nbsp;for&nbsp;this&nbsp;Object</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="stapelschnittstelle.html#StapelSerializer">StapelSerializer</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Position">class <strong>Position</strong></a>(<a href="stapelschnittstelle.html#StapelSerializer">StapelSerializer</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Repräsentiert&nbsp;einen&nbsp;Auftragsstapelpositionssatz&nbsp;in&nbsp;ABA00.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="stapelschnittstelle.html#Position">Position</a></dd>
+<dd><a href="stapelschnittstelle.html#StapelSerializer">StapelSerializer</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>rowmapping</strong> = {'BAABT': {'default': 1, 'doc': 'Pr<font color="#c040c0">\xc3\xbc</font>fung erfolgt gegen die Abteilungsdatei.', 'format': 'S4.0', 'name': 'abteilung', 'required': True}, 'BAANNR': {'doc': 'angebotsnummer, die vom System automatisch verge...er die verursachende<font color="#c040c0">\n</font>               Bestellnummer', 'format': 'P7.0', 'name': 'Angebot'}, 'BAANPO': {'doc': "F<font color="#c040c0">\xc3\xbc</font>r Auftr<font color="#c040c0">\xc3\xa4</font>ge aus dem Einkauf (BKVGAR = '*XEA')...enden Stapelsatzes<font color="#c040c0">\n</font>               aus SSt Einkauf", 'format': 'P5.0', 'name': 'angebotsposition'}, 'BAARTG': {'doc': 'F<font color="#c040c0">\xc3\xbc</font>r eine zusammenfassende Bearbeitung k<font color="#c040c0">\xc3\xb6</font>nnen <font color="#c040c0">\xc3</font>...tzt. Dies ist ein Pflichtfeld bei Sonderartikeln.', 'format': 'A6', 'name': 'Artikelhauptgruppe'}, 'BAARTH': {'doc': 'F<font color="#c040c0">\xc3\xbc</font>r eine zusammenfassende Bearbeitung k<font color="#c040c0">\xc3\xb6</font>nnen <font color="#c040c0">\xc3</font>...              lt. Artikelgruppendatei eingesetzt.', 'format': 'A6', 'name': 'Artikelhauptgruppe'}, 'BAARTN': {'doc': 'Zur Festlegung des Artikels ist die Artikelnummer anzugeben.', 'format': 'A20', 'name': 'artikel', 'required': True}, 'BAAUPS': {'doc': 'Wird ein Set bei der Erfassung aufgel<font color="#c040c0">\xc3\xb6</font>st, d.h. ... stimmen Position und bezogene Position <font color="#c040c0">\xc3\xbc</font>berein.', 'format': 'P5.0', 'name': 'Bezogene Position'}, 'BADFSL': {'doc': 'Dieses Feld wird von dem Programm, das eine <font color="#c040c0">\xc3\x84</font>nd...des <font color="#c040c0">\xc3\xa4</font>ndernden<font color="#c040c0">\n</font>               Bildschirms belegt.', 'format': 'A10', 'name': 'Dateifuehrungsschluessel'}, 'BADTER': {'doc': 'Datum der Erfassung/Erstellung des Datensatzes.', 'format': 'P7.0', 'name': 'erfassungsdatum'}, 'BADTKD': {'doc': 'Termin, zu dem der Kunde die Ware erhalten soll....teilung und beeinflusst die Konditionsermittlung.', 'format': 'P7.0', 'name': 'Kundenwunschtermin'}, ...}</dl>
+
+<dl><dt><strong>tablename</strong> = 'ABA00'</dl>
+
+<hr>
+Methods inherited from <a href="stapelschnittstelle.html#StapelSerializer">StapelSerializer</a>:<br>
+<dl><dt><a name="Position-__init__"><strong>__init__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Position-to_sql"><strong>to_sql</strong></a>(self)</dt><dd><tt>Generate&nbsp;SQL&nbsp;command&nbsp;for&nbsp;this&nbsp;Object</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="stapelschnittstelle.html#StapelSerializer">StapelSerializer</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="StapelSerializer">class <strong>StapelSerializer</strong></a>(<a href="__builtin__.html#object">__builtin__.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Abstrakte&nbsp;Klasse&nbsp;zum&nbsp;serialisieren&nbsp;der&nbsp;verschiedenen&nbsp;Sätze&nbsp;der&nbsp;Stapelschnittstelle.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="StapelSerializer-__init__"><strong>__init__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="StapelSerializer-to_sql"><strong>to_sql</strong></a>(self)</dt><dd><tt>Generate&nbsp;SQL&nbsp;command&nbsp;for&nbsp;this&nbsp;Object</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>rowmapping</strong> = {}</dl>
+
+<dl><dt><strong>tablename</strong> = None</dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Text">class <strong>Text</strong></a>(<a href="stapelschnittstelle.html#StapelSerializer">StapelSerializer</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Repräsentiert&nbsp;einen&nbsp;Auftragsstapeltextsatz&nbsp;in&nbsp;ABT00.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="stapelschnittstelle.html#Text">Text</a></dd>
+<dd><a href="stapelschnittstelle.html#StapelSerializer">StapelSerializer</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Data and other attributes defined here:<br>
+<dl><dt><strong>rowmapping</strong> = {'BTFNR': {'default': '01', 'doc': 'G<font color="#c040c0">\xc3\xbc</font>ltige Werte sind: *FIRM g<font color="#c040c0">\xc3\xbc</font>ltige Firma', 'format': 'A2', 'key': True, 'name': 'firma', 'required': True}, 'BTKZ04': {'doc': '<font color="#c040c0">\xc3\x9c</font>ber Druckkennzeichen wird gesteuert, welche Te...ERO nicht drucken<font color="#c040c0">\n</font>                      1 drucken', 'format': 'S1.0', 'name': 'Druckkennzeichen'}, 'BTKZ05': {'doc': 'AAT00.ATKZ05 Bei Streckengesch<font color="#c040c0">\xc3\xa4</font>ften wird dieser...                    1 Text auf Bestellung drucken', 'format': 'S1.0', 'name': 'Textdruck auf Bestellformular'}, 'BTKZ06': {'doc': 'AAT00.ATKZ06 Bei Streckengesch<font color="#c040c0">\xc3\xa4</font>ften wird dieser...                      1 Text auf WZ-Beleg drucken', 'format': 'S1.0', 'name': 'Textdruck auf Warenzugangsbeleg'}, 'BTKZ07': {'doc': 'AAT00.ATKZ07 Das Kennzeichen hat zwei Bedeutunge...<font color="#c040c0">\n</font>                   3 Bstl: Interner Text f<font color="#c040c0">\xc3\xbc</font>r Rg', 'format': 'S1.0', 'name': 'Druckkennzeichen'}, 'BTKZ08': {'doc': '<font color="#c040c0">\xc3\x9c</font>ber Druckkennzeichen wird gesteuert, welche Te...                   *ZERO nicht drucken, 1 drucken', 'format': 'S1.0', 'name': 'Druckkennzeichen'}, 'BTKZ09': {'doc': '<font color="#c040c0">\xc3\x9c</font>ber Druckkennzeichen wird gesteuert, welche Te...                   *ZERO nicht drucken, 1 drucken', 'format': 'S1.0', 'name': 'Druckkennzeichen'}, 'BTKZ10': {'doc': '<font color="#c040c0">\xc3\x9c</font>ber Druckkennzeichen wird gesteuert, welche Te...                   *ZERO nicht drucken, 1 drucken', 'format': 'S1.0', 'name': 'Druckkennzeichen'}, 'BTKZ11': {'doc': '<font color="#c040c0">\xc3\x9c</font>ber Druckkennzeichen wird gesteuert, welche Te...                   *ZERO nicht drucken, 1 drucken', 'format': 'S1.0', 'name': 'Druckkennzeichen'}, 'BTKZ12': {'doc': '<font color="#c040c0">\xc3\x9c</font>ber Druckkennzeichen wird gesteuert, welche Te...                   *ZERO nicht drucken, 1 drucken', 'format': 'S1.0', 'name': 'Druckkennzeichen'}, ...}</dl>
+
+<dl><dt><strong>tablename</strong> = 'ABT00'</dl>
+
+<hr>
+Methods inherited from <a href="stapelschnittstelle.html#StapelSerializer">StapelSerializer</a>:<br>
+<dl><dt><a name="Text-__init__"><strong>__init__</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Text-to_sql"><strong>to_sql</strong></a>(self)</dt><dd><tt>Generate&nbsp;SQL&nbsp;command&nbsp;for&nbsp;this&nbsp;Object</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="stapelschnittstelle.html#StapelSerializer">StapelSerializer</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-address_transmitted"><strong>address_transmitted</strong></a>(vorgangsnr)</dt><dd><tt>Prüft,&nbsp;ob&nbsp;zu&nbsp;einem&nbsp;gegebenen&nbsp;Vorgang&nbsp;auch&nbsp;die&nbsp;<a href="#Adresse">Adresse</a>&nbsp;übermittelt&nbsp;wurde.<br>
+&nbsp;<br>
+Dies&nbsp;kann&nbsp;zB.&nbsp;dann&nbsp;nicht&nbsp;erfolgt&nbsp;sein,&nbsp;wenn&nbsp;sich&nbsp;Sonderzeichen&nbsp;in&nbsp;den&nbsp;Adressen&nbsp;befanden.<br>
+&gt;&gt;&gt;&nbsp;<a href="#-address_transmitted">address_transmitted</a>(13247)<br>
+True<br>
+&gt;&gt;&gt;&nbsp;<a href="#-address_transmitted">address_transmitted</a>(13147)<br>
+False</tt></dd></dl>
+ <dl><dt><a name="-auftrag2softm"><strong>auftrag2softm</strong></a>(auftrag, belegtexte<font color="#909090">=None</font>)</dt><dd><tt>Schreibt&nbsp;etwas,&nbsp;dass&nbsp;dem&nbsp;AuftragsFormat&nbsp;entspricht&nbsp;in&nbsp;SoftM.</tt></dd></dl>
+ <dl><dt><a name="-feststeckende_jobs"><strong>feststeckende_jobs</strong></a>()</dt><dd><tt>Returns&nbsp;a&nbsp;list&nbsp;of&nbsp;jobs&nbsp;that&nbsp;got&nbsp;stuck&nbsp;in&nbsp;s17e.</tt></dd></dl>
+ <dl><dt><a name="-getnextvorgang"><strong>getnextvorgang</strong></a>()</dt><dd><tt>Ermittelt&nbsp;die&nbsp;nächste&nbsp;freie&nbsp;Vorgangsnummer.</tt></dd></dl>
+ <dl><dt><a name="-kundenauftragsnummer_bekannt"><strong>kundenauftragsnummer_bekannt</strong></a>(kundenauftragsnummer)</dt><dd><tt>Prüft,&nbsp;ob&nbsp;eine&nbsp;Kunden-Auftragsnummer&nbsp;bereits&nbsp;verwendet&nbsp;wurde.</tt></dd></dl>
+ <dl><dt><a name="-loesche_vorgang"><strong>loesche_vorgang</strong></a>(vorgangsnr)</dt><dd><tt>Setzt&nbsp;einen&nbsp;Vorgang&nbsp;auf&nbsp;Status&nbsp;gelöscht'.</tt></dd></dl>
+ <dl><dt><a name="-schnittstelle_leer"><strong>schnittstelle_leer</strong></a>()</dt><dd><tt>Ermittelt,&nbsp;ob&nbsp;sich&nbsp;ungeprüfte&nbsp;Vorgänge&nbsp;in&nbsp;der&nbsp;stapelschnittstelle&nbsp;befinden.</tt></dd></dl>
+ <dl><dt><a name="-vorgangsnummer_bekannt"><strong>vorgangsnummer_bekannt</strong></a>(vorgangsnummer)</dt><dd><tt>Prüft,&nbsp;ob&nbsp;sich&nbsp;eine&nbsp;bestimmte&nbsp;Vorgangsnummer&nbsp;bereits&nbsp;im&nbsp;System&nbsp;befindet.</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>ABA00</strong> = {'BAABT': {'default': 1, 'doc': 'Pr<font color="#c040c0">\xc3\xbc</font>fung erfolgt gegen die Abteilungsdatei.', 'format': 'S4.0', 'name': 'abteilung', 'required': True}, 'BAANNR': {'doc': 'angebotsnummer, die vom System automatisch verge...er die verursachende<font color="#c040c0">\n</font>               Bestellnummer', 'format': 'P7.0', 'name': 'Angebot'}, 'BAANPO': {'doc': "F<font color="#c040c0">\xc3\xbc</font>r Auftr<font color="#c040c0">\xc3\xa4</font>ge aus dem Einkauf (BKVGAR = '*XEA')...enden Stapelsatzes<font color="#c040c0">\n</font>               aus SSt Einkauf", 'format': 'P5.0', 'name': 'angebotsposition'}, 'BAARTG': {'doc': 'F<font color="#c040c0">\xc3\xbc</font>r eine zusammenfassende Bearbeitung k<font color="#c040c0">\xc3\xb6</font>nnen <font color="#c040c0">\xc3</font>...tzt. Dies ist ein Pflichtfeld bei Sonderartikeln.', 'format': 'A6', 'name': 'Artikelhauptgruppe'}, 'BAARTH': {'doc': 'F<font color="#c040c0">\xc3\xbc</font>r eine zusammenfassende Bearbeitung k<font color="#c040c0">\xc3\xb6</font>nnen <font color="#c040c0">\xc3</font>...              lt. Artikelgruppendatei eingesetzt.', 'format': 'A6', 'name': 'Artikelhauptgruppe'}, 'BAARTN': {'doc': 'Zur Festlegung des Artikels ist die Artikelnummer anzugeben.', 'format': 'A20', 'name': 'artikel', 'required': True}, 'BAAUPS': {'doc': 'Wird ein Set bei der Erfassung aufgel<font color="#c040c0">\xc3\xb6</font>st, d.h. ... stimmen Position und bezogene Position <font color="#c040c0">\xc3\xbc</font>berein.', 'format': 'P5.0', 'name': 'Bezogene Position'}, 'BADFSL': {'doc': 'Dieses Feld wird von dem Programm, das eine <font color="#c040c0">\xc3\x84</font>nd...des <font color="#c040c0">\xc3\xa4</font>ndernden<font color="#c040c0">\n</font>               Bildschirms belegt.', 'format': 'A10', 'name': 'Dateifuehrungsschluessel'}, 'BADTER': {'doc': 'Datum der Erfassung/Erstellung des Datensatzes.', 'format': 'P7.0', 'name': 'erfassungsdatum'}, 'BADTKD': {'doc': 'Termin, zu dem der Kunde die Ware erhalten soll....teilung und beeinflusst die Konditionsermittlung.', 'format': 'P7.0', 'name': 'Kundenwunschtermin'}, ...}<br>
+<strong>ABK00</strong> = {'BKABT': {'default': 1, 'doc': 'Pr<font color="#c040c0">\xc3\xbc</font>fung: Abteilungsdatei', 'format': 'S4.0', 'name': 'abteilung', 'required': True}, 'BKANNR': {'doc': "F<font color="#c040c0">\xc3\xbc</font>r Auftr<font color="#c040c0">\xc3\xa4</font>ge aus dem Einkauf (BKF20A 4-8 = '*X...                      verursachende Bestellnummer", 'format': 'P7.0', 'name': 'Angebot'}, 'BKAUFA': {'doc': 'Als Auftragsart darf nur ein Wert angegeben werd...bei HUDORA: U=Umlagerungsauftrag, WA=WerbeAuftrag', 'format': 'A2', 'name': 'auftragsart'}, 'BKAUFN': {'doc': 'Nummer des Auftrags Angabe wird per Programm gef...  <font color="#c040c0">\xc3\x9c</font>bernahme vergebene Auftragsnummer hinterlegt.', 'format': 'P7.0', 'name': 'auftrag'}, 'BKAWRT': {'doc': 'Angabe in Hauptw<font color="#c040c0">\xc3\xa4</font>hrung.', 'format': 'P15.2', 'name': 'Auftragswert'}, 'BKBZRG': {'doc': 'Bei Gutschriftsvorg<font color="#c040c0">\xc3\xa4</font>ngen kann hier die bezogene Rechnungsnummer <font color="#c040c0">\xc3\xbc</font>bergeben werden.', 'format': 'P9.0', 'name': 'Bezogene Rechnung'}, 'BKDFSL': {'doc': 'Dieses Feld wird von dem Programm, das eine <font color="#c040c0">\xc3\x84</font>nd...dernden<font color="#c040c0">\n</font>                      Bildschirms belegt.', 'format': 'A10', 'name': 'dateifuehrungsschluessel'}, 'BKDTER': {'doc': 'Datum der Erfassung/Erstellung des Datensatzes.', 'format': 'P7.0', 'name': 'erfassungsdatum'}, 'BKDTKD': {'doc': 'AAK00.AKDTKD Datum, das der Kunde bei der Auftra... Wird zum Teil auch "Kundenauftragsdatum" genannt', 'format': 'P7.0', 'name': 'bestelldatum'}, 'BKDTKW': {'doc': 'AAK00.AKDTKW Termin, zu dem der Kunde die Ware e...inermittlung bei der Erfassung vorbesetzt werden.', 'format': 'P7.0', 'name': 'kundenwunschtermin'}, ...}<br>
+<strong>ABT00</strong> = {'BTFNR': {'default': '01', 'doc': 'G<font color="#c040c0">\xc3\xbc</font>ltige Werte sind: *FIRM g<font color="#c040c0">\xc3\xbc</font>ltige Firma', 'format': 'A2', 'key': True, 'name': 'firma', 'required': True}, 'BTKZ04': {'doc': '<font color="#c040c0">\xc3\x9c</font>ber Druckkennzeichen wird gesteuert, welche Te...ERO nicht drucken<font color="#c040c0">\n</font>                      1 drucken', 'format': 'S1.0', 'name': 'Druckkennzeichen'}, 'BTKZ05': {'doc': 'AAT00.ATKZ05 Bei Streckengesch<font color="#c040c0">\xc3\xa4</font>ften wird dieser...                    1 Text auf Bestellung drucken', 'format': 'S1.0', 'name': 'Textdruck auf Bestellformular'}, 'BTKZ06': {'doc': 'AAT00.ATKZ06 Bei Streckengesch<font color="#c040c0">\xc3\xa4</font>ften wird dieser...                      1 Text auf WZ-Beleg drucken', 'format': 'S1.0', 'name': 'Textdruck auf Warenzugangsbeleg'}, 'BTKZ07': {'doc': 'AAT00.ATKZ07 Das Kennzeichen hat zwei Bedeutunge...<font color="#c040c0">\n</font>                   3 Bstl: Interner Text f<font color="#c040c0">\xc3\xbc</font>r Rg', 'format': 'S1.0', 'name': 'Druckkennzeichen'}, 'BTKZ08': {'doc': '<font color="#c040c0">\xc3\x9c</font>ber Druckkennzeichen wird gesteuert, welche Te...                   *ZERO nicht drucken, 1 drucken', 'format': 'S1.0', 'name': 'Druckkennzeichen'}, 'BTKZ09': {'doc': '<font color="#c040c0">\xc3\x9c</font>ber Druckkennzeichen wird gesteuert, welche Te...                   *ZERO nicht drucken, 1 drucken', 'format': 'S1.0', 'name': 'Druckkennzeichen'}, 'BTKZ10': {'doc': '<font color="#c040c0">\xc3\x9c</font>ber Druckkennzeichen wird gesteuert, welche Te...                   *ZERO nicht drucken, 1 drucken', 'format': 'S1.0', 'name': 'Druckkennzeichen'}, 'BTKZ11': {'doc': '<font color="#c040c0">\xc3\x9c</font>ber Druckkennzeichen wird gesteuert, welche Te...                   *ZERO nicht drucken, 1 drucken', 'format': 'S1.0', 'name': 'Druckkennzeichen'}, 'BTKZ12': {'doc': '<font color="#c040c0">\xc3\x9c</font>ber Druckkennzeichen wird gesteuert, welche Te...                   *ZERO nicht drucken, 1 drucken', 'format': 'S1.0', 'name': 'Druckkennzeichen'}, ...}<br>
+<strong>ABV00</strong> = {'BVAART': {'default': '', 'doc': 'G<font color="#c040c0">\xc3\xbc</font>ltige Werte sind: *ZERO Rechnungsadresse, 1 Lieferadresse', 'format': 'S1.0', 'name': 'adressart'}, 'BVKZAD': {'default': 1, 'doc': 'Der Datenbestand kann gleichzeitig Adressen enth...g<font color="#c040c0">\n</font>                      1 neue Adressaufbereitung', 'format': 'S1.0', 'name': 'Adressaufbereitung'}, 'BVKZBA': {'default': '', 'doc': 'G<font color="#c040c0">\xc3\xbc</font>ltige Werte sind: *ZERO nicht gepr<font color="#c040c0">\xc3\xbc</font>ft<font color="#c040c0">\n</font>      ...erden<font color="#c040c0">\n</font>                        4 wurde <font color="#c040c0">\xc3\xbc</font>bernommen', 'format': 'S1.0', 'name': 'bearbeitungskennzeichen'}, 'BVLKZ': {'default': '', 'doc': '', 'format': 'A3', 'name': 'laenderkennzeichen'}, 'BVNAM2': {'default': '', 'doc': '', 'format': 'A40', 'name': 'name2'}, 'BVNAM3': {'default': '', 'doc': '', 'format': 'A40', 'name': 'name3'}, 'BVNAM4': {'default': '', 'doc': '', 'format': 'A40', 'name': 'avisieren'}, 'BVNAME': {'default': '', 'doc': '', 'format': 'A40', 'name': 'name1'}, 'BVORT': {'default': '', 'doc': '', 'format': 'A40', 'name': 'ort'}, 'BVPLZ': {'default': '', 'doc': '', 'format': 'A15', 'name': 'plz'}, ...}<br>
+<strong>__revision__</strong> = '$Revision$'</td></tr></table>
+</body></html>

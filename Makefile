@@ -86,7 +86,7 @@ testenv_pydoc: dependencies
 doc: build testenv_pydoc
 	rm -Rf html
 	mkdir -p html
-	sh -c '(PYTHONPATH=$(PWD) cd html; pydoc.x -w ../husoftm/*.py)'
+	sh -c '(export PYTHONPATH=$(PWD); cd html; pydoc.x -w ../husoftm/*.py)'
 
 install: build
 	sh -c 'sudo python setup.py install'

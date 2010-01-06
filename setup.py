@@ -7,11 +7,11 @@ from setuptools import setup, find_packages
 import codecs
 
 
-hubarcode = setup(name='huSoftM',
+setup(name='huSoftM',
       maintainer='Maximillian Dornseif',
       maintainer_email='md@hudora.de',
       url='https://cybernetics.hudora.biz/projects/wiki/HuSoftm',
-      version='0.57p2',
+      version='0.57p4',
       description='communication with the SoftM Suite on an AS/400',
       long_description=codecs.open('README.rst', "r", "utf-8").read(),
       classifiers=['License :: OSI Approved :: BSD License',

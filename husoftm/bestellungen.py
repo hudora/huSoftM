@@ -97,7 +97,7 @@ def get_bestellung(bestellnr):
     
 
 def _get_zugaenge_helper(rows):
-    """Sammeld daten zu einer Bestellung aus verschiedenen Tabellen."""
+    """Sammelt daten zu einer Bestellung aus verschiedenen Tabellen."""
     rows = kursfaktorkorrektur(rows, 'kurs_zugang', 'kursfaktor_zugang')
     ret = []
     for row in rows:

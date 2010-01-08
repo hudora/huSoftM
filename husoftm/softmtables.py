@@ -133,6 +133,7 @@ class SoftMtable(SoftMreadOnlyTable):
     def generate_insert_sql(self, fields, values):
         """Generate the SQL-string for executing a insert command."""
         return "INSERT INTO %s (%s) VALUES(%s)" % (self.tablename, fields,
+                                                   ','.join([sql_quote(x) for x in values]))
     
     def update(self, fieldupdate='abc', condition='INVALID'):
         """Call to do a update on the table."""

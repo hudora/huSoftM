@@ -136,6 +136,16 @@ def get_zugaenge_bestellnr(bestellnr):
     return _get_zugaenge_helper(rows)
     
 
+def get_zugaenge_warenvereinnahmungsnr_simple(bestellnr, warenvereinnahmungsnr):
+    """Liefert alle Warenzugaenge zu einer Bestellnummer und zug. Warenvereinnahmungsnummer.
+    
+    Sammelt *nicht* alle Daten zu einer Bestellung, sondern nur die jeweils gelieferten Positionen.
+    """
+    rows = get_connection().query('EWZ00', condition="WZBSTN=%s and WZWVNR=%s" %
+                                  (sql_quote(bestellnr), sql_quote(warenvereinnahmungsnr)))
+    return rows
+    
+
 def get_bestellungen_artnr(artnr):
     """Liefert alle Warenzugaenge einer Artikelnummer."""
     

@@ -16,11 +16,18 @@ general introduction into the workings of huSoftM. Mayor subsystems:
 See [SoftMtabellen](http://cybernetics.hudora.biz/projects/wiki/SoftMtabellen) for a representation of our
 knowlege concerning the Tables in SoftM.
 
+[1]: http://github.com/hudora/huSoftM/blob/master/html/kunden.html
+[2]: http://github.com/hudora/huTools/blob/master/doc/standards/address_protocol.markdown
+[3]: http://github.com/hudora/huSoftM/blob/master/html/tools.html
+[4]: http://github.com/hudora/huSoftM/blob/master/html/connection.html
+[5]: http://github.com/hudora/huSoftM/blob/master/html/bestaende.html
+[6]: http://cybernetics.hudora.biz/projects/wiki/SoftMtabellen
 
 # Downloads
 
-Get it at [https://github.com/hudora/huSoftM](https://github.com/hudora/huSoftM)
+Get it at [https://github.com/hudora/huSoftM][7]
 
+[7]: https://github.com/hudora/huSoftM
 
 # Changes
 

@@ -1,3 +1,4 @@
+0.58:   neu: husoftm/warenzugangsschnittstelle.py
 0.57p4: fixed bundeling problems
 0.57p2: published again
 0.57p1: kbpos2artnr_lager() zugefuegt

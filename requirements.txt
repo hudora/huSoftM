@@ -5,4 +5,4 @@ Pyro
  -f http://ovh.dl.sourceforge.net/project/pyro/Pyro/3.9.1/#egg=Pyro
 huTools>=0.38p2
 cs
- -f http://cybernetics.hudora.biz/nonpublic/eggs/#egg=cs
+-f http://cybernetics.hudora.biz/nonpublic/eggs/#egg=cs

@@ -112,7 +112,7 @@ def feststeckende_jobs():
     rows = get_connection().query('ABK00', fields=['BKKDNR', 'BKVGNR', 'BKNRKD', 'BKKZBA'],
                                   condition="BKAUFN = 0 AND BKSTAT <> 'X' AND BKKZBA <> 0")
     fields = ('kundennr', 'vorgangsnr', 'kundenauftragsnr', 'fehlercode')
-    return [dict(zip(fields, row)) for row in rows]
+    return [dict(list(zip(fields, row))) for row in rows]
 
 
 def vorgangsnummer_bekannt(vorgangsnummer):

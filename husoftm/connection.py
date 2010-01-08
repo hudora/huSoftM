@@ -122,13 +122,13 @@ class PyRoMoftSconnection(object):
         generates a list of field on it own by consulting the field mapping database in from fields.MAPPINGDIR.
         """
 
-        if type(tables) == StringType:
+        if isinstance(tables, StringType):
             tables = [tables]
-        if type(fields) == StringType:
+        if isinstance(fields, StringType):
             fields = [fields]
-        if type(grouping) == StringType:
+        if isinstance(grouping, StringType):
             grouping = [grouping]
-        if type(ordering) == StringType:
+        if isinstance(ordering, StringType):
             ordering = [ordering]
         if not querymappings and len(fields) != 1 and not nomapping:
             querymappings = dict()

@@ -29,7 +29,7 @@ def kursfaktorkorrektur(rows, kursname='kurs', kursfaktorname='kursfaktor', umdr
     
     Wenn umdrehen == False dann werden nur Kursfaktor und Nachkommastellen angepasst
     """
-    if type(rows) != types.ListType:
+    if not isinstance(rows, list):
         rows = [rows]
     ret = []
     for row in rows:

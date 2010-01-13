@@ -20,10 +20,23 @@ Diese Daten werden jeweils mit den zugehörigen Bestellpositionen erweitert.
 """
 
 
-from husoftm.connection2 import get_connection, as400_2_int
-from husoftm.tools import sql_escape, sql_quote
-
 from husoftm.bestellungen import get_zugaenge_warenvereinnahmungsnr_simple
+from husoftm.connection2 import get_connection, as400_2_int
+from husoftm.softmtables import SoftMtable, AS400Connector_mixin
+from husoftm.tools import sql_escape, sql_quote
+import husoftm.fields
+
+
+class ISZ00(SoftMtable, AS400Connector_mixin):
+    """Bildet Zugänge aus Warenzugängen ab."""
+
+    def __init__(self):
+        super(ISZ00, self).__init__()
+        self.tablename = 'ISZ00'
+        self.name_dateifuehrungsschluessel = 'IZDFSL'
+        self.name_status = 'IZSTAT'
+        self.name_schluessel = 'IZSANR'
+        self.fieldmappings = husoftm.fields.MAPPINGDIR[self.tablename]
 
 
 def list_warenzugang():
@@ -32,7 +45,7 @@ def list_warenzugang():
     Die Informationen aus der ISZ00 werden noch durch die zugehörigen Bestellpositionen erweitert.
     Rückgabewert ist eine Liste von Dictionaries, die jeweils eine komplette Bestellung repräsentieren.
     """
-    rows = get_connection().query('ISZ00', condition="IZSTAT<>'X' AND IZSTAT<>'S'")
+    rows = get_connection().query('ISZ00', condition="IZSTAT=''")
     return _update_zugangsinfo(rows)
 
 

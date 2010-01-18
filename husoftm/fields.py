@@ -2248,7 +2248,7 @@ MAPPINGDIR = {
     },
 
 'XTY00': { # Versandarten
-          #'TYFNR': 'Firma',
+          'TYFNR': 'firma',
           'TYANW': 'anwendung',
           'TYVSAR': 'versandart',
           'TYVSBE': 'bezeichnung',

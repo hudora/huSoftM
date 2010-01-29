@@ -88,6 +88,18 @@ class ISK00(SoftMtable, AS400Connector_mixin):
         }
     
 
+class ISZ00(SoftMtable, AS400Connector_mixin):
+    """Bildet Warenzugänge (bspw. Containerlieferungen) ab."""
+    
+    def __init__(self):
+        super(ISZ00, self).__init__()
+        self.tablename = 'ISZ00'
+        self.name_dateifuehrungsschluessel = 'IZDFSL'
+        self.name_status = 'IZSTAT'
+        self.name_schluessel = 'IZSANR'
+        self.fieldmappings = husoftm.fields.MAPPINGDIR[self.tablename]
+
+
 def artnr_for_kommibleg_position(self, kommibelegnr, position):
     """Wandelt eine Artikelnummer in eine Kommibelegpositionsnummer.
     

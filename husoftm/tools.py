@@ -198,8 +198,8 @@ class _GenericTests(unittest.TestCase):
     
     def test_data_conversions(self):
         """Tested die Datumsumwandlung."""
-        self.assertEqual(softm2date('1070605'), datetime.date(2007, 0o6, 0o5))
-        self.assertEqual(date2softm(datetime.datetime(2007, 0o6, 0o5)), '1070605')
+        self.assertEqual(softm2date('1070605'), datetime.date(2007, 6, 5))
+        self.assertEqual(date2softm(datetime.datetime(2007, 6, 5)), '1070605')
         self.assertEqual(date2softm(softm2date('1070605')), '1070605')
         self.assertEqual(softm2date('       '), None)
         self.assertEqual(softm2date(''), None)

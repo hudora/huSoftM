@@ -14,6 +14,7 @@ Copyright (c) 2007 HUDORA. All rights reserved.
 import datetime
 import sqlite3
 import unittest
+import husoftm.fields
 from husoftm.softmtables import SoftMreadOnlyTable, SoftMtable, SqliteConnector_mixin, AS400Connector_mixin
 
 

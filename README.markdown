@@ -1,7 +1,7 @@
 # huSoftM
 
 huSoftM is a toolkit for acessing the "SoftM Suite" ERP system in Python. See the module documentation for a
-general introduction into the workings of huSoftM. Mayor subsystems:
+general introduction into the workings of huSoftM. Major subsystems:
 
 * odbc_bridge Erlang Language http-to-odbc converter beeing the basis for all SoftM access in this library.
 * softmtables - read write access to single table rows including locking.

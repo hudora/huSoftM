@@ -136,6 +136,7 @@ class Lieferschein(object):
             set_attributes(row, position)
             #position.menge = position.menge # ???
             #position.artnr = position.artnr # ???
+            position.anfangstext, position.endetext = self._get_pos_texte(position.auftrags_position)
             self.positionen.append(position)
         
         self._get_lieferadresse()
@@ -169,26 +170,37 @@ class Lieferschein(object):
         else:
             self.fixtermin = False
 
-    def _get_texte(self):
-        """Texte zu einem Lieferschein extraieren"""
+    def _get_pos_texte(self, pos):
+        """Positionsanfangs- und Endetexte als string zurückgeben."""
         anfangstext = []
         endetext = []
         rows = get_connection().query('AAT00', ordering='ATLFNR',
-                          condition="ATAUPO=0 AND ATKZLF=1 AND ATAUFN='%d'" % (int(self.auftragsnr), ))
+                                      condition="ATAUPO=%d AND ATKZLF=1 AND ATAUFN='%d'"
+                                      % (pos, int(self.auftragsnr)))
         for row in rows:
-            if int(row['textart']) in [7, 8]:
-                anfangstext.append(row['text'])
-            elif int(row['textart']) in [9]:
-                endetext.append(row['text'])
-        self.anfangstext = '\n'.join(anfangstext)
-        self.endetext = '\n'.join(endetext)
-        self.infotext_kunde = '\n'.join(anfangstext + endetext)
-        return rows
-    
+            text = row['text']
+            textnr = row['nr']
+            textart = int(row['textart'])
+            if textart in [7, 8]:
+                anfangstext.append((textnr, text))
+            elif textart in [9]:
+                endetext.append((textnr, text))
+        # sortieren, damit mehrzeilige Texte zusammen hängen
+        anfangstext.sort()
+        endetext.sort()
+        anfangstext = '\n'.join([entry[1] for entry in anfangstext])
+        endetext = '\n'.join([entry[1] for entry in endetext])
+        return anfangstext, endetext
+
+    def _get_texte(self):
+        """Texte zu einem Lieferschein extrahieren"""
+        self.anfangstext, self.endetext = self._get_pos_texte(pos=0)
+        self.infotext_kunde = '\n'.join([self.anfangstext, self.endetext]).strip()
+
     def _get_lieferadresse(self):
         """'Normale' Lieferadresse zu einem Lieferschein extraieren."""
         # Lieferadresse lesen, LIKE ist wegen diverser SQL issues nötig
-        rows = get_connection().query('XKD00', condition="KDKDNR LIKE '%s'" % 
+        rows = get_connection().query('XKD00', condition="KDKDNR LIKE '%s'" %
                                ('%' + unicode(int(self.warenempfaenger)), ))
         if len(rows) != 1:
             raise RuntimeError("Probleme bei der Auswahl der Lieferadresse")

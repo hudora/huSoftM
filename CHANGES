@@ -1,3 +1,4 @@
+0.60p1: handling von negativen Beständen beim versionsvorschlag()
 0.60:   versandarten() implementiert
 0.59:   Removed husoftm/warenzugangsschnittstelle.py - ported neccessary parts to husoftm/lagerschnittstelle.py
 0.58p1: Added class ISZ00 to warenzugangsschnittstelle

@@ -453,7 +453,7 @@ def versionsvorschlag(menge, orgartnr, date, dateformat="%Y-%m-%d"):
     benoetigt = menge
     for artnr in cs.masterdata.article.alternatives(orgartnr):
         dummy, untermenge = frei_am(benoetigt, artnr, date, dateformat)
-        if untermenge:
+        if untermenge > 0:
             ret.append((min(benoetigt, untermenge), artnr))
             benoetigt -= untermenge
         if benoetigt <= 0:

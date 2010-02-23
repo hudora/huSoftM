@@ -573,7 +573,7 @@ def get_lagerbestandmitumlagerungen(artnr):
     return bestand(artnr, lager=100)
     
 
-def bestand(artnr, lager):
+def bestand(artnr, lager=0):
     """Ermittelt den Lagerbestand (Buchbestand + kurzum in diesem Lager eintreffene Güter) eines Artikels.
     
     >>> bestand('76095')

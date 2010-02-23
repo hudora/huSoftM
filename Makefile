@@ -62,7 +62,7 @@ dependencies:
 statistics:
 	sloccount --wide --details . | grep -v -E '(testenv|build|.svn)/' > sloccount.sc
 
-upload: build doc
+upload: build
 	python setup.py sdist upload
 
 publish:

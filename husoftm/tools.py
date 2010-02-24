@@ -119,16 +119,20 @@ def iso2land(isoland):
     
 
 def date2softm(date):
-    """Wandelt ein datetime Objekt in das von SoftM verwendete Format.
+    """Wandelt ein datetime Objekt oder String in das von SoftM verwendete Format.
     
     >>> date2softm(datetime.date(2000, 01, 01))
     '1000101'
     >>> date2softm(datetime.date(1901, 06, 05))
     '010605'
+    >>> date2softm('2001-12-13')
+    '1011213'
     """
     
     if not date:
         return ''
+    if isinstance(date, basestring):
+        date = datetime.datetime.strptime(date, '%Y-%m-%d')
     if date.year > 1999:
         return date.strftime('1%y%m%d')
     return date.strftime('%y%m%d')

@@ -20,18 +20,19 @@ build:
 	python setup.py build sdist
 
 test:
-	PYTHONPATH=. python husoftm/artikel.py
+	PYTHONPATH=. python husoftm/tools.py
 	PYTHONPATH=. python husoftm/connection2.py
-	PYTHONPATH=. python husoftm/kunden.py
-	PYTHONPATH=. python husoftm/lagerschnittstelle.py
-	PYTHONPATH=. python husoftm/lieferanten.py  
-	PYTHONPATH=. python husoftm/lieferscheine.py
+	PYTHONPATH=. python husoftm/lieferanten.py
 	PYTHONPATH=. python husoftm/misc.py
 	PYTHONPATH=. python husoftm/preise_ek.py
+	# dependencies on CentralServices
+	PYTHONPATH=. python husoftm/artikel.py
+	PYTHONPATH=. python husoftm/bestaende.py
+	PYTHONPATH=. python husoftm/kunden.py
+	PYTHONPATH=. python husoftm/lagerschnittstelle.py
+	PYTHONPATH=. python husoftm/lieferscheine.py
 	PYTHONPATH=. python husoftm/softmtables.py
 	PYTHONPATH=. python husoftm/stapelschnittstelle.py
-	PYTHONPATH=. python husoftm/tools.py
-	PYTHONPATH=. python husoftm/bestaende.py
 
 coverage: dependencies
 	printf '.*/tests/.*\n.*test.py\n' > .figleaf-exclude.txt

@@ -1043,7 +1043,7 @@ class _OrderTests(unittest.TestCase):
         kopf, positionen, texte, adressen = _order2records(vorgangsnummer, order)
 
         kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKSBNR, BKKZTF, BKVGPO, BKFNR, BKKDNR)"
-                   " VALUES('1','123','1100303','1','1','3','01','   17200')")
+                   " VALUES('1','123','1100303','1','1','2','01','   17200')")
         self.assertEqual(kopf.to_sql(), kpf_sql)
         text_sql = ("INSERT INTO ABT00 (BTKZLF, BTKZAB, BTTART, BTFNR, BTTX60, BTLFNR, BTKZRG, BTVGNR)"
                     " VALUES('1','1','8','01','Referenz: VS6RRW2MYL4FZ3PPMVH4ZRFE3A','1','1','123')")
@@ -1051,7 +1051,7 @@ class _OrderTests(unittest.TestCase):
         self.assertEqual(texte[0].to_sql(), text_sql)
         pos_sql = ("INSERT INTO ABA00 (BADTER, BAVGPO, BAABT, BAFNR, BAMNG, BAARTN, BAVGNR)"
                    " VALUES('1100225','1','1','01','1','14600/03','123')")
-        self.assertEqual(len(positionen), 3)
+        self.assertEqual(len(positionen), 2)
         self.assertEqual(positionen[0].to_sql(), pos_sql)
         self.assertEqual(adressen, [])
 

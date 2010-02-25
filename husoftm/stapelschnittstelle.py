@@ -261,6 +261,9 @@ def _auftrag2records(vorgangsnummer, auftrag):
 
     if hasattr(auftrag, 'teillieferung_zulaessig'):
         kopf.teillieferung_zulaessig = str(int(auftrag.teillieferung_zulaessig))
+    else:
+        # für lagacy code, den default wert auf false setzen
+        kopf.teillieferung_zulaessig = ""
 
     if hasattr(auftrag, 'abgangslager'):
         kopf.abgangslager = auftrag.abgangslager
@@ -546,7 +549,7 @@ class _MockPosition(object):
     pass
 
 
-class _AuftragTests(): # unittest.TestCase):
+class _AuftragTests(unittest.TestCase):
     """Vermischte Tests für das Auftragsformat."""
 
     def test_minimal_auftrag(self):

@@ -5,3 +5,4 @@ huSoftM.egg-info
 *.pyc
 build/
 pip-log.txt
+testenv/

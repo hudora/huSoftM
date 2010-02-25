@@ -25,6 +25,7 @@ test:
 	PYTHONPATH=. python husoftm/lieferanten.py
 	PYTHONPATH=. python husoftm/misc.py
 	PYTHONPATH=. python husoftm/preise_ek.py
+	PYTHONPATH=. ./testenv/bin/python husoftm/stapelschnittstelle.py
 	# dependencies on CentralServices
 	PYTHONPATH=. python husoftm/artikel.py
 	PYTHONPATH=. python husoftm/bestaende.py
@@ -32,7 +33,6 @@ test:
 	PYTHONPATH=. python husoftm/lagerschnittstelle.py
 	PYTHONPATH=. python husoftm/lieferscheine.py
 	PYTHONPATH=. python husoftm/softmtables.py
-	PYTHONPATH=. python husoftm/stapelschnittstelle.py
 
 coverage: dependencies
 	printf '.*/tests/.*\n.*test.py\n' > .figleaf-exclude.txt

@@ -33,7 +33,7 @@ ABK00 = {
 'BKLFDS': dict(name='stapelsatznummer', format='S11.0',
                doc='''Lfd. Nummer Stapelsatz Nummer des Satzes aus der Originalstapeldatei, die zur
                       Erstellung des Kopfsatzes führte. Ist in userem System in der Regel NULL.'''),
-'BKAUFA': dict(name='auftragsart', format='A2',
+'BKAUFA': dict(name='auftragsart', format='A2', default='',
                doc='''Als Auftragsart darf nur ein Wert angegeben werden, der als zulässige Auftragsart in
                       der Parameterdatei hinterlegt ist. Sie steuert, wie der Auftrag im System abgewickelt
                       werden soll. So kann u.a. auftragsartenabhängig festgelegt werden:
@@ -71,7 +71,7 @@ ABK00 = {
                doc='''AAK00.AKDTKD Datum, das der Kunde bei der Auftragserteilung mitgeteilt hat. Das Datum
                       ist als Information für den Kunden gedacht. Wahlweise Angabe,
                       Prüfung auf formale Richtigkeit. Wird zum Teil auch "Kundenauftragsdatum" genannt'''),
-'BKDTKW': dict(name='kundenwunschtermin', format='P7.0',
+'BKDTKW': dict(name='kundenwunschtermin', format='P7.0', default='',
                doc='''AAK00.AKDTKW Termin, zu dem der Kunde die Ware erhalten soll. Für unbestimmte Termine
                       oder Rahmenkonditionen kann der Sonderwert '999999' eingegeben werden. Dieser Termin
                       kann die Konditionsermittlung beeinflussen. Der Termin kann über die automatische
@@ -124,7 +124,7 @@ ABK00 = {
                doc='''Prüfttyp für Validierung: PRT Falls vorgangsbezogen festgelegt werden soll, wo die
                       Formulare für diesen Vorgang gedruckt werden sollen, dann muss hier das
                       entsprechende Druckerkürzel eingeben werden.'''),
-'BKKZTF': dict(name='teillieferung_zulaessig', format='S1.0',
+'BKKZTF': dict(name='teillieferung_zulaessig', format='S1.0', default=1,
                doc='''AAK00.AKKZTF Bei Teillieferung zulässig = nein wird der Kommissionierbeleg
                       bzw. Lieferschein erst dann gedruckt, wenn alle Positionen des Auftrags lieferbar sind.
                       Gültige Werte sind:

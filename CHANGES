@@ -1,3 +1,4 @@
+0.60p3: New function stapelschnittstelle.extended_order_protocol2softm()
 0.60p2: documentation fix in bestaende.bestand()
 0.60p1: handling von negativen Beständen beim versionsvorschlag()
 0.60:   versandarten() implementiert

@@ -159,6 +159,16 @@ def address_transmitted(vorgangsnr):
     return bool(rows)
 
 
+def get_auftragsnr(vorgangsnr):
+    """Gibt die zu einer Vorgangsnummer gehörige Auftragsnummer zurück.
+
+    Wenn es (noch) keine Auftragsnummer zu dieser Vorgangsnummer gibt, wird None zurückgegeben."""
+    rows = get_connection().query('ABK00', fields="BKAUFN", condition="BKVGNR=%s" % sql_quote(vorgangsnr))
+    if rows:
+        return int(rows[0][0])
+    return None
+
+
 def _create_auftragstext(textart, vorgangsposition, texte, vorgangsnummer, text, auftragsbestaetigung,
         lieferschein, rechnung):
     """Fügt einen Text zu einem Auftrag, entweder als Kopftext oder Positionstext, hinzu."""
@@ -444,6 +454,9 @@ def _order2records(vorgangsnummer, order):
     # guid - Eindeutiger ID des Vorgangs, darf niemals doppelt verwendet werden
     _create_kopftext(texte, vorgangsnummer, "Referenz: %s" % _get_attr(order, 'guid'),
                      auftragsbestaetigung=1, lieferschein=1, rechnung=1)
+    if _get_attr(order, 'erfasst_von'):
+                 _create_kopftext(texte, vorgangsnummer, "erfasst von: %s" % _get_attr(order, 'erfasst_von'),
+                                  auftragsbestaetigung=1, lieferschein=1, rechnung=1)
 
     # infotext_kunde - Freitext, der sich an den Warenempfänger richtet. Kann z.B. auf einem Lieferschein angedruckt werden. Der Umbruch des Textes kann durch das Backendsystem beliebig erfolgen, deshalb sollte der Text keine Zeilenumbrüche beinhalten.
     if _get_attr(order, 'infotext_kunde'):

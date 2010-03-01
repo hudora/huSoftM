@@ -27,6 +27,7 @@ import huTools.world
 from husoftm.connection import get_connection
 from husoftm.tools import date2softm, sql_quote, iso2land
 from husoftm.stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00
+from huTools.unicode import deUmlaut
 
 __revision__ = "$Revision$"
 
@@ -131,7 +132,7 @@ def kundenauftragsnummer_bekannt(kundenauftragsnummer):
     # Kundenauftragsnummer vergeben wie bereits von KundeB vergeben worden ist.
 
     rows = get_connection().query('ABK00', fields=['BKVGNR'],
-                                          condition="BKNRKD=%s" % sql_quote(kundenauftragsnummer))
+                                          condition="BKNRKD=%s" % sql_quote(deUmlaut(kundenauftragsnummer)))
     if rows:
         return True
     return False
@@ -174,16 +175,16 @@ def _create_auftragstext(textart, vorgangsposition, texte, vorgangsnummer, text,
     """Fügt einen Text zu einem Auftrag, entweder als Kopftext oder Positionstext, hinzu."""
     # split text into chunks of 60 chars
     for line in textwrap.wrap(text, 60):
-        text = Text()
-        texte.append(text)
-        text.vorgang = vorgangsnummer
-        text.vorgangsposition = vorgangsposition
-        text.textart = textart
-        text.auf_auftragsbestaetigung = auftragsbestaetigung
-        text.auf_lieferschein = lieferschein
-        text.auf_rechnung = rechnung
-        text.text = line
-        text.textnummer = len(texte)
+        txtobj = Text()
+        texte.append(txtobj)
+        txtobj.vorgang = vorgangsnummer
+        txtobj.vorgangsposition = vorgangsposition
+        txtobj.textart = textart
+        txtobj.auf_auftragsbestaetigung = auftragsbestaetigung
+        txtobj.auf_lieferschein = lieferschein
+        txtobj.auf_rechnung = rechnung
+        txtobj.text = deUmlaut(line)
+        txtobj.textnummer = len(texte)
     
 
 def _create_kopftext(texte, vorgangsnummer, text, auftragsbestaetigung=1, lieferschein=1, rechnung=1):
@@ -306,10 +307,10 @@ def _auftrag2records(vorgangsnummer, auftrag):
     texte = []
 
     if hasattr(auftrag, 'infotext_kunde'):
-        _create_kopftext(texte, vorgangsnummer, auftrag.infotext_kunde, auftragsbestaetigung=1,
+        _create_kopftext(texte, vorgangsnummer, deUmlaut(auftrag.infotext_kunde), auftragsbestaetigung=1,
                          lieferschein=1, rechnung=1)
     if hasattr(auftrag, 'bestelltext'):
-        _create_kopftext(texte, vorgangsnummer, auftrag.bestelltext, auftragsbestaetigung=1,
+        _create_kopftext(texte, vorgangsnummer, deUmlaut(auftrag.bestelltext), auftragsbestaetigung=1,
                          lieferschein=0, rechnung=0)
 
     # Für Fixtermine die Uhrzeit (oder was immer im Fixterminfeld steht) als Kopftext übertragen und das
@@ -397,7 +398,7 @@ def auftrag2softm(auftrag, belegtexte=None):
         # the race condition has hit - remove our entry and retry
         get_connection().delete('ABK00', 'BKDFSL=%s' % sql_quote(uuid))
         # sleep to avoid deadlocks see http://de.wikipedia.org/wiki/CSMA/CD#Das_Backoff-Verfahren_bei_Ethernet
-        time.sleep(random.randint()/100.0)
+        time.sleep(random.random()/100.0)
         # recusively try again
         auftrag2softm(auftrag, belegtexte)
     else:
@@ -530,7 +531,7 @@ def extended_order_protocol2softm(order):
         # the race condition has hit - remove our entry and retry
         get_connection().delete('ABK00', 'BKDFSL=%s' % sql_quote(uuid))
         # sleep to avoid deadlocks see http://de.wikipedia.org/wiki/CSMA/CD#Das_Backoff-Verfahren_bei_Ethernet
-        time.sleep(random.randint()/13.0)
+        time.sleep(random.random()/13.0)
         # recusively try again
         extended_order_protocol2softm(order)
     else:
@@ -1022,7 +1023,8 @@ class _OrderTests(unittest.TestCase):
         self.assertEqual(len(texte), 1)
         self.assertEqual(texte[0].to_sql(), text_sql)
         pos_sql = ("INSERT INTO ABA00 (BADTER, BAVGPO, BAABT, BAFNR, BAMNG, BAARTN, BAVGNR)"
-                   " VALUES('1100225','1','1','01','1','14600/03','123')")
+                   " VALUES('xtodayx','1','1','01','1','14600/03','123')")
+        pos_sql = pos_sql.replace('xtodayx', date2softm(datetime.date.today()))
         self.assertEqual(len(positionen), 3)
         self.assertEqual(positionen[0].to_sql(), pos_sql)
         self.assertEqual(adressen, [])
@@ -1066,7 +1068,8 @@ class _OrderTests(unittest.TestCase):
         self.assertEqual(len(texte), 1)
         self.assertEqual(texte[0].to_sql(), text_sql)
         pos_sql = ("INSERT INTO ABA00 (BADTER, BAVGPO, BAABT, BAFNR, BAMNG, BAARTN, BAVGNR)"
-                   " VALUES('1100225','1','1','01','1','14600/03','123')")
+                   " VALUES('xtodayx','1','1','01','1','14600/03','123')")
+        pos_sql = pos_sql.replace('xtodayx', date2softm(datetime.date.today()))
         self.assertEqual(len(positionen), 2)
         self.assertEqual(positionen[0].to_sql(), pos_sql)
         self.assertEqual(adressen, [])

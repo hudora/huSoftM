@@ -444,6 +444,8 @@ def _order2records(vorgangsnummer, order):
         kopf.anliefertermin = date2softm(datetime.date.today()) # FIXME +7 days eventually?
     if _get_attr(order, 'anlieferdatum_bis'):
         kopf.kundenwunschtermin = date2softm(_get_attr(order, 'anlieferdatum_bis'))
+    else:
+        kopf.kundenwunschtermin = kopf.anliefertermin
     
     # versandkosten - Versandkosten in Cent
     # absenderadresse - (mehrzeiliger) String, der die Absenderadresse auf Versandpapieren codiert.

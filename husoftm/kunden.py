@@ -177,7 +177,43 @@ def get_kunde_by_iln(iln):
                 kunde.kundennr = kunde.kundennr + ('/%03d' % int(rows[0]['versandadresssnr']))
                 return kunde
     raise ValueError("Keine Daten für GLN/ILN %r gefunden" % iln)
-    
+
+
+def get_lieferadressen(kdnr):
+    """Sucht zusätzliche Lieferadressen für eine Kundennr raus.
+
+    Gibt eine Liste aller möglichen Lieferadressen in Form von Kunden-Objekten zurück.
+    >>>get_lieferadressen(13041)
+    [{'sortierfeld': '', 'tel': '+49 2041 690000', 'erfassung': datetime.date(2004, 12, 16),
+      'strasse': 'An der Knippenburg 4', 'kundennr': '13041/001', 'mobil': '', 'gebiet': '',
+      'aenderung': datetime.date(2004, 12, 16), 'mail': '', 'adressdatei_id': '', 'ustid': '',
+      'distrikt': '', 'fax': '', 'ort': 'Bottrop', 'plz': '46238', 'vertreter': '', 'sachbearbeiter': '',
+      'name4': '', 'name2': 'Schuhe GmbH & Co. KG', 'name3': 'Distributionszentrum West',
+      'name1': 'Heinrich Deichmann', 'kundengruppe': '', 'land': 'DE', 'verband': '', 'iln': u'',
+      'unsere_lieferantennr': '', 'mitgliednr': '', 'branche': ''},
+     {'sortierfeld': '', 'tel': '+ 49 9852 9060', 'erfassung': datetime.date(2004, 12, 16), 'strasse': 'Deichmann-Str. 1',
+      'kundennr': '13041/002', 'mobil': '', 'gebiet': '', 'aenderung': datetime.date(2004, 12, 16), 'mail': '',
+      'adressdatei_id': '', 'ustid': '', 'distrikt': '', 'fax': '', 'ort': 'Feuchtwangen', 'plz': '91555', 'vertreter': '',
+      'sachbearbeiter': '', 'name4': '', 'name2': 'Schuhe GmbH & Co. KG', 'name3': u'Distributionszentrum S\xfcd',
+      'name1': 'Heinrich Deichmann', 'kundengruppe': '', 'land': 'DE', 'verband': '', 'iln': u'',
+      'unsere_lieferantennr': '', 'mitgliednr': '', 'branche': ''},
+     ...]
+    """
+    # folgende Abfrage wäre toll, funktioniert aber nicht:
+    # avrows = husoftm.connection2.get_connection().query(['AVA00'], condition="VAKDNR='%s'" % int(kdnr))
+    allrows = husoftm.connection2.get_connection().query(['AVA00'], condition="VASTAT <>'X'")
+    avrows = [row for row in allrows if int(row['kundennr']) == int(kdnr)]
+    kunden = []
+    for row in avrows:
+        xarows = husoftm.connection2.get_connection().query(['XXA00'], condition="XASANR='%s'" %
+                                                            int(row['satznr']))
+        if xarows:
+            assert(len(xarows) == 1)
+            kunde = Kunde().fill_from_softm(xarows[0])
+            kunde.kundennr = kunde.kundennr + ('/%03d' % int(row['versandadresssnr']))
+            kunden.append(kunde)
+    return kunden
+
 
 @caching.cache_function(60*60*2)
 def get_kundenbetreuer(kundennr):

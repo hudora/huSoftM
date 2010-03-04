@@ -1,3 +1,4 @@
+0.60p5: New function kunden.get_lieferadressen()
 0.60p4: New function stapelschnittstelle.get_auftragsnr() und speichern des Erfassers eines Auftrages in den Auftragstexten
 0.60p3: New function stapelschnittstelle.extended_order_protocol2softm()
 0.60p2: documentation fix in bestaende.bestand()

@@ -97,6 +97,8 @@ class Kunde(object):
         # 'kreditlimit': 2.7000000000000002, 
         # 'inland_ausland': 0, 
         # self.satzstatus = row.get('satzstatus', '')
+        self.satzstatus = husoftm.connection2.get_connection().query('XKD00', fields=['KDSTAT'], condition="KDKDNR = %s" % husoftm.tools.sql_quote(row.get('kundennr')))
+        print "satstat", self.satzstatus
         return self
     
 
@@ -121,7 +123,7 @@ def get_changed_after(date):
     return list(ret)
 
 
-@caching.cache_function(60*60*2)
+#@caching.cache_function(60*60*2)
 def get_kunde(kdnnr):
     """Get the Kunde object representing Kundennummer <kdnnr>.
     

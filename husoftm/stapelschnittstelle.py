@@ -17,17 +17,18 @@ Copyright (c) 2007, 2008 HUDORA GmbH. All rights reserved.
 """
 
 import datetime
-import time
+import huTools.world
+import itertools
 import os
-import thread
 import random
 import textwrap
+import thread
+import time
 import unittest
-import huTools.world
-from husoftm.connection import get_connection
-from husoftm.tools import date2softm, sql_quote, iso2land
-from husoftm.stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00
 from huTools.unicode import deUmlaut
+from husoftm.connection import get_connection
+from husoftm.stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00
+from husoftm.tools import date2softm, sql_quote, iso2land
 
 __revision__ = "$Revision$"
 
@@ -171,10 +172,19 @@ def get_auftragsnr(vorgangsnr):
 
 
 def _create_auftragstext(textart, vorgangsposition, texte, vorgangsnummer, text, auftragsbestaetigung,
-        lieferschein, rechnung):
-    """Fügt einen Text zu einem Auftrag, entweder als Kopftext oder Positionstext, hinzu."""
+                         lieferschein, rechnung):
+    """Fügt einen Text zu einem Auftrag, entweder als Kopftext oder Positionstext, hinzu.
+
+    Jede Zeile wird ggf. in Zeilen < 60 Zeichen aufgeteilt.
+    Das Ergebnis wird in die Liste texte angehangen.
+    """
+    # split text at newlines
+    texts = text.split('\n')
+    # replace umlauts
+    texts = [deUmlaut(txt) for txt in texts]
     # split text into chunks of 60 chars
-    for line in textwrap.wrap(text, 60):
+    texts = [textwrap.wrap(txt, 60) for txt in texts]
+    for line in itertools.chain(*texts):
         txtobj = Text()
         texte.append(txtobj)
         txtobj.vorgang = vorgangsnummer
@@ -183,9 +193,9 @@ def _create_auftragstext(textart, vorgangsposition, texte, vorgangsnummer, text,
         txtobj.auf_auftragsbestaetigung = auftragsbestaetigung
         txtobj.auf_lieferschein = lieferschein
         txtobj.auf_rechnung = rechnung
-        txtobj.text = deUmlaut(line)
+        txtobj.text = line
         txtobj.textnummer = len(texte)
-    
+
 
 def _create_kopftext(texte, vorgangsnummer, text, auftragsbestaetigung=1, lieferschein=1, rechnung=1):
     """Fügt einen Kopftext hinzu."""
@@ -1017,8 +1027,8 @@ class _OrderTests(unittest.TestCase):
                  }
         kopf, positionen, texte, adressen = _order2records(vorgangsnummer, order)
 
-        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKSBNR, BKKZTF, BKVGPO, BKFNR, BKKDNR)"
-                   " VALUES('1','123','1100303','1','1','3','01','   17200')")
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKVGPO, BKFNR, BKKDNR)"
+                   " VALUES('1','123','1100303','1100303','1','1','3','01','   17200')")
         self.assertEqual(kopf.to_sql(), kpf_sql)
         text_sql = ("INSERT INTO ABT00 (BTKZLF, BTKZAB, BTTART, BTFNR, BTTX60, BTLFNR, BTKZRG, BTVGNR)"
                     " VALUES('1','1','8','01','Referenz: VS6RRW2MYL4FZ3PPMVH4ZRFE3A','1','1','123')")
@@ -1062,12 +1072,70 @@ class _OrderTests(unittest.TestCase):
                  'tel': '+49 2191 60912 10'}
         kopf, positionen, texte, adressen = _order2records(vorgangsnummer, order)
 
-        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKSBNR, BKKZTF, BKVGPO, BKFNR, BKKDNR)"
-                   " VALUES('1','123','1100303','1','1','2','01','   17200')")
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKVGPO, BKFNR, BKKDNR)"
+                   " VALUES('1','123','1100303','1100303','1','1','2','01','   17200')")
         self.assertEqual(kopf.to_sql(), kpf_sql)
         text_sql = ("INSERT INTO ABT00 (BTKZLF, BTKZAB, BTTART, BTFNR, BTTX60, BTLFNR, BTKZRG, BTVGNR)"
                     " VALUES('1','1','8','01','Referenz: VS6RRW2MYL4FZ3PPMVH4ZRFE3A','1','1','123')")
         self.assertEqual(len(texte), 1)
+        self.assertEqual(texte[0].to_sql(), text_sql)
+        pos_sql = ("INSERT INTO ABA00 (BADTER, BAVGPO, BAABT, BAFNR, BAMNG, BAARTN, BAVGNR)"
+                   " VALUES('xtodayx','1','1','01','1','14600/03','123')")
+        pos_sql = pos_sql.replace('xtodayx', date2softm(datetime.date.today()))
+        self.assertEqual(len(positionen), 2)
+        self.assertEqual(positionen[0].to_sql(), pos_sql)
+        self.assertEqual(adressen, [])
+
+    def test_simple_infotext(self):
+        """Test if the minimal possible Order can be converted to SQL."""
+        vorgangsnummer = 123
+        order = {'_id': '17200',
+                 '_rev': '4-4bba80636c015f98e908c79c521e5124',
+                 'sachbearbeiter': 'verkauf',
+                 'softmid': '17200',
+                 'iln': '4.00599800001e+12',
+                 'anlieferdatum_von': u'2010-03-03',
+                 'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A',
+                 'infotext_kunde': (u'Dieser Text sollte in meheren Zeilen enden.\n'
+                                    u'01234567890123456789012345678901234567890123456789'
+                                    u'01234567890123456789012345678901234567890123456789'
+                                    u'01234567890123456789012345678901234567890123456789'
+                                    u'01234567890123456789012345678901234567890123456789'
+                                    u'01234567890123456789012345678901234567890123456789'
+                                    u'01234567890123456789012345678901234567890123456789'
+                                    u'01234567890123456789012345678901234567890123456789'
+                                    u'01234567890123456789012345678901234567890123456789'
+                                    u'01234567890123456789012345678901234567890123456789'
+                                    u'01234567890123456789012345678901234567890123456789'
+                                    u'01234567890123456789012345678901234567890123456789'
+                                    u'01234567890123456789012345678901234567890123456789'
+                                    u'0123456789<-Hier ein Ümbruch. üäöß Keine Ümlaute!!!'),
+                 'kundenauftragsnr': u'',
+                 'kundennr': u'17200',
+                 'land': 'DE',
+                 'name1': 'HUDORA GmbH',
+                 'name2': '-UMFUHR-',
+                 'name3': '',
+                 'ort': 'Remscheid',
+                 'plz': '42897',
+                 'strasse': u'J\xc3\xa4gerwald 13',
+                 'orderlines': [{u'artnr': u'14600/03',
+                                 'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A-0',
+                                 u'menge': 1,
+                                 'name': 'HUDORA Big Wheel silber, 125 mm Rolle'},
+                                {u'artnr': u'65240',
+                                 'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A-24',
+                                 u'menge': 1,
+                                 'name': 'Test'}],
+                 'tel': '+49 2191 60912 10'}
+        kopf, positionen, texte, adressen = _order2records(vorgangsnummer, order)
+
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKVGPO, BKFNR, BKKDNR)"
+                   " VALUES('1','123','1100303','1100303','1','1','2','01','   17200')")
+        self.assertEqual(kopf.to_sql(), kpf_sql)
+        text_sql = ("INSERT INTO ABT00 (BTKZLF, BTKZAB, BTTART, BTFNR, BTTX60, BTLFNR, BTKZRG, BTVGNR)"
+                    " VALUES('1','1','8','01','Referenz: VS6RRW2MYL4FZ3PPMVH4ZRFE3A','1','1','123')")
+        self.assertEqual(len(texte), 13)
         self.assertEqual(texte[0].to_sql(), text_sql)
         pos_sql = ("INSERT INTO ABA00 (BADTER, BAVGPO, BAABT, BAFNR, BAMNG, BAARTN, BAVGNR)"
                    " VALUES('xtodayx','1','1','01','1','14600/03','123')")

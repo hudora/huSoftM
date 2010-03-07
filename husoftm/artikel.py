@@ -318,8 +318,9 @@ def abgabepreisbasis(artnr):
                    querymappings={'SUM(FUMNG)': 'menge', 'SUM(FUPNET)': 'nettopreis', 'COUNT(FKRGNR)': 'rechnungen', 'FKDTFA': 'rechnung_date'})
     ret = []
     for row in rows:
-        if int(row['menge']):
-            ret.append((row['rechnung_date'], float(row['nettopreis'])/float(row['menge']), int(row['menge']), float(row['nettopreis'])))
+        menge = as400_2_int(row['menge'])
+        if menge:
+            ret.append((row['rechnung_date'], float(row['nettopreis'])/float(row['menge']), menge, float(row['nettopreis'])))
     ret.sort()
     return ret
 

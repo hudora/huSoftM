@@ -481,7 +481,7 @@ def frei_am(menge, artnr, date, dateformat="%Y-%m-%d"):
     return False, 0
 
 
-def frei_ab(menge, artnr, dateformat="%Y-%m-%d"):
+def frei_ab(menge, artnr, dateformat="%Y-%m-%d", lager=0):
     """Finds the earliest date when menge is frei (available) or None if it isn't available at all.
     
     >>> frei_ab(50, '76095')
@@ -494,7 +494,7 @@ def frei_ab(menge, artnr, dateformat="%Y-%m-%d"):
     # Kurve niedriger ist, als die geforderte Menge - ab da ist die Menge frei.
     
     today = datetime.date.today().strftime("%Y-%m-%d")
-    bentwicklung = bestandsentwicklung(artnr, dateformat)
+    bentwicklung = bestandsentwicklung(artnr, dateformat, lager)
     # remove historic data, since this tends to be negative
     bentwicklung = dict([x for x in bentwicklung.items() if x[0] >= today])
     

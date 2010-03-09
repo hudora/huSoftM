@@ -251,7 +251,7 @@ def _bestandsentwicklung(artnr, dateformat="%Y-%m-%d", lager=0):
     
     # start processing all thre queries in separate threads
     print lager
-    bestellmengen_future = huTools.async.Future(bestellmengen, artnr)#, lager=0)
+    bestellmengen_future = huTools.async.Future(bestellmengen, artnr, lager)
     auftragsmengen_future = huTools.async.Future(auftragsmengen, artnr, lager)
     buchbestand_future = huTools.async.Future(buchbestand, artnr, lager)
     
@@ -327,7 +327,7 @@ def bestandsentwicklung(artnr, dateformat="%Y-%m-%d", lager=0):
     return ret
 
 
-def bestellmengen(artnr):
+def bestellmengen(artnr, lager=0):
     """Liefert eine liste mit allen Bestellten aber noch nicht gelieferten Wareneingängen.
     
     >>> bestellmengen('14865')
@@ -335,11 +335,12 @@ def bestellmengen(artnr):
     {datetime.date(2009, 2, 20): 1200,
      datetime.date(2009, 5, 5): 300}
     """
-    
+    condition = "BPSTAT<>'X' AND BPKZAK=0 AND BPARTN=%s" % sql_quote(artnr)
+    if lager:
+        condition += "AND BPLGNR=%s" % sql_quote(lager)
     # detailierte Informationen gibts in EWZ00
     rows = get_connection().query('EBP00', fields=['BPDTLT', 'SUM(BPMNGB-BPMNGL)'], ordering='BPDTLT',
-                                 grouping='BPDTLT',
-                                 condition="BPSTAT<>'X' AND BPKZAK=0 AND BPARTN=%s" % sql_quote(artnr))
+                                  grouping='BPDTLT', condition=condition)
     return dict([(x['liefer_date'], as400_2_int(x['SUM(BPMNGB-BPMNGL)']))
                  for x in rows if as400_2_int(x['SUM(BPMNGB-BPMNGL)']) > 0])
     
@@ -478,43 +479,6 @@ def frei_am(menge, artnr, date, dateformat="%Y-%m-%d"):
         verfuegbar = min(quantity for dummy, quantity in bentwicklung)
         return (verfuegbar >= menge), verfuegbar
     return False, 0
-
-
-# XXX: Diese Funktion sollte mit der Einführung der Bestandsentwicklung eigentlich redundant sein.
-# Habe sie aber mal fürs REview drin gelassen.
-def frei_am_sets(menge, artnr, date, dateformat="%Y-%m-%d"):
-    """Ermittelt für Set-Artikel, ob die gegene Menge für einen Artikel zu dem Datum date frei ist.
-    
-    Rückgabewert ist ein Tupel. Dessen erster Eintrag gibt an, ob der gesamte Set in dieser Menge da ist,
-    der zweite Eintrag ist eine Liste von Tupeln, die jeweils für den Unterartikel die Lieferbarkeit,
-    Menge und Artikelnummer enthalten.
-
-    >>> husoftm.bestaende.frei_am_sets(2000, '00537', '20010-01-04')
-    (False, [(False, 0, '42050/A'), (False, 0, '42051/A'), (False, 0, '42052/A')])
-    
-    """
-    components = husoftm.artikel.komponentenaufloesung([(menge, artnr)])
-    tmp = [frei_am(cmeng, cartnr, date, dateformat) + (cartnr, ) for cmeng, cartnr in components]
-    frei = all(frei_[0] for frei_ in tmp)
-    return frei, tmp
-
-
-# XXX: Diese Funktion sollte mit der Einführung der Bestandsentwicklung eigentlich redundant sein.
-# Habe sie aber mal fürs REview drin gelassen.
-def frei_ab_sets(menge, artnr, dateformat="%Y-%m-%d"):
-    """Finds the earliest date when menge is frei (available) or None if it isn't available at all.
-
-    >>> frei_ab(50, '76095')
-    None
-    >>> frei_ab(500, '01104')
-    datetime.date(2008, 11, 22)
-
-    """
-    components = husoftm.artikel.komponentenaufloesung([(menge, artnr)])
-    entries = [frei_ab(cmeng, cartnr, dateformat) for cmeng, cartnr in components]
-    if all(entries):
-        return max(entries)
-    return None
 
 
 def frei_ab(menge, artnr, dateformat="%Y-%m-%d"):

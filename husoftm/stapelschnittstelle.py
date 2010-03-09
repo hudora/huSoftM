@@ -466,10 +466,10 @@ def _order2records(vorgangsnummer, order):
     adressen = []
     # guid - Eindeutiger ID des Vorgangs, darf niemals doppelt verwendet werden
     _create_kopftext(texte, vorgangsnummer, "Referenz: %s" % _get_attr(order, 'guid'),
-                     auftragsbestaetigung=1, lieferschein=1, rechnung=1)
+                     auftragsbestaetigung=0, lieferschein=0, rechnung=0)
     if _get_attr(order, 'erfasst_von'):
                  _create_kopftext(texte, vorgangsnummer, "erfasst von: %s" % _get_attr(order, 'erfasst_von'),
-                                  auftragsbestaetigung=1, lieferschein=1, rechnung=1)
+                                  auftragsbestaetigung=0, lieferschein=0, rechnung=0)
 
     # infotext_kunde - Freitext, der sich an den Warenempfänger richtet. Kann z.B. auf einem Lieferschein angedruckt werden. Der Umbruch des Textes kann durch das Backendsystem beliebig erfolgen, deshalb sollte der Text keine Zeilenumbrüche beinhalten.
     if _get_attr(order, 'infotext_kunde'):

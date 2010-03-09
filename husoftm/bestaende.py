@@ -237,21 +237,23 @@ def freie_menge(artnr, dateformat="%Y-%m-%d"):
         return 0
 
 
-def _bestandsentwicklung(artnr, dateformat="%Y-%m-%d"):
+def _bestandsentwicklung(artnr, dateformat="%Y-%m-%d", lager=0):
     """Hilfsfunktion für bestandsentwicklung.
 
     Hier wird für einen einzelnen Artikel der Bestand abgefragt.
     """
     # check if we have a cached result.
     memc = caching.get_cache()
-    cache = memc.get('husoftm.bestandsentwicklung.%r.%r' % (artnr, dateformat))
+    memc_key = 'husoftm.bestandsentwicklung.%r.%r.%r' % (artnr, dateformat, lager)
+    cache = memc.get(memc_key)
     if cache:
         return cache
     
     # start processing all thre queries in separate threads
-    bestellmengen_future = huTools.async.Future(bestellmengen, artnr)
-    auftragsmengen_future = huTools.async.Future(auftragsmengen, artnr)
-    buchbestand_future = huTools.async.Future(buchbestand, artnr)
+    print lager
+    bestellmengen_future = huTools.async.Future(bestellmengen, artnr)#, lager=0)
+    auftragsmengen_future = huTools.async.Future(auftragsmengen, artnr, lager)
+    buchbestand_future = huTools.async.Future(buchbestand, artnr, lager)
     
     # This could be sped up by using futures.
     # Startwert ist der Buchbestand
@@ -270,15 +272,15 @@ def _bestandsentwicklung(artnr, dateformat="%Y-%m-%d"):
     
     if not bestentwicklung:
         # kein Bestand - diese Information 6 Stunden cachen
-        memc.set('husoftm.bestandsentwicklung.%r.%r' % (artnr, dateformat), bestentwicklung, 60*60*6)
+        memc.set(memc_key, bestentwicklung, 60*60*6)
     else:
         # Bestand - die menge fuer 2 Minuten cachen
-        memc.set('husoftm.bestandsentwicklung.%r.%r' % (artnr, dateformat), bestentwicklung, 60*2)
+        memc.set(memc_key, bestentwicklung, 60*2)
     
     return bestentwicklung
     
 
-def bestandsentwicklung(artnr, dateformat="%Y-%m-%d"):
+def bestandsentwicklung(artnr, dateformat="%Y-%m-%d", lager=0):
     """Liefert ein Dictionary, dass alle zukünftigen, bzw. noch nicht ausgeführten Bewegungen
     
     für einen Artikel beinhaltet. Ist kein Bestand für den Artikel vorhanden, wird None zurückgegeben.
@@ -302,7 +304,7 @@ def bestandsentwicklung(artnr, dateformat="%Y-%m-%d"):
     bentw_all = []
     for mng_set, artnr_set in components:
         bentw = dict(((datum, mng/mng_set) for (datum, mng) in
-                      _bestandsentwicklung(artnr_set, dateformat).items()))
+                      _bestandsentwicklung(artnr_set, dateformat, lager).items()))
         bentw_all.append(bentw)
 
     # consistency check: alle Entwicklungen sollten den selben Zeitstempel haben

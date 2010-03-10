@@ -98,7 +98,6 @@ class Kunde(object):
         # 'inland_ausland': 0, 
         # self.satzstatus = row.get('satzstatus', '')
         self.satzstatus = husoftm.connection2.get_connection().query('XKD00', fields=['KDSTAT'], condition="KDKDNR = %s" % husoftm.tools.sql_quote(row.get('kundennr')))
-        print "satstat", self.satzstatus
         return self
     
 

@@ -155,8 +155,7 @@ Dies ist eine Liste der uns bekannten Tabellen in dem ERP-System "SoftM Suite" u
 
 ## Buchhaltung ##
 
-    BA100 	Adressen Einmalkunden/-Lieferanten
-    BAD00 	Adressen Einmalkunden/-Lieferanten - Rechnungsadressen?
+    BAD00 	Rechnungsadressen Einmalkunden/-Lieferanten
     BAG00 	Abteilungsgruppen-Kopfdatei
     BAK00 	7.00 Abstimmkreise
     BAP00 	Abteilungsgruppen/Postitions
@@ -194,10 +193,42 @@ Dies ist eine Liste der uns bekannten Tabellen in dem ERP-System "SoftM Suite" u
     BEB00 	7.00 Externe Buchungsschlüss
     BEC00 	7.00 Berechtigung Buchhaltu
     BED00 	ZM ZM-Datei
+    BL100   Saldendatei der Debitoren
+    BL200   Saldendatei der Kreditoren
+    BL300   Saldendatei der Sachkonten
+    BNR00   Satznummerndatei
+    BO100   OP: alle  nach SANR  Debitor
+    BO200   OP: alle  nach SANR  Kredito
+    BO300   OP: alle  nach SANR  Sachkon
+    BOP00   OP: alle  nach SANR
+    BPA00   Stapelschnittstelle der Buch
+    BRK00   7.00 Rechnungsbuch Kopfdate
+    BS100   Rucksackbuchungen Def. Ausl¦
+    BS101   Log. Erstellen Rucksackbuchu
+    BS200   Rucksackbuchungen Def. Ausl¦
+    BS300   Sachkonten-Stammdatei
+    BS500   Rucksackbuchungen Neue Buchu
+    BS501   Log. Erstellen Rucksackbuchu
+    BSA00   Sachkonten-Stammdatei
+    BSD00   7.00 Dokumentenstammdatei
+    BSN00   Satznummerndatei BBU00
+    BSP00   Positionsabrechnungsgesamtli
+    BT100   Zusatz-Buchungstexte Debitor
+    BT200   Zusatz-Buchungstexte Kredito
+    BT300   Zusatz-Buchungstexte Sachkon
+    BTB00   Bilanzpositionen
+    BTG00   G+V Positionen
+    BTK00   Wechselkurse nach Tagesdatum
+    BU100   Buchungen Debitorisch
+    BU200   Buchungen Kreditorisch
+    BU300   Buchungen Sachbuchhalterisch
+    BU600   Skontobedingungen Debitoren
+    BU700   Skontobedingungen Kreditoren
+    BU800   Steuers{tze
+    BUZ00   ELSTER Ausgabedatei Datens{t
+    BVA00   ABB: Ausz}ge (aus AUSZUG.TXT
     BWU00 	WKV Umsatzkennzeichen
     BWZ00 	7.00 Wechsel: Zwischendat f
-    BX100 	SoftM Suite: Adressdatei Deb
-    BX200 	SoftM Suite: Adressdatei Kre
     BX300 	SoftM Suite: Stammdaten für
     BX400 	SoftM Suite: Stammdaten für
     BX500 	SoftM Suite: Stammdaten für

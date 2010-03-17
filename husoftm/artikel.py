@@ -188,7 +188,7 @@ def guess_artnr(ean):
 
 
 def komponentenaufloesung(mengenliste):
-    """Lößt Artikel in ihre Komponenten auf.
+    """Löst Artikel in ihre Komponenten auf.
     
     >>> komponentenaufloesung([(5, '00049'), (4, '00537')])
     [(5, u'A42438'), (5, u'A42439'), (5, u'A42440'), (10, u'A42441'), (4, u'42050/A'), (12, u'42051/A'), (4, u'42052/A')]

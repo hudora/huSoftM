@@ -203,7 +203,7 @@ MAPPINGDIR = {
            'APMNG': 'bestellmenge',               # Die Menge, die der Kunde haben will
            'APMNGL': 'Menge zu liefern',
            'APMNGG': 'Menge/Liefersch.nichtfakt',
-           'APMNGF': 'Fakturierte Menge',          # Menge, die geliefert und fakturiert ist
+           'APMNGF': 'fakturierte_menge',          # Menge, die geliefert und fakturiert ist
            'APMNGR': 'Menge AFA35',
            'APMNGB': 'Bestellmenge in ME XLF',
            'APMESL': 'Mengen-Einheit',
@@ -217,14 +217,14 @@ MAPPINGDIR = {
            # 'APGANP': 'Gebinde verpackt',
            # 'APGANR': 'Gebinde AFA35',
            # 'APGEWI': 'Gewicht',
-           'APPREV': 'Verkaufs-Preis',
+           'APPREV': 'verkaufspreis',
            # 'APPEBN': 'Ebene Preisfindung',
            # 'APKZPR': 'Preiskennzeichen Verkauf',
            # 'APMEPR': 'Preis-Einheit',
            # 'APFAPR': 'Faktor APMEH --> APMEPR',
-           'APFWRT': 'fakturierter Wert',
-           'APOWRT': 'offener Auftragswert',
-           'APPREL': 'Listen-Preis',
+           'APFWRT': 'fakturierter_wert',
+           'APOWRT': 'offener_auftragswert',
+           'APPREL': 'listenpreis',
            # 'APPREE': 'Einstands-Preis',
            # 'APPRKZ': 'Preiskennzeichen Lager',
            # 'APWSLE': 'Währungsschlüssel: EK',

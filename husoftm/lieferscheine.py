@@ -10,6 +10,7 @@ Copyright (c) 2007 HUDORA GmbH. All rights reserved.
 __revision__ = "$Revision$"
 
 from husoftm.connection2 import get_connection
+from husoftm.tools import sql_escape, sql_quote
 from husoftm.tools import land2iso
 import cs.caching
 import logging
@@ -44,6 +45,24 @@ def get_lieferscheine_rechnungsstatus(lieferscheinnrs):
                                       querymappings=mappings)
         return [(int(row['lieferscheinnummer']), int(row['rechnungsstatus'])) for row in rows]
     return []
+
+
+def lieferscheine_for_auftrag(auftragsnr):
+    """Return all Lieferschein objects for a given auftragsnr"""
+    
+    conditions = ["LKAUFS = %s" % sql_quote(auftragsnr), "LKLFSN <> 0"]
+    condition = " AND ".join(conditions)
+    rows = get_connection().query(["ALK00"], condition=condition)
+    return [Lieferschein(row['lieferscheinnr']) for row in rows]
+
+
+def kommibelege_for_auftrag(auftragsnr):
+    """Return all Kommibeleg objects for a given auftragsnr"""
+    
+    conditions = ["LKAUFS = %s" % sql_quote(auftragsnr), "LKLFSN = 0"]
+    condition = " AND ".join(conditions)
+    rows = get_connection().query(["ALK00"], condition=condition)
+    return [Kommibeleg(row['kommissionierbelegnr']) for row in rows]
 
 
 def set_attributes(src, dest):
@@ -108,7 +127,7 @@ class Lieferschein(object):
     <Lieferschein object>
     """
 
-    condition = "LKLFSN = %d"   
+    condition = "LKLFSN = %d"
     
     def __init__(self, lsnr=None):
         self._read_from_softm(int(lsnr))
@@ -275,7 +294,7 @@ class Lieferscheinposition(object):
 class Kommibeleg(Lieferschein):
     """Bildet einen Komissionierbeleg ab (der datentechnisch in SoftM ein Lieferschein ist)."""
 
-    condition = "LKKBNR = %d AND LKSANB = 0" 
+    condition = "LKKBNR = %d AND LKSANB = 0"
 
 
 def _test():

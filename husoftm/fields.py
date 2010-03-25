@@ -89,7 +89,7 @@ MAPPINGDIR = {
           # 'AKVRT2': 'Vertreter 2',
           # 'AKPRZA': 'Aufteilungs-%-Satz',
           # 'AKBZRG': 'Bezogene RG-nr',
-          # 'AKLGN1': 'Auslieferungslager',
+          'AKLGN1': 'auslieferungslager',
           'AKLGN2': 'zugangslager',
           # 'AKTRNR': 'Touren-nr',
           # 'AKLINR': 'Lieferant bei Strecke',

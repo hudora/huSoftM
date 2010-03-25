@@ -77,7 +77,7 @@ def get_auftrag(auftragsnr):
 
 
 def auftraege_for_kunde(kundennr):
-    conditions = ["AKKDNR = %s" % sql_quote(artnr)]
+    conditions = ["AKKDNR = %s" % sql_quote(kundennr)]
     
     condition = " AND ".join(conditions)
     rows = get_connection().query('AAK00', ordering=['AKAUFN DESC', 'AKDTLT'], condition=condition)

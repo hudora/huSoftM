@@ -2247,6 +2247,11 @@ MAPPINGDIR = {
         'LBSANR': 'satznummer',
     },
 
+'XSB00': { # Sachbearbeiter
+        'SBSBNR': 'id',
+        'SBNAME': 'name',
+    },
+
 'XTY00': { # Versandarten
           'TYFNR': 'firma',
           'TYANW': 'anwendung',

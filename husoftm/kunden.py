@@ -64,7 +64,8 @@ class Kunde(object):
         #self.vertreter = row.get('vertreter', '') # ': u'201'
         #self.branche = row.get('branche', '') # ': u'13'
         #self.versandart = row.get('versandart', '') # ': u''
-        self.iln = unicode(row.get('iln', '')).strip()
+        if 'iln' in row:
+            self.iln = unicode(int(row['iln'])).strip()
         self.land = husoftm.tools.land2iso(row['laenderkennzeichen']) # D
         if row['erfassung_date']:
             self.erfassung = row['erfassung_date']

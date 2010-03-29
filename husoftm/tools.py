@@ -14,6 +14,7 @@ import logging
 import sys
 import time
 import unittest
+from husoftm.fields import PADDINGFIELDS
 
 __revision__ = "$Revision$"
 
@@ -186,7 +187,13 @@ def sql_quote(data):
     "'foo''s bar says ''''foobar'''''"
     """
     return "'%s'" % sql_escape(data)
-    
+
+def pad(field, value):
+    """Pad field to fixed length"""
+    if field in PADDINGFIELDS:
+        return PADDINGFIELDS[field] % value
+    return value
+
 
 class _GenericTests(unittest.TestCase):
     """Vermischte Tests."""

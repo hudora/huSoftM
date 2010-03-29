@@ -58,7 +58,7 @@ def preis(artnr):
     
 
 class Artikel(object):
-    """Tepräsentiert einen Artikel in SoftM."""
+    """Repräsentiert einen Artikel in SoftM."""
     
     def fill_from_softm(self, row):
         self.artnr = row.get('artnr', '') # u'14600'

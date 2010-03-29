@@ -2430,3 +2430,8 @@ DATETIMEDIR = {'LKDTLF': 'LKZTLF', # letzter_lieferschein
                'CKANFD': 'CKANFZ', # XCK00 start
                'CKENDD': 'CKENDZ', # XCK00 ende
                }
+
+# Fields which need padding before beeing used in SQL queries
+PADDINGFIELDS = {
+    'AKKDNR': "%8s",
+}

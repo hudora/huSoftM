@@ -109,7 +109,7 @@ MAPPINGDIR = {
           # 'AKKZNN': 'Kz.Nachnahme',
           # 'AKKZAR': 'Kz.Leihart',
           # 'AKABTP': 'Abt. für Prüfung KD-Zusatz',
-          # 'AKDTER': 'Datum Erfassung CJJMMTT',
+          'AKDTER': 'erfassung_date',
           # 'AKZTER': 'Uhrzeit der Erfassung',
           # 'AKDTAE': 'Datum l. Änderung CJJMMTT',
           # 'AKZTAE': 'Uhrzeit letzte Änderung',

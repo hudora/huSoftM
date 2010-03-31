@@ -237,21 +237,23 @@ def freie_menge(artnr, dateformat="%Y-%m-%d"):
         return 0
 
 
-def _bestandsentwicklung(artnr, dateformat="%Y-%m-%d"):
+def _bestandsentwicklung(artnr, dateformat="%Y-%m-%d", lager=0):
     """Hilfsfunktion für bestandsentwicklung.
 
     Hier wird für einen einzelnen Artikel der Bestand abgefragt.
     """
     # check if we have a cached result.
     memc = caching.get_cache()
-    cache = memc.get('husoftm.bestandsentwicklung.%r.%r' % (artnr, dateformat))
+    memc_key = 'husoftm.bestandsentwicklung.%r.%r.%r' % (artnr, dateformat, lager)
+    cache = memc.get(memc_key)
     if cache:
         return cache
     
     # start processing all thre queries in separate threads
-    bestellmengen_future = huTools.async.Future(bestellmengen, artnr)
-    auftragsmengen_future = huTools.async.Future(auftragsmengen, artnr)
-    buchbestand_future = huTools.async.Future(buchbestand, artnr)
+    print lager
+    bestellmengen_future = huTools.async.Future(bestellmengen, artnr, lager)
+    auftragsmengen_future = huTools.async.Future(auftragsmengen, artnr, lager)
+    buchbestand_future = huTools.async.Future(buchbestand, artnr, lager)
     
     # This could be sped up by using futures.
     # Startwert ist der Buchbestand
@@ -270,15 +272,15 @@ def _bestandsentwicklung(artnr, dateformat="%Y-%m-%d"):
     
     if not bestentwicklung:
         # kein Bestand - diese Information 6 Stunden cachen
-        memc.set('husoftm.bestandsentwicklung.%r.%r' % (artnr, dateformat), bestentwicklung, 60*60*6)
+        memc.set(memc_key, bestentwicklung, 60*60*6)
     else:
         # Bestand - die menge fuer 2 Minuten cachen
-        memc.set('husoftm.bestandsentwicklung.%r.%r' % (artnr, dateformat), bestentwicklung, 60*2)
+        memc.set(memc_key, bestentwicklung, 60*2)
     
     return bestentwicklung
     
 
-def bestandsentwicklung(artnr, dateformat="%Y-%m-%d"):
+def bestandsentwicklung(artnr, dateformat="%Y-%m-%d", lager=0):
     """Liefert ein Dictionary, dass alle zukünftigen, bzw. noch nicht ausgeführten Bewegungen
     
     für einen Artikel beinhaltet. Ist kein Bestand für den Artikel vorhanden, wird None zurückgegeben.
@@ -302,7 +304,7 @@ def bestandsentwicklung(artnr, dateformat="%Y-%m-%d"):
     bentw_all = []
     for mng_set, artnr_set in components:
         bentw = dict(((datum, mng/mng_set) for (datum, mng) in
-                      _bestandsentwicklung(artnr_set, dateformat).items()))
+                      _bestandsentwicklung(artnr_set, dateformat, lager).items()))
         bentw_all.append(bentw)
 
     # consistency check: alle Entwicklungen sollten den selben Zeitstempel haben
@@ -325,7 +327,7 @@ def bestandsentwicklung(artnr, dateformat="%Y-%m-%d"):
     return ret
 
 
-def bestellmengen(artnr):
+def bestellmengen(artnr, lager=0):
     """Liefert eine liste mit allen Bestellten aber noch nicht gelieferten Wareneingängen.
     
     >>> bestellmengen('14865')
@@ -333,11 +335,12 @@ def bestellmengen(artnr):
     {datetime.date(2009, 2, 20): 1200,
      datetime.date(2009, 5, 5): 300}
     """
-    
+    condition = "BPSTAT<>'X' AND BPKZAK=0 AND BPARTN=%s" % sql_quote(artnr)
+    if lager:
+        condition += "AND BPLGNR=%s" % sql_quote(lager)
     # detailierte Informationen gibts in EWZ00
     rows = get_connection().query('EBP00', fields=['BPDTLT', 'SUM(BPMNGB-BPMNGL)'], ordering='BPDTLT',
-                                 grouping='BPDTLT',
-                                 condition="BPSTAT<>'X' AND BPKZAK=0 AND BPARTN=%s" % sql_quote(artnr))
+                                  grouping='BPDTLT', condition=condition)
     return dict([(x['liefer_date'], as400_2_int(x['SUM(BPMNGB-BPMNGL)']))
                  for x in rows if as400_2_int(x['SUM(BPMNGB-BPMNGL)']) > 0])
     
@@ -478,44 +481,7 @@ def frei_am(menge, artnr, date, dateformat="%Y-%m-%d"):
     return False, 0
 
 
-# XXX: Diese Funktion sollte mit der Einführung der Bestandsentwicklung eigentlich redundant sein.
-# Habe sie aber mal fürs REview drin gelassen.
-def frei_am_sets(menge, artnr, date, dateformat="%Y-%m-%d"):
-    """Ermittelt für Set-Artikel, ob die gegene Menge für einen Artikel zu dem Datum date frei ist.
-    
-    Rückgabewert ist ein Tupel. Dessen erster Eintrag gibt an, ob der gesamte Set in dieser Menge da ist,
-    der zweite Eintrag ist eine Liste von Tupeln, die jeweils für den Unterartikel die Lieferbarkeit,
-    Menge und Artikelnummer enthalten.
-
-    >>> husoftm.bestaende.frei_am_sets(2000, '00537', '20010-01-04')
-    (False, [(False, 0, '42050/A'), (False, 0, '42051/A'), (False, 0, '42052/A')])
-    
-    """
-    components = husoftm.artikel.komponentenaufloesung([(menge, artnr)])
-    tmp = [frei_am(cmeng, cartnr, date, dateformat) + (cartnr, ) for cmeng, cartnr in components]
-    frei = all(frei_[0] for frei_ in tmp)
-    return frei, tmp
-
-
-# XXX: Diese Funktion sollte mit der Einführung der Bestandsentwicklung eigentlich redundant sein.
-# Habe sie aber mal fürs REview drin gelassen.
-def frei_ab_sets(menge, artnr, dateformat="%Y-%m-%d"):
-    """Finds the earliest date when menge is frei (available) or None if it isn't available at all.
-
-    >>> frei_ab(50, '76095')
-    None
-    >>> frei_ab(500, '01104')
-    datetime.date(2008, 11, 22)
-
-    """
-    components = husoftm.artikel.komponentenaufloesung([(menge, artnr)])
-    entries = [frei_ab(cmeng, cartnr, dateformat) for cmeng, cartnr in components]
-    if all(entries):
-        return max(entries)
-    return None
-
-
-def frei_ab(menge, artnr, dateformat="%Y-%m-%d"):
+def frei_ab(menge, artnr, dateformat="%Y-%m-%d", lager=0):
     """Finds the earliest date when menge is frei (available) or None if it isn't available at all.
     
     >>> frei_ab(50, '76095')
@@ -528,7 +494,7 @@ def frei_ab(menge, artnr, dateformat="%Y-%m-%d"):
     # Kurve niedriger ist, als die geforderte Menge - ab da ist die Menge frei.
     
     today = datetime.date.today().strftime("%Y-%m-%d")
-    bentwicklung = bestandsentwicklung(artnr, dateformat)
+    bentwicklung = bestandsentwicklung(artnr, dateformat, lager)
     # remove historic data, since this tends to be negative
     bentwicklung = dict([x for x in bentwicklung.items() if x[0] >= today])
     

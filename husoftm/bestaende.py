@@ -250,7 +250,6 @@ def _bestandsentwicklung(artnr, dateformat="%Y-%m-%d", lager=0):
         return cache
     
     # start processing all thre queries in separate threads
-    print lager
     bestellmengen_future = huTools.async.Future(bestellmengen, artnr, lager)
     auftragsmengen_future = huTools.async.Future(auftragsmengen, artnr, lager)
     buchbestand_future = huTools.async.Future(buchbestand, artnr, lager)

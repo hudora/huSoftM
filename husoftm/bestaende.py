@@ -402,9 +402,11 @@ def get_offene_auftraege(lager=100):
     return rows
 
 
-def auftragsmengen_alle_artikel(lager=0):
-    """Liefert eine Liste offener Aufträge aller Artikel OHNE UMLAGERUNGEN.
-    
+def auftragsmengen_alle_artikel(lager=0, umlagerungen=False):
+    """Liefert eine Liste offener Aufträge aller Artikel.
+
+    Per default OHNE UMLAGERUNGEN.
+
     >>> auftragsmengen_alle_artikel(34)
     {'14550': {datetime.date(2008, 11, 30): 3450,
                datetime.date(2008, 12, 1): 8,
@@ -421,16 +423,18 @@ def auftragsmengen_alle_artikel(lager=0):
     
     condition = (
     "AKAUFN=APAUFN"
-    " AND AKAUFA<>'U'"                # kein Umlagerungsauftrag
     " AND APSTAT<>'X'"                # Position nicht logisch gelöscht
     " AND APKZVA=0"                   # Position nicht als 'voll ausgeliefert' markiert
     " AND (APMNG-APMNGF) > 0"         # (noch) zu liefernde menge ist positiv
     " AND AKSTAT<>'X'"                # Auftrag nicht logisch gelöscht
     " AND AKKZVA=0")                  # Auftrag nicht als 'voll ausgeliefert' markiert
+
+    if not umlagerungen: # kein Umlagerungsauftrag:
+        condition += " AND AKAUFA<>'U'"
     
     if lager:
         # Achtung, hier gibt es KEIN Lager 0 in der Tabelle. D.h. APLGNR=0 gibt nix
-        condition = condition + (" AND APLGNR=%d" % lager)
+        condition += " AND APLGNR=%d" % lager
     rows = get_connection().query(['AAP00', 'AAK00'],
             fields=['APARTN', 'APDTLT', 'SUM(APMNG-APMNGF)'],
             condition=condition,

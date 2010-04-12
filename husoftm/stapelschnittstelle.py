@@ -17,17 +17,18 @@ Copyright (c) 2007, 2008 HUDORA GmbH. All rights reserved.
 """
 
 import datetime
-import time
+import huTools.world
+import itertools
 import os
-import thread
 import random
 import textwrap
+import thread
+import time
 import unittest
-import huTools.world
-from husoftm.connection import get_connection
-from husoftm.tools import date2softm, sql_quote, iso2land
-from husoftm.stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00
 from huTools.unicode import deUmlaut
+from husoftm.connection import get_connection
+from husoftm.stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00
+from husoftm.tools import date2softm, sql_quote, iso2land
 
 __revision__ = "$Revision$"
 
@@ -100,18 +101,22 @@ def getnextvorgang():
     return int(rows[0][0]+1)
 
 
+def loesche_dfsl(vorgangsnr):
+    get_connection().update_raw("UPDATE ABK00 SET BKDFSL='' WHERE BKVGNR=%s AND BKAUFN = 0 AND"
+                                " BKSTAT <> 'X' AND BKKZBA <> 0" % vorgangsnr)
+
+
 def loesche_vorgang(vorgangsnr):
     """Setzt einen Vorgang auf Status gelöscht'."""
     get_connection().update_raw("UPDATE ABK00 SET BKSTAT='X' WHERE BKVGNR=%s AND BKAUFN = 0 AND"
                                 " BKSTAT <> 'X' AND BKKZBA <> 0" % vorgangsnr)
-    get_connection().update_raw("UPDATE ABA00 SET BASTAT='X' WHERE BKVGNR=%s AND BKAUFN = 0 AND"
-                                " BKSTAT <> 'X' AND BKKZBA <> 0" % vorgangsnr)
+    get_connection().update_raw("UPDATE ABA00 SET BASTAT='X' WHERE BAVGNR=%s AND BAAUFN = 0 AND"
+                                " BASTAT <> 'X' AND BAKZBA <> 0" % vorgangsnr)
 
 
 def feststeckende_jobs():
     """Returns a list of jobs that got stuck in s17e."""
-    rows = get_connection().query('ABK00', fields=['BKKDNR', 'BKVGNR', 'BKNRKD', 'BKKZBA'],
-                                  condition="BKAUFN = 0 AND BKSTAT <> 'X' AND BKKZBA <> 0")
+    rows = get_connection().query('ABK00', fields=['BKKDNR', 'BKVGNR', 'BKNRKD', 'BKKZBA'], condition="BKAUFN = 0 AND BKSTAT <> 'X' AND BKKZBA <> 0")
     fields = ('kundennr', 'vorgangsnr', 'kundenauftragsnr', 'fehlercode')
     return [dict(list(zip(fields, row))) for row in rows]
 
@@ -171,10 +176,19 @@ def get_auftragsnr(vorgangsnr):
 
 
 def _create_auftragstext(textart, vorgangsposition, texte, vorgangsnummer, text, auftragsbestaetigung,
-        lieferschein, rechnung):
-    """Fügt einen Text zu einem Auftrag, entweder als Kopftext oder Positionstext, hinzu."""
+                         lieferschein, rechnung):
+    """Fügt einen Text zu einem Auftrag, entweder als Kopftext oder Positionstext, hinzu.
+
+    Jede Zeile wird ggf. in Zeilen < 60 Zeichen aufgeteilt.
+    Das Ergebnis wird in die Liste texte angehangen.
+    """
+    # split text at newlines
+    texts = text.split('\n')
+    # replace umlauts
+    texts = [deUmlaut(txt) for txt in texts]
     # split text into chunks of 60 chars
-    for line in textwrap.wrap(text, 60):
+    texts = [textwrap.wrap(txt, 60) for txt in texts]
+    for line in itertools.chain(*texts):
         txtobj = Text()
         texte.append(txtobj)
         txtobj.vorgang = vorgangsnummer
@@ -183,9 +197,9 @@ def _create_auftragstext(textart, vorgangsposition, texte, vorgangsnummer, text,
         txtobj.auf_auftragsbestaetigung = auftragsbestaetigung
         txtobj.auf_lieferschein = lieferschein
         txtobj.auf_rechnung = rechnung
-        txtobj.text = deUmlaut(line)
+        txtobj.text = line
         txtobj.textnummer = len(texte)
-    
+
 
 def _create_kopftext(texte, vorgangsnummer, text, auftragsbestaetigung=1, lieferschein=1, rechnung=1):
     """Fügt einen Kopftext hinzu."""
@@ -431,7 +445,7 @@ def _order2records(vorgangsnummer, order):
     # kundennr Interne Kundennummer. Kann das AddressProtocol erweitern. Wenn eine kundennr angegeben ist und die per AddressProtocol angegebene Lieferadresse nicht zu der kundennr passt, handelt es sich um eine abweichende Lieferadresse.
     kopf.kundennr = '%8s' % _get_attr(order, 'kundennr').split('/')[0]
     # kundenauftragsnr - Freitext, den der Kunde bei der Bestellung mit angegeben hat, ca. 20 Zeichen.
-    kopf.kundenauftragsnr = _get_attr(order, 'kundenauftragsnr')
+    kopf.kundenauftragsnr = deUmlaut(_get_attr(order, 'kundenauftragsnr'))[:20] # max 20 Zeichen, sonst gehts nicht
     # TODO: brauchen wir die beiden daten?
     # kopf.erfassungsdatum = kopf.bestelldatum = date2softm(datetime.date.today())
     
@@ -450,16 +464,18 @@ def _order2records(vorgangsnummer, order):
     # versandkosten - Versandkosten in Cent
     # absenderadresse - (mehrzeiliger) String, der die Absenderadresse auf Versandpapieren codiert.
 
+    if _get_attr(order, 'abgangslager'):
+        kopf.abgangslager = _get_attr(order, 'abgangslager')
 
     positionen = []
     texte = []
     adressen = []
     # guid - Eindeutiger ID des Vorgangs, darf niemals doppelt verwendet werden
     _create_kopftext(texte, vorgangsnummer, "Referenz: %s" % _get_attr(order, 'guid'),
-                     auftragsbestaetigung=1, lieferschein=1, rechnung=1)
+                     auftragsbestaetigung=0, lieferschein=0, rechnung=0)
     if _get_attr(order, 'erfasst_von'):
                  _create_kopftext(texte, vorgangsnummer, "erfasst von: %s" % _get_attr(order, 'erfasst_von'),
-                                  auftragsbestaetigung=1, lieferschein=1, rechnung=1)
+                                  auftragsbestaetigung=0, lieferschein=0, rechnung=0)
 
     # infotext_kunde - Freitext, der sich an den Warenempfänger richtet. Kann z.B. auf einem Lieferschein angedruckt werden. Der Umbruch des Textes kann durch das Backendsystem beliebig erfolgen, deshalb sollte der Text keine Zeilenumbrüche beinhalten.
     if _get_attr(order, 'infotext_kunde'):
@@ -1017,11 +1033,11 @@ class _OrderTests(unittest.TestCase):
                  }
         kopf, positionen, texte, adressen = _order2records(vorgangsnummer, order)
 
-        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKSBNR, BKKZTF, BKVGPO, BKFNR, BKKDNR)"
-                   " VALUES('1','123','1100303','1','1','3','01','   17200')")
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKVGPO, BKFNR, BKKDNR)"
+                   " VALUES('1','123','1100303','1100303','1','1','3','01','   17200')")
         self.assertEqual(kopf.to_sql(), kpf_sql)
-        text_sql = ("INSERT INTO ABT00 (BTKZLF, BTKZAB, BTTART, BTFNR, BTTX60, BTLFNR, BTKZRG, BTVGNR)"
-                    " VALUES('1','1','8','01','Referenz: VS6RRW2MYL4FZ3PPMVH4ZRFE3A','1','1','123')")
+        text_sql = ("INSERT INTO ABT00 (BTVGNR, BTTART, BTFNR, BTTX60, BTLFNR)"
+                    " VALUES('123','8','01','Referenz: VS6RRW2MYL4FZ3PPMVH4ZRFE3A','1')")
         self.assertEqual(len(texte), 1)
         self.assertEqual(texte[0].to_sql(), text_sql)
         pos_sql = ("INSERT INTO ABA00 (BADTER, BAVGPO, BAABT, BAFNR, BAMNG, BAARTN, BAVGNR)"
@@ -1062,11 +1078,11 @@ class _OrderTests(unittest.TestCase):
                  'tel': '+49 2191 60912 10'}
         kopf, positionen, texte, adressen = _order2records(vorgangsnummer, order)
 
-        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKSBNR, BKKZTF, BKVGPO, BKFNR, BKKDNR)"
-                   " VALUES('1','123','1100303','1','1','2','01','   17200')")
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKVGPO, BKFNR, BKKDNR)"
+                   " VALUES('1','123','1100303','1100303','1','1','2','01','   17200')")
         self.assertEqual(kopf.to_sql(), kpf_sql)
-        text_sql = ("INSERT INTO ABT00 (BTKZLF, BTKZAB, BTTART, BTFNR, BTTX60, BTLFNR, BTKZRG, BTVGNR)"
-                    " VALUES('1','1','8','01','Referenz: VS6RRW2MYL4FZ3PPMVH4ZRFE3A','1','1','123')")
+        text_sql = ("INSERT INTO ABT00 (BTVGNR, BTTART, BTFNR, BTTX60, BTLFNR)"
+                    " VALUES('123','8','01','Referenz: VS6RRW2MYL4FZ3PPMVH4ZRFE3A','1')")
         self.assertEqual(len(texte), 1)
         self.assertEqual(texte[0].to_sql(), text_sql)
         pos_sql = ("INSERT INTO ABA00 (BADTER, BAVGPO, BAABT, BAFNR, BAMNG, BAARTN, BAVGNR)"
@@ -1076,6 +1092,99 @@ class _OrderTests(unittest.TestCase):
         self.assertEqual(positionen[0].to_sql(), pos_sql)
         self.assertEqual(adressen, [])
 
+    def test_simple_infotext(self):
+        """Test if the minimal possible Order can be converted to SQL."""
+        vorgangsnummer = 123
+        order = {'_id': '17200',
+                 '_rev': '4-4bba80636c015f98e908c79c521e5124',
+                 'sachbearbeiter': 'verkauf',
+                 'softmid': '17200',
+                 'iln': '4.00599800001e+12',
+                 'anlieferdatum_von': u'2010-03-03',
+                 'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A',
+                 'infotext_kunde': (u'Dieser Text sollte in meheren Zeilen enden.\n'
+                                    u'01234567890123456789012345678901234567890123456789'
+                                    u'01234567890123456789012345678901234567890123456789'
+                                    u'01234567890123456789012345678901234567890123456789'
+                                    u'01234567890123456789012345678901234567890123456789'
+                                    u'01234567890123456789012345678901234567890123456789'
+                                    u'01234567890123456789012345678901234567890123456789'
+                                    u'01234567890123456789012345678901234567890123456789'
+                                    u'01234567890123456789012345678901234567890123456789'
+                                    u'01234567890123456789012345678901234567890123456789'
+                                    u'01234567890123456789012345678901234567890123456789'
+                                    u'01234567890123456789012345678901234567890123456789'
+                                    u'01234567890123456789012345678901234567890123456789'
+                                    u'0123456789<-Hier ein Ümbruch. üäöß Keine Ümlaute!!!'),
+                 'kundenauftragsnr': u'',
+                 'kundennr': u'17200',
+                 'land': 'DE',
+                 'name1': 'HUDORA GmbH',
+                 'name2': '-UMFUHR-',
+                 'name3': '',
+                 'ort': 'Remscheid',
+                 'plz': '42897',
+                 'strasse': u'J\xc3\xa4gerwald 13',
+                 'orderlines': [{u'artnr': u'14600/03',
+                                 'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A-0',
+                                 u'menge': 1,
+                                 'name': 'HUDORA Big Wheel silber, 125 mm Rolle'},
+                                {u'artnr': u'65240',
+                                 'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A-24',
+                                 u'menge': 1,
+                                 'name': 'Test'}],
+                 'tel': '+49 2191 60912 10'}
+        kopf, positionen, texte, adressen = _order2records(vorgangsnummer, order)
+
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKVGPO, BKFNR, BKKDNR)"
+                   " VALUES('1','123','1100303','1100303','1','1','2','01','   17200')")
+        self.assertEqual(kopf.to_sql(), kpf_sql)
+        text_sql = ("INSERT INTO ABT00 (BTVGNR, BTTART, BTFNR, BTTX60, BTLFNR)"
+                    " VALUES('123','8','01','Referenz: VS6RRW2MYL4FZ3PPMVH4ZRFE3A','1')")
+        self.assertEqual(len(texte), 13)
+        self.assertEqual(texte[0].to_sql(), text_sql)
+        pos_sql = ("INSERT INTO ABA00 (BADTER, BAVGPO, BAABT, BAFNR, BAMNG, BAARTN, BAVGNR)"
+                   " VALUES('xtodayx','1','1','01','1','14600/03','123')")
+        pos_sql = pos_sql.replace('xtodayx', date2softm(datetime.date.today()))
+        self.assertEqual(len(positionen), 2)
+        self.assertEqual(positionen[0].to_sql(), pos_sql)
+        self.assertEqual(adressen, [])
+
+    def test_abgangslager(self):
+        """Test if the 'abgangslager' can be converted to SQL."""
+        vorgangsnummer = 123
+        order = {'_id': '17200',
+                 '_rev': '4-4bba80636c015f98e908c79c521e5124',
+                 'sachbearbeiter': 'verkauf',
+                 'softmid': '17200',
+                 'iln': '4.00599800001e+12',
+                 'anlieferdatum_von': u'2010-03-03',
+                 'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A',
+                 'infotext_kunde': u'',
+                 'kundenauftragsnr': u'',
+                 'kundennr': u'17200',
+                 'land': 'DE',
+                 'name1': 'HUDORA GmbH',
+                 'name2': '-UMFUHR-',
+                 'name3': '',
+                 'abgangslager': '26',
+                 'ort': 'Remscheid',
+                 'plz': '42897',
+                 'strasse': u'J\xc3\xa4gerwald 13',
+                 'orderlines': [{u'artnr': u'14600/03',
+                                 'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A-0',
+                                 u'menge': 1,
+                                 'name': 'HUDORA Big Wheel silber, 125 mm Rolle'},
+                                {u'artnr': u'65240',
+                                 'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A-24',
+                                 u'menge': 1,
+                                 'name': 'Test'}],
+                 'tel': '+49 2191 60912 10'}
+        kopf, positionen, texte, adressen = _order2records(vorgangsnummer, order)
+
+        kpf_sql = ("INSERT INTO ABK00 (BKLGNR, BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKVGPO, BKFNR, BKKDNR)"
+                   " VALUES('26','1','123','1100303','1100303','1','1','2','01','   17200')")
+        self.assertEqual(kopf.to_sql(), kpf_sql)
 
 
 if __name__ == '__main__':

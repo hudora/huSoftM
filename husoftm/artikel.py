@@ -4,10 +4,8 @@
 artikel.py - Zugriff auf Artikeldaten. Teil von husoftm.
 
 Created by Maximillian Dornseif on 2007-04-28.
-Copyright (c) 2007 HUDORA GmbH. All rights reserved.
+Copyright (c) 2007, 2009, 2010 HUDORA GmbH. All rights reserved.
 """
-
-__revision__ = "$Revision$"
 
 from decimal import Decimal
 from husoftm.connection2 import get_connection, as400_2_int
@@ -29,7 +27,7 @@ def _auf_zwei_stellen(floatnum):
     
 
 def buchdurchschnittspreis(artnr):
-    """Gibt den Buchdurchschnittspreis für einen Artikel zurück.
+    """Gibt den (aktuellen) Buchdurchschnittspreis für einen Artikel zurück.
     
     >>> buchdurchschnittspreis('04711')
     13.65
@@ -43,7 +41,7 @@ def buchdurchschnittspreis(artnr):
 
 
 def preis(artnr):
-    """Returns the Listenpreis - later to be extended to als find a customer specific price.
+    """Gibt den (aktuellen) Listenpreis für einen Artikel zurück.
     
     >>> preis('04711')
     13.65
@@ -55,7 +53,7 @@ def preis(artnr):
         return _auf_zwei_stellen(rows[0][0])
     else:
         return 0
-    
+
 
 class Artikel(object):
     """Repräsentiert einen Artikel in SoftM."""
@@ -257,7 +255,7 @@ def get_umschlag(artnr):
      (datetime.date(2008, 5, 29), 2),
      (datetime.date(2009, 2, 10), 2)]
      
-    Achtung: Diese Funktion implementiert mehrere Tage caching
+    Achtung: Diese Funktion implementiert mehrere Tage caching.
     """
     
     # check if we have a cached result
@@ -274,7 +272,9 @@ def get_umschlag(artnr):
     " AND FKDTFA > 0"           # Druckdatum nicht leer
     " AND FUKZRV=2"             # ?
     " AND FURGNI<>0"            # ?
+    " AND FKFORM=' '"           # ?
     " AND FURGNR<>0"            # es gibt eine Rechnungsnummer
+    " AND FKMJBU>'10412'"       # keine legacy Daten
     " AND FUARTN=%s")           # nur bestimmten Artikel beachten
     
     rows = get_connection().query(['AFU00', 'AFK00'], fields=['FKDTFA', 'SUM(FUMNG)'],
@@ -285,6 +285,43 @@ def get_umschlag(artnr):
     
     memc.set('husoftm.umschlag.%r' % (artnr), ret, 60*60*24*6) # 6 d
     del memc
+    return ret
+
+
+def abgabepreisbasis(artnr):
+    """Gibt eine Liste mit den durchschnittlichen Rechnungspreisen pro Monat zurück.
+    
+    Liefert eine Liste von 4-Tuples
+    (datum, AVG(preis), menge, gesammtpreis)
+    
+    [ ...
+    (datetime.date(2009, 2, 10), 32.95, 2, 65.90), 
+    (datetime.date(2009, 10, 19), 17.44, 2, 34.88)]
+    """
+    
+    condition = (
+    "FKRGNR=FURGNR"             # JOIN
+    " AND FKAUFA<>'U'"          # Keine Umlagerung
+    " AND FKSTAT<>'X'"          # nicht gelöscht
+    " AND FKDTFA > 0"           # Druckdatum nicht leer
+    " AND FUKZRV=2"             # ?
+    " AND FURGNI<>0"            # ?
+    " AND FKFORM=' '"           # ?
+    " AND FURGNR<>0"            # es gibt eine Rechnungsnummer
+    " AND FUPNET>0"             # keine Gutschriften
+    " AND FKMJBU>'10412'"       # keine legacy Daten
+    " AND FUARTN=%s")           # nur bestimmten Artikel beachten
+    
+    rows = get_connection().query(['AFU00', 'AFK00'], fields=['FKDTFA', 'SUM(FUMNG)', 'SUM(FUPNET)', 'COUNT(FKRGNR)'],
+                   condition=condition % (sql_quote(artnr)),
+                   ordering='FKDTFA', grouping='FKDTFA',
+                   querymappings={'SUM(FUMNG)': 'menge', 'SUM(FUPNET)': 'nettopreis', 'COUNT(FKRGNR)': 'rechnungen', 'FKDTFA': 'rechnung_date'})
+    ret = []
+    for row in rows:
+        menge = as400_2_int(row['menge'])
+        if menge:
+            ret.append((row['rechnung_date'], float(row['nettopreis'])/float(row['menge']), menge, float(row['nettopreis'])))
+    ret.sort()
     return ret
 
 
@@ -311,6 +348,7 @@ class KomponentenaufloesungTests(unittest.TestCase):
 
 def _test():
     """Diverse einfache Tests."""
+    abgabepreisbasis('14600')
     get_umschlag('14600')
     _auf_zwei_stellen(1.0/3.0)
     komponentenaufloesung([(5, '00049')]),

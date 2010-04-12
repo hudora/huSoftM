@@ -8,7 +8,7 @@ Copyright (c) 2010 HUDORA GmbH. All rights reserved.
 """
 
 from husoftm.connection2 import get_connection
-from husoftm.tools import sql_escape, sql_quote, date2softm
+from husoftm.tools import sql_escape, sql_quote, date2softm, pad
 
 
 AUFTRAGSARTEN = {
@@ -97,8 +97,7 @@ def get_auftrag(auftragsnr):
 def auftraege_for_kunde(kundennr):
     """Alle Aufträge für eine Kundennummer ermitteln"""
     
-    conditions = ["AKKDNR = %s" % sql_quote(pad('AKKDNR', kundennr))]
-    condition = " AND ".join(conditions)
+    condition = "AKKDNR = %s" % sql_quote(pad('AKKDNR', kundennr))
     rows = get_connection().query('AAK00', ordering=['AKAUFN DESC', 'AKDTLT'], condition=condition)
     return rows
 
@@ -106,9 +105,10 @@ def auftraege_for_kunde(kundennr):
 def lieferadresse(auftragsnr):
     """Lieferadresse für Auftrag ermitteln"""
     
+    conn = get_connection()
     # Gibt es eine abweichende Lieferadresse?
     condition = "ADAART = 1 AND ADRGNR=%s " % sql_quote(auftragsnr)
-    rows = get_connection().query('XAD00', condition=condition)
+    rows = conn.query('XAD00', condition=condition)
     
     # if len(rows) > 1:
     #     raise RuntimeError("Es gibt mehr als eine abweichende Lieferadresse für Auftrag %s" % auftragsnr)
@@ -118,7 +118,8 @@ def lieferadresse(auftragsnr):
         return rows[0]
     
     condition = "AKAUFN=%s AND AKKDNR = KDKDNR" % sql_quote(auftragsnr)
-    rows = get_connection().query(['AAK00', 'XKD00'], condition=condition)
+    rows = conn.query(['AAK00', 'XKD00'], condition=condition,
+                      fields=['KDNAME', 'KDNAM2', 'KDNAM3', 'KDNAM4', 'KDSTR', 'KDPLZ', 'KDORT', 'KDLKZ'])
     if len(rows) != 1:
         raise RuntimeError('inkonsistente Kopfdaten in AAK00 für Auftragsnr %s' % auftragsnr)
     

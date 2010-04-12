@@ -13,9 +13,9 @@ from husoftm.tools import sql_escape, sql_quote, date2softm
 
 AUFTRAGSARTEN = {
     "": "Normalauftrag",
-    "$": "Auftrag aus Stapelschnittstell",
+    "$": "Auftrag aus Stapelschnittstelle",
     "A": "Abruf-Auftrag",
-    "FO": "FOB-Auftrag direkt (o. Lager)",
+    "FO": "FOB-Auftrag direkt (ohne Lager)",
     "GM": "Gutschrift / Menge und Wert",
     "GW": u"Gutschrift / nur wertmäßig",
     "IM": "Interne Gutschrift /Wert+Menge",
@@ -42,7 +42,12 @@ def auftragsart(art):
 
 def auftraege(mindate=None, maxdate=None, additional_conditions=None):
     """
-    Alle Aufträge
+    Alle Aufträge ermitteln
+    
+    additional_conditions kann SQL-Bedingungen enthalten, die
+    die Auftragssuche einschränken.
+    
+    TODO: Wenn Datum in additional_conditions, dann Datumsfelder überprüfen und ggf. konvertieren
     """
     
     conditions = ["AKSTAT<>'X'"]
@@ -63,12 +68,25 @@ def auftraege(mindate=None, maxdate=None, additional_conditions=None):
     return rows
 
 
+# def get_auftragskopf(auftragsnr):
+#     """Auftragskopf für Auftrag ermitteln"""
+#     
+#     rows = get_connection().query('AAK00',
+#         condition="AKSTAT<>'X' AND AKAUFN=%s" % sql_quote(auftragsnr))
+#     if len(rows) != 1:
+#         raise RuntimeError('inkonsistente Kopfdaten in AAK00 für Auftragsnr %s' % auftragsnr)
+#     return rows[0]
+
+
 def get_auftrag(auftragsnr):
+    """Auftrag mit Auftragsnummer auftragsnr ermitteln"""
+    
+    # TODO: Join!
     
     rows = get_connection().query('AAK00',
         condition="AKSTAT<>'X' AND AKAUFN=%s" % sql_escape(auftragsnr))
     if len(rows) != 1:
-        raise RuntimeError('inkonsistente Kopfdaten in AKSTAT')
+        raise RuntimeError('inkonsistente Kopfdaten in AAK00 für Auftragsnr %s' % auftragsnr)
     kopf = rows[0]
     
     positionen = get_connection().query(['AAP00'], ordering=['APAUFN DESC', 'APDTLT'],
@@ -77,8 +95,31 @@ def get_auftrag(auftragsnr):
 
 
 def auftraege_for_kunde(kundennr):
-    conditions = ["AKKDNR = %s" % sql_quote(kundennr)]
+    """Alle Aufträge für eine Kundennummer ermitteln"""
     
+    conditions = ["AKKDNR = %s" % sql_quote(pad('AKKDNR', kundennr))]
     condition = " AND ".join(conditions)
     rows = get_connection().query('AAK00', ordering=['AKAUFN DESC', 'AKDTLT'], condition=condition)
     return rows
+
+
+def lieferadresse(auftragsnr):
+    """Lieferadresse für Auftrag ermitteln"""
+    
+    # Gibt es eine abweichende Lieferadresse?
+    condition = "ADAART = 1 AND ADRGNR=%s " % sql_quote(auftragsnr)
+    rows = get_connection().query('XAD00', condition=condition)
+    
+    # if len(rows) > 1:
+    #     raise RuntimeError("Es gibt mehr als eine abweichende Lieferadresse für Auftrag %s" % auftragsnr)
+    # elif len(rows) == 1:
+    #     return rows[0]
+    if len(rows) > 0:
+        return rows[0]
+    
+    condition = "AKAUFN=%s AND AKKDNR = KDKDNR" % sql_quote(auftragsnr)
+    rows = get_connection().query(['AAK00', 'XKD00'], condition=condition)
+    if len(rows) != 1:
+        raise RuntimeError('inkonsistente Kopfdaten in AAK00 für Auftragsnr %s' % auftragsnr)
+    
+    return rows[0]

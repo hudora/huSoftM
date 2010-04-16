@@ -17,6 +17,7 @@ Copyright (c) 2007, 2008 HUDORA GmbH. All rights reserved.
 """
 
 import datetime
+import decimal
 import huTools.world
 import itertools
 import os
@@ -461,7 +462,12 @@ def _order2records(vorgangsnummer, order):
     else:
         kopf.kundenwunschtermin = kopf.anliefertermin
     
-    # versandkosten - Versandkosten in Cent
+    # versandkosten - Versandkosten kommen in Cent -> umwandeln in Euro
+    if _get_attr(order, 'versandkosten'):
+        kopf.versandkosten = decimal.Decimal(_get_attr(order, 'versandkosten'))
+        kopf.versandkosten /= 100
+        kopf.versandkosten = kopf.versandkosten.quantize(decimal.Decimal('0.12')) # Runden
+
     # absenderadresse - (mehrzeiliger) String, der die Absenderadresse auf Versandpapieren codiert.
 
     if _get_attr(order, 'abgangslager'):
@@ -1149,6 +1155,40 @@ class _OrderTests(unittest.TestCase):
         self.assertEqual(len(positionen), 2)
         self.assertEqual(positionen[0].to_sql(), pos_sql)
         self.assertEqual(adressen, [])
+
+    def test_versandkosten(self):
+        vorgangsnummer = 123
+        order = {'_id': '17200',
+                 '_rev': '4-4bba80636c015f98e908c79c521e5124',
+                 'sachbearbeiter': 'verkauf',
+                 'softmid': '17200',
+                 'iln': '4.00599800001e+12',
+                 'anlieferdatum_von': u'2010-03-03',
+                 'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A',
+                 'infotext_kunde': u'',
+                 'kundenauftragsnr': u'',
+                 'kundennr': u'17200',
+                 'land': 'DE',
+                 'name1': 'HUDORA GmbH',
+                 'name2': '-UMFUHR-',
+                 'name3': '',
+                 'versandkosten': 1950, # in Cent
+                 'ort': 'Remscheid',
+                 'plz': '42897',
+                 'strasse': u'J\xc3\xa4gerwald 13',
+                 'orderlines': [{u'artnr': u'14600/03',
+                                 'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A-0',
+                                 u'menge': 1,
+                                 'name': 'HUDORA Big Wheel silber, 125 mm Rolle'},
+                                {u'artnr': u'65240',
+                                 'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A-24',
+                                 u'menge': 1,
+                                 'name': 'Test'}],
+                 'tel': '+49 2191 60912 10'}
+        kopf, positionen, texte, adressen = _order2records(vorgangsnummer, order)
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKVSK , BKSBNR, BKKZTF, BKVGPO, BKFNR, BKKDNR) "
+                    "VALUES('1','123','1100303','1100303','19.50','1','1','2','01','   17200')")
+        self.assertEqual(kopf.to_sql(), kpf_sql)
 
     def test_abgangslager(self):
         """Test if the 'abgangslager' can be converted to SQL."""

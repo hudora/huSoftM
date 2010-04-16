@@ -203,7 +203,7 @@ ABK00 = {
                       wenn im Parameter 'Mehrwertsteuerangaben' die entsprechenden Profile zugeordnet
                       sind (z.B. altes <-> neues Profil bei einer MWSt-Umstellung)'''),
 'BKVPK ': dict(name='Verpackungskosten', format='P15.2'),
-'BKVSK ': dict(name='Versandkosten', format='P15.2'),
+'BKVSK ': dict(name='versandkosten', format='P15.2'),
 'BKNBT1': dict(name='Nebenkosten', format='P15.2'),
 'BKX4N1': dict(name='Textschl zu Nebenko', format='A4',
                doc='''Gültige Eingaben müssen in der Textbausteindatei hinterlegt sein.'''),

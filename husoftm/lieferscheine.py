@@ -198,7 +198,7 @@ class Lieferschein(object):
         self.infotext_kunde = '\n'.join([self.anfangstext, self.endetext]).strip()
 
     def _get_lieferadresse(self):
-        """'Normale' Lieferadresse zu einem Lieferschein extraieren."""
+        """'Normale' Lieferadresse zu einem Lieferschein extrahieren."""
         # Lieferadresse lesen, LIKE ist wegen diverser SQL issues nötig
         rows = get_connection().query('XKD00', condition="KDKDNR LIKE '%s'" %
                                ('%' + unicode(int(self.warenempfaenger)), ))

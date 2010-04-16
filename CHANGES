@@ -1,3 +1,5 @@
+0.61p2: Added shipping costs to stapelschnittstelle.py
+0.61p1: ???
 0.61:   New function artikel.abgabepreisbasis()
 0.60p5: New function kunden.get_lieferadressen()
 0.60p4: New function stapelschnittstelle.get_auftragsnr() und speichern des Erfassers eines Auftrages in den Auftragstexten

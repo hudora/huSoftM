@@ -228,6 +228,27 @@ def create_range(fieldname, start=None, end=None, func=None):
     return " ".join((fieldname, condition))
 
 
+def set_attributes(src, dest):
+    """
+    Set attributes of an object taken from a dictionary(-like) object.
+    
+    Only keys which are lowercase are used.
+    
+    >>> class testobject(object):
+    ...     pass
+    ...
+    >>> obj = testobject()
+    >>> attribs = {'value': 0xaffe, 'name': 'ck', 'Hobby': 'horse riding'}
+    >>> set_attributes(attribs, obj)
+    >>> vars(obj)
+    {'name': 'ck', 'value': 45054}
+    """
+    
+    for key, value in src.items():
+        if key.islower(): # uppercase: SoftM fild names, lowercase: plain-text field names
+            setattr(dest, key, value)
+
+
 class _GenericTests(unittest.TestCase):
     """Vermischte Tests."""
     

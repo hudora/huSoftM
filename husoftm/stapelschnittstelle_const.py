@@ -110,7 +110,7 @@ ABK00 = {
 'BKX3VA': dict(name='Versandart Auftrag', format='A3',
                doc='''Gültige Eingaben müssen in der Versandartendatei hinterlegt sein. Wahlweise Angabe.
                Vorbesetzung: Die Versandart laut Kundenzusatz des Warenempfängers/laut Lieferadresse'''),
-'BKX3LB': dict(name='Lieferbedingung Auftr', format='A3',
+'BKX3LB': dict(name='lieferbedingung', format='A3',
                doc='''Vorbesetzung: Lieferbedingung lt. Kundenzusatz des Warenempfängers'''),
 'BKX3ZB': dict(name='Zahlungsbedingung', format='A3',
                doc='''Vorbesetzung: Zahlungsbedingung lt. Kundenzusatz des RgEmpfängers'''),

@@ -31,8 +31,6 @@ from husoftm.connection import get_connection
 from husoftm.stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00
 from husoftm.tools import date2softm, sql_quote, iso2land
 
-__revision__ = "$Revision$"
-
 
 class StapelSerializer(object):
     """Abstrakte Klasse zum serialisieren der verschiedenen Sätze der Stapelschnittstelle."""
@@ -467,6 +465,8 @@ def _order2records(vorgangsnummer, order):
         kopf.versandkosten = decimal.Decimal(_get_attr(order, 'versandkosten'))
         kopf.versandkosten /= 100
         kopf.versandkosten = kopf.versandkosten.quantize(decimal.Decimal('0.12')) # Runden
+        if kopf.versandkosten:
+            kopf.lieferbedingung = 18
 
     # absenderadresse - (mehrzeiliger) String, der die Absenderadresse auf Versandpapieren codiert.
 
@@ -1186,8 +1186,8 @@ class _OrderTests(unittest.TestCase):
                                  'name': 'Test'}],
                  'tel': '+49 2191 60912 10'}
         kopf, positionen, texte, adressen = _order2records(vorgangsnummer, order)
-        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKVSK , BKSBNR, BKKZTF, BKVGPO, BKFNR, BKKDNR) "
-                    "VALUES('1','123','1100303','1100303','19.50','1','1','2','01','   17200')")
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKVSK , BKSBNR, BKKZTF, BKVGPO, BKFNR, BKX3LB, BKKDNR) "
+                   "VALUES('1','123','1100303','1100303','19.50','1','1','2','01','18','   17200')")
         self.assertEqual(kopf.to_sql(), kpf_sql)
 
     def test_abgangslager(self):

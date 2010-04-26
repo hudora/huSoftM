@@ -87,7 +87,7 @@ doc: build testenv_pydoc
 	sh -c '(export PYTHONPATH=$(PWD); cd html; pydoc.x -w ../husoftm/*.py)'
 
 install: build
-	sh -c 'sudo python setup.py install'
+	python setup.py install
 
 clean:
 	rm -Rf testenv build dist html test.db huSoftM.egg-info svn-commit.tmp pylint.out .coverage.score sloccount.sc pip-log.txt as400-sqlite-test.db

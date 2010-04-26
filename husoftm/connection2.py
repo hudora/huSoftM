@@ -145,7 +145,7 @@ class MoftSconnection(object):
         return [[_fix_field(f) for f in r] for r in rows]
     
     def query(self, tables=None, condition=None, fields=None, querymappings=None,
-              grouping=None, ordering=[]):
+              grouping=None, ordering=[], limit=None):
         r"""Execute a SELECT on the AS/400 turning the results in a list of dicts.
         
         In fields you can give a list of fields you are interested in. If fields is left empty the engine
@@ -225,6 +225,8 @@ class MoftSconnection(object):
             querystr.append('GROUP BY %s' % (','.join(grouping), ))
         if ordering:
             querystr.append('ORDER BY %s' % (','.join(ordering), ))
+        if limit:
+            querystr.append('FETCH FIRST %d ROWS ONLY' % limit)
         
         return self._execute_query(' '.join(querystr), querymappings, fields)
     

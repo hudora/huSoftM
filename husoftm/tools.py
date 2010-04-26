@@ -14,6 +14,7 @@ import logging
 import sys
 import time
 import unittest
+from husoftm.fields import PADDINGFIELDS
 
 __revision__ = "$Revision$"
 
@@ -163,7 +164,17 @@ def softm2date(date):
     except ValueError, msg:
         raise ValueError("can't convert %s to date: %s" % (date, msg))
     return None
+
+
+def str2softmdate(value, fmt='%Y-%m-%d'):
+    """
+    Convert a string to a SoftM date value.
     
+    The default date format is ISO 8601.
+    """
+    date = datetime.datetime.strptime(value, fmt)
+    return date2softm(value)
+
 
 def sql_escape(data):
     """SQL-Escapes a string to be fed into DB2.
@@ -186,7 +197,57 @@ def sql_quote(data):
     "'foo''s bar says ''''foobar'''''"
     """
     return "'%s'" % sql_escape(data)
+
+
+def pad(field, value):
+    """Pad field to fixed length"""
+    if field in PADDINGFIELDS:
+        return PADDINGFIELDS[field] % value
+    return value
+
+
+def create_range(fieldname, start=None, end=None, func=None):
+    """
+    Create range statement for field named fieldname
+
+    func is a function that needs to be applied to start and end.
+    If func is None, an anonymous identity function will be created.
+    """
+
+    if func is None:
+        func = lambda x: x
+
+    if start and end:
+        condition = "BETWEEN %s AND %s" % (func(start), func(end))
+    elif start:
+        condition = "> %s" % func(start)
+    elif end:
+        condition = "< %s" % func(end)
+    else:
+        return ""
+    return " ".join((fieldname, condition))
+
+
+def set_attributes(src, dest):
+    """
+    Set attributes of an object taken from a dictionary(-like) object.
     
+    Only keys which are lowercase are used.
+    
+    >>> class testobject(object):
+    ...     pass
+    ...
+    >>> obj = testobject()
+    >>> attribs = {'value': 0xaffe, 'name': 'ck', 'Hobby': 'horse riding'}
+    >>> set_attributes(attribs, obj)
+    >>> vars(obj)
+    {'name': 'ck', 'value': 45054}
+    """
+    
+    for key, value in src.items():
+        if key.islower(): # uppercase: SoftM fild names, lowercase: plain-text field names
+            setattr(dest, key, value)
+
 
 class _GenericTests(unittest.TestCase):
     """Vermischte Tests."""

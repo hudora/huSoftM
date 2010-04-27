@@ -28,57 +28,57 @@ LOG = logging.getLogger('husoftm.tools')
 # BTW: Die FIFA verwendet noch andere codes!
 
 SOFTMLKZ2ISOLAND = {'': 'DE',
-                    'D': 'DE',
-                    'CC': 'CC',
                     '???': '??', # WTF
                     'A': 'AT', # Oesterreich
-                    'L': 'LU', # Luxemburg
-                    'F': 'FR', # Frankreich
+                    'AUS': 'AU', # Australien
+                    'AZE': 'AZ', # Azerbaidschan
                     'B': 'BE', # Belgien
-                    'I': 'IT', # Italien
+                    'BG': 'BG', # Bulgarien
+                    'CC': 'CC',
+                    'CDN': 'CA', # Canada
+                    'CH': 'CH', # Schweiz
+                    'CY': 'CY', # Zypern (Cyprus)
+                    'CZ': 'CZ', # Tschechische Republik
+                    'D': 'DE',
+                    'DK': 'DK', # Daenemark
                     'E': 'ES', # Spanien
-                    'SLO': 'SI', # Slowenien
                     'EST': 'EE', # Estland
+                    'ET': 'EG', # Aegypten
+                    'F': 'FR', # Frankreich
+                    'FIN': 'FI', # Finland
+                    'FL': 'LI', # Fuerstentum Liechtenstein
+                    'GB': 'GB', # Vereinigtes Koenigreich # UK ist erlaubt aber nicht empfohlen
+                    'GEO': 'GE', # Georgien
+                    'GR': 'GR', # Griechenland
+                    'H': 'HU', # Ungarn
+                    'HK': 'HK', # Hongkong
+                    'HR': 'HR', # Kroatien
+                    'I': 'IT', # Italien
+                    'IR': 'IR', # Iran
+                    'IRL': 'IE', # Irland
+                    'IS': 'IS', # Island
+                    'L': 'LU', # Luxemburg
+                    'LTL': 'LT', # Litauen
+                    'LV': 'LV', # Lettland
+                    'M': 'MT', # Malta
+                    'N': 'NO', # Norwegen
+                    'NL': 'NL', # Niederlande
+                    'NZ': 'NZ', # Neuseeland
+                    'P': 'PT', # Portugal
+                    'PA': 'PA', # Panama
+                    'PL': 'PL', # Polen
+                    'RA': 'AR', # Argentinien
+                    'RCH': 'CL', # Chile
+                    'RI': 'ID', # Republik Indonesia
+                    'RO': 'RO', # Rumaenien
+                    'RS': 'RS', # Republik Serbien
                     'RUS': 'RU', # Rusland
                     'S': 'SE', # Schweden
-                    'IRL': 'IE', # Irland
-                    'AUS': 'AU', # Australien
-                    'CDN': 'CA', # Canada
-                    'FIN': 'FI', # Finland
-                    'GEO': 'GE', # Georgien
-                    'LTL': 'LT', # Litauen
-                    'N': 'NO', # Norwegen
-                    'AZE': 'AZ', # Azerbaidschan
-                    'RCH': 'CL', # Chile
-                    'CH': 'CH', # Schweiz
-                    'DK': 'DK', # Daenemark
-                    'NL': 'NL', # Niederlande
-                    'GR': 'GR', # Griechenland
-                    'BG': 'BG', # Bulgarien
-                    'FL': 'LI', # Fuerstentum Liechtenstein
-                    'CZ': 'CZ', # Tschechische Republik
-                    'HR': 'HR', # Kroatien
-                    'CH': 'CH', # Schweiz
-                    'H': 'HU', # Ungarn
-                    'IR': 'IR', # Iran
-                    'TR': 'TR', # Tuerkei
                     'SK': 'SK', # Slowakei
-                    'LV': 'LV', # Lettland
-                    'IS': 'IS', # Island
-                    'PL': 'PL', # Polen
-                    'PA': 'PA', # Panama
-                    'P': 'PT', # Portugal
-                    'UA': 'UA', # Ukraine
-                    'RA': 'AR', # Argentinien
-                    'ET': 'EG', # Aegypten
-                    'RO': 'RO', # Rumaenien
-                    'GB': 'GB', # Vereinigtes Koenigreich # UK ist erlaubt aber nicht empfohlen
-                    'NZ': 'NZ', # Neuseeland
-                    'RI': 'ID', # Republik Indonesia
-                    'HK': 'HK', # Hongkong
-                    'RS': 'RS', # Republik Serbien
-                    'CY': 'CY', # Zypern (Cyprus)
-                    'ZA': 'ZA', # Südafrika
+                    'SLO': 'SI', # Slowenien
+                    'TR': 'TR', # Tuerkei
+'UA': 'UA', # Ukraine
+'ZA': 'ZA', # Südafrika
 }
 # invert dictionary
 ISOLAND2SOFTMLKZ = dict([[v, k] for k, v in SOFTMLKZ2ISOLAND.items()])

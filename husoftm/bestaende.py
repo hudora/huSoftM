@@ -247,8 +247,7 @@ def _bestandsentwicklung(artnr, dateformat="%Y-%m-%d", lager=0):
     memc_key = 'husoftm.bestandsentwicklung.%r.%r.%r' % (artnr, dateformat, lager)
     cache = memc.get(memc_key)
     if cache:
-        #return cache
-        pass
+        return cache
     
     # start processing all thre queries in separate threads
     bestellmengen_future = huTools.async.Future(bestellmengen, artnr, lager)

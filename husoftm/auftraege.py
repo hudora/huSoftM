@@ -10,7 +10,6 @@ Copyright (c) 2010 HUDORA GmbH. All rights reserved.
 from husoftm.connection2 import get_connection
 from husoftm.tools import sql_escape, sql_quote, date2softm, pad
 
-
 AUFTRAGSARTEN = {
     "": "Normalauftrag",
     "$": "Auftrag aus Stapelschnittstelle",
@@ -40,7 +39,7 @@ def auftragsart(art):
     return AUFTRAGSARTEN[art]
 
 
-def auftraege(mindate=None, maxdate=None, additional_conditions=None):
+def auftraege(mindate=None, maxdate=None, additional_conditions=None, limit=None):
     """
     Alle Aufträge ermitteln
     
@@ -64,7 +63,7 @@ def auftraege(mindate=None, maxdate=None, additional_conditions=None):
         conditions.extend(additional_conditions)
     
     condition = " AND ".join(conditions)
-    rows = get_connection().query('AAK00', ordering=['AKAUFN DESC', 'AKDTLT'], condition=condition)
+    rows = get_connection().query('AAK00', ordering=['AKAUFN DESC', 'AKDTLT'], condition=condition, limit=limit)
     return rows
 
 
@@ -80,9 +79,7 @@ def auftraege(mindate=None, maxdate=None, additional_conditions=None):
 
 def get_auftrag(auftragsnr):
     """Auftrag mit Auftragsnummer auftragsnr ermitteln"""
-    
-    # TODO: Join!
-    
+        
     rows = get_connection().query('AAK00',
         condition="AKSTAT<>'X' AND AKAUFN=%s" % sql_escape(auftragsnr))
     if len(rows) != 1:
@@ -94,11 +91,20 @@ def get_auftrag(auftragsnr):
     return kopf, positionen
 
 
-def auftraege_for_kunde(kundennr):
+def auftraege_for_kunde(kundennr, limit=None):
     """Alle Aufträge für eine Kundennummer ermitteln"""
     
     condition = "AKKDNR = %s" % sql_quote(pad('AKKDNR', kundennr))
-    rows = get_connection().query('AAK00', ordering=['AKAUFN DESC', 'AKDTLT'], condition=condition)
+    rows = get_connection().query('AAK00', ordering=['AKAUFN DESC', 'AKDTLT'],
+                                  condition=condition, limit=limit)
+    return rows
+
+
+def auftraege_for_artnr(artnr, limit=None):
+    """Alle Aufträge zu einer Artikelnummer"""
+    condition = "AAK00.AKAUFN = ALN00.LNAUFN AND ALN00.LNARTN=%s" % sql_quote(artnr)
+    rows = get_connection().query(['AAK00', 'ALN00'], fields=['AAK00.*'], condition=condition,
+                                  ordering=['AKAUFN DESC', 'AKDTLT'], limit=limit)
     return rows
 
 

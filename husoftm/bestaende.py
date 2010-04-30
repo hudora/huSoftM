@@ -306,22 +306,17 @@ def bestandsentwicklung(artnr, dateformat="%Y-%m-%d", lager=0):
                       _bestandsentwicklung(artnr_set, dateformat, lager).items()))
         bentw_all.append(bentw)
 
-    # consistency check: alle Entwicklungen sollten den selben Zeitstempel haben
-    keys = [sorted(dct.keys()) for dct in bentw_all]
-    for ks1, ks2 in zip(keys, keys[1:]):
-        assert(ks1 == ks2)
+    # Es gibt Setartikel, deren Unterartikel sich überschneiden.
+    # Darum nur die kleinste gemeinsame Teilmenge aller Einträge sammeln.
+    keylists = [dct.keys() for dct in bentw_all]
+    commonkeys = set(keylists[0])
+    for keylist in keylists[1:]:
+        commonkeys.intersection_update(keylist)
 
-    # consistency check: alle entwicklungen sollten nach meinem Verständnis identisch sein
-    # FIXME: oder evtl. nicht (Fehlmengen, Bruch, ...) sollten doch da eigentlich nix mit zu tun haben
-    # funktioniert aber nicht, siehe art 65153
-    #for bentw1, benw2 in zip(bentw_all, bentw_all[1:]):
-        #assert(bentw1 == benw2)
-
-    # Rückgabe wert ist die größte Menge eines Sub-Artikels pro Datum, eigentlich sollten diese Mengen identisch sein,
-    # sind sie aber nicht immer, sihe obigen Kommentar (artnr 65153)
+    # Rückgabewert ist die kleinste Menge eines Sub-Artikels pro Datum
     ret = {}
-    for key in keys[0]:
-        ret[key] = max(dct[key] for dct in bentw_all)
+    for key in sorted(commonkeys):
+        ret[key] = min(dct[key] for dct in bentw_all)
 
     return ret
 

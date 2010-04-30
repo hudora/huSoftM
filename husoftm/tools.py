@@ -171,6 +171,11 @@ def str2softmdate(value, fmt='%Y-%m-%d'):
     Convert a string to a SoftM date value.
     
     The default date format is ISO 8601.
+
+    >>> str2softmdate("1990-07-08")
+    '900708'
+    >>> str2softmdate("2006-02-25")
+    '1060225'
     """
     date = datetime.datetime.strptime(value, fmt)
     return date2softm(value)

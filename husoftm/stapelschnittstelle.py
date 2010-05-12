@@ -476,9 +476,15 @@ def _order2records(vorgangsnummer, order):
     positionen = []
     texte = []
     adressen = []
+
     # guid - Eindeutiger ID des Vorgangs, darf niemals doppelt verwendet werden
-    _create_kopftext(texte, vorgangsnummer, "Referenz: %s" % _get_attr(order, 'guid'),
-                     auftragsbestaetigung=0, lieferschein=0, rechnung=0)
+    guidtext = "Referenz: %s" % order['guid']
+    orders = husoftm.auftraege.find_text(guidtext)
+    if orders:
+        raise RuntimeError('Auftrag mit guid %r bereits vorhanden: %r' % (order['guid'],
+                                                                          orders[0]['auftragsnr']))
+
+    _create_kopftext(texte, vorgangsnummer, guidtext, auftragsbestaetigung=0, lieferschein=0, rechnung=0)
     if _get_attr(order, 'erfasst_von'):
                  _create_kopftext(texte, vorgangsnummer, "erfasst von: %s" % _get_attr(order, 'erfasst_von'),
                                   auftragsbestaetigung=0, lieferschein=0, rechnung=0)

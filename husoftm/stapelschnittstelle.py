@@ -16,9 +16,14 @@ Created by Maximillian Dornseif on 2007-05-16.
 Copyright (c) 2007, 2008 HUDORA GmbH. All rights reserved.
 """
 
+from huTools.unicode import deUmlaut
+from husoftm.connection import get_connection
+from husoftm.stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00
+from husoftm.tools import date2softm, sql_quote, iso2land
 import datetime
 import decimal
 import huTools.world
+import husoftm.auftraege
 import itertools
 import os
 import random
@@ -26,10 +31,6 @@ import textwrap
 import thread
 import time
 import unittest
-from huTools.unicode import deUmlaut
-from husoftm.connection import get_connection
-from husoftm.stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00
-from husoftm.tools import date2softm, sql_quote, iso2land
 
 
 class StapelSerializer(object):

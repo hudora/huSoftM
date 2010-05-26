@@ -60,6 +60,13 @@ class StapelSerializer(object):
             if rowid in felddict and hasattr(felddict[rowid], 'strftime'):
                 felddict[rowid] = date2softm(felddict[rowid])
 
+            # format
+            if rowid in felddict and hasattr(felddict[rowid], 'format'):
+                frmt = rowconf['format']
+                if frmt.upper().startswith('A'):
+                    fieldlength = int(frmt[1:])
+                    felddict[rowid] = felddict[rowid][:fieldlength]
+            
             # remove empty fields
             if rowid in felddict and not felddict[rowid]:
                 del felddict[rowid]
@@ -657,14 +664,17 @@ class _AuftragTests(unittest.TestCase):
             " BTVGNR) VALUES('1','8','01','bestelltext','2','124')")
 
     def test_lieferadresse(self):
-        """Tests if a Lieferadresse is successfully converted to SQL."""
+        """Tests if a Lieferadresse is successfully converted to SQL.
+        
+        Checks also for field truncation.
+        """
         vorgangsnummer = 123
         auftrag = _MockAuftrag()
         auftrag.kundennr = '17200'
         auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
         auftrag.positionen = []
         auftrag.lieferadresse = _MockAddress()
-        auftrag.lieferadresse.name1 = 'name1'
+        auftrag.lieferadresse.name1 = 'Hier werden nur 40 Zeichen stehen: --->|<--- Weg'
         auftrag.lieferadresse.name2 = 'name2'
         auftrag.lieferadresse.name3 = 'name3'
         auftrag.lieferadresse.avisieren = '+49 21 91 / 6 09 12-0'
@@ -680,7 +690,7 @@ class _AuftragTests(unittest.TestCase):
         
         adressen_sql = ("INSERT INTO ABV00 (BVNAM2, BVNAM3, BVKZAD, BVNAM4, BVVGNR, BVSTR, BVLKZ, BVNAME,"
             " BVORT, BVAART) VALUES('name2','name3','1','+49 21 91 / 6 09 12-0','123',"
-            "'Nicht Vergessen Weg 1','D','name1','Rade','1')")
+            "'Nicht Vergessen Weg 1','D','Hier werden nur 40 Zeichen stehen: --->|','Rade','1')")
         self.assertEqual(adressen[0].to_sql(), adressen_sql)
         self.assertEqual(positionen, [])
         self.assertEqual(texte, [])

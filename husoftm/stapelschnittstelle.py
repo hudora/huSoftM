@@ -455,7 +455,10 @@ def _order2records(vorgangsnummer, order):
     kopf.kundenauftragsnr = deUmlaut(_get_attr(order, 'kundenauftragsnr'))[:20] # max 20 Zeichen, sonst gehts nicht
     # TODO: brauchen wir die beiden daten?
     # kopf.erfassungsdatum = kopf.bestelldatum = date2softm(datetime.date.today())
-    
+
+    if _get_attr(order, 'auftragsart'):
+        kopf.auftragsart = _get_attr(order, 'auftragsart')
+
     # wunschdatum_von und wunschdatum_bis - bilden wir NICHT ab.
     # anlieferdatum_von und anlieferdatum_bis Wenn das System keine Zeitfenster unterstützt, wird nur
     # anlieferdatum_von verwendet..
@@ -494,8 +497,8 @@ def _order2records(vorgangsnummer, order):
 
     _create_kopftext(texte, vorgangsnummer, guidtext, auftragsbestaetigung=0, lieferschein=0, rechnung=0)
     if _get_attr(order, 'erfasst_von'):
-                 _create_kopftext(texte, vorgangsnummer, "erfasst von: %s" % _get_attr(order, 'erfasst_von'),
-                                  auftragsbestaetigung=0, lieferschein=0, rechnung=0)
+        _create_kopftext(texte, vorgangsnummer, "erfasst von: %s" % _get_attr(order, 'erfasst_von'),
+                         auftragsbestaetigung=0, lieferschein=0, rechnung=0)
 
     # infotext_kunde - Freitext, der sich an den Warenempfänger richtet. Kann z.B. auf einem Lieferschein angedruckt werden. Der Umbruch des Textes kann durch das Backendsystem beliebig erfolgen, deshalb sollte der Text keine Zeilenumbrüche beinhalten.
     if _get_attr(order, 'infotext_kunde'):
@@ -1207,8 +1210,8 @@ class _OrderTests(unittest.TestCase):
                    "VALUES('1','123','1100303','1100303','19.50','1','1','2','01',' 18','   17200')")
         self.assertEqual(kopf.to_sql(), kpf_sql)
 
-    def test_abgangslager(self):
-        """Test if the 'abgangslager' can be converted to SQL."""
+    def test_abgangslager_auftragsart(self):
+        """Test if the 'abgangslager' and 'auftragsart' can be converted to SQL."""
         vorgangsnummer = 123
         order = {'_id': '17200',
                  '_rev': '4-4bba80636c015f98e908c79c521e5124',
@@ -1225,6 +1228,7 @@ class _OrderTests(unittest.TestCase):
                  'name2': '-UMFUHR-',
                  'name3': '',
                  'abgangslager': '26',
+                 'auftragsart': 'ME',
                  'ort': 'Remscheid',
                  'plz': '42897',
                  'strasse': u'J\xc3\xa4gerwald 13',
@@ -1239,8 +1243,8 @@ class _OrderTests(unittest.TestCase):
                  'tel': '+49 2191 60912 10'}
         kopf, positionen, texte, adressen = _order2records(vorgangsnummer, order)
 
-        kpf_sql = ("INSERT INTO ABK00 (BKLGNR, BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKVGPO, BKFNR, BKKDNR)"
-                   " VALUES('26','1','123','1100303','1100303','1','1','2','01','   17200')")
+        kpf_sql = ("INSERT INTO ABK00 (BKLGNR, BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKVGPO, BKFNR, BKKDNR, BKAUFA) "
+                   "VALUES('26','1','123','1100303','1100303','1','1','2','01','   17200','ME')")
         self.assertEqual(kopf.to_sql(), kpf_sql)
 
 

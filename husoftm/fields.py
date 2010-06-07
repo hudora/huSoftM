@@ -89,7 +89,7 @@ MAPPINGDIR = {
           # 'AKVRT2': 'Vertreter 2',
           # 'AKPRZA': 'Aufteilungs-%-Satz',
           # 'AKBZRG': 'Bezogene RG-nr',
-          # 'AKLGN1': 'Auslieferungslager',
+          'AKLGN1': 'auslieferungslager',
           'AKLGN2': 'zugangslager',
           # 'AKTRNR': 'Touren-nr',
           # 'AKLINR': 'Lieferant bei Strecke',
@@ -109,7 +109,7 @@ MAPPINGDIR = {
           # 'AKKZNN': 'Kz.Nachnahme',
           # 'AKKZAR': 'Kz.Leihart',
           # 'AKABTP': 'Abt. für Prüfung KD-Zusatz',
-          # 'AKDTER': 'Datum Erfassung CJJMMTT',
+          'AKDTER': 'erfassung_date',
           # 'AKZTER': 'Uhrzeit der Erfassung',
           # 'AKDTAE': 'Datum l. Änderung CJJMMTT',
           # 'AKZTAE': 'Uhrzeit letzte Änderung',
@@ -203,7 +203,7 @@ MAPPINGDIR = {
            'APMNG': 'bestellmenge',               # Die Menge, die der Kunde haben will
            'APMNGL': 'Menge zu liefern',
            'APMNGG': 'Menge/Liefersch.nichtfakt',
-           'APMNGF': 'Fakturierte Menge',          # Menge, die geliefert und fakturiert ist
+           'APMNGF': 'fakturierte_menge',          # Menge, die geliefert und fakturiert ist
            'APMNGR': 'Menge AFA35',
            'APMNGB': 'Bestellmenge in ME XLF',
            'APMESL': 'Mengen-Einheit',
@@ -217,14 +217,14 @@ MAPPINGDIR = {
            # 'APGANP': 'Gebinde verpackt',
            # 'APGANR': 'Gebinde AFA35',
            # 'APGEWI': 'Gewicht',
-           'APPREV': 'Verkaufs-Preis',
+           'APPREV': 'verkaufspreis',
            # 'APPEBN': 'Ebene Preisfindung',
            # 'APKZPR': 'Preiskennzeichen Verkauf',
            # 'APMEPR': 'Preis-Einheit',
            # 'APFAPR': 'Faktor APMEH --> APMEPR',
-           'APFWRT': 'fakturierter Wert',
-           'APOWRT': 'offener Auftragswert',
-           'APPREL': 'Listen-Preis',
+           'APFWRT': 'fakturierter_wert',
+           'APOWRT': 'offener_auftragswert',
+           'APPREL': 'listenpreis',
            # 'APPREE': 'Einstands-Preis',
            # 'APPRKZ': 'Preiskennzeichen Lager',
            # 'APWSLE': 'Währungsschlüssel: EK',
@@ -2247,6 +2247,11 @@ MAPPINGDIR = {
         'LBSANR': 'satznummer',
     },
 
+'XSB00': { # Sachbearbeiter
+        'SBSBNR': 'id',
+        'SBNAME': 'name',
+    },
+
 'XTY00': { # Versandarten
           'TYFNR': 'firma',
           'TYANW': 'anwendung',
@@ -2425,3 +2430,8 @@ DATETIMEDIR = {'LKDTLF': 'LKZTLF', # letzter_lieferschein
                'CKANFD': 'CKANFZ', # XCK00 start
                'CKENDD': 'CKENDZ', # XCK00 ende
                }
+
+# Fields which need padding before beeing used in SQL queries
+PADDINGFIELDS = {
+    'AKKDNR': "%8s",
+}

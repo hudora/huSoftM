@@ -10,7 +10,7 @@ Copyright (c) 2007 HUDORA GmbH. All rights reserved.
 __revision__ = "$Revision$"
 
 from husoftm.connection2 import get_connection
-from husoftm.tools import land2iso
+from husoftm.tools import sql_escape, sql_quote, land2iso, set_attributes
 import cs.caching
 import logging
 
@@ -46,23 +46,22 @@ def get_lieferscheine_rechnungsstatus(lieferscheinnrs):
     return []
 
 
-def set_attributes(src, dest):
-    """
-    Set attributes of an object taken from a dictionary(-like) object.
+def lieferscheine_for_auftrag(auftragsnr):
+    """Return all Lieferschein objects for a given auftragsnr"""
     
-    >>> class testobject(object):
-    ...     pass
-    ...
-    >>> obj = testobject()
-    >>> attribs = {'value': 0xaffe, 'name': 'ck', 'Hobby': 'horse riding'}
-    >>> set_attributes(attribs, obj)
-    >>> vars(obj)
-    {'name': 'ck', 'value': 45054}
-    """
+    conditions = ["LKAUFS = %s" % sql_quote(auftragsnr), "LKLFSN <> 0"]
+    condition = " AND ".join(conditions)
+    rows = get_connection().query(["ALK00"], condition=condition)
+    return [Lieferschein(row['lieferscheinnr']) for row in rows]
+
+
+def kommibelege_for_auftrag(auftragsnr):
+    """Return all Kommibeleg objects for a given auftragsnr"""
     
-    for key, value in src.items():
-        if key.islower(): # uppercase: SoftM fild names, lowercase: plain-text field names
-            setattr(dest, key, value)
+    conditions = ["LKAUFS = %s" % sql_quote(auftragsnr), "LKLFSN = 0"]
+    condition = " AND ".join(conditions)
+    rows = get_connection().query(["ALK00"], condition=condition)
+    return [Kommibeleg(row['kommissionierbelegnr']) for row in rows]
 
 
 @cs.caching.cache_function(60*60*72) # 4 days
@@ -108,7 +107,7 @@ class Lieferschein(object):
     <Lieferschein object>
     """
 
-    condition = "LKLFSN = %d"   
+    condition = "LKLFSN = %d"
     
     def __init__(self, lsnr=None):
         self._read_from_softm(int(lsnr))
@@ -198,7 +197,7 @@ class Lieferschein(object):
         self.infotext_kunde = '\n'.join([self.anfangstext, self.endetext]).strip()
 
     def _get_lieferadresse(self):
-        """'Normale' Lieferadresse zu einem Lieferschein extraieren."""
+        """'Normale' Lieferadresse zu einem Lieferschein extrahieren."""
         # Lieferadresse lesen, LIKE ist wegen diverser SQL issues nötig
         rows = get_connection().query('XKD00', condition="KDKDNR LIKE '%s'" %
                                ('%' + unicode(int(self.warenempfaenger)), ))
@@ -230,7 +229,7 @@ class Lieferschein(object):
         set_attributes(rows[0], self.lieferadresse)
     
     def _get_abweichendelieferadresse(self):
-        """Abweichende Lieferadresse wenn vorhanden extraieren."""
+        """Abweichende Lieferadresse wenn vorhanden extrahieren."""
         # Wenn eine gesonderte Lieferadresse angegeben ist, self.lieferadresse damit überschreiben
         rows = get_connection().query('XAD00',
                                       condition="ADAART=1 AND ADRGNR='%d' " % int(self.auftragsnr))
@@ -275,7 +274,7 @@ class Lieferscheinposition(object):
 class Kommibeleg(Lieferschein):
     """Bildet einen Komissionierbeleg ab (der datentechnisch in SoftM ein Lieferschein ist)."""
 
-    condition = "LKKBNR = %d AND LKSANB = 0" 
+    condition = "LKKBNR = %d AND LKSANB = 0"
 
 
 def _test():

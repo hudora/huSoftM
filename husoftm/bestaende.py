@@ -45,6 +45,7 @@ import huTools.async
 import time
 import unittest
 import warnings
+import itertools
 
 
 COUCHSERVER = "http://couchdb.local.hudora.biz:5984"
@@ -237,21 +238,13 @@ def freie_menge(artnr, dateformat="%Y-%m-%d"):
         return 0
 
 
-def _bestandsentwicklung(artnr, dateformat="%Y-%m-%d"):
-    """Hilfsfunktion für bestandsentwicklung.
-
-    Hier wird für einen einzelnen Artikel der Bestand abgefragt.
-    """
-    # check if we have a cached result.
-    memc = caching.get_cache()
-    cache = memc.get('husoftm.bestandsentwicklung.%r.%r' % (artnr, dateformat))
-    if cache:
-        return cache
+def _bewegungen(artnr, dateformat="%Y-%m-%d", lager=0):
+    """Sammeln aller Bewegungen zu einem Artikel."""
     
-    # start processing all thre queries in separate threads
-    bestellmengen_future = huTools.async.Future(bestellmengen, artnr)
-    auftragsmengen_future = huTools.async.Future(auftragsmengen, artnr)
-    buchbestand_future = huTools.async.Future(buchbestand, artnr)
+    # start processing all three queries in separate threads
+    bestellmengen_future = huTools.async.Future(bestellmengen, artnr, lager)
+    auftragsmengen_future = huTools.async.Future(auftragsmengen, artnr, lager)
+    buchbestand_future = huTools.async.Future(buchbestand, artnr, lager)
     
     # This could be sped up by using futures.
     # Startwert ist der Buchbestand
@@ -261,24 +254,21 @@ def _bestandsentwicklung(artnr, dateformat="%Y-%m-%d"):
     # Auftragsmengen negativ
     bewegungen.extend([(x[0].strftime(dateformat), -1*x[1]) for x in auftragsmengen_future().items()])
     bewegungen.sort()
-    # summieren
+    return bewegungen
+
+
+def _sum_bewegungen(bewegungen):
+    """Bewegungsmengen aufsummieren."""
+
     menge = 0
     bestentwicklung = {}
     for datum, bewegungsmenge in bewegungen:
         menge += bewegungsmenge
         bestentwicklung[datum] = menge
-    
-    if not bestentwicklung:
-        # kein Bestand - diese Information 6 Stunden cachen
-        memc.set('husoftm.bestandsentwicklung.%r.%r' % (artnr, dateformat), bestentwicklung, 60*60*6)
-    else:
-        # Bestand - die menge fuer 2 Minuten cachen
-        memc.set('husoftm.bestandsentwicklung.%r.%r' % (artnr, dateformat), bestentwicklung, 60*2)
-    
     return bestentwicklung
     
 
-def bestandsentwicklung(artnr, dateformat="%Y-%m-%d"):
+def bestandsentwicklung(artnr, dateformat="%Y-%m-%d", lager=0):
     """Liefert ein Dictionary, dass alle zukünftigen, bzw. noch nicht ausgeführten Bewegungen
     
     für einen Artikel beinhaltet. Ist kein Bestand für den Artikel vorhanden, wird None zurückgegeben.
@@ -294,38 +284,63 @@ def bestandsentwicklung(artnr, dateformat="%Y-%m-%d"):
      
      Achtung: Diese Funktion implementiert bis zu 120 Sekunden caching.
     """
+    # check if we have a cached result.
+    memc = caching.get_cache()
+    memc_key = 'husoftm.bestandsentwicklung.%r.%r.%r' % (artnr, dateformat, lager)
+    cache = memc.get(memc_key)
+    if cache:
+        return cache
 
     # Auflösung von Set-Artikeln in ihre Unterartikel.
-    # Die Bestandsentwicklung des Sets der Bestandsentwicklung der Unterartikel divdiert durch
+    # Die Bestandsentwicklung des Sets der Bestandsentwicklung der Unterartikel dividiert durch
     # die jeweilige Anzahl der Unterartikel pro Set entsprechen.
     components = husoftm.artikel.komponentenaufloesung([(1, artnr)])
-    bentw_all = []
+    bestentw_all = []
     for mng_set, artnr_set in components:
-        bentw = dict(((datum, mng/mng_set) for (datum, mng) in
-                      _bestandsentwicklung(artnr_set, dateformat).items()))
-        bentw_all.append(bentw)
+        bestentwicklung = dict(((datum, mng/mng_set) for (datum, mng) in
+                                _sum_bewegungen(_bewegungen(artnr_set, dateformat, lager)).items()))
+        bestentw_all.append(bestentwicklung)
 
-    # consistency check: alle Entwicklungen sollten den selben Zeitstempel haben
-    keys = [sorted(dct.keys()) for dct in bentw_all]
-    for ks1, ks2 in zip(keys, keys[1:]):
-        assert(ks1 == ks2)
+    # Die kleinste Menge eines Sub-Artikels ist die an diesem Datum verfügbare Menge
+    # !Es gibt Setartikel, deren Unterartikel sich überschneiden.
+    # !Darum die get Methode, mit einem Defaultwert von 99999999
+    commonkeys = [dct.keys() for dct in bestentw_all]
+    commonkeys = set(itertools.chain(*commonkeys))
+    bestentwicklung = {}
+    for key in commonkeys:
+        bestentwicklung[key] = min(dct.get(key, 99999999) for dct in bestentw_all)
 
-    # consistency check: alle entwicklungen sollten nach meinem Verständnis identisch sein
-    # FIXME: oder evtl. nicht (Fehlmengen, Bruch, ...) sollten doch da eigentlich nix mit zu tun haben
-    # funktioniert aber nicht, siehe art 65153
-    #for bentw1, benw2 in zip(bentw_all, bentw_all[1:]):
-        #assert(bentw1 == benw2)
+    # Bei Setartikeln werden die Auftragsmengen (evtl. auch die Bestellmengen) mal für den Set,
+    # und mal für die Subartikel behandelt.
+    # Darum hier noch die Bewegungen des Setartikels überlagern
+    if artnr_set != artnr: # Das darf nur auf Setartikel angewendet werden!
+        bewegungen_set = _bewegungen(artnr, dateformat, lager)
 
-    # Rückgabe wert ist die größte Menge eines Sub-Artikels pro Datum, eigentlich sollten diese Mengen identisch sein,
-    # sind sie aber nicht immer, sihe obigen Kommentar (artnr 65153)
-    ret = {}
-    for key in keys[0]:
-        ret[key] = max(dct[key] for dct in bentw_all)
+        # Bewegungsmengen aus der gerade ermittelten Bestandsendwicklung der Unterartikel erzeugen
+        bestentwicklung = sorted(bestentwicklung.items())
+        date, mng = bestentwicklung[0]
+        bewegungen_sub = [(date, mng)]
+        for date, x in bestentwicklung[1:]:
+            bewegungen_sub.append((date, x - mng))
+            mng = x
 
-    return ret
+        # Bewegungen mit denen des Setartikels kombinieren und erneut eine Bestandsentwicklung
+        # daraus berechnen
+        bewegungen = bewegungen_sub + bewegungen_set
+        bewegungen.sort()
+        bestentwicklung = _sum_bewegungen(bewegungen)
+
+    if not bestentwicklung:
+        # kein Bestand - diese Information 6 Stunden cachen
+        memc.set(memc_key, bestentwicklung, 60*60*6)
+    else:
+        # Bestand - die menge fuer 2 Minuten cachen
+        memc.set(memc_key, bestentwicklung, 60*2)
+    
+    return bestentwicklung
 
 
-def bestellmengen(artnr):
+def bestellmengen(artnr, lager=0):
     """Liefert eine liste mit allen Bestellten aber noch nicht gelieferten Wareneingängen.
     
     >>> bestellmengen('14865')
@@ -333,11 +348,12 @@ def bestellmengen(artnr):
     {datetime.date(2009, 2, 20): 1200,
      datetime.date(2009, 5, 5): 300}
     """
-    
+    condition = "BPSTAT<>'X' AND BPKZAK=0 AND BPARTN=%s" % sql_quote(artnr)
+    if lager:
+        condition += "AND BPLGNR=%s" % sql_quote(lager)
     # detailierte Informationen gibts in EWZ00
     rows = get_connection().query('EBP00', fields=['BPDTLT', 'SUM(BPMNGB-BPMNGL)'], ordering='BPDTLT',
-                                 grouping='BPDTLT',
-                                 condition="BPSTAT<>'X' AND BPKZAK=0 AND BPARTN=%s" % sql_quote(artnr))
+                                  grouping='BPDTLT', condition=condition)
     return dict([(x['liefer_date'], as400_2_int(x['SUM(BPMNGB-BPMNGL)']))
                  for x in rows if as400_2_int(x['SUM(BPMNGB-BPMNGL)']) > 0])
     
@@ -400,9 +416,11 @@ def get_offene_auftraege(lager=100):
     return rows
 
 
-def auftragsmengen_alle_artikel(lager=0):
-    """Liefert eine Liste offener Aufträge aller Artikel OHNE UMLAGERUNGEN.
-    
+def auftragsmengen_alle_artikel(lager=0, umlagerungen=False):
+    """Liefert eine Liste offener Aufträge aller Artikel.
+
+    Per default OHNE UMLAGERUNGEN.
+
     >>> auftragsmengen_alle_artikel(34)
     {'14550': {datetime.date(2008, 11, 30): 3450,
                datetime.date(2008, 12, 1): 8,
@@ -419,16 +437,18 @@ def auftragsmengen_alle_artikel(lager=0):
     
     condition = (
     "AKAUFN=APAUFN"
-    " AND AKAUFA<>'U'"                # kein Umlagerungsauftrag
     " AND APSTAT<>'X'"                # Position nicht logisch gelöscht
     " AND APKZVA=0"                   # Position nicht als 'voll ausgeliefert' markiert
     " AND (APMNG-APMNGF) > 0"         # (noch) zu liefernde menge ist positiv
     " AND AKSTAT<>'X'"                # Auftrag nicht logisch gelöscht
     " AND AKKZVA=0")                  # Auftrag nicht als 'voll ausgeliefert' markiert
+
+    if not umlagerungen: # kein Umlagerungsauftrag:
+        condition += " AND AKAUFA<>'U'"
     
     if lager:
         # Achtung, hier gibt es KEIN Lager 0 in der Tabelle. D.h. APLGNR=0 gibt nix
-        condition = condition + (" AND APLGNR=%d" % lager)
+        condition += " AND APLGNR=%d" % lager
     rows = get_connection().query(['AAP00', 'AAK00'],
             fields=['APARTN', 'APDTLT', 'SUM(APMNG-APMNGF)'],
             condition=condition,
@@ -478,44 +498,7 @@ def frei_am(menge, artnr, date, dateformat="%Y-%m-%d"):
     return False, 0
 
 
-# XXX: Diese Funktion sollte mit der Einführung der Bestandsentwicklung eigentlich redundant sein.
-# Habe sie aber mal fürs REview drin gelassen.
-def frei_am_sets(menge, artnr, date, dateformat="%Y-%m-%d"):
-    """Ermittelt für Set-Artikel, ob die gegene Menge für einen Artikel zu dem Datum date frei ist.
-    
-    Rückgabewert ist ein Tupel. Dessen erster Eintrag gibt an, ob der gesamte Set in dieser Menge da ist,
-    der zweite Eintrag ist eine Liste von Tupeln, die jeweils für den Unterartikel die Lieferbarkeit,
-    Menge und Artikelnummer enthalten.
-
-    >>> husoftm.bestaende.frei_am_sets(2000, '00537', '20010-01-04')
-    (False, [(False, 0, '42050/A'), (False, 0, '42051/A'), (False, 0, '42052/A')])
-    
-    """
-    components = husoftm.artikel.komponentenaufloesung([(menge, artnr)])
-    tmp = [frei_am(cmeng, cartnr, date, dateformat) + (cartnr, ) for cmeng, cartnr in components]
-    frei = all(frei_[0] for frei_ in tmp)
-    return frei, tmp
-
-
-# XXX: Diese Funktion sollte mit der Einführung der Bestandsentwicklung eigentlich redundant sein.
-# Habe sie aber mal fürs REview drin gelassen.
-def frei_ab_sets(menge, artnr, dateformat="%Y-%m-%d"):
-    """Finds the earliest date when menge is frei (available) or None if it isn't available at all.
-
-    >>> frei_ab(50, '76095')
-    None
-    >>> frei_ab(500, '01104')
-    datetime.date(2008, 11, 22)
-
-    """
-    components = husoftm.artikel.komponentenaufloesung([(menge, artnr)])
-    entries = [frei_ab(cmeng, cartnr, dateformat) for cmeng, cartnr in components]
-    if all(entries):
-        return max(entries)
-    return None
-
-
-def frei_ab(menge, artnr, dateformat="%Y-%m-%d"):
+def frei_ab(menge, artnr, dateformat="%Y-%m-%d", lager=0):
     """Finds the earliest date when menge is frei (available) or None if it isn't available at all.
     
     >>> frei_ab(50, '76095')
@@ -528,7 +511,7 @@ def frei_ab(menge, artnr, dateformat="%Y-%m-%d"):
     # Kurve niedriger ist, als die geforderte Menge - ab da ist die Menge frei.
     
     today = datetime.date.today().strftime("%Y-%m-%d")
-    bentwicklung = bestandsentwicklung(artnr, dateformat)
+    bentwicklung = bestandsentwicklung(artnr, dateformat, lager)
     # remove historic data, since this tends to be negative
     bentwicklung = dict([x for x in bentwicklung.items() if x[0] >= today])
     

@@ -11,7 +11,7 @@ import types
 import unittest
 from decimal import Decimal
 from husoftm.connection2 import get_connection
-from husoftm.tools import sql_escape, sql_quote
+from husoftm.tools import sql_escape, sql_quote, date2softm
 
 
 class Bestellung(object):
@@ -167,9 +167,29 @@ def get_bestellungen_artnr(artnr):
         ret.append(position)
     # ?: SELECT * FROM EWZ00 WHERE WZBSTN = 43072
     return kursfaktorkorrektur(ret)
-    
 
-def bestellungen():
+
+def bestellungskoepfe(mindate=None, maxdate=None, additional_conditions=None):
+    conditions = ["BLSTAT<>'X'"]
+    
+    if mindate and maxdate:
+        conditions.append("BPDTER BETWEEN %s AND %s" % (date2softm(mindate), date2softm(maxdate)))
+    elif mindate:
+        conditions.append("BPDTER > %s" % date2softm(mindate))
+    elif maxdate:
+        conditions.append("BPDTER < %s" % date2softm(maxdate))
+    
+    # You should REALLY know what you are doing!
+    if additional_conditions:
+        conditions.extend(additional_conditions)
+    
+    condition = " AND ".join(conditions)
+    
+    rows = get_connection().query('EBL00', ordering=['BLBSTN DESC', 'BLDTBE'], condition=condition)
+    return rows
+
+
+def bestellungen(mindate=None, maxdate=None, additional_conditions=None):
     """Liefert eine Liste mit allen bestellten aber nicht stornierten Wareneingängen.
     
     >>> bestellungen()
@@ -197,7 +217,22 @@ def bestellungen():
     
     """
     
-    rows = get_connection().query('EBP00', ordering=['BPBSTN DESC', 'BPDTLT'], condition="BPSTAT<>'X'")
+    conditions = ["BPSTAT<>'X'"]
+    
+    if mindate and maxdate:
+        conditions.append("BPDTER BETWEEN %s AND %s" % (date2softm(mindate), date2softm(maxdate)))
+    elif mindate:
+        conditions.append("BPDTER > %s" % date2softm(mindate))
+    elif maxdate:
+        conditions.append("BPDTER < %s" % date2softm(maxdate))
+    
+    # You should REALLY know what you are doing!
+    if additional_conditions:
+        conditions.extend(additional_conditions)
+    
+    condition = " AND ".join(conditions)
+    
+    rows = get_connection().query('EBP00', ordering=['BPBSTN DESC', 'BPDTLT'], condition=condition)
     # AND BPKZAK=0 to get only the open ones
     return rows
     

@@ -3,17 +3,19 @@
 """
 stapelschnittstelle.py - Ansprechen der SoftM Auftrags-Stapelschnittstelle.
 
-ACHTUNG: Die SoftM Stapel-Schnittstelle ist - dürftig dokumentiert. Das
-bedeutet, dass dieser Code grosse Chancen bietet, nicht wie erwartet zu funktionieren. Er ist nur für
-experimentelle Zwecke geeignet - oder für Leute mit starken Nerven.
-Aber wenn sie schwache Nerven hätten, würden sie kein SoftM einsetzen, oder?
+ACHTUNG: Die SoftM Stapel-Schnittstelle ist ... dürftig dokumentiert. Das
+bedeutet, dass dieser Code grosse Chancen bietet, nicht wie erwartet zu
+funktionieren. Er ist nur für experimentelle Zwecke geeignet - oder für
+Leute mit starken Nerven. Aber wenn sie schwache Nerven hätten, würden sie
+kein SoftM einsetzen, oder?
 
-Die SoftM Stapelschnittstelle auch von SoftM umfangreich genutzt: so ist die EDI-Schnittstelle eigentlich nur
-ein Umsetzer, der die Daten in die Stapelschnittstelle schreibt. Mit der Stapelschnittstelle kann man nahezu
+Die SoftM Stapelschnittstelle auch von SoftM umfangreich genutzt: so ist
+die EDI-Schnittstelle eigentlich nur ein Umsetzer, der die Daten in die
+Stapelschnittstelle schreibt. Mit der Stapelschnittstelle kann man nahezu
 alle Prameter eines Auftrages beschreiben.
 
 Created by Maximillian Dornseif on 2007-05-16.
-Copyright (c) 2007, 2008 HUDORA GmbH. All rights reserved.
+Copyright (c) 2007, 2008, 2010 HUDORA GmbH. All rights reserved.
 """
 
 import datetime
@@ -29,8 +31,6 @@ from huTools.unicode import deUmlaut
 from husoftm.connection import get_connection
 from husoftm.stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00
 from husoftm.tools import date2softm, sql_quote, iso2land
-
-__revision__ = "$Revision$"
 
 
 class StapelSerializer(object):
@@ -434,11 +434,13 @@ def _get_attr(obj, key):
 
 
 def _order2records(vorgangsnummer, order):
-    """Convert a auftrag into records objects representing AS/400 SQL statements."""
+    """Convert a ExtendedOrderProtocol into records objects representing AS/400 SQL statements."""
     # see https://github.com/hudora/CentralServices/blob/master/doc/ExtendedOrderProtocol.markdown
     kopf = Kopf()
     kopf.vorgang = vorgangsnummer
-    # kundennr Interne Kundennummer. Kann das AddressProtocol erweitern. Wenn eine kundennr angegeben ist und die per AddressProtocol angegebene Lieferadresse nicht zu der kundennr passt, handelt es sich um eine abweichende Lieferadresse.
+    # kundennr Interne Kundennummer. Kann das AddressProtocol erweitern. Wenn eine kundennr angegeben ist und
+    # die per AddressProtocol angegebene Lieferadresse nicht zu der kundennr passt, handelt es sich um eine
+    # abweichende Lieferadresse.
     kopf.kundennr = '%8s' % _get_attr(order, 'kundennr').split('/')[0]
     # kundenauftragsnr - Freitext, den der Kunde bei der Bestellung mit angegeben hat, ca. 20 Zeichen.
     kopf.kundenauftragsnr = _get_attr(order, 'kundenauftragsnr')
@@ -447,7 +449,7 @@ def _order2records(vorgangsnummer, order):
     
     # wunschdatum_von und wunschdatum_bis - bilden wir NICHT ab.
     # anlieferdatum_von und anlieferdatum_bis Wenn das System keine Zeitfenster unterstützt, wird nur
-    # anlieferdatum_von verwendet..
+    # anlieferdatum_von verwendet.
     if _get_attr(order, 'anlieferdatum_von'):
         kopf.anliefertermin = date2softm(_get_attr(order, 'anlieferdatum_von'))
     else:

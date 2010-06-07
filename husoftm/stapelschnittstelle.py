@@ -285,7 +285,7 @@ def _auftrag2records(vorgangsnummer, auftrag):
     """Convert an Auftrag into records objects representing AS/400 SQL statements."""
     kopf = Kopf()
     kopf.vorgang = vorgangsnummer
-    kundennummern = auftrag.kundennummer.split('/')
+    kundennummern = auftrag.kundennr.split('/')
     kopf.kundennr = '%8s' % kundennummern[0]
     if len(kundennummern) > 1:
         # abweichende Lieferadresse in Adress-Zusatzdatei

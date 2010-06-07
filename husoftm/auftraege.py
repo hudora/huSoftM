@@ -130,3 +130,18 @@ def lieferadresse(auftragsnr):
         raise RuntimeError('inkonsistente Kopfdaten in AAK00 für Auftragsnr %s' % auftragsnr)
     
     return rows[0]
+
+
+def find_text(text):
+    """Durchsucht alle Auftragstexte nach 'text'.
+    
+    Rückgabewert ist eine Liste mit gefundenen Texten und dazugehörigen Auftragsnummern.
+
+    Das ist ganz nützlich, wenn nach einem GUID gesucht werden soll:
+    
+    >>> find_text('EUDA4BGY')
+    [{'auftragsnr': 1130969, 'text': 'Referenz: 0EUDA4BGYJCLT4VSNI2CP5XCPDQ'},
+     {'auftragsnr': 1130970, 'text': 'Referenz: 1EUDA4BGYJCLT4VSNI2CP5XCPDQ'}]
+    """
+    rows = get_connection().query('AAT00', fields=['ATTX60', 'ATAUFN'], condition="ATTX60 LIKE %s" % sql_quote("%%%s%%" % text))
+    return rows

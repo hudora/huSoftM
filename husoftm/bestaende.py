@@ -45,6 +45,7 @@ import huTools.async
 import time
 import unittest
 import warnings
+import itertools
 
 
 COUCHSERVER = "http://couchdb.local.hudora.biz:5984"
@@ -237,19 +238,10 @@ def freie_menge(artnr, dateformat="%Y-%m-%d"):
         return 0
 
 
-def _bestandsentwicklung(artnr, dateformat="%Y-%m-%d", lager=0):
-    """Hilfsfunktion für bestandsentwicklung.
-
-    Hier wird für einen einzelnen Artikel der Bestand abgefragt.
-    """
-    # check if we have a cached result.
-    memc = caching.get_cache()
-    memc_key = 'husoftm.bestandsentwicklung.%r.%r.%r' % (artnr, dateformat, lager)
-    cache = memc.get(memc_key)
-    if cache:
-        return cache
+def _bewegungen(artnr, dateformat="%Y-%m-%d", lager=0):
+    """Sammeln aller Bewegungen zu einem Artikel."""
     
-    # start processing all thre queries in separate threads
+    # start processing all three queries in separate threads
     bestellmengen_future = huTools.async.Future(bestellmengen, artnr, lager)
     auftragsmengen_future = huTools.async.Future(auftragsmengen, artnr, lager)
     buchbestand_future = huTools.async.Future(buchbestand, artnr, lager)
@@ -262,20 +254,17 @@ def _bestandsentwicklung(artnr, dateformat="%Y-%m-%d", lager=0):
     # Auftragsmengen negativ
     bewegungen.extend([(x[0].strftime(dateformat), -1*x[1]) for x in auftragsmengen_future().items()])
     bewegungen.sort()
-    # summieren
+    return bewegungen
+
+
+def _sum_bewegungen(bewegungen):
+    """Bewegungsmengen aufsummieren."""
+
     menge = 0
     bestentwicklung = {}
     for datum, bewegungsmenge in bewegungen:
         menge += bewegungsmenge
         bestentwicklung[datum] = menge
-    
-    if not bestentwicklung:
-        # kein Bestand - diese Information 6 Stunden cachen
-        memc.set(memc_key, bestentwicklung, 60*60*6)
-    else:
-        # Bestand - die menge fuer 2 Minuten cachen
-        memc.set(memc_key, bestentwicklung, 60*2)
-    
     return bestentwicklung
     
 
@@ -295,30 +284,60 @@ def bestandsentwicklung(artnr, dateformat="%Y-%m-%d", lager=0):
      
      Achtung: Diese Funktion implementiert bis zu 120 Sekunden caching.
     """
+    # check if we have a cached result.
+    memc = caching.get_cache()
+    memc_key = 'husoftm.bestandsentwicklung.%r.%r.%r' % (artnr, dateformat, lager)
+    cache = memc.get(memc_key)
+    if cache:
+        return cache
 
     # Auflösung von Set-Artikeln in ihre Unterartikel.
-    # Die Bestandsentwicklung des Sets der Bestandsentwicklung der Unterartikel divdiert durch
+    # Die Bestandsentwicklung des Sets der Bestandsentwicklung der Unterartikel dividiert durch
     # die jeweilige Anzahl der Unterartikel pro Set entsprechen.
     components = husoftm.artikel.komponentenaufloesung([(1, artnr)])
-    bentw_all = []
+    bestentw_all = []
     for mng_set, artnr_set in components:
-        bentw = dict(((datum, mng/mng_set) for (datum, mng) in
-                      _bestandsentwicklung(artnr_set, dateformat, lager).items()))
-        bentw_all.append(bentw)
+        bestentwicklung = dict(((datum, mng/mng_set) for (datum, mng) in
+                                _sum_bewegungen(_bewegungen(artnr_set, dateformat, lager)).items()))
+        bestentw_all.append(bestentwicklung)
 
-    # Es gibt Setartikel, deren Unterartikel sich überschneiden.
-    # Darum nur die kleinste gemeinsame Teilmenge aller Einträge sammeln.
-    keylists = [dct.keys() for dct in bentw_all]
-    commonkeys = set(keylists[0])
-    for keylist in keylists[1:]:
-        commonkeys.intersection_update(keylist)
+    # Die kleinste Menge eines Sub-Artikels ist die an diesem Datum verfügbare Menge
+    # !Es gibt Setartikel, deren Unterartikel sich überschneiden.
+    # !Darum die get Methode, mit einem Defaultwert von 99999999
+    commonkeys = [dct.keys() for dct in bestentw_all]
+    commonkeys = set(itertools.chain(*commonkeys))
+    bestentwicklung = {}
+    for key in commonkeys:
+        bestentwicklung[key] = min(dct.get(key, 99999999) for dct in bestentw_all)
 
-    # Rückgabewert ist die kleinste Menge eines Sub-Artikels pro Datum
-    ret = {}
-    for key in sorted(commonkeys):
-        ret[key] = min(dct[key] for dct in bentw_all)
+    # Bei Setartikeln werden die Auftragsmengen (evtl. auch die Bestellmengen) mal für den Set,
+    # und mal für die Subartikel behandelt.
+    # Darum hier noch die Bewegungen des Setartikels überlagern
+    if artnr_set != artnr: # Das darf nur auf Setartikel angewendet werden!
+        bewegungen_set = _bewegungen(artnr, dateformat, lager)
 
-    return ret
+        # Bewegungsmengen aus der gerade ermittelten Bestandsendwicklung der Unterartikel erzeugen
+        bestentwicklung = sorted(bestentwicklung.items())
+        date, mng = bestentwicklung[0]
+        bewegungen_sub = [(date, mng)]
+        for date, x in bestentwicklung[1:]:
+            bewegungen_sub.append((date, x - mng))
+            mng = x
+
+        # Bewegungen mit denen des Setartikels kombinieren und erneut eine Bestandsentwicklung
+        # daraus berechnen
+        bewegungen = bewegungen_sub + bewegungen_set
+        bewegungen.sort()
+        bestentwicklung = _sum_bewegungen(bewegungen)
+
+    if not bestentwicklung:
+        # kein Bestand - diese Information 6 Stunden cachen
+        memc.set(memc_key, bestentwicklung, 60*60*6)
+    else:
+        # Bestand - die menge fuer 2 Minuten cachen
+        memc.set(memc_key, bestentwicklung, 60*2)
+    
+    return bestentwicklung
 
 
 def bestellmengen(artnr, lager=0):

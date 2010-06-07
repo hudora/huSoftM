@@ -16,9 +16,14 @@ Created by Maximillian Dornseif on 2007-05-16.
 Copyright (c) 2007, 2008 HUDORA GmbH. All rights reserved.
 """
 
+from huTools.unicode import deUmlaut
+from husoftm.connection import get_connection
+from husoftm.stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00
+from husoftm.tools import date2softm, sql_quote, iso2land
 import datetime
 import decimal
 import huTools.world
+import husoftm.auftraege
 import itertools
 import os
 import random
@@ -26,10 +31,6 @@ import textwrap
 import thread
 import time
 import unittest
-from huTools.unicode import deUmlaut
-from husoftm.connection import get_connection
-from husoftm.stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00
-from husoftm.tools import date2softm, sql_quote, iso2land
 
 
 class StapelSerializer(object):
@@ -59,6 +60,13 @@ class StapelSerializer(object):
             if rowid in felddict and hasattr(felddict[rowid], 'strftime'):
                 felddict[rowid] = date2softm(felddict[rowid])
 
+            # format
+            if rowid in felddict and hasattr(felddict[rowid], 'format'):
+                frmt = rowconf['format']
+                if frmt.upper().startswith('A'):
+                    fieldlength = int(frmt[1:])
+                    felddict[rowid] = felddict[rowid][:fieldlength]
+            
             # remove empty fields
             if rowid in felddict and not felddict[rowid]:
                 del felddict[rowid]
@@ -450,7 +458,10 @@ def _order2records(vorgangsnummer, order):
     kopf.kundenauftragsnr = deUmlaut(_get_attr(order, 'kundenauftragsnr'))[:20] # max 20 Zeichen, sonst gehts nicht
     # TODO: brauchen wir die beiden daten?
     # kopf.erfassungsdatum = kopf.bestelldatum = date2softm(datetime.date.today())
-    
+
+    if _get_attr(order, 'auftragsart'):
+        kopf.auftragsart = _get_attr(order, 'auftragsart')
+
     # wunschdatum_von und wunschdatum_bis - bilden wir NICHT ab.
     # anlieferdatum_von und anlieferdatum_bis Wenn das System keine Zeitfenster unterstützt, wird nur
     # anlieferdatum_von verwendet..
@@ -469,7 +480,7 @@ def _order2records(vorgangsnummer, order):
         kopf.versandkosten /= 100
         kopf.versandkosten = kopf.versandkosten.quantize(decimal.Decimal('0.12')) # Runden
         if kopf.versandkosten:
-            kopf.lieferbedingung = 18
+            kopf.lieferbedingung = ' 18'
 
     # absenderadresse - (mehrzeiliger) String, der die Absenderadresse auf Versandpapieren codiert.
 
@@ -479,12 +490,18 @@ def _order2records(vorgangsnummer, order):
     positionen = []
     texte = []
     adressen = []
+
     # guid - Eindeutiger ID des Vorgangs, darf niemals doppelt verwendet werden
-    _create_kopftext(texte, vorgangsnummer, "Referenz: %s" % _get_attr(order, 'guid'),
-                     auftragsbestaetigung=0, lieferschein=0, rechnung=0)
+    guidtext = "Referenz: %s" % order['guid']
+    orders = husoftm.auftraege.find_text(guidtext)
+    if orders:
+        raise RuntimeError('Auftrag mit guid %r bereits vorhanden: %r' % (order['guid'],
+                                                                          orders[0]['auftragsnr']))
+
+    _create_kopftext(texte, vorgangsnummer, guidtext, auftragsbestaetigung=0, lieferschein=0, rechnung=0)
     if _get_attr(order, 'erfasst_von'):
-                 _create_kopftext(texte, vorgangsnummer, "erfasst von: %s" % _get_attr(order, 'erfasst_von'),
-                                  auftragsbestaetigung=0, lieferschein=0, rechnung=0)
+        _create_kopftext(texte, vorgangsnummer, "erfasst von: %s" % _get_attr(order, 'erfasst_von'),
+                         auftragsbestaetigung=0, lieferschein=0, rechnung=0)
 
     # infotext_kunde - Freitext, der sich an den Warenempfänger richtet. Kann z.B. auf einem Lieferschein angedruckt werden. Der Umbruch des Textes kann durch das Backendsystem beliebig erfolgen, deshalb sollte der Text keine Zeilenumbrüche beinhalten.
     if _get_attr(order, 'infotext_kunde'):
@@ -653,14 +670,17 @@ class _AuftragTests(unittest.TestCase):
             " BTVGNR) VALUES('1','8','01','bestelltext','2','124')")
 
     def test_lieferadresse(self):
-        """Tests if a Lieferadresse is successfully converted to SQL."""
+        """Tests if a Lieferadresse is successfully converted to SQL.
+        
+        Checks also for field truncation.
+        """
         vorgangsnummer = 123
         auftrag = _MockAuftrag()
         auftrag.kundennr = '17200'
         auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
         auftrag.positionen = []
         auftrag.lieferadresse = _MockAddress()
-        auftrag.lieferadresse.name1 = 'name1'
+        auftrag.lieferadresse.name1 = 'Hier werden nur 40 Zeichen stehen: --->|<--- Weg'
         auftrag.lieferadresse.name2 = 'name2'
         auftrag.lieferadresse.name3 = 'name3'
         auftrag.lieferadresse.avisieren = '+49 21 91 / 6 09 12-0'
@@ -676,7 +696,7 @@ class _AuftragTests(unittest.TestCase):
         
         adressen_sql = ("INSERT INTO ABV00 (BVNAM2, BVNAM3, BVKZAD, BVNAM4, BVVGNR, BVSTR, BVLKZ, BVNAME,"
             " BVORT, BVAART) VALUES('name2','name3','1','+49 21 91 / 6 09 12-0','123',"
-            "'Nicht Vergessen Weg 1','D','name1','Rade','1')")
+            "'Nicht Vergessen Weg 1','D','Hier werden nur 40 Zeichen stehen: --->|','Rade','1')")
         self.assertEqual(adressen[0].to_sql(), adressen_sql)
         self.assertEqual(positionen, [])
         self.assertEqual(texte, [])
@@ -1190,11 +1210,11 @@ class _OrderTests(unittest.TestCase):
                  'tel': '+49 2191 60912 10'}
         kopf, positionen, texte, adressen = _order2records(vorgangsnummer, order)
         kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKVSK , BKSBNR, BKKZTF, BKVGPO, BKFNR, BKX3LB, BKKDNR) "
-                   "VALUES('1','123','1100303','1100303','19.50','1','1','2','01','18','   17200')")
+                   "VALUES('1','123','1100303','1100303','19.50','1','1','2','01',' 18','   17200')")
         self.assertEqual(kopf.to_sql(), kpf_sql)
 
-    def test_abgangslager(self):
-        """Test if the 'abgangslager' can be converted to SQL."""
+    def test_abgangslager_auftragsart(self):
+        """Test if the 'abgangslager' and 'auftragsart' can be converted to SQL."""
         vorgangsnummer = 123
         order = {'_id': '17200',
                  '_rev': '4-4bba80636c015f98e908c79c521e5124',
@@ -1211,6 +1231,7 @@ class _OrderTests(unittest.TestCase):
                  'name2': '-UMFUHR-',
                  'name3': '',
                  'abgangslager': '26',
+                 'auftragsart': 'ME',
                  'ort': 'Remscheid',
                  'plz': '42897',
                  'strasse': u'J\xc3\xa4gerwald 13',
@@ -1225,8 +1246,8 @@ class _OrderTests(unittest.TestCase):
                  'tel': '+49 2191 60912 10'}
         kopf, positionen, texte, adressen = _order2records(vorgangsnummer, order)
 
-        kpf_sql = ("INSERT INTO ABK00 (BKLGNR, BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKVGPO, BKFNR, BKKDNR)"
-                   " VALUES('26','1','123','1100303','1100303','1','1','2','01','   17200')")
+        kpf_sql = ("INSERT INTO ABK00 (BKLGNR, BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKVGPO, BKFNR, BKKDNR, BKAUFA) "
+                   "VALUES('26','1','123','1100303','1100303','1','1','2','01','   17200','ME')")
         self.assertEqual(kopf.to_sql(), kpf_sql)
 
 

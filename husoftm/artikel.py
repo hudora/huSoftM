@@ -69,7 +69,7 @@ class Artikel(object):
         self.abc1 = row.get('abc1', '') # u'A'
         self.abc2 = row.get('abc2', '') # u'A'
         self.abc3 = row.get('abc3', '') # u'A'
-        self.ean = row.get('ean', '') # 4005998146002L
+        self.ean = int(row.get('ean', '')) # wird als float übertragen, Beispiel: 4005998080337.0
         self.status = row.get('status', '')
         self.zolltarifnummer = row.get('zolltarifnummer', '') # u'95010090'
         self.ursprungsland = row.get('ursprungsland', '') # 720
@@ -135,7 +135,7 @@ def get_artikel(artnr=None, ean=None):
     elif ean:
         condition = cond2
     else:
-        raise RuntimeError("Artikel ohne EAN und Artnr nicht möglich.")
+        raise RuntimeError("Artikelabfrage ohne EAN und Artnr nicht möglich.")
 
     rows = get_connection().query(['XAR00'], condition=condition)
     rowcount = len(rows)

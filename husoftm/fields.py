@@ -504,9 +504,9 @@ MAPPINGDIR = {
      # 'FKDTRI': 'Rechnungsdatum/intern',
      # 'FKMJBU': 'Buchungsmonat CJJMM',
      # 'FKFNRM': 'Mandanten-Nummer',
-     # 'FKKDNR': 'Kunden-Nr/Warenempf{nger',
-     # 'FKKDRG': 'Kunden-Nr/Rechnungsempf{nge',
-     # 'FKKDN3': 'Kunden-Nr/Verbraucher',
+     'FKKDNR': 'kundennr_warenempfaenger',
+     #'FKKDRG': 'kundennr_rechnungsempfaenger',
+     #'FKKDN3': 'Kunden-Nr/Verbraucher',
      # 'FKVERB': 'Kunden-Nr/Verband',
      # 'FKSPSL': 'Sprache',
      # 'FKBRAN': 'Branche',
@@ -630,8 +630,8 @@ MAPPINGDIR = {
         # 'FULGPL': 'Lager-Platz',
         'FUMNG': 'menge',
         # 'FUMESL': 'MENGENEINHEIT/STAT.',
-        # 'FUPNET': 'Positions-Netto-Wert',
-        # 'FUPBUT': 'Positions-Brutto-Wert',
+        'FUPNET': 'wert_netto',
+        'FUPBUT': 'wert_brutto',
         # 'FUPORB': 'Positions-Rabatt-Betrag',
         # 'FUPREW': 'Wert/Ek',
         # 'FUPREV': 'Verkaufs-Preis',
@@ -2412,6 +2412,7 @@ DECIMALIZE2 = set(['BUR1', 'BUBUBT', 'BUNEBT', 'BUNEWB', 'BUABZU', 'BUWBBT',
                    'LBPREW', 'LBLWER', 'LBLWAK', 'LBLWKO', 'LBLWRT', 
                    'BPPREW', 'BPPRAK', 'BPPREH', 'BPWRTF', 'BLKURS',
                    'PNPRB',
+                   'FKBRUT', 'FKNETT', 'FUPNET', 'FUPBUT',
                    'SLPREW', 'SLWRTI', 'SLFRBT', 'SLZOBT', 'SLPREW', 'SLLWKO', 'SLLWFR', 'SLLWZO',
                    'WZBUBT', 'WZPREA', 'WZPREW'])
 
@@ -2429,6 +2430,8 @@ DATETIMEDIR = {'LKDTLF': 'LKZTLF', # letzter_lieferschein
                'SKDTAE': 'SKZTAE', # komponenten
                'CKANFD': 'CKANFZ', # XCK00 start
                'CKENDD': 'CKENDZ', # XCK00 ende
+               'FKDTER': 'FKZTER', # Rechnungskopf erfassung_date
+               'FUDTER': 'FUZTER', # Rechnungsposition erfassung_date
                }
 
 # Fields which need padding before beeing used in SQL queries

@@ -51,8 +51,8 @@ def get_rechnung(rechnungsnr):
     if len(kopf) != 1:
         raise RuntimeError('inkonsistente Kopfdaten in AFK00')
     kopf = kopf[0]
-    positionen = get_connection().query(['AFU00'],
-                   condition="FURGNR=%s" % sql_escape(rechnungsnr))
+    positionen = get_connection().query(['AFU00', 'AAT00'],
+                   condition="FURGNR=%s AND FUAUFN=ATAUFN AND FUAUPO=ATAUPO AND ATTART=8" % sql_escape(rechnungsnr))
     return kopf, positionen
 
 class Rechnung(object):

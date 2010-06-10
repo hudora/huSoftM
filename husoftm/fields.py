@@ -332,7 +332,7 @@ MAPPINGDIR = {
            # 'APSTAT': 'Satzstatus',
           },
 
-'AAT00': {# Auftragsnr
+'AAT00': {# Auftrags-Texte
           'ATAUFN': 'auftragsnr',
           'ATAUPO': 'auftragsposition',
           'ATTART': 'textart',
@@ -615,8 +615,8 @@ MAPPINGDIR = {
         'FUFNR': 'firma',
         'FURGNR': 'rechnungsnr',
         # 'FURGNI': 'Intern Rechnungs-Nr.',
-        # 'FUAUFN': 'Auftrags-Nummer',
-        # 'FUAUPO': 'Auftrags-Position',
+        'FUAUFN': 'auftragsnr',
+        'FUAUPO': 'auftragsposition',
         # 'FUPOZU': 'Zusatz-Position',
         # 'FUABT ': 'Abteilung/Auftrag',
         # 'FUKDNR': 'Kunden-Nr/Warenempf{nger',

@@ -9,7 +9,7 @@ Copyright (c) 2009 HUDORA. All rights reserved.
 
 
 from husoftm.connection2 import get_connection
-from husoftm.tools import sql_quote, sql_escape
+from husoftm.tools import sql_quote, sql_escape, pad
 
 
 __revision__ = "$Revision: 5770 $"
@@ -39,9 +39,10 @@ def auftragsnr_to_rechnungsnr(auftragsnr):
 
 def rechnungen_for_kunde(kundennr):
     """Liefert eine Liste mit Rechnungsnummern zurück"""
+    condition = "FKKDNR=%s" % sql_quote(pad('FKKDNR', kundennr))
     rows = get_connection().query(['AFK00'], fields=['FKRGNR'],
-                   condition="FKKDNR = %s" % sql_quote(kundennr))
-    return rows
+                   condition=condition)
+    return [row[0] for row in rows]
 
 
 def get_rechnung(rechnungsnr):

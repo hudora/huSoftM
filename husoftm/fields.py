@@ -514,7 +514,7 @@ MAPPINGDIR = {
      # 'FKDSTK': 'Distrikt',
      # 'FKPLZ ': 'Postleitzahl',
      # 'FKLKZ ': 'L{nderkennzeichen',
-     # 'FKNRKD': 'Kunden-Auftrags-Nummer',
+     'FKNRKD': 'kundenauftragsnr',
      # 'FKDTKD': 'Kunden-Auftrags-Datum',
      # 'FKALS1': 'Alphasortierung/Warenempf{n',
      # 'FKALS2': 'Kennzeichen ZFB',
@@ -2437,4 +2437,5 @@ DATETIMEDIR = {'LKDTLF': 'LKZTLF', # letzter_lieferschein
 # Fields which need padding before beeing used in SQL queries
 PADDINGFIELDS = {
     'AKKDNR': "%8s",
+    'FKKDNR': "%8s",
 }

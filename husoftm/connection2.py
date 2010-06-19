@@ -122,7 +122,7 @@ def _combine_date_and_time(mappings, fieldname, data, fields, row):
     if (timepos and row[timepos] and
         not str(row[timepos]).startswith('9999')): # Zeit = 9999: Unbestimmt
         if len(str(int(data))) == 7:
-            return {'basename': datetime.datetime(*(
+            return {basename: datetime.datetime(*(
                 time.strptime(str(int(data)), '1%y%m%d')[:3]
                 + time.strptime(str(int(row[timepos])), '%H%M%S')[3:6]))}
         else:

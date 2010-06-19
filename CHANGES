@@ -1,3 +1,4 @@
+0.62:   New functions get_rechnung(), rechnungen_for_kunde()
 0.61p3: New function auftraege.find_text()
 0.61p2: Added shipping costs to stapelschnittstelle.py
 0.61p1: ???

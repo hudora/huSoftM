@@ -332,7 +332,7 @@ MAPPINGDIR = {
            # 'APSTAT': 'Satzstatus',
           },
 
-'AAT00': {# Auftragsnr
+'AAT00': {# Auftrags-Texte
           'ATAUFN': 'auftragsnr',
           'ATAUPO': 'auftragsposition',
           'ATTART': 'textart',
@@ -504,9 +504,9 @@ MAPPINGDIR = {
      # 'FKDTRI': 'Rechnungsdatum/intern',
      # 'FKMJBU': 'Buchungsmonat CJJMM',
      # 'FKFNRM': 'Mandanten-Nummer',
-     # 'FKKDNR': 'Kunden-Nr/Warenempf{nger',
-     # 'FKKDRG': 'Kunden-Nr/Rechnungsempf{nge',
-     # 'FKKDN3': 'Kunden-Nr/Verbraucher',
+     'FKKDNR': 'kundennr_warenempfaenger',
+     #'FKKDRG': 'kundennr_rechnungsempfaenger',
+     #'FKKDN3': 'Kunden-Nr/Verbraucher',
      # 'FKVERB': 'Kunden-Nr/Verband',
      # 'FKSPSL': 'Sprache',
      # 'FKBRAN': 'Branche',
@@ -514,7 +514,7 @@ MAPPINGDIR = {
      # 'FKDSTK': 'Distrikt',
      # 'FKPLZ ': 'Postleitzahl',
      # 'FKLKZ ': 'L{nderkennzeichen',
-     # 'FKNRKD': 'Kunden-Auftrags-Nummer',
+     'FKNRKD': 'kundenauftragsnr',
      # 'FKDTKD': 'Kunden-Auftrags-Datum',
      # 'FKALS1': 'Alphasortierung/Warenempf{n',
      # 'FKALS2': 'Kennzeichen ZFB',
@@ -615,8 +615,8 @@ MAPPINGDIR = {
         'FUFNR': 'firma',
         'FURGNR': 'rechnungsnr',
         # 'FURGNI': 'Intern Rechnungs-Nr.',
-        # 'FUAUFN': 'Auftrags-Nummer',
-        # 'FUAUPO': 'Auftrags-Position',
+        'FUAUFN': 'auftragsnr',
+        'FUAUPO': 'auftragsposition',
         # 'FUPOZU': 'Zusatz-Position',
         # 'FUABT ': 'Abteilung/Auftrag',
         # 'FUKDNR': 'Kunden-Nr/Warenempf{nger',
@@ -630,8 +630,8 @@ MAPPINGDIR = {
         # 'FULGPL': 'Lager-Platz',
         'FUMNG': 'menge',
         # 'FUMESL': 'MENGENEINHEIT/STAT.',
-        # 'FUPNET': 'Positions-Netto-Wert',
-        # 'FUPBUT': 'Positions-Brutto-Wert',
+        'FUPNET': 'wert_netto',
+        'FUPBUT': 'wert_brutto',
         # 'FUPORB': 'Positions-Rabatt-Betrag',
         # 'FUPREW': 'Wert/Ek',
         # 'FUPREV': 'Verkaufs-Preis',
@@ -2412,6 +2412,7 @@ DECIMALIZE2 = set(['BUR1', 'BUBUBT', 'BUNEBT', 'BUNEWB', 'BUABZU', 'BUWBBT',
                    'LBPREW', 'LBLWER', 'LBLWAK', 'LBLWKO', 'LBLWRT', 
                    'BPPREW', 'BPPRAK', 'BPPREH', 'BPWRTF', 'BLKURS',
                    'PNPRB',
+                   'FKBRUT', 'FKNETT', 'FUPNET', 'FUPBUT',
                    'SLPREW', 'SLWRTI', 'SLFRBT', 'SLZOBT', 'SLPREW', 'SLLWKO', 'SLLWFR', 'SLLWZO',
                    'WZBUBT', 'WZPREA', 'WZPREW'])
 
@@ -2429,9 +2430,12 @@ DATETIMEDIR = {'LKDTLF': 'LKZTLF', # letzter_lieferschein
                'SKDTAE': 'SKZTAE', # komponenten
                'CKANFD': 'CKANFZ', # XCK00 start
                'CKENDD': 'CKENDZ', # XCK00 ende
+               'FKDTER': 'FKZTER', # Rechnungskopf erfassung_date
+               'FUDTER': 'FUZTER', # Rechnungsposition erfassung_date
                }
 
 # Fields which need padding before beeing used in SQL queries
 PADDINGFIELDS = {
     'AKKDNR': "%8s",
+    'FKKDNR': "%8s",
 }

@@ -3,16 +3,15 @@
 """
 stapelschnittstelle.py - Ansprechen der SoftM Auftrags-Stapelschnittstelle.
 
-ACHTUNG: Die SoftM Stapel-Schnittstelle ist ... dürftig dokumentiert. Das
-bedeutet, dass dieser Code grosse Chancen bietet, nicht wie erwartet zu
-funktionieren. Er ist nur für experimentelle Zwecke geeignet - oder für
-Leute mit starken Nerven. Aber wenn sie schwache Nerven hätten, würden sie
-kein SoftM einsetzen, oder?
+ACHTUNG: Die SoftM Stapel-Schnittstelle ist - dürftig dokumentiert. Das bedeutet, dass dieser Code grosse
+Chancen bietet, nicht wie erwartet zu funktionieren. Er ist nur für experimentelle Zwecke geeignet - oder
+für Leute mit starken Nerven. Aber wenn sie schwache Nerven hätten, würden sie kein SoftM einsetzen, oder?
 
-Die SoftM Stapelschnittstelle auch von SoftM umfangreich genutzt: so ist
-die EDI-Schnittstelle eigentlich nur ein Umsetzer, der die Daten in die
-Stapelschnittstelle schreibt. Mit der Stapelschnittstelle kann man nahezu
-alle Prameter eines Auftrages beschreiben.
+Die SoftM Stapelschnittstelle auch von SoftM umfangreich genutzt: so ist die EDI-Schnittstelle eigentlich
+nur ein Umsetzer, der die Daten in die Stapelschnittstelle schreibt. Mit der Stapelschnittstelle kann man
+nahezu alle Prameter eines Auftrages beschreiben.
+
+In der SoftM-GUI findet sich das ganze in "Stapelschnittstelle Vertrieb (A0425)"
 
 Created by Maximillian Dornseif on 2007-05-16.
 Copyright (c) 2007, 2008, 2010 HUDORA GmbH. All rights reserved.
@@ -21,7 +20,6 @@ Copyright (c) 2007, 2008, 2010 HUDORA GmbH. All rights reserved.
 import datetime
 import decimal
 import huTools.world
-import husoftm.auftraege
 import itertools
 import os
 import random
@@ -29,7 +27,7 @@ import textwrap
 import thread
 import time
 import unittest
-
+import warnings
 from huTools.unicode import deUmlaut
 from husoftm.connection import get_connection
 from husoftm.stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00
@@ -69,7 +67,7 @@ class StapelSerializer(object):
                 if frmt.upper().startswith('A'):
                     fieldlength = int(frmt[1:])
                     felddict[rowid] = felddict[rowid][:fieldlength]
-            
+
             # remove empty fields
             if rowid in felddict and not felddict[rowid]:
                 del felddict[rowid]
@@ -127,8 +125,9 @@ def loesche_vorgang(vorgangsnr):
 
 
 def feststeckende_jobs():
-    """Returns a list of jobs that got stuck in s17e."""
-    rows = get_connection().query('ABK00', fields=['BKKDNR', 'BKVGNR', 'BKNRKD', 'BKKZBA'], condition="BKAUFN = 0 AND BKSTAT <> 'X' AND BKKZBA <> 0")
+    """Returns a list of jobs that got stuck in stapelschnittstelle."""
+    rows = get_connection().query('ABK00', fields=['BKKDNR', 'BKVGNR', 'BKNRKD', 'BKKZBA'],
+                                  condition="BKAUFN = 0 AND BKSTAT <> 'X' AND BKKZBA <> 0")
     fields = ('kundennr', 'vorgangsnr', 'kundenauftragsnr', 'fehlercode')
     return [dict(list(zip(fields, row))) for row in rows]
 
@@ -343,7 +342,7 @@ def _auftrag2records(vorgangsnummer, auftrag):
     # Für Fixtermine die Uhrzeit (oder was immer im Fixterminfeld steht) als Kopftext übertragen und das
     # Fixtermin Flag setzen
     if hasattr(auftrag, 'fixtermin') and auftrag.fixtermin:
-        txt_fixtermin = "FIX: %s" 
+        txt_fixtermin = "FIX: %s"
         if isinstance(auftrag.fixtermin, (datetime.date, datetime.datetime)):
             txt_fixtermin %= auftrag.fixtermin.strftime('%d-%m-%y %H:%M')
         elif isinstance(auftrag.fixtermin, datetime.time):
@@ -367,13 +366,159 @@ def _auftrag2records(vorgangsnummer, auftrag):
     return kopf, positionen, texte, adressen
 
 
-# TODO: das AuftragsFormat - https://cybernetics.hudora.biz/intern/wordpress/2008/09/antville-18807/
-# ist nicht mehr aktuell, wir wollen auf
-# https://github.com/hudora/CentralServices/blob/master/doc/ExtendedOrderProtocol.markdown
-# umstellen. 
 def auftrag2softm(auftrag, belegtexte=None):
     """Schreibt etwas, dass dem AuftragsFormat entspricht in SoftM."""
 
+    warnings.warn("auftrag2softm() is obsolete use extended_order_protocol2softm() instead",
+                  DeprecationWarning)
+    if not belegtexte:
+        belegtexte = []
+    while True:
+        vorgangsnummer = getnextvorgang()
+        get_connection().update_adtastapel(vorgangsnummer)
+        kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
+        uuid = hex((int(time.time() * 10000)
+                    ^ (os.getpid() << 24)
+                    ^ thread.get_ident())
+                    % 0xFFFFFFFFFF).rstrip('L')[2:]
+        kopf.dateifuehrungsschluessel = uuid
+        time.sleep(random.random() / 10.0)
+        if not vorgangsnummer_bekannt(vorgangsnummer):
+            break
+    get_connection().insert_raw(kopf.to_sql())
+    rowcount = get_connection().query('ABK00', fields=['COUNT(*)'],
+                                   condition="BKDFSL=%s" % sql_quote(uuid))[0][0]
+    if rowcount < 1:
+        raise RuntimeError("Internal Server error: insertation into ABK00 failed: "
+                           "uuid=%r\n SQL Statement: %r" % (uuid, kopf.to_sql()))
+    elif rowcount > 1:
+        get_connection().delete('ABK00', 'BKDFSL=%s' % sql_quote(uuid))
+        time.sleep(random.random()/100.0)
+        auftrag2softm(auftrag, belegtexte)
+    else:
+        sql = []
+        for record in positionen + texte + adressen:
+            sql.append(record.to_sql())
+        sql.append(kopf.to_sql())
+        for command in sql:
+            get_connection().insert_raw(command)
+        get_connection().update_raw("UPDATE ABK00 SET BKKZBA=0, BKDFSL='' WHERE BKVGNR=%s" % vorgangsnummer)
+    return vorgangsnummer
+
+
+def _get_attr(obj, key, default=''):
+    """Get an object attribute or an dict key"""
+    ret = getattr(obj, key, None)
+    if (not ret) and hasattr(obj, 'get'):
+        ret = obj.get(key, None)
+    if not ret:
+        ret = default
+    return ret
+
+
+def _cent_to_euro(cent):
+    """Erwartet einen String oder Integer in Cent und gibt einen String zur<C3><BC>ck"""
+    kosten = decimal.Decimal(cent) / 100
+    return str(kosten.quantize(decimal.Decimal('0.01')))
+
+
+def _order2records(vorgangsnummer, order, auftragsart=None, abgangslager=None):
+    """Convert a auftrag into records objects representing AS/400 SQL statements."""
+    # see https://github.com/hudora/CentralServices/blob/master/doc/ExtendedOrderProtocol.markdown
+
+    kopf = Kopf()
+    kopf.vorgang = vorgangsnummer
+    # kundennr Interne Kundennummer. Kann das AddressProtocol erweitern. Wenn eine kundennr angegeben ist
+    # und die per AddressProtocol angegebene Lieferadresse nicht zu der kundennr passt, handelt es sich
+    # um eine abweichende Lieferadresse.
+    kopf.kundennr = '%8s' % _get_attr(order, 'kundennr').split('/')[0]
+    # kundenauftragsnr - Freitext, den der Kunde bei der Bestellung mit angegeben hat, max. 20 Zeichen.
+    kopf.kundenauftragsnr = deUmlaut(_get_attr(order, 'kundenauftragsnr'))[:20]
+    # Ohne bestelldatum holpert es in SoftM
+    kopf.erfassungsdatum = kopf.bestelldatum = date2softm(datetime.date.today())
+
+    # wunschdatum_von und wunschdatum_bis - bilden wir NICHT ab.
+    # anlieferdatum_von und anlieferdatum_bis Wenn das System keine Zeitfenster unterstützt, wird nur
+    # anlieferdatum_von verwendet..
+    if _get_attr(order, 'anlieferdatum_von'):
+        kopf.anliefertermin = date2softm(_get_attr(order, 'anlieferdatum_von'))
+    else:
+        kopf.anliefertermin = date2softm(datetime.date.today()) # FIXME +7 days eventually?
+    if _get_attr(order, 'anlieferdatum_bis'):
+        kopf.kundenwunschtermin = date2softm(_get_attr(order, 'anlieferdatum_bis'))
+    else:
+        kopf.kundenwunschtermin = kopf.anliefertermin
+
+    # versandkosten - Versandkosten kommen in Cent -> umwandeln in Euro
+    if _get_attr(order, 'versandkosten'):
+        kopf.versandkosten = _cent_to_euro(_get_attr(order, 'versandkosten'))
+        if float(kopf.versandkosten):
+            kopf.lieferbedingung = 18
+
+    # absenderadresse - (mehrzeiliger) String, der die Absenderadresse auf Versandpapieren codiert.
+
+    if abgangslager:
+        kopf.abgangslager = abgangslager
+    if auftragsart:
+        kopf.auftragsart = auftragsart
+
+    positionen = []
+    texte = []
+    adressen = []
+    # guid - Eindeutiger ID des Vorgangs, darf niemals doppelt verwendet werden
+    _create_kopftext(texte, vorgangsnummer, "#:guid:%s" % _get_attr(order, 'guid', '**nicht gesetzt**'),
+                     auftragsbestaetigung=0, lieferschein=0, rechnung=0)
+    if _get_attr(order, 'erfasst_von'):
+        _create_kopftext(texte, vorgangsnummer, "erfasst von: %s" % _get_attr(order, 'erfasst_von'),
+                         auftragsbestaetigung=0, lieferschein=0, rechnung=0)
+
+    # infotext_kunde - Freitext, der sich an den Warenempfänger richtet. Kann z.B. auf einem Lieferschein
+    #  angedruckt werden. Der Umbruch des Textes kann durch das Backendsystem beliebig erfolgen, deshalb
+    # sollte der Text keine Zeilenumbrüche beinhalten.
+    if _get_attr(order, 'infotext_kunde'):
+        _create_kopftext(texte, vorgangsnummer, _get_attr(order, 'infotext_kunde'),
+                         auftragsbestaetigung=1, lieferschein=1, rechnung=1)
+
+    ## add Lieferadresse and Rechungsadresse and create eu country code if neccessary
+    #land = _create_addressentries(adressen, vorgangsnummer, auftrag)
+    #if land != 'DE' and huTools.world.in_european_union(land):
+    #    kopf.eu_laendercode = land
+
+    for order_position in _get_attr(order, 'orderlines', None):
+        #_create_positionssatz(positionen, vorgangsnummer, aobj_position, texte)
+        position = Position()
+        position.erfassungsdatum = date2softm(datetime.date.today())
+        positionen.append(position)
+        position.position = len(positionen)
+        position.vorgang = vorgangsnummer
+        position.vorgangsposition = len(positionen)
+        _create_positionstext(textart=8, vorgangsposition=position.vorgangsposition, texte=texte,
+                              vorgangsnummer=vorgangsnummer, text='#:guid:%s' % order_position.guid,
+                            auftragsbestaetigung=0, lieferschein=0, rechnung=0)
+        position.artikel = _get_attr(order_position, 'artnr')
+        position.ean = _get_attr(order_position, 'ean')
+        position.bestellmenge = _get_attr(order_position, 'menge')
+        if not position.bestellmenge:
+            raise RuntimeError("Menge nicht gegeben bei %s/%s" % (position.artikel, position.ean))
+        if (not position.artikel) and (not position.ean):
+            raise RuntimeError("Artnr und EAN nicht gegeben bei %r" % order_position)
+        # orderline/preis - Rechnungs-Preis der Orderline in Cent ohne Mehrwertsteuer.
+        if _get_attr(order_position, 'preis'):
+            position.verkaufspreis = _cent_to_euro(_get_attr(order_position, 'preis'))
+        if _get_attr(order_position, 'infotext_kunde'):
+            _create_positionstext(textart=8, vorgangsposition=position.vorgangsposition, texte=texte,
+                vorgangsnummer=vorgangsnummer, text=_get_attr(order_position, 'infotext_kunde'),
+                auftragsbestaetigung=1, lieferschein=1, rechnung=1)
+    kopf.vorgangspositionszahl = len(positionen)
+    return kopf, positionen, texte, adressen
+
+
+def extended_order_protocol2softm(order, auftragsart=None, abgangslager=None):
+    """Schreibt etwas, dass dem ExtendedOrderProtocol entspricht, in SoftM.
+
+    https://github.com/hudora/CentralServices/blob/master/doc/ExtendedOrderProtocol.markdown"""
+
+    # TODO: check for duplicate guids like this:
     # this should be done by the caller:
     # if kundenauftragsnummer_bekannt(auftragskennzeichen):
     #     print "Auftragskennzeichen %r wurde bereits verwendet." % auftragskennzeichen
@@ -381,17 +526,18 @@ def auftrag2softm(auftrag, belegtexte=None):
     # if not schnittstelle_leer():
     #     print "In der Stapelschnittstelle befinden sich nicht verarbeitete Nachrichten."
     #    return None
-    
-    if not belegtexte:
-        belegtexte = []
-    
+    # oder so:
+    # -    orders = husoftm.auftraege.find_text(guidtext)
+    #    if orders:
+    #        raise RuntimeError('Auftrag mit guid %r bereits vorhanden: %r' 
+    #                            % (order['guid'], orders[0]['auftragsnr']))
+
     while True:
         # SoftM (Mister Hering) suggested updating Adtastapel as soon as possible to avoid
-        # dupes - missing IDs would be no problem.
+        # dupes - missing IDs would be no problem. update_adtastapel() is extremly hairy code
         vorgangsnummer = getnextvorgang()
         get_connection().update_adtastapel(vorgangsnummer)
-
-        kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
+        kopf, positionen, texte, adressen = _order2records(vorgangsnummer, order, auftragsart, abgangslager)
 
         # see http://blogs.23.nu/c0re/stories/18926/ for the aproach we try here to write data into SoftM.
         # But instead of using the date for our token we use the DFSL field
@@ -399,20 +545,17 @@ def auftrag2softm(auftrag, belegtexte=None):
                     ^ (os.getpid() << 24)
                     ^ thread.get_ident())
                     % 0xFFFFFFFFFF).rstrip('L')[2:]
-
         kopf.dateifuehrungsschluessel = uuid
 
         # Do something like "Retransmission Back-Off" on Ethernet for collision avoidance:
         # sleep for a random amount of time
-        time.sleep(random.random() / 10.0)
-
+        time.sleep(random.random() / 456.7)
         #check im somobdy else has been writing to the DB.
         if not vorgangsnummer_bekannt(vorgangsnummer):
             # no, so we can proceed
             break
-
         # else: retry while loop with a new vorgangsnummer
-
+        time.sleep(random.random() / 17.1)
 
     # start writing data into the database
     get_connection().insert_raw(kopf.to_sql())
@@ -424,165 +567,10 @@ def auftrag2softm(auftrag, belegtexte=None):
     elif rowcount > 1:
         # the race condition has hit - remove our entry and retry
         get_connection().delete('ABK00', 'BKDFSL=%s' % sql_quote(uuid))
-        # sleep to avoid deadlocks see http://de.wikipedia.org/wiki/CSMA/CD#Das_Backoff-Verfahren_bei_Ethernet
-        time.sleep(random.random()/100.0)
+        # sleep to avoid deadlocks - http://de.wikipedia.org/wiki/CSMA/CD#Das_Backoff-Verfahren_bei_Ethernet
+        time.sleep(random.random()/13.3)
         # recusively try again
-        auftrag2softm(auftrag, belegtexte)
-    else:
-        sql = []
-        for record in positionen + texte + adressen:
-            sql.append(record.to_sql())
-        sql.append(kopf.to_sql())
-        for command in sql:
-            print command
-            get_connection().insert_raw(command)
-        # remove "dateifuehrungsschluessel" and set recort active
-        get_connection().update_raw("UPDATE ABK00 SET BKKZBA=0, BKDFSL='' WHERE BKVGNR=%s" % vorgangsnummer)
-
-    return vorgangsnummer
-
-
-def _get_attr(obj, key):
-    """Get an object attribute or an dict key"""
-    ret = getattr(obj, key, '')
-    if (not ret) and hasattr(obj, 'get'):
-        ret = obj.get(key, '')
-    return ret
-
-
-def _order2records(vorgangsnummer, order):
-    """Convert a ExtendedOrderProtocol into records objects representing AS/400 SQL statements."""
-    # see https://github.com/hudora/CentralServices/blob/master/doc/ExtendedOrderProtocol.markdown
-    kopf = Kopf()
-    kopf.vorgang = vorgangsnummer
-    # kundennr Interne Kundennummer. Kann das AddressProtocol erweitern. Wenn eine kundennr angegeben ist und
-    # die per AddressProtocol angegebene Lieferadresse nicht zu der kundennr passt, handelt es sich um eine
-    # abweichende Lieferadresse.
-    kopf.kundennr = '%8s' % _get_attr(order, 'kundennr').split('/')[0]
-    # kundenauftragsnr - Freitext, den der Kunde bei der Bestellung mit angegeben hat, ca. 20 Zeichen.
-    kopf.kundenauftragsnr = deUmlaut(_get_attr(order, 'kundenauftragsnr'))[:20] # max 20 Zeichen, sonst gehts nicht
-    # TODO: brauchen wir die beiden daten?
-    # kopf.erfassungsdatum = kopf.bestelldatum = date2softm(datetime.date.today())
-
-    if _get_attr(order, 'auftragsart'):
-        kopf.auftragsart = _get_attr(order, 'auftragsart')
-
-    # wunschdatum_von und wunschdatum_bis - bilden wir NICHT ab.
-    # anlieferdatum_von und anlieferdatum_bis Wenn das System keine Zeitfenster unterstützt, wird nur
-    # anlieferdatum_von verwendet.
-    if _get_attr(order, 'anlieferdatum_von'):
-        kopf.anliefertermin = date2softm(_get_attr(order, 'anlieferdatum_von'))
-    else:
-        kopf.anliefertermin = date2softm(datetime.date.today()) # FIXME +7 days eventually?
-    if _get_attr(order, 'anlieferdatum_bis'):
-        kopf.kundenwunschtermin = date2softm(_get_attr(order, 'anlieferdatum_bis'))
-    else:
-        kopf.kundenwunschtermin = kopf.anliefertermin
-    
-    # versandkosten - Versandkosten kommen in Cent -> umwandeln in Euro
-    if _get_attr(order, 'versandkosten'):
-        kopf.versandkosten = decimal.Decimal(_get_attr(order, 'versandkosten'))
-        kopf.versandkosten /= 100
-        kopf.versandkosten = kopf.versandkosten.quantize(decimal.Decimal('0.12')) # Runden
-        if kopf.versandkosten:
-            kopf.lieferbedingung = ' 18'
-
-    # absenderadresse - (mehrzeiliger) String, der die Absenderadresse auf Versandpapieren codiert.
-
-    if _get_attr(order, 'abgangslager'):
-        kopf.abgangslager = _get_attr(order, 'abgangslager')
-
-    positionen = []
-    texte = []
-    adressen = []
-
-    # guid - Eindeutiger ID des Vorgangs, darf niemals doppelt verwendet werden
-    guidtext = "Referenz: %s" % order['guid']
-    orders = husoftm.auftraege.find_text(guidtext)
-    if orders:
-        raise RuntimeError('Auftrag mit guid %r bereits vorhanden: %r' % (order['guid'],
-                                                                          orders[0]['auftragsnr']))
-
-    _create_kopftext(texte, vorgangsnummer, guidtext, auftragsbestaetigung=0, lieferschein=0, rechnung=0)
-    if _get_attr(order, 'erfasst_von'):
-        _create_kopftext(texte, vorgangsnummer, "erfasst von: %s" % _get_attr(order, 'erfasst_von'),
-                         auftragsbestaetigung=0, lieferschein=0, rechnung=0)
-
-    # infotext_kunde - Freitext, der sich an den Warenempfänger richtet. Kann z.B. auf einem Lieferschein angedruckt werden. Der Umbruch des Textes kann durch das Backendsystem beliebig erfolgen, deshalb sollte der Text keine Zeilenumbrüche beinhalten.
-    if _get_attr(order, 'infotext_kunde'):
-        _create_kopftext(texte, vorgangsnummer, _get_attr(order, 'infotext_kunde'),
-                         auftragsbestaetigung=1, lieferschein=1, rechnung=1)
-
-    ## add Lieferadresse and Rechungsadresse and create eu country code if neccessary
-    #land = _create_addressentries(adressen, vorgangsnummer, auftrag)
-    #if land != 'DE' and huTools.world.in_european_union(land):
-    #    kopf.eu_laendercode = land
-    
-    for order_position in  _get_attr(order, 'orderlines'):
-        #_create_positionssatz(positionen, vorgangsnummer, aobj_position, texte)
-        position = Position()
-        positionen.append(position)
-        position.position = len(positionen)
-        position.vorgang = vorgangsnummer
-        position.vorgangsposition = len(positionen)
-        position.bestellmenge = _get_attr(order_position, 'menge')
-        position.artikel = _get_attr(order_position, 'artnr')
-        position.ean = _get_attr(order_position, 'ean')
-        position.erfassungsdatum = date2softm(datetime.date.today())
-        if _get_attr(order_position, 'infotext_kunde'):
-            _create_positionstext(textart=8, vorgangsposition=position.vorgangsposition, texte=texte,
-                vorgangsnummer=vorgangsnummer, text=_get_attr(order_position, 'infotext_kunde'),
-                auftragsbestaetigung=1, lieferschein=1, rechnung=1)
-        # orderline/guid - Eindeutiger ID der Position. GUID des Auftrags + Positionsnummer funktionieren ganz gut.
-        # orderline/preis - Rechnungs-Preis der Orderline in Cent ohne Mehrwertsteuer.
-    kopf.vorgangspositionszahl = len(positionen)
-    return kopf, positionen, texte, adressen
-
-
-def extended_order_protocol2softm(order):
-    """Schreibt etwas, dass dem ExtendedOrderProtocol entspricht in SoftM.
-    
-    https://github.com/hudora/CentralServices/blob/master/doc/ExtendedOrderProtocol.markdown"""
-
-    while True:
-        # SoftM (Mister Hering) suggested updating Adtastapel as soon as possible to avoid
-        # dupes - missing IDs would be no problem. update_adtastapel() is extremly hairy code
-        vorgangsnummer = getnextvorgang()
-        get_connection().update_adtastapel(vorgangsnummer)
-        kopf, positionen, texte, adressen = _order2records(vorgangsnummer, order)
-
-        # see http://blogs.23.nu/c0re/stories/18926/ for the aproach we try here to write data into SoftM.
-        # But instead of using the date for our token we use the DFSL field
-        uuid = hex((int(time.time() * 10000)
-                    ^ (os.getpid() << 24)
-                    ^ thread.get_ident())
-                    % 0xFFFFFFFFFF).rstrip('L')[2:]
-        kopf.dateifuehrungsschluessel = uuid
-
-        # Do something like "Retransmission Back-Off" on Ethernet for collision avoidance:
-        # sleep for a random amount of time
-        time.sleep(random.random() / 11.0)
-        # check if somebdy else has been writing to the DB.
-        if not vorgangsnummer_bekannt(vorgangsnummer):
-            # no, so we can proceed
-            break
-        # else: retry while loop with a new vorgangsnummer
-        time.sleep(random.random() / 7.0)
-
-    # start writing data into the database
-    get_connection().insert_raw(kopf.to_sql())
-    rowcount = get_connection().query('ABK00', fields=['COUNT(*)'],
-                                   condition="BKDFSL=%s" % sql_quote(uuid))[0][0]
-    if rowcount < 1:
-        raise RuntimeError("Internal Server error: insertion into ABK00 failed: "
-                           "uuid=%r\n SQL Statement: %r" % (uuid, kopf.to_sql()))
-    elif rowcount > 1:
-        # the race condition has hit - remove our entry and retry
-        get_connection().delete('ABK00', 'BKDFSL=%s' % sql_quote(uuid))
-        # sleep to avoid deadlocks see http://de.wikipedia.org/wiki/CSMA/CD#Das_Backoff-Verfahren_bei_Ethernet
-        time.sleep(random.random()/13.0)
-        # recursively try again
-        return extended_order_protocol2softm(order)
+        extended_order_protocol2softm(order, auftragsart, abgangslager)
     else:
         # we finally can insert
         sql = []
@@ -596,6 +584,7 @@ def extended_order_protocol2softm(order):
         get_connection().update_raw("UPDATE ABK00 SET BKKZBA=0, BKDFSL='' WHERE BKVGNR=%s" % vorgangsnummer)
 
     return vorgangsnummer
+
 
 class _MockAuftrag(object):
     """Represents an Auftrag."""
@@ -650,7 +639,7 @@ class _AuftragTests(unittest.TestCase):
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
         kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKNRKD, BKLTFX, BKDTKD,"
             " BKKDNR) VALUES('1','123','1081230','1081231','1','01','0012345','1','1081229','   17200')")
-        
+
         self.assertEqual(kopf.to_sql(), kpf_sql)
         self.assertEqual(positionen, [])
         self.assertEqual(texte[0].to_sql(), "INSERT INTO ABT00 (BTKZLF, BTKZAB, BTTART, BTFNR, BTTX60,"
@@ -676,7 +665,7 @@ class _AuftragTests(unittest.TestCase):
 
     def test_lieferadresse(self):
         """Tests if a Lieferadresse is successfully converted to SQL.
-        
+
         Checks also for field truncation.
         """
         vorgangsnummer = 123
@@ -698,7 +687,7 @@ class _AuftragTests(unittest.TestCase):
         # insert date of today since this will be automatically done by _auftrag2records()
         kpf_sql = kpf_sql.replace('xtodayx', date2softm(datetime.date.today()))
         self.assertEqual(kopf.to_sql(), kpf_sql)
-        
+
         adressen_sql = ("INSERT INTO ABV00 (BVNAM2, BVNAM3, BVKZAD, BVNAM4, BVVGNR, BVSTR, BVLKZ, BVNAME,"
             " BVORT, BVAART) VALUES('name2','name3','1','+49 21 91 / 6 09 12-0','123',"
             "'Nicht Vergessen Weg 1','D','Hier werden nur 40 Zeichen stehen: --->|','Rade','1')")

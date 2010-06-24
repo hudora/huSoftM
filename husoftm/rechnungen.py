@@ -73,7 +73,3 @@ def get_rechnung(rechnungsnr):
         positionen[posnr]['text'] = ' '.join(textlines)
 
     return kopf, positionen.values()
-
-class Rechnung(object):
-    """Highlevel Objekt für Rechnungen"""
-    pass

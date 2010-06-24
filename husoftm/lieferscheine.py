@@ -64,7 +64,27 @@ def kommibelege_for_auftrag(auftragsnr):
     return [Kommibeleg(row['kommissionierbelegnr']) for row in rows]
 
 
-@cs.caching.cache_function(60*60*72) # 4 days
+#@cs.caching.cache_function(60*60*48) # 2 days
+def get_address(lieferscheinnr):
+    """Gibt die zu einem Lieferschein gehörende Adresse zurück"""
+
+    condition = "LKKDNR = KDKDNR AND LKLFSN = %s" % sql_escape(lieferscheinnr)
+    rows = get_connection().query(['ALK00', 'XKD00'], condition=condition)
+    
+    if len(rows) != 1:
+        raise RuntimeError("Probleme bei der Auswahl des Lieferscheins - kein Datensatz mit LKLFSN = %s" % lieferscheinnr)
+    tmp = rows[0]
+    tmp['land'] = land2iso(tmp['laenderkennzeichen'])
+    
+    address = {}
+    for field in 'name1', 'name2', 'name3', 'strasse', 'land', 'plz', 'ort', 'tel', 'fax', 'mobil', 'mail', 'iln':
+        if field in tmp:
+            address[field] = tmp[field]
+    
+    return address
+
+
+@cs.caching.cache_function(60*60*72) # 3 days
 def kbpos2artnr(komminr, posnr):
     """Gibt die Artikelnummer zu einer bestimmten Position eines Kommissionierbelegs zurück."""
     rows = get_connection().query('ALN00', fields=['LNARTN'],

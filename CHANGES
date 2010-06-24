@@ -1,3 +1,5 @@
+0.63:   New function husoftm.lieferscheine.get_address(lieferscheinnr)
+0.62p1: rechnungen_for_kunde: keyword argument 'mindate'
 0.62:   New functions get_rechnung(), rechnungen_for_kunde(), 
         extended_order_protocol2softm() replaces auftrag2softm()
 0.61p3: New function auftraege.find_text()

@@ -41,7 +41,7 @@ def rechnungen_for_kunde(kundennr, mindate=None):
     """Liefert eine Liste mit Rechnungsnummern zurück"""
     conditions = ["FKKDNR=%s" % sql_quote(pad('FKKDNR', kundennr))]
     if mindate:
-        conditions.append("FKDTER > %s" % date2softm(mindate))
+        conditions.append("FKDTER >= %s" % date2softm(mindate))
     rows = get_connection().query(['AFK00'], fields=['FKRGNR'],
                    condition=" AND ".join(conditions))
     return [row[0] for row in rows]

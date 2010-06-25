@@ -394,7 +394,7 @@ def auftrag2softm(auftrag, belegtexte=None):
     elif rowcount > 1:
         get_connection().delete('ABK00', 'BKDFSL=%s' % sql_quote(uuid))
         time.sleep(random.random()/100.0)
-        auftrag2softm(auftrag, belegtexte)
+        return auftrag2softm(auftrag, belegtexte)
     else:
         sql = []
         for record in positionen + texte + adressen:
@@ -570,7 +570,7 @@ def extended_order_protocol2softm(order, auftragsart=None, abgangslager=None):
         # sleep to avoid deadlocks - http://de.wikipedia.org/wiki/CSMA/CD#Das_Backoff-Verfahren_bei_Ethernet
         time.sleep(random.random()/13.3)
         # recusively try again
-        extended_order_protocol2softm(order, auftragsart, abgangslager)
+        return extended_order_protocol2softm(order, auftragsart, abgangslager)
     else:
         # we finally can insert
         sql = []

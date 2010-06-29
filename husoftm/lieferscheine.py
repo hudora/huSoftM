@@ -77,7 +77,7 @@ def get_address(lieferscheinnr):
     tmp['land'] = land2iso(tmp['laenderkennzeichen'])
     
     address = {}
-    for field in 'name1', 'name2', 'name3', 'strasse', 'land', 'plz', 'ort', 'tel', 'fax', 'mobil', 'mail', 'iln':
+    for field in 'kundennr', 'name1', 'name2', 'name3', 'strasse', 'land', 'plz', 'ort', 'tel', 'fax', 'mobil', 'mail', 'iln':
         if field in tmp:
             address[field] = tmp[field]
     

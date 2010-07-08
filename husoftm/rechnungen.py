@@ -51,8 +51,10 @@ def get_rechnung(rechnungsnr):
     """Liefert ein Tupel aus Rechnungskopf und den Positionen"""
     kopf = get_connection().query(['AFK00'],
                    condition="FKRGNR = %s" % sql_escape(rechnungsnr))
-    if len(kopf) != 1:
-        raise RuntimeError('inkonsistente Kopfdaten in AFK00')
+    if len(kopf) < 1:
+        raise RuntimeError('inkonsistente Kopfdaten in AFK00: %r' % kopf)
+    if len(kopf) > 1:
+        print 'warning: inkonsistente Kopfdaten in AFK00: FKRGNR = %s' % rechnungsnr
     kopf = kopf[0]
     # TODO: kopftexte mit aus der Datenbank lesen, um z.B. den '#:guid:' zu ermitteln
     postmp = get_connection().query(['AFU00', 'AAT00'],

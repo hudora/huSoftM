@@ -457,7 +457,7 @@ def _order2records(vorgangsnummer, order, auftragsart=None, abgangslager=None):
     if _get_attr(order, 'versandkosten'):
         kopf.versandkosten = _cent_to_euro(_get_attr(order, 'versandkosten'))
         if float(kopf.versandkosten):
-            kopf.lieferbedingung = 18
+            kopf.lieferbedingung = ' 18'
 
     # absenderadresse - (mehrzeiliger) String, der die Absenderadresse auf Versandpapieren codiert.
 
@@ -1214,7 +1214,7 @@ class _OrderTests(unittest.TestCase):
         kopf, positionen, texte, adressen = _order2records(vorgangsnummer, order)
         heute = date2softm(datetime.date.today())
         kpf_sql = ("INSERT INTO ABK00 (BKABT, BKDTER, BKDTLT, BKDTKW, BKVSK , BKSBNR, BKKZTF, BKVGNR, BKVGPO, BKFNR, BKDTKD, BKKDNR, BKX3LB) "
-                   "VALUES('1','%s','1100303','1100303','19.50','1','1','123','2','01','%s','   17200','18')") % (heute, heute)
+                   "VALUES('1','%s','1100303','1100303','19.50','1','1','123','2','01','%s','   17200',' 18')") % (heute, heute)
         self.assertEqual(kopf.to_sql(), kpf_sql)
 
     def test_abgangslager_auftragsart(self):

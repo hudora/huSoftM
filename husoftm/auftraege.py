@@ -148,3 +148,15 @@ def find_text(text):
     """
     rows = get_connection().query('AAT00', fields=['ATTX60', 'ATAUFN'], condition="ATTX60 LIKE %s" % sql_quote("%%%s%%" % text))
     return rows
+
+
+def get_guid(auftragsnr):
+    """
+    Gibt den GUID zu einer Auftragsnr zurück, sofern vorhanden.
+    """
+    condition = "ATTX60 LIKE %s AND ATAUFN = %s AND ATAUPO = 0 AND ATTART = 8" % (sql_quote("#:guid:%%"),
+                                                                                  sql_quote(auftragsnr))
+    rows = get_connection().query('AAT00', fields=['ATTX60'], condition=condition)
+    if rows:
+        return rows[0][0].replace('#:guid:', '')
+    return ''

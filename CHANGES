@@ -1,3 +1,4 @@
+0.64p3: neue Funktion artikel.verkaufspreis
 0.64p2: neue Funktion auftraege.get_guid() - GUID zu einem Auftrag ermitteln
 0.64p1: extended_order_protocol2softm nutzt zusaetzliche Lieferadressen
 0.64:   ?

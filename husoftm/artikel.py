@@ -9,9 +9,10 @@ Copyright (c) 2007, 2009, 2010 HUDORA GmbH. All rights reserved.
 
 from decimal import Decimal
 from husoftm.connection2 import get_connection, as400_2_int
-from husoftm.tools import sql_quote
+from husoftm.tools import sql_quote, date2softm
 import cs.caching as caching
-import husoftm
+import datetime
+import husoftm.artikel
 import re
 import unittest
 import warnings
@@ -24,7 +25,56 @@ def _auf_zwei_stellen(floatnum):
     0.33
     """
     return Decimal(str(floatnum)).quantize(Decimal(10) ** -2)
+
+
+def verkaufspreis(artnr, kundennr, bestelldatum=datetime.date.today()):
+    """
+    Verkaufspreis in Abh. von kundennr und artnr ermitteln.
+
+    Höchste Priorität hat der für einen Kunden hinterlegt Preis.
+    Zweithöchste Prio hat der für die Preisliste (Kundengruppe) hinterlegte Preis
+    Niedrigste Prio hat der Listenpreis aus den Artikelstammdaten.
+
+    Rückgabe ist ein dict mit Preis und Herkunft des Preises.
+
+    >>> verkaufspreis('04711', 99954)
+    {'preis': Decimal('14.00'), 'herkunft': 'Preisliste 95'}
+
+    >>> verkaufspreis('04711', 98000)
+    {'preis': Decimal('13.65'), 'herkunft': 'Listenpreis'}
+
+    >>> verkaufspreis('04711', 94763)
+    {'preis': Decimal('13.00'), 'herkunft': 'Kundenpreis'}
     
+    """
+
+    # Kundennr als Zeichenkette
+    kundennr_str = sql_quote("%8s" % int(kundennr))
+    date_str = sql_quote(date2softm(bestelldatum))
+    artnr_str = sql_quote(artnr)
+
+    # 1. Preis für Kunde hinterlegt?
+    condition=("PNSANR=PRSANR and PRANW='A' and PRSTAT=' ' and PNSTAT=' ' AND "
+               "PRARTN = %s and PRDTBI >= %s AND PRDTVO <= %s" % (artnr_str, date_str, date_str))
+
+    condition_kunde = condition + " AND PRKDNR = %s" % kundennr_str
+    rows = get_connection().query(['XPN00', 'XPR00'], ordering='PRDTVO', condition=condition_kunde)
+
+    if rows:
+        return dict(preis=rows[0]['preis'], herkunft='Kundenpreis')
+
+    # 2. Preis aus Preislistennr. des Kunden ermitteln
+    kdgruppe = get_connection().query('XXA00', fields='XAKGRP', condition='XAKDNR = %s' % kundennr_str)
+    if kdgruppe:
+        kdgruppe = kdgruppe[0][0]
+        condition_gruppe = condition + " AND PRPRLK = %s" % sql_quote(kdgruppe)
+        rows = get_connection().query(['XPN00', 'XPR00'], ordering='PRDTVO', condition=condition_gruppe)
+        if rows:
+            return dict(preis=row[0]['preis'], herkunft='Preisliste %s' % row[0]['preisliste_kunde'])
+
+    # 3. Listenpreis aus Artikelstammdaten
+    return dict(preis=preis(artnr), herkunft='Listenpreis')
+
 
 def buchdurchschnittspreis(artnr):
     """Gibt den (aktuellen) Buchdurchschnittspreis für einen Artikel zurück.

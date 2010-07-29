@@ -2039,13 +2039,13 @@ MAPPINGDIR = {
     # 'PRANW1': 'Preismodul',
     'PRSANR': 'satznr_xpn00',
     # 'PRKTYP': 'Konditionstyp',
-    # 'PRKDNR': 'Kunde',
+    'PRKDNR': 'kunde',
     'PRARTN': 'artnr',
     'PRLINR': 'lieferant',
     # 'PRPROB': 'Objekt',
     # 'PRPROJ': 'Projekt',
     # 'PRVRT': 'Vertreter',
-    # 'PRPRLK': 'Preisliste Kunde',
+    'PRPRLK': 'preisliste_kunde',
     # 'PRPRLL': 'Preisliste Lieferant',
     #'PRPGRP': 'Preisgruppe Vertrieb',
     # 'PRPGRL': 'Preisgruppe Einkauf',
@@ -2142,7 +2142,7 @@ MAPPINGDIR = {
         # 'XASPSL': Sprache
         # 'XAWSL ': W{hrungs-Kennzeichen
         # 'XAFGRP': Firmen-Gruppe
-        # 'XAKGRP': Kunden-Gruppe
+        'XAKGRP': 'kunden_gruppe', # Preisliste
         # 'XALGRP': Lieferanten-Gruppe
         # 'XAISIC': ISIC-Schl}ssel
         # 'XARPMK': RPM-Kreis

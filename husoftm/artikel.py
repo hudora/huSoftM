@@ -70,7 +70,7 @@ def verkaufspreis(artnr, kundennr, bestelldatum=datetime.date.today()):
         condition_gruppe = condition + " AND PRPRLK = %s" % sql_quote(kdgruppe)
         rows = get_connection().query(['XPN00', 'XPR00'], ordering='PRDTVO', condition=condition_gruppe)
         if rows:
-            return dict(preis=row[0]['preis'], herkunft='Preisliste %s' % row[0]['preisliste_kunde'])
+            return dict(preis=rows[0]['preis'], herkunft='Preisliste %s' % rows[0]['preisliste_kunde'])
 
     # 3. Listenpreis aus Artikelstammdaten
     return dict(preis=preis(artnr), herkunft='Listenpreis')

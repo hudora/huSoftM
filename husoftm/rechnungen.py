@@ -38,7 +38,11 @@ def auftragsnr_to_rechnungsnr(auftragsnr):
 
 
 def rechnungen_for_kunde(kundennr):
-    """Liefert eine Liste mit Rechnungsnummern zurück"""
+    """Liefert eine Liste mit Rechnungsnummern zurück.
+    
+    Dies sind allerdings nur Rechnungen, die aus der Warenwirtschaft faktiuriert wurden. 'Rechnungen'
+    (eigentlich mauell erstellte offenene Forderungen) aus der Buchhaltung sind hier nicht berücksichtigt."""
+    
     condition = "FKKDNR=%s" % sql_quote(pad('FKKDNR', kundennr))
     rows = get_connection().query(['AFK00'], fields=['FKRGNR'],
                    condition=condition)

@@ -64,7 +64,7 @@ def kommibelege_for_auftrag(auftragsnr):
     return [Kommibeleg(row['kommissionierbelegnr']) for row in rows]
 
 
-@cs.caching.cache_function(60*60*72) # 4 days
+@cs.caching.cache_function(60*60*72) # 3 days
 def kbpos2artnr(komminr, posnr):
     """Gibt die Artikelnummer zu einer bestimmten Position eines Kommissionierbelegs zurück."""
     rows = get_connection().query('ALN00', fields=['LNARTN'],
@@ -115,59 +115,57 @@ class Lieferschein(object):
     def _read_from_softm(self, lsnr):
         """Basierend auf der ALK00 wird ein Datensatz aus allen verwandten Tabellen extrahiert."""
         
-        rows = get_connection().query('ALK00', condition=self.condition % lsnr)
+        # Lieferscheinkopf JOIN Kundenadresse JOIN Auftragskopf um die Anzahl der Queries zu minimieren
+        conditions = [self.condition % lsnr, "LKKDNR = KDKDNR", "LKAUFS = AKAUFN"]        
+        rows = get_connection().query(['ALK00', 'AAK00', 'XKD00'], condition=" AND ".join(conditions))
         if len(rows) != 1:
             raise RuntimeError("Probleme bei der Auswahl des Lieferscheins - kein Datensatz mit %s" %
                                 (self.condition % lsnr))
-        lieferschein = rows[0]
-
-        set_attributes(lieferschein, self)
+        set_attributes(rows[0], self)
         
-        pos_key = self.satznr
-        if self.bezogener_kopf:
-            pos_key = self.bezogener_kopf
-        # positionen lesen
-        self.positionen = []
-        rows = get_connection().query('ALN00', condition="LNSANK = %d" % int(pos_key))
-        
-        for row in rows:
-            position = Lieferscheinposition()
-            set_attributes(row, position)
-            #position.menge = position.menge # ???
-            #position.artnr = position.artnr # ???
-            position.anfangstext, position.endetext = self._get_pos_texte(position.auftrags_position)
-            self.positionen.append(position)
-        
-        self._get_lieferadresse()
-        self._get_abweichendelieferadresse()
-        self._get_texte()
-        
-        # nach dem https://cybernetics.hudora.biz/projects/wiki/AddressProtocol Felder setzen
-        self.name1 = self.lieferadresse.name1
-        self.name2 = self.lieferadresse.name2
-        self.name3 = self.lieferadresse.name3
-        self.strasse = self.lieferadresse.strasse
-        self.land = land2iso(self.lieferadresse.laenderkennzeichen)
-        self.plz = self.lieferadresse.plz
-        self.ort = self.lieferadresse.ort
-        
-        
-        # Read auftragsnr_kunde
-        rows = get_connection().query('AAK00', condition="AKAUFN='%d'" % (int(self.auftragsnr), ))
-        if len(rows) != 1:
-            raise RuntimeError("Problems on finding auftragsnr_kunde")
-        self.auftragsnr_kunde = rows[0]["auftragsnr_kunde"]
-        
-        self.anlieferdatum = rows[0]['liefer_date']
+        self.anlieferdatum = self.liefer_date
         self.anlieferdatum_min = self.anlieferdatum_max = self.anlieferdatum
-        if rows[0]['kundenwunsch_date']:
-            self.anlieferdatum_max = rows[0]['kundenwunsch_date']
+
+        if self.kundenwunsch_date:
+            self.anlieferdatum_max = self.kundenwunsch_date
         
-        self.art = rows[0]['art']
-        if rows[0]['fixtermin']:
-            self.fixtermin = True
-        else:
-            self.fixtermin = False
+        self.fixtermin = bool(self.fixtermin)
+        
+        self.pos_key = self.satznr
+        if self.bezogener_kopf:
+            self.pos_key = self.bezogener_kopf
+        
+        # Property für delayed execution
+        self._positionen = None
+        self._infotext_kunde = None
+        
+        self.lieferadresse = Adresse()
+        self._get_abweichendelieferadresse()
+
+        # nach dem https://cybernetics.hudora.biz/projects/wiki/AddressProtocol Felder setzen
+        self.lieferadresse.name1 = self.name1
+        self.lieferadresse.name2 = self.name2
+        self.lieferadresse.name3 = self.name3
+        self.lieferadresse.strasse = self.strasse
+        self.lieferadresse.land = self.land = land2iso(self.laenderkennzeichen)
+        self.lieferadresse.plz = self.plz
+        self.lieferadresse.ort = self.ort
+
+    @property
+    def positionen(self):
+        """Liste der Lieferscheinpositionen"""
+        # TODO: JOIN mit Texten
+        if self._positionen is None:
+            
+            self._positionen = []
+            rows = get_connection().query('ALN00', condition="LNSANK = %d" % int(self.pos_key))
+            for row in rows:
+                position = Lieferscheinposition()
+                set_attributes(row, position)
+                position.anfangstext, position.endetext = self._get_pos_texte(position.auftrags_position)
+                self._positionen.append(position)
+                
+        return self._positionen
 
     def _get_pos_texte(self, pos):
         """Positionsanfangs- und Endetexte als string zurückgeben."""
@@ -191,48 +189,18 @@ class Lieferschein(object):
         endetext = '\n'.join([entry[1] for entry in endetext])
         return anfangstext, endetext
 
-    def _get_texte(self):
-        """Texte zu einem Lieferschein extrahieren"""
-        self.anfangstext, self.endetext = self._get_pos_texte(pos=0)
-        self.infotext_kunde = '\n'.join([self.anfangstext, self.endetext]).strip()
-
-    def _get_lieferadresse(self):
-        """'Normale' Lieferadresse zu einem Lieferschein extrahieren."""
-        # Lieferadresse lesen, LIKE ist wegen diverser SQL issues nötig
-        rows = get_connection().query('XKD00', condition="KDKDNR LIKE '%s'" %
-                               ('%' + unicode(int(self.warenempfaenger)), ))
-        if len(rows) != 1:
-            raise RuntimeError("Probleme bei der Auswahl der Lieferadresse")
-        self.lieferadresse = Adresse()
-        # bsp fuer kundennr 83000:
-        # row = {'adressdatei_id': 123665288,
-        # 'aenderung_date': datetime.date(2008, 10, 27),
-        # 'erfassung_date': datetime.date(2004, 12, 1),
-        # 'fax': u'+49 39954 360229',
-        # 'kundengruppe_id': u'20',
-        # 'kundennr': u'83000',
-        # 'laenderkennzeichen': u'D',
-        # 'mail': u'cs@nettosupermarkt.de',
-        # 'mobil': u'',
-        # 'name1': u'NETTO Supermarkt GmbH & Co. OHG',
-        # 'name2': u'',
-        # 'name3': u'',
-        # 'name4': u'',
-        # 'ort': u'Stavenhagen',
-        # 'plz': u'17153',
-        # 'postfach': u'',
-        # 'postfach_plz': u'',
-        # 'sortierfeld': u'NETTO  STA',
-        # 'strasse': u'Industriegebiet - Preezer Str. 22',
-        # 'tel': u'+49 39954 360202',
-        # 'url': u''}
-        set_attributes(rows[0], self.lieferadresse)
+    @property
+    def infotext_kunde(self):
+        """Texte zu einem Lieferschein"""
+        if self._infotext_kunde is None:        
+            self.anfangstext, self.endetext = self._get_pos_texte(pos=0)
+            self._infotext_kunde = '\n'.join([self.anfangstext, self.endetext]).strip()
+        return self._infotext_kunde
     
     def _get_abweichendelieferadresse(self):
         """Abweichende Lieferadresse wenn vorhanden extrahieren."""
-        # Wenn eine gesonderte Lieferadresse angegeben ist, self.lieferadresse damit überschreiben
-        rows = get_connection().query('XAD00',
-                                      condition="ADAART=1 AND ADRGNR='%d' " % int(self.auftragsnr))
+        # Wenn eine gesonderte Lieferadresse angegeben ist, Adresse damit überschreiben
+        rows = get_connection().query('XAD00', condition="ADAART=1 AND ADRGNR='%d' " % int(self.auftragsnr))
         if len(rows) > 1:
             raise RuntimeError("Probleme bei der Auswahl der Lieferadresse")
         elif len(rows) == 1:
@@ -247,13 +215,7 @@ class Lieferschein(object):
             #  'ort': u'Wustermark',
             #  'plz': u'14641',
             #  'strasse': u'Magdeburger Str. 2'}
-            set_attributes(row, self.lieferadresse)
-            
-            # Diese felder nur füllen wen eine gesonderte Lieferadresse angegeben ist.
-            self.tel = self.lieferadresse.tel
-            self.fax = self.lieferadresse.fax
-            self.mobil = self.lieferadresse.mobil
-            self.email = self.lieferadresse.mail
+            set_attributes(row, self)
     
     def __unicode__(self):
         return u"SL%d, %d Positionen, %r" % (self.lieferscheinnr, len(self.positionen), self.liefer_date)

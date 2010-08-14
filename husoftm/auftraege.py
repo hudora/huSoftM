@@ -36,7 +36,7 @@ AUFTRAGSARTEN = {
 
 
 def auftragsart(art):
-    return AUFTRAGSARTEN[art]
+    return AUFTRAGSARTEN.get(art, 'Unbekannt')
 
 
 def auftraege(mindate=None, maxdate=None, additional_conditions=None, limit=None):
@@ -100,10 +100,13 @@ def auftraege_for_kunde(kundennr, limit=None):
     return rows
 
 
-def auftraege_for_artnr(artnr, limit=None):
+def auftraege_for_artnr(artnr, additional_conditions=None, limit=None):
     """Alle Aufträge zu einer Artikelnummer"""
-    condition = "AAK00.AKAUFN = ALN00.LNAUFN AND ALN00.LNARTN=%s" % sql_quote(artnr)
-    rows = get_connection().query(['AAK00', 'ALN00'], fields=['AAK00.*'], condition=condition,
+    conditions = ['AAK00.AKAUFN = ALN00.LNAUFN', 'ALN00.LNARTN=%s' % sql_quote(artnr)]
+    if additional_conditions:
+        conditions.extend(additional_conditions)
+    condition = " AND ".join(conditions)
+    rows = get_connection().query(['AAK00', 'ALN00'], condition=condition,
                                   ordering=['AKAUFN DESC', 'AKDTLT'], limit=limit)
     return rows
 
@@ -145,3 +148,15 @@ def find_text(text):
     """
     rows = get_connection().query('AAT00', fields=['ATTX60', 'ATAUFN'], condition="ATTX60 LIKE %s" % sql_quote("%%%s%%" % text))
     return rows
+
+
+def get_guid(auftragsnr):
+    """
+    Gibt den GUID zu einer Auftragsnr zurück, sofern vorhanden.
+    """
+    condition = "ATTX60 LIKE %s AND ATAUFN = %s AND ATAUPO = 0 AND ATTART = 8" % (sql_quote("#:guid:%%"),
+                                                                                  sql_quote(auftragsnr))
+    rows = get_connection().query('AAT00', fields=['ATTX60'], condition=condition)
+    if rows:
+        return rows[0][0].replace('#:guid:', '')
+    return ''

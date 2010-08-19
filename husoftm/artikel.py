@@ -76,7 +76,7 @@ def verkaufspreis(artnr, kundennr, bestelldatum=datetime.date.today()):
     return dict(preis=preis(artnr), herkunft='Listenpreis')
 
 
-@memoize
+@decorators.memoize
 def buchdurchschnittspreis(artnr):
     """Gibt den (aktuellen) Buchdurchschnittspreis für einen Artikel zurück.
     
@@ -91,7 +91,7 @@ def buchdurchschnittspreis(artnr):
         return Decimal()
 
 
-@memoize
+@decorators.memoize
 def preis(artnr):
     """Gibt den (aktuellen) Listenpreis für einen Artikel zurück.
     

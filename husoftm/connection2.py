@@ -133,6 +133,9 @@ def _combine_date_and_time(mappings, fieldname, data, fields, row):
 class MoftSconnection(object):
     """Represents an connection which can execute SQL on the iSeries-AS/400."""
     
+    def __init__(self, tag=''):
+        self.tag = tag.strip().replace(' ', '').replace('/', '')
+    
     def _get_tablename(self, name):
         """Generates the Name of a Table on the AS/400."""
         
@@ -234,7 +237,10 @@ class MoftSconnection(object):
         param = urllib.quote(query)
         conn = httplib.HTTPConnection("odbcbridge.local.hudora.biz:8000")
         # conn.set_debuglevel(5)
-        conn.request("GET", "/select?query=" + param)
+        if self.tag:
+            conn.request("GET", "/select?tag=%s&query=%s" % (urllib.quote(self.tag), param))
+        else:
+            conn.request("GET", "/select?query=%s" % param)
         response = conn.getresponse()
         if response.status != 200:
             errorinfo = response.read()
@@ -274,10 +280,10 @@ class MoftSconnection(object):
         raise NotImplementedError
     
 
-def get_connection():
+def get_connection(calltag):
     """Get a MoftSconnection Object. Meant to one day introduce connection pooling."""
-    
-    return MoftSconnection()
+
+    return MoftSconnection(tag=calltag)
 
 if __name__ == '__main__':
     failure_count, test_count = doctest.testmod()

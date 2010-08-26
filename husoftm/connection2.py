@@ -14,6 +14,7 @@ import doctest
 import logging
 import time
 import httplib
+import os
 import urllib
 import simplejson as json
 import sys
@@ -98,12 +99,12 @@ def _fix_field(data, feldname):
         return Decimal(str(data)).quantize(Decimal(10) ** -2)
     elif isinstance(data, unicode): # fix strings
         # due to various levels of braindamage in various programs we get unicode objects with latin-1
-        # strings in them. So we first force unocode() -> str() and then decode to unicse
+        # strings in them. So we first force unicode() -> str() and then decode to unicode
         try:
             data = data.decode('latin-1')
         except UnicodeEncodeError:
             rawdata = repr(data).strip('u')
-            data = eval(rawdata) # this allows the odbc_bridge to 0wn us
+            data = eval(rawdata, {}, {}) # this allows the odbc_bridge to 0wn us
             data = data.decode('latin-1')
         return data.strip()
     else:
@@ -132,6 +133,10 @@ def _combine_date_and_time(mappings, fieldname, data, fields, row):
 
 class MoftSconnection(object):
     """Represents an connection which can execute SQL on the iSeries-AS/400."""
+    
+    def __init__(self, tag=None, host="odbcbridge.local.hudora.biz:8000"):
+        self.tag = tag
+        self.host = host
     
     def _get_tablename(self, name):
         """Generates the Name of a Table on the AS/400."""
@@ -231,10 +236,13 @@ class MoftSconnection(object):
         return self._execute_query(' '.join(querystr), querymappings, fields)
     
     def _select(self, query):
-        param = urllib.quote(query)
-        conn = httplib.HTTPConnection("odbcbridge.local.hudora.biz:8000")
+        conn = httplib.HTTPConnection(self.host)
         # conn.set_debuglevel(5)
-        conn.request("GET", "/select?query=" + param)
+        args = {'query': query} #urllib.quote(query)}
+        if self.tag:
+            args['tag'] = self.tag
+        conn.request("GET", "/select?" + urllib.urlencode(args))
+        
         response = conn.getresponse()
         if response.status != 200:
             errorinfo = response.read()
@@ -276,8 +284,7 @@ class MoftSconnection(object):
 
 def get_connection():
     """Get a MoftSconnection Object. Meant to one day introduce connection pooling."""
-    
-    return MoftSconnection()
+    return MoftSconnection(tag=os.environ.get('HUSOFTM_TAG'))
 
 if __name__ == '__main__':
     failure_count, test_count = doctest.testmod()

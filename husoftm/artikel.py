@@ -12,11 +12,11 @@ from husoftm.connection2 import get_connection, as400_2_int
 from husoftm.tools import sql_quote, date2softm
 import cs.caching as caching
 import datetime
-import husoftm.artikel
 import re
 import unittest
 import warnings
-
+import huTools.decorators as decorators
+import copy
 
 def _auf_zwei_stellen(floatnum):
     """Converts a float to a Decimal() object with two digits precision.
@@ -76,6 +76,7 @@ def verkaufspreis(artnr, kundennr, bestelldatum=datetime.date.today()):
     return dict(preis=preis(artnr), herkunft='Listenpreis')
 
 
+@decorators.memoize
 def buchdurchschnittspreis(artnr):
     """Gibt den (aktuellen) Buchdurchschnittspreis für einen Artikel zurück.
     
@@ -90,6 +91,7 @@ def buchdurchschnittspreis(artnr):
         return Decimal()
 
 
+@decorators.memoize
 def preis(artnr):
     """Gibt den (aktuellen) Listenpreis für einen Artikel zurück.
     
@@ -262,38 +264,27 @@ def komponentenaufloesung(mengenliste):
             for row in rows:
                 ret.append((menge * row['menge_im_set'], row['komponenten_artnr']))
     return ret
-    
 
-# TODO: do we need KomponentenResolver() and komponentenaufloesung?
 
-class KomponentenResolver(object):
+def komponentenaufloesung_order(order):
+    """L<C3><B6>st Artikel in ihre Komponenten auf, wie komponentenaufloesung() arbeitet aber mit Objekten
+      nach dem VerySimpleOrderProtocol."""
     
-    def __init__(self):
-        self.cache = {}
-    
-    def fill_cache(self):
-        # TODO
-        rows = get_connection().query('ASK00', fields=['SKARTN', 'SKLFNR', 'SKKART', 'SKMENG'])
-        for row in rows:
-            if row['artnr'] not in self.cache:
-                self.cache[row['artnr']] = []
-            self.cache[row['artnr']].append(row)
-    
-    def resolve(self, mengenliste):
-        warnings.warn("KomponentenResolver.resolve() is deprecated use komponentenaufloesung()",
-                      DeprecationWarning, stacklevel=2) 
-        ret = []
-        if not self.cache:
-            self.fill_cache()
-        for menge, artnr in mengenliste:
-            if artnr not in self.cache:
-                # kein Setartikel
-                ret.append((menge, artnr))
-            else:
-                for row in self.cache.get(artnr, []):
-                    ret.append((menge * row['menge_im_set'], row['komponenten_artnr']))
-        return ret
-    
+    neworderlines = []
+    for orderline in order.orderlines:
+        neu = komponentenaufloesung([(orderline.menge, orderline.artnr)])
+        if len(neu) == 1:
+            neworderlines.append(orderline)
+        else:
+            print "!!!", neu
+            for menge, artnr in neu:
+                neworderline = copy.copy(orderline)
+                neworderline.menge = menge
+                neworderline.artnr = artnr
+                neworderlines.append(neworderline)
+    order.orderlines = neworderlines
+    return order
+
 
 def get_umschlag(artnr):
     """Gibt aufgeschlüsselt nach Datum zurück, wie viel Einheiten fakturiert wurden.

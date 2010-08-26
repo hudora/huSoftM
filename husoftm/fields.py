@@ -2241,7 +2241,7 @@ MAPPINGDIR = {
         'LBINFO': 'info',
         # 'LBART ': 'art', # bisher 0 und 1 beobachtet
         'LBBTYP': 'typ',
-        'LBDFSL': 'dateifuehrungsschluessel',
+        #'LBDFSL': 'dateifuehrungsschluessel',
         'LBSTAT': 'satzstatus',
         'LBSAN2': 'bezogene_bewegung',
         'LBSANR': 'satznummer',

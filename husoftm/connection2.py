@@ -280,7 +280,7 @@ class MoftSconnection(object):
         raise NotImplementedError
     
 
-def get_connection(calltag):
+def get_connection(calltag=''):
     """Get a MoftSconnection Object. Meant to one day introduce connection pooling."""
 
     return MoftSconnection(tag=calltag)

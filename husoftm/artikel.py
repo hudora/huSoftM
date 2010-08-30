@@ -278,7 +278,7 @@ def komponentenaufloesung_order(order):
         else:
             print "!!!", neu
             for menge, artnr in neu:
-                neworderline = copy.copy(orderline)
+                neworderline = copy.deepcopy(orderline)
                 neworderline.menge = menge
                 neworderline.artnr = artnr
                 neworderlines.append(neworderline)

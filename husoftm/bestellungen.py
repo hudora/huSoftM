@@ -73,7 +73,7 @@ def get_bestellung(bestellnr):
     
     """
     
-    kopf = get_connection().query('EBL00', ordering=['BLBSTN DESC'],
+    kopf = get_connection('bestellungen.get_bestellung').query('EBL00', ordering=['BLBSTN DESC'],
         condition="BLSTAT<>'X' AND BLBSTN=%s" % sql_escape(bestellnr))
     if len(kopf) != 1:
         raise RuntimeError('inkonsistente Kopfdaten in EBL00')
@@ -103,14 +103,14 @@ def _get_zugaenge_helper(rows):
     for row in rows:
         lagerbuchungen = []
         if row['lagerbewegung_rechnung']:
-            buchung = get_connection().query('XLB00',
+            buchung = get_connection('_get_zugaenge_helper').query('XLB00',
                     condition="LBSANR=%s" % sql_escape(row['lagerbewegung_rechnung']))
             if len(buchung) > 1:
                 raise RuntimeError('mehr als einen XLB Satz zu einem EWZ Satz: %r' % buchung)
             buchung = kursfaktorkorrektur(buchung)[0]
             lagerbuchungen.append(buchung)
         if row['lagerbewegung_zugang'] and row['lagerbewegung_zugang'] != row['lagerbewegung_rechnung']:
-            buchung = get_connection().query('XLB00',
+            buchung = get_connection('_get_zugaenge_helper').query('XLB00',
                     condition="LBSANR=%s" % sql_escape(row['lagerbewegung_zugang']))
             if len(buchung) > 1:
                 raise RuntimeError('mehr als einen XLB Satz zu einem EWZ Satz: %r' % buchung)
@@ -123,7 +123,7 @@ def _get_zugaenge_helper(rows):
 def get_zugaenge_artnr(artnr):
     """Liefert alle Warenzugaenge eines Artikels"""
     
-    rows = get_connection().query('EWZ00', ordering=['WZDTWZ'],
+    rows = get_connection('bestellungen.get_zugaenge_artnr').query('EWZ00', ordering=['WZDTWZ'],
         condition="WZARTN='%s'" % sql_escape(artnr))
     return _get_zugaenge_helper(rows)
     
@@ -131,7 +131,7 @@ def get_zugaenge_artnr(artnr):
 def get_zugaenge_bestellnr(bestellnr):
     """Liefert alle Warenzugaenge einer Bestellnummer"""
     
-    rows = get_connection().query('EWZ00', # ordering=['WZDTWZ'],
+    rows = get_connection('bestellungen.get_zugaenge_bestellnr').query('EWZ00', # ordering=['WZDTWZ'],
         condition="WZBSTN=%s" % sql_escape(bestellnr))
     return _get_zugaenge_helper(rows)
     
@@ -150,7 +150,7 @@ def get_bestellungen_artnr(artnr):
     """Liefert alle Warenzugaenge einer Artikelnummer."""
     
     # BZT00 - zusatztexte
-    positionen = get_connection().query(['EBP00', 'EBL00'], ordering=['BPDTLT'],
+    positionen = get_connection('bestellungen.get_bestellungen_artnr').query(['EBP00', 'EBL00'], ordering=['BPDTLT'],
         condition="BLBSTN=BPBSTN AND BLSTAT<>'X' AND BPSTAT<>'X' AND BPARTN=%s" % sql_quote(artnr))
     ret = []
     for position in positionen:
@@ -185,7 +185,7 @@ def bestellungskoepfe(mindate=None, maxdate=None, additional_conditions=None):
     
     condition = " AND ".join(conditions)
     
-    rows = get_connection().query('EBL00', ordering=['BLBSTN DESC', 'BLDTBE'], condition=condition)
+    rows = get_connection('bestellungen.bestellungskoepfe').query('EBL00', ordering=['BLBSTN DESC', 'BLDTBE'], condition=condition)
     return rows
 
 

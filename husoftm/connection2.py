@@ -134,8 +134,8 @@ def _combine_date_and_time(mappings, fieldname, data, fields, row):
 class MoftSconnection(object):
     """Represents an connection which can execute SQL on the iSeries-AS/400."""
     
-    def __init__(self, tag=None, host="odbcbridge.local.hudora.biz:8000"):
-        self.tag = tag
+    def __init__(self, tag='', host="odbcbridge.local.hudora.biz:8000"):
+        self.tag = tag.strip().replace(' ', '').replace('/', '')
         self.host = host
     
     def _get_tablename(self, name):
@@ -238,11 +238,10 @@ class MoftSconnection(object):
     def _select(self, query):
         conn = httplib.HTTPConnection(self.host)
         # conn.set_debuglevel(5)
-        args = {'query': query} #urllib.quote(query)}
+        args = {'query': query}
         if self.tag:
             args['tag'] = self.tag
         conn.request("GET", "/select?" + urllib.urlencode(args))
-        
         response = conn.getresponse()
         if response.status != 200:
             errorinfo = response.read()
@@ -282,9 +281,17 @@ class MoftSconnection(object):
         raise NotImplementedError
     
 
-def get_connection():
-    """Get a MoftSconnection Object. Meant to one day introduce connection pooling."""
-    return MoftSconnection(tag=os.environ.get('HUSOFTM_TAG'))
+def get_connection(calltag=''):
+    """
+    Get a MoftSconnection Object. Meant to one day introduce connection pooling.
+    
+    The tag is determined from the environment or the calltag parameter.
+    The environment variable overrides the function parameter.
+    """
+    
+    tag = os.environ.get('HUSOFTM_TAG', calltag)
+    return MoftSconnection(tag=tag)
+
 
 if __name__ == '__main__':
     failure_count, test_count = doctest.testmod()

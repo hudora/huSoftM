@@ -1,3 +1,8 @@
+0.65:   support tagging of sql queries for profiling
+0.64p3: neue Funktion artikel.verkaufspreis
+0.64p2: neue Funktion auftraege.get_guid() - GUID zu einem Auftrag ermitteln
+0.64p1: extended_order_protocol2softm nutzt zusaetzliche Lieferadressen
+0.64:   ?
 0.63:   New function husoftm.lieferscheine.get_address(lieferscheinnr)
 0.62p1: rechnungen_for_kunde: keyword argument 'mindate'
 0.62:   New functions get_rechnung(), rechnungen_for_kunde(), 

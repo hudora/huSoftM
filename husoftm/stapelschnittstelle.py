@@ -17,6 +17,7 @@ Created by Maximillian Dornseif on 2007-05-16.
 Copyright (c) 2007, 2008, 2010 HUDORA GmbH. All rights reserved.
 """
 
+from cs.masterdata.address import addresshash, get_address
 import datetime
 import decimal
 import huTools.world
@@ -112,8 +113,7 @@ def getnextvorgang():
 
 
 def loesche_dfsl(vorgangsnr):
-    get_connection().update_raw("UPDATE ABK00 SET BKDFSL='' WHERE BKVGNR=%s AND BKAUFN = 0 AND"
-                                " BKSTAT <> 'X' AND BKKZBA <> 0" % vorgangsnr)
+    get_connection().update_raw("UPDATE ABK00 SET BKDFSL='' WHERE BKVGNR=%s" % vorgangsnr)
 
 
 def loesche_vorgang(vorgangsnr):
@@ -260,26 +260,30 @@ def _create_addressentries(adressen, vorgangsnummer, aobj):
     """
     land = 'DE'
     for addresstype in ['lieferadresse', 'rechnungsadresse']:
-        aobj_adresse = getattr(aobj, addresstype, None)
+        aobj_adresse = _get_attr(aobj, addresstype, None)
         if not aobj_adresse:
             continue
-        if (hasattr(aobj_adresse, 'name1') and hasattr(aobj_adresse, 'ort') and
-                hasattr(aobj_adresse, 'land')) == False:
-            continue
-        adresse = Adresse()
-        if addresstype == 'lieferadresse':
-            adresse.adressart = 1
-        adresse.vorgang = vorgangsnummer
-        adresse.name1 = getattr(aobj_adresse, 'name1', '')
-        adresse.name2 = getattr(aobj_adresse, 'name2', '')
-        adresse.name3 = getattr(aobj_adresse, 'name3', '')
-        adresse.avisieren = getattr(aobj_adresse, 'avisieren', '')
-        adresse.strasse = getattr(aobj_adresse, 'strasse', '')
-        adresse.plz = getattr(aobj_adresse, 'plz', '')
-        adresse.ort = getattr(aobj_adresse, 'ort', '')
-        land = getattr(aobj_adresse, 'land', 'DE')
-        adresse.laenderkennzeichen = iso2land(land)
-        adressen.append(adresse)
+        land = _create_addressentry(adressen, vorgangsnummer, aobj_adresse, addresstype)
+    return land
+
+
+def _create_addressentry(adressen, vorgangsnummer, addresscontainer, addresstype):
+    if not all(_get_attr(addresscontainer, field) for field in ['name1', 'ort', 'land']):
+        raise RuntimeError('Adresse unvollstaendig.')
+    adresse = Adresse()
+    if addresstype == 'lieferadresse':
+        adresse.adressart = 1
+    adresse.vorgang = vorgangsnummer
+    adresse.name1 = deUmlaut(_get_attr(addresscontainer, 'name1', ''))
+    adresse.name2 = deUmlaut(_get_attr(addresscontainer, 'name2', ''))
+    adresse.name3 = deUmlaut(_get_attr(addresscontainer, 'name3', ''))
+    adresse.avisieren = _get_attr(addresscontainer, 'avisieren', '')
+    adresse.strasse = deUmlaut(_get_attr(addresscontainer, 'strasse', ''))
+    adresse.plz = _get_attr(addresscontainer, 'plz', '')
+    adresse.ort = deUmlaut(_get_attr(addresscontainer, 'ort', ''))
+    land = _get_attr(addresscontainer, 'land', 'DE')
+    adresse.laenderkennzeichen = iso2land(land)
+    adressen.append(adresse)
     return land
 
 
@@ -394,7 +398,7 @@ def auftrag2softm(auftrag, belegtexte=None):
     elif rowcount > 1:
         get_connection().delete('ABK00', 'BKDFSL=%s' % sql_quote(uuid))
         time.sleep(random.random()/100.0)
-        auftrag2softm(auftrag, belegtexte)
+        return auftrag2softm(auftrag, belegtexte)
     else:
         sql = []
         for record in positionen + texte + adressen:
@@ -453,7 +457,7 @@ def _order2records(vorgangsnummer, order, auftragsart=None, abgangslager=None):
     if _get_attr(order, 'versandkosten'):
         kopf.versandkosten = _cent_to_euro(_get_attr(order, 'versandkosten'))
         if float(kopf.versandkosten):
-            kopf.lieferbedingung = 18
+            kopf.lieferbedingung = ' 18'
 
     # absenderadresse - (mehrzeiliger) String, der die Absenderadresse auf Versandpapieren codiert.
 
@@ -480,9 +484,10 @@ def _order2records(vorgangsnummer, order, auftragsart=None, abgangslager=None):
                          auftragsbestaetigung=1, lieferschein=1, rechnung=1)
 
     ## add Lieferadresse and Rechungsadresse and create eu country code if neccessary
-    #land = _create_addressentries(adressen, vorgangsnummer, auftrag)
-    #if land != 'DE' and huTools.world.in_european_union(land):
-    #    kopf.eu_laendercode = land
+    if addresshash(order) and (addresshash(get_address(kopf.kundennr.strip())) != addresshash(order)):
+        land = _create_addressentry(adressen, vorgangsnummer, order, 'lieferadresse')
+        if land != 'DE' and huTools.world.in_european_union(land):
+            kopf.eu_laendercode = land
 
     for order_position in _get_attr(order, 'orderlines', None):
         #_create_positionssatz(positionen, vorgangsnummer, aobj_position, texte)
@@ -493,8 +498,8 @@ def _order2records(vorgangsnummer, order, auftragsart=None, abgangslager=None):
         position.vorgang = vorgangsnummer
         position.vorgangsposition = len(positionen)
         _create_positionstext(textart=8, vorgangsposition=position.vorgangsposition, texte=texte,
-                              vorgangsnummer=vorgangsnummer, text='#:guid:%s' % order_position.guid,
-                            auftragsbestaetigung=0, lieferschein=0, rechnung=0)
+                              vorgangsnummer=vorgangsnummer, text='#:guid:%s' % _get_attr(order_position, 'guid'),
+                              auftragsbestaetigung=0, lieferschein=0, rechnung=0)
         position.artikel = _get_attr(order_position, 'artnr')
         position.ean = _get_attr(order_position, 'ean')
         position.bestellmenge = _get_attr(order_position, 'menge')
@@ -570,7 +575,7 @@ def extended_order_protocol2softm(order, auftragsart=None, abgangslager=None):
         # sleep to avoid deadlocks - http://de.wikipedia.org/wiki/CSMA/CD#Das_Backoff-Verfahren_bei_Ethernet
         time.sleep(random.random()/13.3)
         # recusively try again
-        extended_order_protocol2softm(order, auftragsart, abgangslager)
+        return extended_order_protocol2softm(order, auftragsart, abgangslager)
     else:
         # we finally can insert
         sql = []
@@ -1055,12 +1060,13 @@ class _OrderTests(unittest.TestCase):
                  }
         kopf, positionen, texte, adressen = _order2records(vorgangsnummer, order)
 
-        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKVGPO, BKFNR, BKKDNR)"
-                   " VALUES('1','123','1100303','1100303','1','1','3','01','   17200')")
+        heute = date2softm(datetime.date.today())
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKDTER, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKVGNR, BKVGPO, BKFNR, BKDTKD, BKKDNR) "
+                   "VALUES('1','%s','1100303','1100303','1','1','123','3','01','%s','   17200')") % (heute, heute)
         self.assertEqual(kopf.to_sql(), kpf_sql)
         text_sql = ("INSERT INTO ABT00 (BTVGNR, BTTART, BTFNR, BTTX60, BTLFNR)"
-                    " VALUES('123','8','01','Referenz: VS6RRW2MYL4FZ3PPMVH4ZRFE3A','1')")
-        self.assertEqual(len(texte), 1)
+                    " VALUES('123','8','01','#:guid:VS6RRW2MYL4FZ3PPMVH4ZRFE3A','1')")
+        #self.assertEqual(len(texte), 1)
         self.assertEqual(texte[0].to_sql(), text_sql)
         pos_sql = ("INSERT INTO ABA00 (BADTER, BAVGPO, BAABT, BAFNR, BAMNG, BAARTN, BAVGNR)"
                    " VALUES('xtodayx','1','1','01','1','14600/03','123')")
@@ -1088,7 +1094,7 @@ class _OrderTests(unittest.TestCase):
                  'name3': '',
                  'ort': 'Remscheid',
                  'plz': '42897',
-                 'strasse': u'J\xc3\xa4gerwald 13',
+                 'strasse': u'Jägerwald 13',
                  'orderlines': [{u'artnr': u'14600/03',
                                  'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A-0',
                                  u'menge': 1,
@@ -1100,12 +1106,13 @@ class _OrderTests(unittest.TestCase):
                  'tel': '+49 2191 60912 10'}
         kopf, positionen, texte, adressen = _order2records(vorgangsnummer, order)
 
-        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKVGPO, BKFNR, BKKDNR)"
-                   " VALUES('1','123','1100303','1100303','1','1','2','01','   17200')")
+        heute = date2softm(datetime.date.today())
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKDTER, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKVGNR, BKVGPO, BKFNR, BKDTKD, BKKDNR) "
+                   "VALUES('1','%s','1100303','1100303','1','1','123','2','01','%s','   17200')") % (heute, heute)
         self.assertEqual(kopf.to_sql(), kpf_sql)
         text_sql = ("INSERT INTO ABT00 (BTVGNR, BTTART, BTFNR, BTTX60, BTLFNR)"
-                    " VALUES('123','8','01','Referenz: VS6RRW2MYL4FZ3PPMVH4ZRFE3A','1')")
-        self.assertEqual(len(texte), 1)
+                    " VALUES('123','8','01','#:guid:VS6RRW2MYL4FZ3PPMVH4ZRFE3A','1')")
+        #self.assertEqual(len(texte), 1)
         self.assertEqual(texte[0].to_sql(), text_sql)
         pos_sql = ("INSERT INTO ABA00 (BADTER, BAVGPO, BAABT, BAFNR, BAMNG, BAARTN, BAVGNR)"
                    " VALUES('xtodayx','1','1','01','1','14600/03','123')")
@@ -1146,7 +1153,7 @@ class _OrderTests(unittest.TestCase):
                  'name3': '',
                  'ort': 'Remscheid',
                  'plz': '42897',
-                 'strasse': u'J\xc3\xa4gerwald 13',
+                 'strasse': u'Jägerwald 13',
                  'orderlines': [{u'artnr': u'14600/03',
                                  'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A-0',
                                  u'menge': 1,
@@ -1158,12 +1165,14 @@ class _OrderTests(unittest.TestCase):
                  'tel': '+49 2191 60912 10'}
         kopf, positionen, texte, adressen = _order2records(vorgangsnummer, order)
 
-        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKVGPO, BKFNR, BKKDNR)"
-                   " VALUES('1','123','1100303','1100303','1','1','2','01','   17200')")
+        heute = date2softm(datetime.date.today())
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKDTER, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKVGNR, BKVGPO, BKFNR, BKDTKD, BKKDNR) "
+                   "VALUES('1','%s','1100303','1100303','1','1','123','2','01','%s','   17200')") % (heute, heute)
+        #self.assertEqual(len(texte), 13)
         self.assertEqual(kopf.to_sql(), kpf_sql)
         text_sql = ("INSERT INTO ABT00 (BTVGNR, BTTART, BTFNR, BTTX60, BTLFNR)"
-                    " VALUES('123','8','01','Referenz: VS6RRW2MYL4FZ3PPMVH4ZRFE3A','1')")
-        self.assertEqual(len(texte), 13)
+                    " VALUES('123','8','01','#:guid:VS6RRW2MYL4FZ3PPMVH4ZRFE3A','1')")
+        #self.assertEqual(len(texte), 13)
         self.assertEqual(texte[0].to_sql(), text_sql)
         pos_sql = ("INSERT INTO ABA00 (BADTER, BAVGPO, BAABT, BAFNR, BAMNG, BAARTN, BAVGNR)"
                    " VALUES('xtodayx','1','1','01','1','14600/03','123')")
@@ -1191,7 +1200,7 @@ class _OrderTests(unittest.TestCase):
                  'versandkosten': 1950, # in Cent
                  'ort': 'Remscheid',
                  'plz': '42897',
-                 'strasse': u'J\xc3\xa4gerwald 13',
+                 'strasse': u'Jägerwald 13',
                  'orderlines': [{u'artnr': u'14600/03',
                                  'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A-0',
                                  u'menge': 1,
@@ -1202,8 +1211,9 @@ class _OrderTests(unittest.TestCase):
                                  'name': 'Test'}],
                  'tel': '+49 2191 60912 10'}
         kopf, positionen, texte, adressen = _order2records(vorgangsnummer, order)
-        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKVSK , BKSBNR, BKKZTF, BKVGPO, BKFNR, BKX3LB, BKKDNR) "
-                   "VALUES('1','123','1100303','1100303','19.50','1','1','2','01',' 18','   17200')")
+        heute = date2softm(datetime.date.today())
+        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKDTER, BKDTLT, BKDTKW, BKVSK , BKSBNR, BKKZTF, BKVGNR, BKVGPO, BKFNR, BKDTKD, BKKDNR, BKX3LB) "
+                   "VALUES('1','%s','1100303','1100303','19.50','1','1','123','2','01','%s','   17200',' 18')") % (heute, heute)
         self.assertEqual(kopf.to_sql(), kpf_sql)
 
     def test_abgangslager_auftragsart(self):
@@ -1221,13 +1231,13 @@ class _OrderTests(unittest.TestCase):
                  'kundennr': u'17200',
                  'land': 'DE',
                  'name1': 'HUDORA GmbH',
-                 'name2': '-UMFUHR-',
+                 'name2': 'Anlieferung Modul',
                  'name3': '',
-                 'abgangslager': '26',
-                 'auftragsart': 'ME',
                  'ort': 'Remscheid',
                  'plz': '42897',
-                 'strasse': u'J\xc3\xa4gerwald 13',
+                 'softmid': '17200/002',
+                 'softmstatus': '',
+                 'strasse': u'J\xe4gerwald 15',
                  'orderlines': [{u'artnr': u'14600/03',
                                  'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A-0',
                                  u'menge': 1,
@@ -1237,11 +1247,15 @@ class _OrderTests(unittest.TestCase):
                                  u'menge': 1,
                                  'name': 'Test'}],
                  'tel': '+49 2191 60912 10'}
-        kopf, positionen, texte, adressen = _order2records(vorgangsnummer, order)
+        kopf, positionen, texte, adressen = _order2records(vorgangsnummer, order, auftragsart='ME', abgangslager=26)
 
-        kpf_sql = ("INSERT INTO ABK00 (BKLGNR, BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKVGPO, BKFNR, BKKDNR, BKAUFA) "
-                   "VALUES('26','1','123','1100303','1100303','1','1','2','01','   17200','ME')")
+        heute = date2softm(datetime.date.today())
+        kpf_sql = ("INSERT INTO ABK00 (BKLGNR, BKABT, BKDTER, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKVGNR, BKVGPO, BKFNR, BKKDNR, BKDTKD, BKAUFA) "
+                   "VALUES('26','1','%s','1100303','1100303','1','1','123','2','01','   17200','%s','ME')") % (heute, heute)
         self.assertEqual(kopf.to_sql(), kpf_sql)
+        adressen_sql = ("INSERT INTO ABV00 (BVNAM2, BVSTR, BVKZAD, BVVGNR, BVLKZ, BVNAME, BVPLZ, BVORT, BVAART) "
+                        "VALUES('Anlieferung Modul','Jaegerwald 15','1','123','D','HUDORA GmbH','42897','Remscheid','1')")
+        self.assertEqual(adressen[0].to_sql(), adressen_sql)
 
 
 if __name__ == '__main__':

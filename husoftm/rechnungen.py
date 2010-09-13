@@ -4,15 +4,12 @@
 husoftm/rechnungen.py - zugriff auf rechnungen in SoftM
 
 Created by Maximillian Dornseif on 2009-06-04.
-Copyright (c) 2009 HUDORA. All rights reserved.
+Copyright (c) 2009, 2010 HUDORA. All rights reserved.
 """
 
 
 from husoftm.connection2 import get_connection
 from husoftm.tools import sql_quote, sql_escape, pad, date2softm
-
-
-__revision__ = "$Revision: 5770 $"
 
 
 def kundenauftragsnr_to_rechnungsnr(kundenauftragsnr):
@@ -40,11 +37,13 @@ def auftragsnr_to_rechnungsnr(auftragsnr):
 
 
 def rechnungen_for_kunde(kundennr, mindate=None):
-    """Liefert eine Liste mit Rechnungsnummern zurück
+    """Liefert eine Liste mit Rechnungsnummern zurück.
 
+    Dies sind allerdings nur Rechnungen, die aus der Warenwirtschaft faktiuriert wurden. 'Rechnungen'
+    (eigentlich mauell erstellte offenene Forderungen) aus der Buchhaltung sind hier nicht berücksichtigt.
     Die Nummern werden gemäss https://cybernetics.hudora.biz/intern/trac/wiki/NummernKreise
-    mit dem Prefix RG zurückgegeben."""
-
+    mit dem Prefix RG zurückgegeben.
+    """
     conditions = ["FKKDNR=%s" % sql_quote(pad('FKKDNR', kundennr))]
     if mindate:
         conditions.append("FKDTER >= %s AND FKRGNR <> 0" % date2softm(mindate))

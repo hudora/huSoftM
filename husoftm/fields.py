@@ -539,7 +539,7 @@ MAPPINGDIR = {
      # 'FKKZSD': 'Auswahl: Druck in Sammel-Rg',
      'FKBRUT': 'brutto',
      # 'FKSBRT': 'Skontierf{higer Betrag/Brt',
-     # 'FKSKTA': 'Skonto-Abzugsbetrag',
+     'FKSKTA': 'skontobetrag',
      'FKNETT': 'netto',
      # 'FKMWBT': 'Mehrwert-Steuer-Betrag',
      # 'FKNETR': 'Positionswert f}r Auftr.-Ra',
@@ -581,7 +581,7 @@ MAPPINGDIR = {
      'FKDTFA': 'druck_date',
      # 'FK30ST': 'Kz Fakt.Update Statistik',
      # 'FK30FI': 'Kz Fakt.Update FIBU',
-     # 'FKKZBB': 'Status FIBU-Verbuchung',
+     'FKKZBB': 'verbuchungfibu',
      # 'FKKZRV': 'Kz Rechnungsvorb. erforderl',
      # 'FKKZKD': 'Nachtr. Erstellung / 9 = ja',
      # 'FKKZKS': 'Steuerung Kundenstrecke',
@@ -2039,13 +2039,13 @@ MAPPINGDIR = {
     # 'PRANW1': 'Preismodul',
     'PRSANR': 'satznr_xpn00',
     # 'PRKTYP': 'Konditionstyp',
-    # 'PRKDNR': 'Kunde',
+    'PRKDNR': 'kunde',
     'PRARTN': 'artnr',
     'PRLINR': 'lieferant',
     # 'PRPROB': 'Objekt',
     # 'PRPROJ': 'Projekt',
     # 'PRVRT': 'Vertreter',
-    # 'PRPRLK': 'Preisliste Kunde',
+    'PRPRLK': 'preisliste_kunde',
     # 'PRPRLL': 'Preisliste Lieferant',
     #'PRPGRP': 'Preisgruppe Vertrieb',
     # 'PRPGRL': 'Preisgruppe Einkauf',
@@ -2142,7 +2142,7 @@ MAPPINGDIR = {
         # 'XASPSL': Sprache
         # 'XAWSL ': W{hrungs-Kennzeichen
         # 'XAFGRP': Firmen-Gruppe
-        # 'XAKGRP': Kunden-Gruppe
+        'XAKGRP': 'kunden_gruppe', # Preisliste
         # 'XALGRP': Lieferanten-Gruppe
         # 'XAISIC': ISIC-Schl}ssel
         # 'XARPMK': RPM-Kreis
@@ -2241,7 +2241,7 @@ MAPPINGDIR = {
         'LBINFO': 'info',
         # 'LBART ': 'art', # bisher 0 und 1 beobachtet
         'LBBTYP': 'typ',
-        'LBDFSL': 'dateifuehrungsschluessel',
+        #'LBDFSL': 'dateifuehrungsschluessel',
         'LBSTAT': 'satzstatus',
         'LBSAN2': 'bezogene_bewegung',
         'LBSANR': 'satznummer',

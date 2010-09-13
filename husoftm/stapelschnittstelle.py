@@ -578,7 +578,6 @@ def extended_order_protocol2softm(order, auftragsart=None, abgangslager=None):
             sql.append(record.to_sql())
         sql.append(kopf.to_sql())
         for command in sql:
-            print command
             get_connection().insert_raw(command)
         # remove "dateifuehrungsschluessel" and set recort active
         get_connection().update_raw("UPDATE ABK00 SET BKKZBA=0, BKDFSL='' WHERE BKVGNR=%s" % vorgangsnummer)

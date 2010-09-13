@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-rechnungen.py - zugriff auf rechnungen in SoftM
+husoftm/rechnungen.py - zugriff auf rechnungen in SoftM
 
 Created by Maximillian Dornseif on 2009-06-04.
 Copyright (c) 2009 HUDORA. All rights reserved.
@@ -23,6 +23,7 @@ def kundenauftragsnr_to_rechnungsnr(kundenauftragsnr):
     
     rows = get_connection().query(['AFK00'], fields=['FKRGNR'],
                    condition="FKNRKD = %s" % (sql_quote(kundenauftragsnr)))
+    # TODO: change to RG
     return [("SR%s" % r[0]) for r in rows]
     
 
@@ -34,21 +35,29 @@ def auftragsnr_to_rechnungsnr(auftragsnr):
 
     rows = get_connection().query(['AFK00'], fields=['FKRGNR'],
                    condition="FKAUFN = %s" % (sql_quote(auftragsnr)))
+    # TODO: change to RG
     return [("SR%s" % r[0]) for r in rows]
 
 
 def rechnungen_for_kunde(kundennr, mindate=None):
-    """Liefert eine Liste mit Rechnungsnummern zurück"""
+    """Liefert eine Liste mit Rechnungsnummern zurück
+
+    Die Nummern werden gemäss https://cybernetics.hudora.biz/intern/trac/wiki/NummernKreise
+    mit dem Prefix RG zurückgegeben."""
+
     conditions = ["FKKDNR=%s" % sql_quote(pad('FKKDNR', kundennr))]
     if mindate:
-        conditions.append("FKDTER >= %s" % date2softm(mindate))
+        conditions.append("FKDTER >= %s AND FKRGNR <> 0" % date2softm(mindate))
     rows = get_connection().query(['AFK00'], fields=['FKRGNR'],
                    condition=" AND ".join(conditions))
-    return [row[0] for row in rows]
+    return ["RG%s" % row[0] for row in rows if str(row[0]) != '0']
 
 
 def get_rechnung(rechnungsnr):
     """Liefert ein Tupel aus Rechnungskopf und den Positionen"""
+    
+    if str(rechnungsnr).startswith('RG'):
+        rechnungsnr = str(rechnungsnr)[2:]
     kopf = get_connection().query(['AFK00'],
                    condition="FKRGNR = %s" % sql_escape(rechnungsnr))
     if len(kopf) < 1:

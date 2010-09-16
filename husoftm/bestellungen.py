@@ -169,7 +169,7 @@ def get_bestellungen_artnr(artnr):
     return kursfaktorkorrektur(ret)
 
 
-def bestellungskoepfe(mindate=None, maxdate=None, additional_conditions=None):
+def bestellungskoepfe(mindate=None, maxdate=None, additional_conditions=None, limit=None):
     conditions = ["BLSTAT<>'X'"]
     
     if mindate and maxdate:
@@ -184,12 +184,11 @@ def bestellungskoepfe(mindate=None, maxdate=None, additional_conditions=None):
         conditions.extend(additional_conditions)
     
     condition = " AND ".join(conditions)
-    
-    rows = get_connection('bestellungen.bestellungskoepfe').query('EBL00', ordering=['BLBSTN DESC', 'BLDTBE'], condition=condition)
+    rows = get_connection('bestellungen.bestellungskoepfe').query('EBL00', ordering=['BLBSTN DESC', 'BLDTBE'], condition=condition, limit=limit)
     return rows
 
 
-def bestellungen(mindate=None, maxdate=None, additional_conditions=None):
+def bestellungen(mindate=None, maxdate=None, additional_conditions=None, limit=None):
     """Liefert eine Liste mit allen bestellten aber nicht stornierten Wareneingängen.
     
     >>> bestellungen()
@@ -232,7 +231,7 @@ def bestellungen(mindate=None, maxdate=None, additional_conditions=None):
     
     condition = " AND ".join(conditions)
     
-    rows = get_connection().query('EBP00', ordering=['BPBSTN DESC', 'BPDTLT'], condition=condition)
+    rows = get_connection().query('EBP00', ordering=['BPBSTN DESC', 'BPDTLT'], condition=condition, limit=limit)
     # AND BPKZAK=0 to get only the open ones
     return rows
     

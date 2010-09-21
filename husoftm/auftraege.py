@@ -169,4 +169,6 @@ def get_auftragnr(guid):
     
     condition = "ATTX60 = %s AND ATAUPO = 0 AND ATTART = 8" % sql_quote("#:guid:" + guid)
     rows = get_connection().query('AAT00', fields=['ATAUFN'], condition=condition)
-    return [row[0] for row in rows]
+    if rows:
+        return rows[0][0]
+    return None

@@ -17,6 +17,7 @@ Created by Maximillian Dornseif on 2007-05-16.
 Copyright (c) 2007, 2008, 2010 HUDORA GmbH. All rights reserved.
 """
 
+from cs.masterdata.address import addresshash, get_address
 import datetime
 import decimal
 import huTools.world
@@ -255,30 +256,35 @@ def _create_positionssatz(positionen, vorgangsnummer, aobj_position, texte):
 def _create_addressentries(adressen, vorgangsnummer, aobj):
     """Adds entries for invoice and deliveryaddress, if given for this order.
 
+    adressen is expected to be a list type where the created addressentries are appended.
     Returns the country code of the invoice address w/ a fallback to country of delivery address.
     """
     land = 'DE'
     for addresstype in ['lieferadresse', 'rechnungsadresse']:
-        aobj_adresse = getattr(aobj, addresstype, None)
+        aobj_adresse = _get_attr(aobj, addresstype, None)
         if not aobj_adresse:
             continue
-        if (hasattr(aobj_adresse, 'name1') and hasattr(aobj_adresse, 'ort') and
-                hasattr(aobj_adresse, 'land')) == False:
-            continue
-        adresse = Adresse()
-        if addresstype == 'lieferadresse':
-            adresse.adressart = 1
-        adresse.vorgang = vorgangsnummer
-        adresse.name1 = getattr(aobj_adresse, 'name1', '')
-        adresse.name2 = getattr(aobj_adresse, 'name2', '')
-        adresse.name3 = getattr(aobj_adresse, 'name3', '')
-        adresse.avisieren = getattr(aobj_adresse, 'avisieren', '')
-        adresse.strasse = getattr(aobj_adresse, 'strasse', '')
-        adresse.plz = getattr(aobj_adresse, 'plz', '')
-        adresse.ort = getattr(aobj_adresse, 'ort', '')
-        land = getattr(aobj_adresse, 'land', 'DE')
-        adresse.laenderkennzeichen = iso2land(land)
-        adressen.append(adresse)
+        land = _create_addressentry(adressen, vorgangsnummer, aobj_adresse, addresstype)
+    return land
+
+
+def _create_addressentry(adressen, vorgangsnummer, addresscontainer, addresstype):
+    if not all(_get_attr(addresscontainer, field) for field in ['name1', 'ort', 'land']):
+        raise RuntimeError('Adresse unvollstaendig.')
+    adresse = Adresse()
+    if addresstype == 'lieferadresse':
+        adresse.adressart = 1
+    adresse.vorgang = vorgangsnummer
+    adresse.name1 = deUmlaut(_get_attr(addresscontainer, 'name1', ''))
+    adresse.name2 = deUmlaut(_get_attr(addresscontainer, 'name2', ''))
+    adresse.name3 = deUmlaut(_get_attr(addresscontainer, 'name3', ''))
+    adresse.avisieren = _get_attr(addresscontainer, 'avisieren', '')
+    adresse.strasse = deUmlaut(_get_attr(addresscontainer, 'strasse', ''))
+    adresse.plz = _get_attr(addresscontainer, 'plz', '')
+    adresse.ort = deUmlaut(_get_attr(addresscontainer, 'ort', ''))
+    land = _get_attr(addresscontainer, 'land', 'DE')
+    adresse.laenderkennzeichen = iso2land(land)
+    adressen.append(adresse)
     return land
 
 
@@ -479,9 +485,15 @@ def _order2records(vorgangsnummer, order, auftragsart=None, abgangslager=None):
                          auftragsbestaetigung=1, lieferschein=1, rechnung=1)
 
     ## add Lieferadresse and Rechungsadresse and create eu country code if neccessary
-    #land = _create_addressentries(adressen, vorgangsnummer, auftrag)
-    #if land != 'DE' and huTools.world.in_european_union(land):
-    #    kopf.eu_laendercode = land
+    if addresshash(order):
+        # Adresse mit unserer Kundendatenbank vergleichen.
+        # Weichen sie voneinander ab, dann wird die Auftragsadresse mit in die Stapelschnittstelle übertragen.
+        # Ansonsten ermittelt SoftM die Adresse anhand der Kundennr und wir übertragen gar keine Adresse.
+        addr = get_address("SC%s" % kopf.kundennr.strip().replace('SC', ''))
+        if (addresshash(addr) != addresshash(order)):
+            land = _create_addressentry(adressen, vorgangsnummer, order, 'lieferadresse')
+            if land != 'DE' and huTools.world.in_european_union(land):
+                kopf.eu_laendercode = land
 
     for order_position in _get_attr(order, 'orderlines', None):
         #_create_positionssatz(positionen, vorgangsnummer, aobj_position, texte)
@@ -1088,7 +1100,7 @@ class _OrderTests(unittest.TestCase):
                  'name3': '',
                  'ort': 'Remscheid',
                  'plz': '42897',
-                 'strasse': u'J\xc3\xa4gerwald 13',
+                 'strasse': u'Jägerwald 13',
                  'orderlines': [{u'artnr': u'14600/03',
                                  'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A-0',
                                  u'menge': 1,
@@ -1147,7 +1159,7 @@ class _OrderTests(unittest.TestCase):
                  'name3': '',
                  'ort': 'Remscheid',
                  'plz': '42897',
-                 'strasse': u'J\xc3\xa4gerwald 13',
+                 'strasse': u'Jägerwald 13',
                  'orderlines': [{u'artnr': u'14600/03',
                                  'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A-0',
                                  u'menge': 1,
@@ -1194,7 +1206,7 @@ class _OrderTests(unittest.TestCase):
                  'versandkosten': 1950, # in Cent
                  'ort': 'Remscheid',
                  'plz': '42897',
-                 'strasse': u'J\xc3\xa4gerwald 13',
+                 'strasse': u'Jägerwald 13',
                  'orderlines': [{u'artnr': u'14600/03',
                                  'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A-0',
                                  u'menge': 1,
@@ -1225,11 +1237,13 @@ class _OrderTests(unittest.TestCase):
                  'kundennr': u'17200',
                  'land': 'DE',
                  'name1': 'HUDORA GmbH',
-                 'name2': '-UMFUHR-',
+                 'name2': 'Anlieferung Modul',
                  'name3': '',
                  'ort': 'Remscheid',
                  'plz': '42897',
-                 'strasse': u'J\xc3\xa4gerwald 13',
+                 'softmid': '17200/002',
+                 'softmstatus': '',
+                 'strasse': u'J\xe4gerwald 15',
                  'orderlines': [{u'artnr': u'14600/03',
                                  'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A-0',
                                  u'menge': 1,
@@ -1245,6 +1259,9 @@ class _OrderTests(unittest.TestCase):
         kpf_sql = ("INSERT INTO ABK00 (BKLGNR, BKABT, BKDTER, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKVGNR, BKVGPO, BKFNR, BKKDNR, BKDTKD, BKAUFA) "
                    "VALUES('26','1','%s','1100303','1100303','1','1','123','2','01','   17200','%s','ME')") % (heute, heute)
         self.assertEqual(kopf.to_sql(), kpf_sql)
+        adressen_sql = ("INSERT INTO ABV00 (BVNAM2, BVSTR, BVKZAD, BVVGNR, BVLKZ, BVNAME, BVPLZ, BVORT, BVAART) "
+                        "VALUES('Anlieferung Modul','Jaegerwald 15','1','123','D','HUDORA GmbH','42897','Remscheid','1')")
+        self.assertEqual(adressen[0].to_sql(), adressen_sql)
 
 
 if __name__ == '__main__':

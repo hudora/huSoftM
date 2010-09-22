@@ -16,8 +16,6 @@ import time
 import unittest
 from husoftm.fields import PADDINGFIELDS
 
-__revision__ = "$Revision$"
-
 
 logging.basicConfig(level=logging.DEBUG)
 LOG = logging.getLogger('husoftm.tools')
@@ -78,8 +76,8 @@ SOFTMLKZ2ISOLAND = {'': 'DE',
                     'SK': 'SK', # Slowakei
                     'SLO': 'SI', # Slowenien
                     'TR': 'TR', # Tuerkei
-'UA': 'UA', # Ukraine
-'ZA': 'ZA', # Südafrika
+                    'UA': 'UA', # Ukraine
+                    'ZA': 'ZA', # Südafrika
 }
 # invert dictionary
 ISOLAND2SOFTMLKZ = dict([[v, k] for k, v in SOFTMLKZ2ISOLAND.items()])

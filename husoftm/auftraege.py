@@ -160,3 +160,15 @@ def get_guid(auftragsnr):
     if rows:
         return rows[0][0].replace('#:guid:', '')
     return ''
+
+
+def get_auftragnr(guid):
+    """
+    Gibt die Auftragsnr zu einem GUID zurück, sofern vorhanden.
+    """
+    
+    condition = "ATTX60 = %s AND ATAUPO = 0 AND ATTART = 8" % sql_quote("#:guid:" + guid)
+    rows = get_connection().query('AAT00', fields=['ATAUFN'], condition=condition)
+    if rows:
+        return rows[0][0]
+    return None

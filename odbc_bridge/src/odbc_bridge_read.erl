@@ -12,7 +12,7 @@
 -behaviour(gen_server).
 
 %% API
--export([start_link/1, select/1, info/0]).
+-export([start_link/1, select/2, info/0]).
 
 %% gen_server callbacks
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
@@ -25,9 +25,9 @@ start_link(Options) ->
     gen_server:start_link({local, ?MODULE}, ?MODULE, Options, []).
 
 %% @doc SQL SELECT command
--spec select(QueryStr::string()) -> {'ok', Rows::integer()} | {'error', Reason::any()}.
-select(QueryStr) when is_list(QueryStr) ->
-     gen_server:call(?MODULE, {select, QueryStr, 2}, 30000).
+-spec select(QueryStr::string(), Peer::string()) -> {'ok', Rows::integer()} | {'error', Reason::any()}.
+select(QueryStr, Peer) when is_list(QueryStr) ->
+     gen_server:call(?MODULE, {select, QueryStr, 2, Peer}, 30000).
 
 %% @doc Return Server Informtion
 -spec info() -> {SuccessCount::integer(), ErrorCount::integer(), Reconnects::integer()}.
@@ -45,12 +45,12 @@ init(Options) ->
 
 %% This handles the syncrounous requests to the server.
 %% basically every function variant implements some of the API functions defined above
-handle_call({select, QueryStr, RecoursionCoutner}, From, State) when RecoursionCoutner > 0 ->
+handle_call({select, QueryStr, RecoursionCoutner, Peer}, From, State) when RecoursionCoutner > 0 ->
     % execute query
     {Time, Result} = timer:tc(odbc, sql_query, [State#state.odbcref, QueryStr]),
     case Result of
         {selected, _RowNames, Rows} ->
-            odbc_bridge_log:log(io_lib:format("~5..0w ~4..0w ~s", [Time div 1000, length(Rows), QueryStr])),
+            odbc_bridge_log:log(io_lib:format("~5..0w ~4..0w ~s ~s", [Time div 1000, length(Rows), Peer, QueryStr])),
             % we got a result, send the result and an updated server state back.
             {reply, {ok, Rows}, State#state{successcount=State#state.successcount+1}};
         {error, connection_closed} ->
@@ -61,7 +61,7 @@ handle_call({select, QueryStr, RecoursionCoutner}, From, State) when RecoursionC
             % so we limit recursion
             odbc:disconnect(State#state.odbcref),
             {ok, Ref} = odbc:connect("DSN=" ++ State#state.dsn, []),
-            handle_call({select, QueryStr, RecoursionCoutner-1}, From,
+            handle_call({select, QueryStr, Peer, RecoursionCoutner-1}, From,
                          State#state{odbcref=Ref, reconnects=State#state.reconnects+1});
         {error, Info} ->
             % reopen conection to clean up for the next call
@@ -70,7 +70,7 @@ handle_call({select, QueryStr, RecoursionCoutner}, From, State) when RecoursionC
             % some other error: return the error message
             {reply, {error, Info}, State#state{odbcref=Ref, errorcount=State#state.errorcount+1}}
     end;
-handle_call({select, _QueryStr, _RecoursionCoutner}, _From, State) ->
+handle_call({select, _QueryStr, _Peer, _RecoursionCoutner}, _From, State) ->
     % de have tried seceral times and the whole odbc stack seems to need a restart
     % odbc:disconnect(State#state.odbcref),
     % application:stop(odbc),

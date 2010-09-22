@@ -28,11 +28,11 @@ clean_string(S) ->
 
 %% handle a select query by calling odbc_bridge_read:select() to do the actual query
 %% and then reformat the results to JSON
--spec do_select(atom(),string()) -> any().
-do_select(Req, QueryStr) ->
+-spec do_select(atom(),string(),string()) -> any().
+do_select(Req, QueryStr, Peer) ->
     case string:left(string:to_upper(QueryStr), 7) of
         "SELECT " ->
-            case catch odbc_bridge_read:select(QueryStr) of
+            case catch odbc_bridge_read:select(QueryStr, Peer) of
                 {ok, Rows} ->
                     % convert tuples in response to lists
                     RowList = [[clean_string(C) || C <- tuple_to_list(R)] || R <- Rows],
@@ -51,8 +51,8 @@ do_select(Req, QueryStr) ->
 
 %% handele an update request by calling odbc_bridge_write:update
 %% and return the row count
--spec do_update(atom(),string()) -> any().
-do_update(Req, QueryStr) ->
+-spec do_update(atom(),string(),string()) -> any().
+do_update(Req, QueryStr, Peer) ->
     case string:left(string:to_upper(QueryStr), 7) of
         "UPDATE " ->
             case catch odbc_bridge_write:update(QueryStr) of
@@ -72,8 +72,8 @@ do_update(Req, QueryStr) ->
 
 %% handele an insert request by calling odbc_bridge_write:insert
 %% and return the row count
--spec do_insert(atom(),string()) -> any().
-do_insert(Req, QueryStr) ->
+-spec do_insert(atom(),string(),string()) -> any().
+do_insert(Req, QueryStr, Peer) ->
     case string:left(string:to_upper(QueryStr), 7) of
         "INSERT " ->
             case catch odbc_bridge_write:update(QueryStr) of
@@ -114,7 +114,8 @@ loop(Req, _DocRoot) ->
                             Req:respond({500, [{"Content-Type", " text/plain; charset=utf-8"}],
                                         "/select needs a 'query' parameter\n"});
                         QueryStr ->
-                            do_select(Req, QueryStr)
+                            do_select(Req, QueryStr,
+                                      io_lib:format("~s/~s", [Req:get(peer), proplists:get_value("tag", Req:parse_qs())]))
                     end;
                 "update" ->
                         Req:respond({405, [{"Content-Type", " text/plain; charset=utf-8"}],
@@ -135,7 +136,7 @@ loop(Req, _DocRoot) ->
                             Req:respond({500, [{"Content-Type", " text/plain; charset=utf-8"}],
                                         "/update needs a 'query' parameter\n"});
                         QueryStr ->
-                            do_update(Req, QueryStr)
+                            do_update(Req, QueryStr, Req:get(peer))
                     end;
                 "insert" ->
                     case proplists:get_value("query", Req:parse_post()) of
@@ -143,7 +144,7 @@ loop(Req, _DocRoot) ->
                             Req:respond({500, [{"Content-Type", " text/plain; charset=utf-8"}],
                                         "/insert needs a 'query' parameter\n"});
                         QueryStr ->
-                            do_insert(Req, QueryStr)
+                            do_insert(Req, QueryStr, Req:get(peer))
                     end;
                 _ ->
                     Req:not_found()

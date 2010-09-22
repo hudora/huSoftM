@@ -4,4 +4,5 @@ python-memcached
 Pyro
  -f http://ovh.dl.sourceforge.net/project/pyro/Pyro/3.9.1/#egg=Pyro
 huTools>=0.38p2
---editable git+ssh://git@github.com/hudora/CentralServices#egg=cs
+cs
+-f http://cybernetics.hudora.biz/nonpublic/eggs/#egg=cs

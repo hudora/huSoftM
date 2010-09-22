@@ -15,6 +15,8 @@ import datetime
 import re
 import unittest
 import warnings
+import huTools.decorators as decorators
+import copy
 
 def _auf_zwei_stellen(floatnum):
     """Converts a float to a Decimal() object with two digits precision.
@@ -74,6 +76,7 @@ def verkaufspreis(artnr, kundennr, bestelldatum=datetime.date.today()):
     return dict(preis=preis(artnr), herkunft='Listenpreis')
 
 
+@decorators.memoize
 def buchdurchschnittspreis(artnr):
     """Gibt den (aktuellen) Buchdurchschnittspreis für einen Artikel zurück.
     
@@ -88,6 +91,7 @@ def buchdurchschnittspreis(artnr):
         return Decimal()
 
 
+@decorators.memoize
 def preis(artnr):
     """Gibt den (aktuellen) Listenpreis für einen Artikel zurück.
     
@@ -260,6 +264,26 @@ def komponentenaufloesung(mengenliste):
             for row in rows:
                 ret.append((menge * row['menge_im_set'], row['komponenten_artnr']))
     return ret
+
+
+def komponentenaufloesung_order(order):
+    """L<C3><B6>st Artikel in ihre Komponenten auf, wie komponentenaufloesung() arbeitet aber mit Objekten
+      nach dem VerySimpleOrderProtocol."""
+    
+    neworderlines = []
+    for orderline in order.orderlines:
+        neu = komponentenaufloesung([(orderline.menge, orderline.artnr)])
+        if len(neu) == 1:
+            neworderlines.append(orderline)
+        else:
+            print "!!!", neu
+            for menge, artnr in neu:
+                neworderline = copy.deepcopy(orderline)
+                neworderline.menge = menge
+                neworderline.artnr = artnr
+                neworderlines.append(neworderline)
+    order.orderlines = neworderlines
+    return order
 
 
 def get_umschlag(artnr):

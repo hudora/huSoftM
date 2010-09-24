@@ -21,7 +21,12 @@ from husoftm.tools import softm2date
 import husoftm.mock_as400
 
 
-Pyro.core.initClient(banner=False)
+try:
+    Pyro.core.initClient(banner=False)
+except:
+    pass # function not available in newer Pyro distributions
+
+
 LOG = logging.getLogger('huSoftM.sql')
 LOG.setLevel(logging.WARN)
 

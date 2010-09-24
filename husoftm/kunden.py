@@ -225,7 +225,23 @@ def get_kundenbetreuer(kundennr):
     if rows:
         return rows[0][0]
     return ''
-    
+
+
+def offene_posten(kundennr):
+    """Offene Posten für diesen Kunden ermitteln."""
+    rows = husoftm.connection2.get_connection().query('BOP00', fields=["OPRGSH", "SUM(OPOPBT)"],
+                                                      condition="OPPKTO='%8s'" % int(kundennr),
+                                                      grouping='OPRGSH')
+    offene_posten = dict(rows)
+    summe = float(offene_posten.get('S', 0)) - float(offene_posten.get('H', 0))
+    return summe
+
+
+def kredit_limit(kundennr):
+    """Höhe des Kreditlimits für diesen Kunden zurückgeben."""
+    rows = husoftm.connection2.get_connection().query('XKS00', condition="KSKDNR='%8s'" % int(kundennr))
+    return rows[0]['kreditlimit2']
+
 
 def _selftest():
     """Test basic functionality"""

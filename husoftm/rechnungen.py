@@ -68,7 +68,7 @@ def get_rechnung(rechnungsnr):
     postmp = get_connection().query(['AFU00', 'AAT00'],
         condition="FURGNR=%s AND FUAUFN=ATAUFN AND FUAUPO=ATAUPO AND ATTART=8" % sql_escape(rechnungsnr))
 
-    # wenn eine Rechnungsposition mehr als einen Rechungstext hat, ist sie jetzt mehrfach in positionen
+    # wenn eine Rechnungsposition mehr als einen Rechnungstext hat, ist sie jetzt mehrfach in positionen
     # dedupen und spezial felder auseinanderklamuesern
     positionen = {}
     texte = {}

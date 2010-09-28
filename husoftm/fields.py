@@ -664,7 +664,7 @@ MAPPINGDIR = {
         # 'FUGEWI': 'Gewicht',
         # 'FULFSN': 'Lieferschein-Nr./7-stellig',
         # 'FUDTLF': 'Datum/LfS-Druck',
-        # 'FUDTFA': 'Datum/Rechungsdruck',
+        # 'FUDTFA': 'Datum/Rechnungsdruck',
         # 'FUKZRV': 'Kz Rechnungsvorb. erforderl',
         # 'FUFKZR': 'Kennzeichen Rechnung drucke',
         # 'FU30ST': 'Kz Fakt.Update Statistik',

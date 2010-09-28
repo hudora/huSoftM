@@ -360,7 +360,7 @@ def _auftrag2records(vorgangsnummer, auftrag):
 
     adressen = []
 
-    # add Lieferadresse and Rechungsadresse and create eu country code if neccessary
+    # add Lieferadresse and Rechnungsadresse and create eu country code if neccessary
     land = _create_addressentries(adressen, vorgangsnummer, auftrag)
     if land != 'DE' and huTools.world.in_european_union(land):
         kopf.eu_laendercode = land
@@ -484,7 +484,7 @@ def _order2records(vorgangsnummer, order, auftragsart=None, abgangslager=None):
         _create_kopftext(texte, vorgangsnummer, _get_attr(order, 'infotext_kunde'),
                          auftragsbestaetigung=1, lieferschein=1, rechnung=1)
 
-    ## add Lieferadresse and Rechungsadresse and create eu country code if neccessary
+    ## add Lieferadresse and Rechnungsadresse and create eu country code if neccessary
     if addresshash(order):
         # Adresse mit unserer Kundendatenbank vergleichen.
         # Weichen sie voneinander ab, dann wird die Auftragsadresse mit in die Stapelschnittstelle übertragen.

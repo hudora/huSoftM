@@ -201,10 +201,7 @@ def get_lieferadressen(kdnr):
       'unsere_lieferantennr': '', 'mitgliednr': '', 'branche': ''},
      ...]
     """
-    # folgende Abfrage wäre toll, funktioniert aber nicht:
-    # avrows = husoftm.connection2.get_connection().query(['AVA00'], condition="VAKDNR='%s'" % int(kdnr))
-    allrows = husoftm.connection2.get_connection().query(['AVA00'], condition="VASTAT <>'X'")
-    avrows = [row for row in allrows if int(row['kundennr']) == int(kdnr)]
+    avrows = husoftm.connection2.get_connection().query(['AVA00'], condition="VAKDNR='%8s' AND VASTAT <>'X'" % int(kdnr))
     kunden = []
     for row in avrows:
         xarows = husoftm.connection2.get_connection().query(['XXA00'], condition="XASANR='%s'" %
@@ -215,6 +212,17 @@ def get_lieferadressen(kdnr):
             kunde.kundennr = kunde.kundennr + ('/%03d' % int(row['versandadresssnr']))
             kunden.append(kunde)
     return kunden
+
+
+def get_lieferadressen_all():
+    """Gibt ein dict mit allen vorhandenen zusätzlichen Lieferadressen zurück.
+
+    Key dieses dicts ist die erweiterte Kundennummer (zB. '17200/001' == kundennr/versandadressnr).
+    Value ist ein dict entsprechend dem AdressProtocol.
+
+    """
+    rows = husoftm.connection2.get_connection().query(['AVA00', 'XXA00'], condition="XAKZRS = 7 AND XASANR=VASANR")
+    return dict(("%s/%03d" % (row['kundennr'], int(row['versandadresssnr'])), row) for row in rows)
 
 
 @caching.cache_function(60*60*2)

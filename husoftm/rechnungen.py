@@ -16,24 +16,22 @@ def kundenauftragsnr_to_rechnungsnr(kundenauftragsnr):
     """Liefert eine Liste mit Rechnungsnummern zurück, die zu einer Kundenauftragsnummer gehören.
     
     Die Nummern werden gemäss https://cybernetics.hudora.biz/intern/trac/wiki/NummernKreise
-    mit dem Prefix SR zurückgegeben."""
+    mit dem Prefix RG zurückgegeben."""
     
     rows = get_connection().query(['AFK00'], fields=['FKRGNR'],
                    condition="FKNRKD = %s" % (sql_quote(kundenauftragsnr)))
-    # TODO: change to RG
-    return [("SR%s" % r[0]) for r in rows]
+    return [("RG%s" % r[0]) for r in rows]
     
 
 def auftragsnr_to_rechnungsnr(auftragsnr):
     """Liefert eine Liste mit Rechnungsnummern zurück, die zu einer Auftragsnummer gehören.
 
     Die Nummern werden gemäss https://cybernetics.hudora.biz/intern/trac/wiki/NummernKreise
-    mit dem Prefix SR zurückgegeben."""
+    mit dem Prefix RG zurückgegeben."""
 
     rows = get_connection().query(['AFK00'], fields=['FKRGNR'],
                    condition="FKAUFN = %s" % (sql_quote(auftragsnr)))
-    # TODO: change to RG
-    return [("SR%s" % r[0]) for r in rows]
+    return [("RG%s" % r[0]) for r in rows]
 
 
 def rechnungen_for_kunde(kundennr, mindate=None):
@@ -63,8 +61,8 @@ def get_rechnung(rechnungsnr):
         raise RuntimeError('inkonsistente Kopfdaten in AFK00: %r' % kopf)
     if len(kopf) > 1:
         print 'warning: inkonsistente Kopfdaten in AFK00: FKRGNR = %s' % rechnungsnr
+        print kopf
     kopf = kopf[0]
-    # TODO: kopftexte mit aus der Datenbank lesen, um z.B. den '#:guid:' zu ermitteln
     postmp = get_connection().query(['AFU00', 'AAT00'],
         condition="FURGNR=%s AND FUAUFN=ATAUFN AND FUAUPO=ATAUPO AND ATTART=8" % sql_escape(rechnungsnr))
 
@@ -83,3 +81,31 @@ def get_rechnung(rechnungsnr):
         positionen[posnr]['text'] = ' '.join(textlines)
 
     return kopf, positionen.values()
+
+def rechung_to_invoice(rechnungsnr):
+    """Erzeugt daten nach dem very simple invoice Protocol"""
+
+
+        line = dict(
+            guid=p.guid,
+            menge=int(p.menge),
+            artnr=p.artnr,
+            #kundenartnr=f3.artnr_kunde,
+            #name=f3.artikelbezeichnung.strip(),
+            infotext_kunde=p.text
+            #einzelpreis=int(abs(f3.verkaufspreis)*100),
+            warenwert=int(p.wert_netto)*100),
+            #zu_zahlen=int(abs(f3.wert_brutto)*100),
+            #abschlag=int(f4.positionsrabatt_gesamt*100)
+        )
+
+        if f3.ean and int(f3.ean):
+            line['ean']=f3.ean
+
+
+def main():
+    print get_rechnung('5176070')
+    print get_rechnung('5175671')
+    
+if __name__ == '__main__':
+    main()

@@ -162,38 +162,16 @@ class Lieferschein(object):
             for row in rows:
                 position = Lieferscheinposition()
                 set_attributes(row, position)
-                position.anfangstext, position.endetext = self._get_pos_texte(position.auftrags_position)
+                #position.anfangstext, position.endetext = _get_pos_texte(position.auftrags_position, self.auftragsnr)
                 self._positionen.append(position)
                 
         return self._positionen
-
-    def _get_pos_texte(self, pos):
-        """Positionsanfangs- und Endetexte als string zurückgeben."""
-        anfangstext = []
-        endetext = []
-        rows = get_connection().query('AAT00', ordering='ATLFNR',
-                                      condition="ATAUPO=%d AND ATKZLF=1 AND ATAUFN='%d'"
-                                      % (pos, int(self.auftragsnr)))
-        for row in rows:
-            text = row['text']
-            textnr = row['nr']
-            textart = int(row['textart'])
-            if textart in [7, 8]:
-                anfangstext.append((textnr, text))
-            elif textart in [9]:
-                endetext.append((textnr, text))
-        # sortieren, damit mehrzeilige Texte zusammen hängen
-        anfangstext.sort()
-        endetext.sort()
-        anfangstext = '\n'.join([entry[1] for entry in anfangstext])
-        endetext = '\n'.join([entry[1] for entry in endetext])
-        return anfangstext, endetext
 
     @property
     def infotext_kunde(self):
         """Texte zu einem Lieferschein"""
         if self._infotext_kunde is None:        
-            self.anfangstext, self.endetext = self._get_pos_texte(pos=0)
+            self.anfangstext, self.endetext = _get_pos_texte(auftragsposnr=0, auftragsnr=self.auftragsnr)
             self._infotext_kunde = '\n'.join([self.anfangstext, self.endetext]).strip()
         return self._infotext_kunde
     
@@ -224,6 +202,10 @@ class Lieferschein(object):
 class Lieferscheinposition(object):
     """Bildet eine 'Orderline' in einem Lieferschein ab."""
     
+    def __init__(self):
+        self._anfangstext = None
+        self._endetext = None
+
     def __repr__(self):
         ret = "%d/%d/%d/%d x %s" % (self.menge, self.menge_offen, self.menge_komissionierbeleg,
                                     self.menge_fakturierung, self.artnr)
@@ -231,12 +213,47 @@ class Lieferscheinposition(object):
         if self.lieferscheinstorno:
             ret += ', STORNIERT'
         return ret
+
+    @property
+    def anfangstext(self):
+        if self._anfangstext == None:
+            self._anfangstext, self._endetext = _get_pos_texte(self.auftrags_position, self.auftragsnr)
+        return self._anfangstext
+
+    @property
+    def endetext(self):
+        if self._endetext == None:
+            self._endetext, self._endetext = _get_pos_texte(self.auftrags_position, self.auftragsnr)
+        return self._endetext
     
 
 class Kommibeleg(Lieferschein):
     """Bildet einen Komissionierbeleg ab (der datentechnisch in SoftM ein Lieferschein ist)."""
 
     condition = "LKKBNR = %d AND LKSANB = 0"
+
+
+def _get_pos_texte(auftragsposnr, auftragsnr):
+    """Positionsanfangs- und Endetexte als string zurückgeben."""
+    anfangstext = []
+    endetext = []
+    rows = get_connection().query('AAT00', ordering='ATLFNR',
+                                  condition="ATAUPO=%d AND ATKZLF=1 AND ATAUFN='%d'"
+                                  % (auftragsposnr, int(auftragsnr)))
+    for row in rows:
+        text = row['text']
+        textnr = row['nr']
+        textart = int(row['textart'])
+        if textart in [7, 8]:
+            anfangstext.append((textnr, text))
+        elif textart in [9]:
+            endetext.append((textnr, text))
+    # sortieren, damit mehrzeilige Texte zusammen hängen
+    anfangstext.sort()
+    endetext.sort()
+    anfangstext = '\n'.join([entry[1] for entry in anfangstext])
+    endetext = '\n'.join([entry[1] for entry in endetext])
+    return anfangstext, endetext
 
 
 def _test():

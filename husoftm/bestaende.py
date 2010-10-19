@@ -480,7 +480,6 @@ def versionsvorschlag(menge, orgartnr, date, dateformat="%Y-%m-%d"):
             return True, ret
     return False, ret
     
-
 def frei_am(menge, artnr, date, dateformat="%Y-%m-%d"):
     """Ermittelt, ob die Menge für einen Artikel zu dem Datum date frei ist.
     
@@ -492,7 +491,10 @@ def frei_am(menge, artnr, date, dateformat="%Y-%m-%d"):
         bentwicklung.sort()
         # date should not be bigger than last date in bentwicklung
         mindate = min((date, bentwicklung[-1][0]))
-        bentwicklung = (x for x in bentwicklung if x[0] >= mindate)
+        for index in range(len(bentwicklung)):
+            if bentwicklung[index][0] > mindate:
+                break
+        bentwicklung = bentwicklung[max(0, index - 1):]
         verfuegbar = min(quantity for dummy, quantity in bentwicklung)
         return (verfuegbar >= menge), verfuegbar
     return False, 0

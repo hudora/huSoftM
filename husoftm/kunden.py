@@ -201,10 +201,7 @@ def get_lieferadressen(kdnr):
       'unsere_lieferantennr': '', 'mitgliednr': '', 'branche': ''},
      ...]
     """
-    # folgende Abfrage wäre toll, funktioniert aber nicht:
-    # avrows = husoftm.connection2.get_connection().query(['AVA00'], condition="VAKDNR='%s'" % int(kdnr))
-    allrows = husoftm.connection2.get_connection().query(['AVA00'], condition="VASTAT <>'X'")
-    avrows = [row for row in allrows if int(row['kundennr']) == int(kdnr)]
+    avrows = husoftm.connection2.get_connection().query(['AVA00'], condition="VAKDNR='%8s' AND VASTAT <>'X'" % int(kdnr))
     kunden = []
     for row in avrows:
         xarows = husoftm.connection2.get_connection().query(['XXA00'], condition="XASANR='%s'" %
@@ -217,6 +214,17 @@ def get_lieferadressen(kdnr):
     return kunden
 
 
+def get_lieferadressen_all():
+    """Gibt ein dict mit allen vorhandenen zusätzlichen Lieferadressen zurück.
+
+    Key dieses dicts ist die erweiterte Kundennummer (zB. '17200/001' == kundennr/versandadressnr).
+    Value ist ein dict entsprechend dem AdressProtocol.
+
+    """
+    rows = husoftm.connection2.get_connection().query(['AVA00', 'XXA00'], condition="XAKZRS = 7 AND XASANR=VASANR")
+    return dict(("%s/%03d" % (row['kundennr'], int(row['versandadresssnr'])), row) for row in rows)
+
+
 @caching.cache_function(60*60*2)
 def get_kundenbetreuer(kundennr):
     """'Liefert einen String, der den Betreuer im Hause für einen bestimmten Kunden identifizert oder ''."""
@@ -225,7 +233,23 @@ def get_kundenbetreuer(kundennr):
     if rows:
         return rows[0][0]
     return ''
-    
+
+
+def offene_posten(kundennr):
+    """Offene Posten für diesen Kunden ermitteln."""
+    rows = husoftm.connection2.get_connection().query('BOP00', fields=["OPRGSH", "SUM(OPOPBT)"],
+                                                      condition="OPPKTO='%8s'" % int(kundennr),
+                                                      grouping='OPRGSH')
+    offene_posten = dict(rows)
+    summe = float(offene_posten.get('S', 0)) - float(offene_posten.get('H', 0))
+    return summe
+
+
+def kredit_limit(kundennr):
+    """Höhe des Kreditlimits für diesen Kunden zurückgeben."""
+    rows = husoftm.connection2.get_connection().query('XKS00', condition="KSKDNR='%8s'" % int(kundennr))
+    return rows[0]['kreditlimit2']
+
 
 def _selftest():
     """Test basic functionality"""

@@ -16,6 +16,10 @@ import xml.etree.ElementTree as ET
 from cStringIO import StringIO
 
 
+import tempfile
+DIRECTORY = os.path.join(tempfile.gettempdir(), 'SMPrintserver')
+
+
 
 def parse_address(addr):
     """
@@ -43,6 +47,7 @@ class CrazySoftMXMLParser(object):
     xpaths = {
                 'belegtyp': ('XCP00E05', 'C0DTYP'),
                 'auftragsnr': ('APP00E01', 'PPAUFN'),
+                'kundennr': ('APP00E01', 'PPKDNR'),
             }
     
     def __init__(self, directory):
@@ -58,13 +63,14 @@ class CrazySoftMXMLParser(object):
         if not element is None:
             return element.get(attribute)
     
-    def parse(self, fileobj):
+    def parse(self, data):
         """Parse SoftM XML data"""
         
-        tree = ET.parse(fileobj)
+        tree = ET.fromstring(data.decode('iso8859-1').encode('utf-8'))
         
         belegtyp = self.get_value(tree, 'belegtyp')
         auftragsnr = self.get_value(tree, 'auftragsnr')
+        kundennr = self.get_value(tree, 'kundennr')
         
         # LH[#455]: In Datei schreiben
         filename = os.path.join(self.directory, '%s-%s.xml' % (belegtyp, auftragsnr))
@@ -72,6 +78,13 @@ class CrazySoftMXMLParser(object):
         output = open(filename, 'w')
         output.write(ET.tostring(tree))
         output.close()
+        
+        # Decide if we allow printing
+        
+        if kundennr.strip() == '66669':
+            return False
+        
+        return True
 
 
 class FiveServer(asyncore.dispatcher):
@@ -98,12 +111,13 @@ class FiveServer(asyncore.dispatcher):
         self.address = self.socket.getsockname()
         self.logger.debug('binding to %s', self.address)
         self.listen(5)
-        self.xmlparser = CrazySoftMXMLParser()
+        self.xmlparser = CrazySoftMXMLParser(DIRECTORY)
+        print DIRECTORY
 
     def parse(self, data):
         """Parse data received by FiveReceiver"""
         
-        self.xmlparser.parse(data)
+        return self.xmlparser.parse(data)
 
     def handle_accept(self):
         """Handle a connection request"""
@@ -117,7 +131,7 @@ class FiveReceiver(asyncore.dispatcher):
     """Receive data from a client and forward it to the actual server"""
     
     def __init__(self, sock, server, remote):
-        self.chunk_size = 256
+        self.chunk_size = 4096
         self.logger = logging.getLogger('FiveReceiver%s' % str(sock.getsockname()))
         asyncore.dispatcher.__init__(self, sock=sock)
         self.server = server
@@ -129,27 +143,46 @@ class FiveReceiver(asyncore.dispatcher):
         remote_address = parse_address(remote)
         self.sender = FiveSender(self, remote_address)
 
+    def handle_close(self):
+        """Try to parse XML data and decide if to forward data to server"""
+        data = self.data.getvalue()
+        
+        # Wenn alle Daten gelesen sind, kann die XML-Parserei losgehen
+        if len(data) >= self.data_len:
+            self.logger.info('Parsing XML data...')
+            should_forward = self.server.parse(data)
+        else:
+            self.logger.error('Not enough data received: %d of %d bytes' % (len(data), self.data_len))
+            print data
+            should_forward = False
+        
+        self.logger.info('Forwarding to server: %s' % should_forward)
+        
+        # An Server weiterleiten
+        if should_forward:
+            # Schreibe zuerst die Länge (8 Byte kodiert als ASCII-Zeichekette)
+            #self.sender.send("%08d" % self.data_len)
+            #self.sender.send(data)
+            pass
+        
+        self.logger.info('Closing...')
+        self.close()
+    
     def handle_read(self):
         """Read an incoming message from the client and put it into our outgoing queue."""
         
         data = self.recv(self.chunk_size)
-        if not data:
-            return
         
-        self.sender.send(data)
-        
+        # SoftM schickt immer zuerst die Länge der Payload 8 Byte kodiert als ASCII-Zeichekette
         if self.data_len == -1:
             while data[0].isdigit():
                 self.lenbuf += data[0]
                 data = data[1:]
             if len(self.lenbuf) == 8:
                 self.data_len = int(self.lenbuf)
-
-        self.data.write(data)
         
-        # Wenn alle Daten gelesen sind, kann die XML-Parserei losgehen
-        if self.data.tell() == self.data_len:
-            self.server.parse(self.data)
+        # Daten (ohne die Länge) in Read-Buffer schreiben
+        self.data.write(data)
 
 
 class FiveSender(asyncore.dispatcher):
@@ -159,12 +192,14 @@ class FiveSender(asyncore.dispatcher):
         asyncore.dispatcher.__init__(self)
         self.receiver = receiver
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.buffer = ''
         self.connect(address)
+    
+    def handle_close(self):
+        self.close()
     
     def handle_read(self):
         """Read data from server and push it back to client"""
-        data = self.recv(256)
+        data = self.recv(4096)
         self.receiver.send(data)
 
 
@@ -174,8 +209,9 @@ def main():
     parser = optparse.OptionParser()
     parser.add_option('-b', '--bind', dest='address', default='0.0.0.0', help='Address to bind to [default: %default]')
     parser.add_option('-p', '--port', default=5001, type='int', help='TCP port [default: %default]')
-    parser.add_option('-r', '--remote', default='172.28.4.98:5001', help='Address of remote server [default: %default]')
+    parser.add_option('-r', '--remote', default='172.28.4.104:5001', help='Address of remote server [default: %default]')
     parser.add_option('-q', '--quiet', action="store_true", default=False, help="don't print status messages to stdout")
+    parser.add_option('-v', '--verbose', action="store_true", default=False, help="Be very verbose")
     
     options, args = parser.parse_args()
 

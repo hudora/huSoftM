@@ -7,18 +7,20 @@ Created by Christian Klein on 2010-10-20.
 Copyright (c) 2010 HUDORA GmbH. All rights reserved.
 """
 
+import sys
 import asyncore
 import logging
+import logging.handlers
 import optparse
 import os
 import socket
+import tempfile
+import uuid
 import xml.etree.ElementTree as ET
 from cStringIO import StringIO
 
 
-import tempfile
 DIRECTORY = os.path.join(tempfile.gettempdir(), 'SMPrintserver')
-
 
 
 def parse_address(addr):
@@ -55,13 +57,14 @@ class CrazySoftMXMLParser(object):
         if not os.path.exists(directory):
             os.makedirs(directory)
     
-    def get_value(self, tree, name):
+    def get_value(self, tree, name, default=None):
         """Get a specific value from the tree"""
         
         tag, attribute = self.xpaths[name]
         element = tree.find(tag)
         if not element is None:
             return element.get(attribute)
+        return default
     
     def parse(self, data):
         """Parse SoftM XML data"""
@@ -70,129 +73,44 @@ class CrazySoftMXMLParser(object):
         
         belegtyp = self.get_value(tree, 'belegtyp')
         auftragsnr = self.get_value(tree, 'auftragsnr')
-        kundennr = self.get_value(tree, 'kundennr')
+        kundennr = self.get_value(tree, 'kundennr', '')
         
         # LH[#455]: In Datei schreiben
-        filename = os.path.join(self.directory, '%s-%s.xml' % (belegtyp, auftragsnr))
-        # with open(filename, 'w') as output
-        output = open(filename, 'w')
+        
+        if belegtyp and auftragsnr:
+            filename =  '%s-%s.xml' % (belegtyp, auftragsnr)
+        else:
+            filename = 'unknown-%s.xml' % uuid.uuid1()
+        
+        output = open(os.path.join(self.directory, filename), 'w')
         output.write(ET.tostring(tree))
         output.close()
         
-        # Decide if we allow printing
-        
         if kundennr.strip() == '66669':
             return False
-        
         return True
 
 
-class FiveServer(asyncore.dispatcher):
-    """
-    Receives connections and establishes handlers for each client.
-    """
-    
-    def __init__(self, options):
-        self.logger = logging.getLogger('FivethousandAndOne')
-        
-        self.options = options
-        if options.verbose:
-            loglevel = logging.DEBUG
-        elif options.quiet:
-            loglevel = logging.ERROR
-        else:
-            loglevel = logging.INFO
-        self.logger.setLevel(loglevel)
-        
-        asyncore.dispatcher.__init__(self)
-        self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.set_reuse_addr()
-        self.bind((options.address, options.port))
-        self.address = self.socket.getsockname()
-        self.logger.debug('binding to %s', self.address)
-        self.listen(5)
-        self.xmlparser = CrazySoftMXMLParser(DIRECTORY)
-        print DIRECTORY
-
-    def parse(self, data):
-        """Parse data received by FiveReceiver"""
-        
-        return self.xmlparser.parse(data)
-
-    def handle_accept(self):
-        """Handle a connection request"""
-        
-        client_info = self.accept()
-        self.logger.debug('handle_accept() -> %s', client_info[1])
-        FiveReceiver(client_info[0], self, self.options.remote)
-
-
-class FiveReceiver(asyncore.dispatcher):
-    """Receive data from a client and forward it to the actual server"""
-    
-    def __init__(self, sock, server, remote):
-        self.chunk_size = 4096
-        self.logger = logging.getLogger('FiveReceiver%s' % str(sock.getsockname()))
-        asyncore.dispatcher.__init__(self, sock=sock)
-        self.server = server
-        self.data = StringIO()
-        self.data_len = -1
-        self.lenbuf = ''
-        
-        # open client sock to printserver...
-        remote_address = parse_address(remote)
-        self.sender = FiveSender(self, remote_address)
-
-    def handle_close(self):
-        """Try to parse XML data and decide if to forward data to server"""
-        data = self.data.getvalue()
-        
-        # Wenn alle Daten gelesen sind, kann die XML-Parserei losgehen
-        if len(data) >= self.data_len:
-            self.logger.info('Parsing XML data...')
-            should_forward = self.server.parse(data)
-        else:
-            self.logger.error('Not enough data received: %d of %d bytes' % (len(data), self.data_len))
-            print data
-            should_forward = False
-        
-        self.logger.info('Forwarding to server: %s' % should_forward)
-        
-        # An Server weiterleiten
-        if should_forward:
-            # Schreibe zuerst die Länge (8 Byte kodiert als ASCII-Zeichekette)
-            #self.sender.send("%08d" % self.data_len)
-            #self.sender.send(data)
-            pass
-        
-        self.logger.info('Closing...')
-        self.close()
-    
-    def handle_read(self):
-        """Read an incoming message from the client and put it into our outgoing queue."""
-        
-        data = self.recv(self.chunk_size)
-        
-        # SoftM schickt immer zuerst die Länge der Payload 8 Byte kodiert als ASCII-Zeichekette
-        if self.data_len == -1:
-            while data[0].isdigit():
-                self.lenbuf += data[0]
-                data = data[1:]
-            if len(self.lenbuf) == 8:
-                self.data_len = int(self.lenbuf)
-        
-        # Daten (ohne die Länge) in Read-Buffer schreiben
-        self.data.write(data)
-
-
-class FiveSender(asyncore.dispatcher):
+class PrintserverClient(asyncore.dispatcher):
     """Sends the received data to the actual server"""
     
-    def __init__(self, receiver, address):
+    def __init__(self, clientsock, remote, data):
         asyncore.dispatcher.__init__(self)
-        self.receiver = receiver
+        self.clientsock = clientsock
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
+        address = parse_address(remote)
         self.connect(address)
+        self.buffer = "%08d" % len(data) + data
+    
+    def handle_connect(self):
+        pass
+    
+    def writable(self):
+        return (len(self.buffer) > 0)
+
+    def handle_write(self):
+        sent = self.send(self.buffer)
+        self.buffer = self.buffer[sent:]
     
     def handle_close(self):
         self.close()
@@ -200,24 +118,81 @@ class FiveSender(asyncore.dispatcher):
     def handle_read(self):
         """Read data from server and push it back to client"""
         data = self.recv(4096)
-        self.receiver.send(data)
+        self.clientsock.write(data)
+
+
+def respond(response):
+    """Write response and exit"""
+    sys.stdout.write(unicode(response).encode('iso8859-1'))
+    sys.exit()
+
+
+def serve(options):
+    """The server main loop"""
+    
+    logger = logging.getLogger('SoftM Printserver')
+    
+    # Lese zuerst die Länge der folgenden Nachricht
+    length = sys.stdin.read(8)
+    if len(length) != 8:
+        respond(u"<SMXML00000064>*ERROR SockSrvUngültiger Prozeduraufruf oder ungültiges Argument")
+    try:
+        length = int(length)
+    except ValueError:
+        respond(u"<SMXML00000064>*ERROR SockSrvUngültiger Prozeduraufruf oder ungültiges Argument")
+    
+    # Lese die Nutzlast der Nachricht
+    data = sys.stdin.read(length)
+    # kann es passieren, dass weniger als `length` Bytes gelesen werden?
+    
+    # Der XML-Parser entscheidet, ob der Request weitergeleitet wird.
+    parser = CrazySoftMXMLParser(DIRECTORY)
+    
+    try:
+        should_forward = parser.parse(data)
+    except Exception, exc:
+        logger.error("Error while parsing XML: %s" % exc)
+        respond(u"<SMXML00000064>*ERROR SockSrvUngültiger Prozeduraufruf oder ungültiges Argument")
+    
+    if should_forward:
+        logger.debug("Open socket to SoftM Printserver...")        
+        client = PrintserverClient(sys.stdout, options.remote, data)
+        asyncore.loop()
+    else:
+        logger.debug("Open socket to SoftM Printserver...")
+        respond(u"<SMXML00000009>*OK   *OK")
 
 
 def main():
     """Main Entry Point"""
     
     parser = optparse.OptionParser()
-    parser.add_option('-b', '--bind', dest='address', default='0.0.0.0', help='Address to bind to [default: %default]')
-    parser.add_option('-p', '--port', default=5001, type='int', help='TCP port [default: %default]')
-    parser.add_option('-r', '--remote', default='172.28.4.104:5001', help='Address of remote server [default: %default]')
+    parser.add_option('-d', '--directory', default=DIRECTORY, help='Log directory [default: %default]')
+    parser.add_option('-r', '--remote', default='192.168.112.199:5001', help='Address of remote server [default: %default]')
     parser.add_option('-q', '--quiet', action="store_true", default=False, help="don't print status messages to stdout")
     parser.add_option('-v', '--verbose', action="store_true", default=False, help="Be very verbose")
     
     options, args = parser.parse_args()
 
-    logging.basicConfig(level=logging.DEBUG, format='%(name)s: %(message)s')
-    server = FiveServer(options)
-    asyncore.loop()
+    if options.verbose:
+        loglevel = logging.DEBUG
+    elif options.quiet:
+        loglevel = logging.ERROR
+    else:
+        loglevel = logging.INFO
+    
+    # So richtig versteh ich dieses logging-Gedöhns ja nicht...
+    
+    handler = logging.handlers.SysLogHandler('/dev/log')
+    handler.setFormatter(logging.Formatter('%(name)s: %(message)s'))
+    handler.setLevel(loglevel)
+    
+    logger = logging.getLogger('SoftM Printserver')
+    logger.addHandler(handler)
+    logger.setLevel(loglevel)
+        
+    serve(options)
+
 
 if __name__ == '__main__':
     main()

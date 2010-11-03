@@ -58,10 +58,10 @@ def verkaufspreis(artnr, kundennr, bestelldatum=datetime.date.today()):
                "PRARTN = %s and PRDTBI >= %s AND PRDTVO <= %s" % (artnr_str, date_str, date_str))
 
     condition_kunde = condition + " AND PRKDNR = %s" % kundennr_str
-    rows = get_connection().query(['XPN00', 'XPR00'], ordering='PRDTVO', condition=condition_kunde)
+    rows = get_connection().query(['XPN00', 'XPR00'], fields=["PNPRB"], ordering='PRDTVO', condition=condition_kunde)
 
     if rows:
-        return dict(preis=rows[0]['preis'], herkunft='Kundenpreis')
+        return dict(preis=rows[0][0], herkunft='Kundenpreis')
 
     # 2. Preis aus Preislistennr. des Kunden ermitteln
     kdgruppe = get_connection().query('XXA00', fields='XAKGRP', condition='XAKDNR = %s' % kundennr_str)

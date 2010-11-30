@@ -1,4 +1,6 @@
+<<<<<<< HEAD
 0.70:   softmexpress node.js proxy added
+0.68:   neu: husoftm/kontrollator.py - Findet Aufträge die Voll ausgeliefert sind aber keine Rechnung haben
 0.67:   Proxy server for SoftM print server
 0.66:   New function kunden.offene_posten, kunden.kredit_limit
 0.65:   support tagging of sql queries for profiling

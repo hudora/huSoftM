@@ -19,10 +19,3 @@ def name(sachbearbeiternr):
         raise ValueError("Kein Sachbearbeiter mit Nummer %s" % sachbearbeiternr)
     return rows[0][0]
 
-
-def _selftest():
-    """Test basic functionality"""
-    pass
-
-if __name__ == '__main__':
-    _selftest()

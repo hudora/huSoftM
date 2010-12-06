@@ -10,15 +10,10 @@ Copyright (c) 2007 HUDORA GmbH. All rights reserved.
 
 import datetime
 import doctest
-import logging
 import sys
 import time
 import unittest
 from husoftm2.fields import PADDINGFIELDS
-
-
-logging.basicConfig(level=logging.DEBUG)
-LOG = logging.getLogger('husoftm.tools')
 
 
 # SoftM verwendet scheinbar Autokennzeichen

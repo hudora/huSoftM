@@ -105,7 +105,7 @@ def _softm_to_dict(row):
                name2=row.get('name2', ''),
                name3=row.get('name3', ''),
                strasse=row.get('strasse', ''),                          # Marktplatz 5
-               land=husoftm.tools.land2iso(row['laenderkennzeichen']),  # D
+               land=husoftm2.tools.land2iso(row['laenderkennzeichen']),  # D
                plz=row.get('plz', ''),                                  # 75387
                ort=row.get('ort', ''),                                  # Neubulach
                tel=row.get('tel', ''),                                  # 07053/7910
@@ -122,7 +122,7 @@ def _softm_to_dict(row):
                # vertreter=row.get('vertreter', ''),                    # ': u'201'
                # branche=row.get('branche', ''),                        # ': u'13'
                # kundengruppe=row.get('kundengruppe', ''),
-               sachbearbeiter=row.get('sachbearbeiter', ''),            # ': u'Birgit Bonrath'
+               betreuer=row.get('betreuer', ''),                        # ': u'Birgit Bonrath'
                interne_firmennr=row.get('interne_firmennr', ''),        # ': u''
                unsere_lieferantennr=row.get('unsere_lieferantennumemr', ''),
               )

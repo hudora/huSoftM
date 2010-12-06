@@ -67,13 +67,14 @@ def _auftraege(additional_conditions=None, mindate=None, maxdate=None, limit=Non
     koepfe = {}
     kopftexte = {}
     # Köfe samt Kopftexten einlesen
-    for kopf in query(['AAK00', 'AAT00'], ordering=['AKAUFN DESC'], condition=condition, limit=limit):
+    for kopf in query(['AAK00', 'AAT00'], ordering=['AKAUFN DESC'], condition=condition,
+                      limit=limit, ua='husoftm2.auftraege'):
         d = dict(kundennr="SC%s" % kopf['kundennr_warenempf'],
                  auftragsnr=kopf['auftragsnr'],
                  auftragsnr_kunde=kopf['auftragsnr_kunde'],
                  erfassung=kopf['erfassung_date'],
                  aenderung=kopf['aenderung_date'],
-                 sachbearbeiter=husoftm.sachbearbeiter.resolve(kopf['sachbearbeiter']),
+                 sachbearbeiter=husoftm2.sachbearbeiter.resolve(kopf['sachbearbeiter']),
                  anliefertermin=kopf['liefer_date'],
                  teillieferung_erlaubt=(kopf['teillieferung_erlaubt'] == 1),
                  erledigt=(kopf['voll_ausgeliefert'] == 1),

@@ -186,7 +186,7 @@ def _get_tablename(name):
 
 
 def query(tables=None, condition=None, fields=None, querymappings=None,
-          grouping=None, ordering=None, limit=None, calltag='', cachingtime=300):
+          grouping=None, ordering=None, limit=None, ua='', cachingtime=300):
     r"""Execute a SELECT on the AS/400 turning the results in a list of dicts.
 
     In fields you can give a list of fields you are interested in. If fields is left empty the engine
@@ -262,7 +262,7 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
 
     args = dict(fields=fields,
                 tablenames=tablenames,
-                tag=calltag)
+                tag=ua)
     if condition:
         args['condition'] = condition
     if grouping:
@@ -283,7 +283,8 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
     digest = hmac.new(_find_credentials(), url, hashlib.sha1).hexdigest()
     (status, headers, content) = huTools.http.fetch('http://api.hudora.biz:8082' + url,
                                                     method='GET',
-                                                    headers={'X-sig': digest})
+                                                    headers={'X-sig': digest},
+                                                    ua='%s/husoftm2.backend' % ua)
     if status != 200:
         # TODO: this looks extremely fragile. Must have be drunk while coding this.
         # needs a better implementation

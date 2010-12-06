@@ -745,7 +745,7 @@ MAPPINGDIR = {
           #'KZRGCO': 'Formularanz./ Rechnung',
           #'KZTELF': 'tel',
           #'KZTFAX': 'fax',
-          'KZINFO': 'sachbearbeiter',
+          'KZINFO': 'betreuer',
           'KZDTAE': 'updated_at',
 },
 
@@ -2466,8 +2466,8 @@ MAPPINGDIR = {
           # 'KDEMAL': 'mail',
           # 'KDHOME': 'url',
           # 'KDSANR': 'adressdatei_id',
-          # 'KDDTER': 'erfassung_date',
-          # 'KDDTAE': 'aenderung_date',
+          'KDDTER': 'erfassung_date',
+          'KDDTAE': 'aenderung_date',
           #'KDSTAT': 'satzstatus',
           },
 

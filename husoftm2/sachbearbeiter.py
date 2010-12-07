@@ -20,4 +20,4 @@ def resolve(sachbearbeiternr):
     if not _sachbearbeiter:
         for row in query('XSB00', fields=['SBSBNR', 'SBNAME'], cachingtime=60*60*24*10):
             _sachbearbeiter[str(row['id'])] = row['name']
-    return _sachbearbeiter[str(sachbearbeiternr)]
+    return _sachbearbeiter.get(str(sachbearbeiternr), '?')

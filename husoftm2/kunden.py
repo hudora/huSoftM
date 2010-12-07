@@ -122,7 +122,7 @@ def _softm_to_dict(row):
                # vertreter=row.get('vertreter', ''),                    # ': u'201'
                # branche=row.get('branche', ''),                        # ': u'13'
                # kundengruppe=row.get('kundengruppe', ''),
-               betreuer=row.get('betreuer', ''),                        # ': u'Birgit Bonrath'
+               betreuer_handle=row.get('betreuer', ''),                        # ': u'Birgit Bonrath'
                interne_firmennr=row.get('interne_firmennr', ''),        # ': u''
                unsere_lieferantennr=row.get('unsere_lieferantennumemr', ''),
               )

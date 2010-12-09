@@ -57,7 +57,7 @@ class PyRoMoftSconnection(object):
         # finds object automatically if you're running the Name Server.
         self.__server = Pyro.core.getProxyForURI("PYRONAME://pyro-ns.local.hudora.biz/mofts_connector1")
         warnings.warn("hudoftm.connection is deprecated use hudoftm.connection2 instead",
-                      DeprecationWarning, stacklevel=3) 
+                      DeprecationWarning, stacklevel=3)
 
     def _fix_field(self, data):
         """Fix field types returned by DB2/400."""
@@ -262,6 +262,6 @@ MoftSconnectionToTestDB = PyRoMoftSconnectionToTestDB
 
 def get_connection():
     """Get a PyRoMoftSconnection Object. Meant to one day introduce connection pooling."""
-    
+
     # return MoftSconnectionToTestDB()
     return MoftSconnection()

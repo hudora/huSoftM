@@ -17,7 +17,7 @@ def versandart(vart, anwendung='A'):
     ('DPD/Danzas EXW', 'DPD/Danzas unfrei/EXW')
     >>> versandart(14)
     ('Cretschmar', 'Cretschmar Cargo')
-    
+
     """
     vart = "%03d" % int(vart)
     condition = "TYFNR <> '' AND TYANW = %s AND TYVSAR = %s" % (sql_quote(anwendung), sql_quote(vart))

@@ -13,24 +13,14 @@ import husoftm2.sachbearbeiter
 
 
 def _lieferscheine(additional_conditions=None, limit=None, header_only=False):
-    cachingtime = 60*60*12
+    cachingtime = 60 * 60 * 12
     conditions = ["LKLFSN <> 0",
                   "LKSTAT <> 'X'",
                   "LKKDNR = KDKDNR",
-                  # "LKAUFS = AKAUFN",
-                  #"LKKDNR = KDKDNR",
-                  #"LKAUFS = AKAUFN"
                   ]
-    # if mindate and maxdate:
-    #     conditions.append("AKDTER BETWEEN %s AND %s" % (date2softm(mindate), date2softm(maxdate)))
-    # elif mindate:
-    #     conditions.append("AKDTER > %s" % date2softm(mindate))
-    # elif maxdate:
-    #     conditions.append("AKDTER < %s" % date2softm(maxdate))
     if additional_conditions:
         conditions.extend(additional_conditions)
     condition = " AND ".join(conditions)
-    # Lieferscheinkopf JOIN Kundenadresse JOIN Auftragskopf um die Anzahl der Queries zu minimieren
     koepfe = {}
     auftragsnr2satznr = {}
     satznr2auftragsnr = {}
@@ -101,7 +91,7 @@ def _lieferscheine(additional_conditions=None, limit=None, header_only=False):
             lieferaddressen[row['nr']] = d
 
         # Texte
-        for row in query(['AAT00'], ordering=['ATTART', 'ATLFNR'], cachingtime=cachingtime, 
+        for row in query(['AAT00'], ordering=['ATTART', 'ATLFNR'], cachingtime=cachingtime,
                          condition="ATAUFN IN (%s)" % ','.join([str(x) for x in batch])):
             row['textart'] = int(row['textart'])
             if row['textart'] == 5:
@@ -179,94 +169,12 @@ def lieferscheine_auftrag(auftragsnr, header_only=False):
     return _lieferscheine(["LKAUFS = %s" % sql_quote(auftragsnr)], header_only=header_only)
 
 
-# LEGACY
-# def get_lieferscheinnrs_for_lager(lager):
-#     "Liefert eine Liste mit allen nicht voll ausgelieferten Lieferscheinnummern für ein Lager."""
-#     rows = query("ALK00", fields=["LKLFSN"],
-#                  condition="LKLGNR=%r AND LKLFSN>0 AND LKKZVA=0 AND LKSTAT <> 'X'" % lager)
-#     return sorted(set((int(row[0]) for row in rows)))
-#
-#
-# def kommibelege_for_auftrag(auftragsnr):
-#     """Return all Kommibeleg objects for a given auftragsnr"""
-#
-#     conditions = ["LKAUFS = %s" % sql_quote(auftragsnr), "LKLFSN = 0"]
-#     condition = " AND ".join(conditions)
-#     rows = get_connection().query(["ALK00"], condition=condition)
-#     return [Kommibeleg(row['kommibelegbelegnr']) for row in rows]
-
-
-# def kbpos2artnr(komminr, posnr):
-#     """Gibt die Artikelnummer zu einer bestimmten Position eines Kommissionierbelegs zurück."""
-#     rows = get_connection().query('ALN00', fields=['LNARTN'],
-#                condition="LNKBNR=%d AND LNBELP=%d" % (int(komminr), int(posnr)))
-#     return rows[0][0]
-
-
-# def kbpos2artnr_lager(komminr, posnr):
-#     """Gibt die Artikelnummer und das Abgangs-Lager zu einer bestimmten Position eines Kommissionierbelegs zurück."""
-#     rows = get_connection().query('ALN00', fields=['LNARTN', 'LNLGNR'],
-#                condition="LNKBNR=%d AND LNBELP=%d" % (int(komminr), int(posnr)))
-#     return rows[0]['artnr'], rows[0]['lager']
-#
-#
-# def kbpos2artnr_zugangslager(komminr, posnr):
-#     """Gibt die Artikelnummer und das ZUGANGS-Lager zu einer bestimmten Position eines Kommissionierbelegs zurück."""
-#     # Read auftragsnr_kunde
-#     rows = get_connection().query('ALN00', fields=['LNARTN', 'LNAUFN'],
-#                condition="LNKBNR=%d AND LNBELP=%d" % (int(komminr), int(posnr)))
-#     artnr, auftragsnr = rows[0]['artnr'], rows[0]['auftragsnr']
-#     rows = get_connection().query('AAK00', condition="AKAUFN='%d'" % int(auftragsnr))
-#     return artnr, rows[0]["zugangslager"]
-
-
-class Lieferschein(object):
-    """Repräsentiert einen SoftM Lieferschein. Folgt dem Lieferung Protokol.
-
-    >>> Lieferschein(4034544)
-    <Lieferschein object>
-    """
-
-    condition = "LKLFSN = %d"
-    # Für Kommibelege: condition = "LKKBNR = %d AND LKSANB = 0"
-
-    def __init__(self, lsnr=None):
-        self._read_from_softm(int(lsnr))
-
-    def _read_from_softm(self, lsnr):
-        """Basierend auf der ALK00 wird ein Datensatz aus allen verwandten Tabellen extrahiert."""
-
-        # Lieferscheinkopf JOIN Kundenadresse JOIN Auftragskopf um die Anzahl der Queries zu minimieren
-        conditions = [self.condition % lsnr, "LKKDNR = KDKDNR", "LKAUFS = AKAUFN"]
-        rows = get_connection().query(['ALK00', 'AAK00', 'XKD00'], condition=" AND ".join(conditions))
-        if len(rows) != 1:
-            raise RuntimeError("Probleme bei der Auswahl des Lieferscheins - kein Datensatz mit %s" %
-                                (self.condition % lsnr))
-        set_attributes(rows[0], self)
-
-        self.anlieferdatum = self.liefer_date
-        self.anlieferdatum_min = self.anlieferdatum_max = self.anlieferdatum
-
-        if self.kundenwunsch_date:
-            self.anlieferdatum_max = self.kundenwunsch_date
-
-        self.fixtermin = bool(self.fixtermin)
-
-        self.pos_key = self.satznr
-        if self.bezogener_kopf:
-            self.pos_key = self.bezogener_kopf
-
-        # Property für delayed execution
-        self._positionen = None
-        self._infotext_kunde = None
-
-
 def _selftest():
     """Test basic functionality"""
     from pprint import pprint
     import datetime
     header = False
-    #print len(get_changed_after(datetime.date(2010, 12, 1)))
+    print len(get_changed_after(datetime.date(2010, 12, 1)))
     #(get_auftrag_by_guid('Online_20101202', header_only=header))
     pprint(lieferscheine_auftrag('SO1163764', header_only=header))
     #(get_auftrag('Online_20101202', header_only=header))

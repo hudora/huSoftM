@@ -730,7 +730,7 @@ MAPPINGDIR = {
          #'VADFSL'  Dateiführungs-Schlüssel
          'VASTAT': 'satzstatus',
        },
-       
+
 'BBU00': { # Buchungspositionen in der Buchhaltung
     # 'BUFNR':  'Firmennr. Sachbuchung',
     # 'BUBHKZ': 'Buchhaltungskennz. D,K,S',
@@ -875,95 +875,95 @@ MAPPINGDIR = {
           },
 
 # BOP00 - Offene Posten?
-#     OPFNR               BOP00              Firmennummer               
-#     OPBHKZ              BOP00              Buchhaltungskennz. D,K,S   
-#     OPBLRT              BOP00              Belegart                   
-#     OPBLRA              BOP00              Anzeigebelegart            
-#     OPBUSL              BOP00              externe Belegart           
-#     OPRGNR              BOP00              Rechnungs-Nummer           
-#     OPRPOS              BOP00              Rechnungsposition          
-#     OPRGLS              BOP00              Rechnungslistennr.         
-#     OPPKTO              BOP00              Personenkonto KD/LIEF      
-#     OPVKTO              BOP00              Verbandskto. nr.           
-#     OPMKTO              BOP00              Mischkonto                 
-#     OPKTO               BOP00              Konto-Sachbuchhaltung      
-#     OPWSL               BOP00              W{hrungs-Kennzeichen       
-#     OPAUSB              BOP00              Auszahlungsbetrag          
-#     OPDTEB              BOP00              F{lligkeit Einbehalt        
-#     OPSKBT              BOP00              Skontobetrag                
-#     OPSKKZ              BOP00              Skontokennzeichen           
-#     OPSKSL              BOP00              Skonto-Schl}ssel            
-#     OPDKSL              BOP00              Skt.Schl.Delcedere          
-#     OPZAHL              BOP00              Zahlangabe                  
-#     OPBKLF              BOP00              Laufnr. vers. Banken/Konten 
-#     OPMAHN              BOP00              Mahnabgabe                  
-#     OPMSTU              BOP00              Mahnstufe                   
-#     OPUKKZ              BOP00              Ungepr. Kreditorenrg.       
-#     OPZPNR              BOP00              Zahlungsplannummer          
-#     OPZPOS              BOP00              Zahlungsplanpos.            
-#     OPDTVA              BOP00              Valutadatum                 
-#     OPDTFL              BOP00              F{lligkeitsdatum            
-#     OPDTLM              BOP00              Datum letzte Mahnung        
-#     OPDTBL              BOP00              Belegdatum                  
-#     OPMMBU              BOP00              MM Bumo                     
-#     OPJJBU              BOP00              JJ Bumo                     
-#     OPJHBU              BOP00              JH Bumo                     
-#     OPGJBU              BOP00              Gesch{ftsjahr               
-#     OPMMAU              BOP00              TT Ausgleich                
-#     OPJJAU              BOP00              JJ Ausgleich                
-#     OPJHAU              BOP00              JH Ausgleich                
-#     OPGJAU              BOP00              Gesch{ftsjahr               
-#     OPOINF              BOP00              OP-Information              
-#     OPVRT               BOP00              Vertreter-Nummer            
-#     OPABT               BOP00              Abteilungs-Nummer           
-#     OPBRAN              BOP00              Branche                     
-#     OPGEB               BOP00              Gebiet                      
-#     OPAKAN              BOP00              Akt.Betrag Anbu             
-#     OPSKZA              BOP00              Gew{hrter Skonto            
-#     OPDSLD              BOP00              Durchschn. Saldo            
-#     OPWZZA              BOP00              Zahlungswartezeit           
-#     OPOPBT              BOP00              Betrag off. Posten          
-#     OPOPWB              BOP00              W{hrungsbetrag              
-#     OPOPPW              BOP00              Rechnungsbetrag             
-#     OPOPSH              BOP00              Kennzeichen Soll/Haben = S/ 
-#     OPRGBT              BOP00              Rechnungsbetrag             
-#     OPRGWB              BOP00              W{hrungsbetrag              
-#     OPRGPW              BOP00              Rechnungsbetrag             
-#     OPRGSH              BOP00              Kennzeichen Soll/Haben = S/ 
-#     OPKURS              BOP00              Wechsel-Kurs                
-#     OPKUFA              BOP00              Kursfaktor                  
-#     OPBDIM              BOP00              Betragsdimension            
-#     OPZAKZ              BOP00              W{hrungsart                 
-#     OPSPAR              BOP00              Abteilungs-Gruppe/Sparte    
-#     OPKZSB              BOP00              Kennz. Schattenbuchung      
-#     OPSRT1              BOP00              Sort-Kennz. 1               
-#     OPSRT2              BOP00              Sort-Kennz. 2               
-#     OPSRT3              BOP00              Sort Text                   
-#     OPSRT4              BOP00              Sort Betrag                 
-#     OPSRT5              BOP00              Sort 5/Anz.tr{ger           
-#     OPSRT6              BOP00              Sort 6/Anz.kennz.           
-#     OPKZRG              BOP00              KZ J/N                      
-#     OPBUI1              BOP00              Informationsfeld 1          
-#     OPBUI2              BOP00              Informationsfeld 2          
-#     OPBUI3              BOP00              Informationsfeld 3          
-#     OPBUI4              BOP00              Informationsfeld 4          
-#     OPBUI5              BOP00              Info-Kennz. 1               
-#     OPBUI6              BOP00              Info-Kennz. 2               
-#     OPBUI7              BOP00              Info Text                   
-#     OPBUI8              BOP00              Info Betrag                 
-#     OPOPR1              BOP00              Feld 10 A                   
-#     OPOPR2              BOP00              Feld 10 A                   
-#     OPOPR3              BOP00              Feld 10 A                   
-#     OPOPR4              BOP00              Feld 20 A                   
-#     OPOPR5              BOP00              Feld 1 A                    
-#     OPOPR6              BOP00              Feld 1 A                    
-#     OPOPR7              BOP00              Buchungsbetrag              
-#     OPSANR              BOP00              Satznummer                  
-#     OPSAN1              BOP00              Satznummer             
-#     OPWSPW              BOP00              W{hrungs-Kennzeichen   
-#     OPKUPW              BOP00              Wechsel-Kurs           
-#     OPFAPW              BOP00              Kursfaktor             
-#     OPKZPW              BOP00              W{hrungsart            
+#     OPFNR               BOP00              Firmennummer
+#     OPBHKZ              BOP00              Buchhaltungskennz. D,K,S
+#     OPBLRT              BOP00              Belegart
+#     OPBLRA              BOP00              Anzeigebelegart
+#     OPBUSL              BOP00              externe Belegart
+#     OPRGNR              BOP00              Rechnungs-Nummer
+#     OPRPOS              BOP00              Rechnungsposition
+#     OPRGLS              BOP00              Rechnungslistennr.
+#     OPPKTO              BOP00              Personenkonto KD/LIEF
+#     OPVKTO              BOP00              Verbandskto. nr.
+#     OPMKTO              BOP00              Mischkonto
+#     OPKTO               BOP00              Konto-Sachbuchhaltung
+#     OPWSL               BOP00              W{hrungs-Kennzeichen
+#     OPAUSB              BOP00              Auszahlungsbetrag
+#     OPDTEB              BOP00              F{lligkeit Einbehalt
+#     OPSKBT              BOP00              Skontobetrag
+#     OPSKKZ              BOP00              Skontokennzeichen
+#     OPSKSL              BOP00              Skonto-Schl}ssel
+#     OPDKSL              BOP00              Skt.Schl.Delcedere
+#     OPZAHL              BOP00              Zahlangabe
+#     OPBKLF              BOP00              Laufnr. vers. Banken/Konten
+#     OPMAHN              BOP00              Mahnabgabe
+#     OPMSTU              BOP00              Mahnstufe
+#     OPUKKZ              BOP00              Ungepr. Kreditorenrg.
+#     OPZPNR              BOP00              Zahlungsplannummer
+#     OPZPOS              BOP00              Zahlungsplanpos.
+#     OPDTVA              BOP00              Valutadatum
+#     OPDTFL              BOP00              F{lligkeitsdatum
+#     OPDTLM              BOP00              Datum letzte Mahnung
+#     OPDTBL              BOP00              Belegdatum
+#     OPMMBU              BOP00              MM Bumo
+#     OPJJBU              BOP00              JJ Bumo
+#     OPJHBU              BOP00              JH Bumo
+#     OPGJBU              BOP00              Gesch{ftsjahr
+#     OPMMAU              BOP00              TT Ausgleich
+#     OPJJAU              BOP00              JJ Ausgleich
+#     OPJHAU              BOP00              JH Ausgleich
+#     OPGJAU              BOP00              Gesch{ftsjahr
+#     OPOINF              BOP00              OP-Information
+#     OPVRT               BOP00              Vertreter-Nummer
+#     OPABT               BOP00              Abteilungs-Nummer
+#     OPBRAN              BOP00              Branche
+#     OPGEB               BOP00              Gebiet
+#     OPAKAN              BOP00              Akt.Betrag Anbu
+#     OPSKZA              BOP00              Gew{hrter Skonto
+#     OPDSLD              BOP00              Durchschn. Saldo
+#     OPWZZA              BOP00              Zahlungswartezeit
+#     OPOPBT              BOP00              Betrag off. Posten
+#     OPOPWB              BOP00              W{hrungsbetrag
+#     OPOPPW              BOP00              Rechnungsbetrag
+#     OPOPSH              BOP00              Kennzeichen Soll/Haben = S/
+#     OPRGBT              BOP00              Rechnungsbetrag
+#     OPRGWB              BOP00              W{hrungsbetrag
+#     OPRGPW              BOP00              Rechnungsbetrag
+#     OPRGSH              BOP00              Kennzeichen Soll/Haben = S/
+#     OPKURS              BOP00              Wechsel-Kurs
+#     OPKUFA              BOP00              Kursfaktor
+#     OPBDIM              BOP00              Betragsdimension
+#     OPZAKZ              BOP00              W{hrungsart
+#     OPSPAR              BOP00              Abteilungs-Gruppe/Sparte
+#     OPKZSB              BOP00              Kennz. Schattenbuchung
+#     OPSRT1              BOP00              Sort-Kennz. 1
+#     OPSRT2              BOP00              Sort-Kennz. 2
+#     OPSRT3              BOP00              Sort Text
+#     OPSRT4              BOP00              Sort Betrag
+#     OPSRT5              BOP00              Sort 5/Anz.tr{ger
+#     OPSRT6              BOP00              Sort 6/Anz.kennz.
+#     OPKZRG              BOP00              KZ J/N
+#     OPBUI1              BOP00              Informationsfeld 1
+#     OPBUI2              BOP00              Informationsfeld 2
+#     OPBUI3              BOP00              Informationsfeld 3
+#     OPBUI4              BOP00              Informationsfeld 4
+#     OPBUI5              BOP00              Info-Kennz. 1
+#     OPBUI6              BOP00              Info-Kennz. 2
+#     OPBUI7              BOP00              Info Text
+#     OPBUI8              BOP00              Info Betrag
+#     OPOPR1              BOP00              Feld 10 A
+#     OPOPR2              BOP00              Feld 10 A
+#     OPOPR3              BOP00              Feld 10 A
+#     OPOPR4              BOP00              Feld 20 A
+#     OPOPR5              BOP00              Feld 1 A
+#     OPOPR6              BOP00              Feld 1 A
+#     OPOPR7              BOP00              Buchungsbetrag
+#     OPSANR              BOP00              Satznummer
+#     OPSAN1              BOP00              Satznummer
+#     OPWSPW              BOP00              W{hrungs-Kennzeichen
+#     OPKUPW              BOP00              Wechsel-Kurs
+#     OPFAPW              BOP00              Kursfaktor
+#     OPKZPW              BOP00              W{hrungsart
 
 
 'EBL00': { # Bestellköpfe
@@ -1073,43 +1073,43 @@ MAPPINGDIR = {
      },
 
 # BZT00: Bestellzusatztexte
-#     ZTSANR              BZT00              Satznummer                
-#     ZTLFNR              BZT00                                        
-#     ZTTX60              BZT00                                        
-#     ZTKZ1               BZT00                                        
-#     ZTKZ2               BZT00                                        
-#     ZTKZ3               BZT00                                        
-#     ZTKZ4               BZT00                                        
-#     ZTDTER              BZT00              Datum Erfassung CJJMMTT   
-#     ZTDTAE              BZT00              Datum l. ¢nderung CJJMMTT 
-#     ZTSBER              BZT00              Sachb. Erfassung          
-#     ZTSBAE              BZT00              Sachb.letzte ¢nderung     
-#     AXFNR               EAX00              Firma                       
-#     AXARTN              EAX00              Artikel/Art-Gruppe          
-#     AXSPSL              EAX00              Sprache                     
-#     AXLFNR              EAX00              Lfd. Nummer                 
-#     AXABT               EAX00              Abteilungs-Nummer           
-#     AXAGRP              EAX00              Abteilungs-Gruppe/Sparte    
-#     AXFGRP              EAX00              Firmen-Gruppe               
-#     AXTX60              EAX00              Text / 60-stellig           
-#     AXKZAB              EAX00              Andruck auf Bestell-Formula 
-#     AXKZLF              EAX00              Andruck auf Wareneing-Beleg 
-#     AXKZRG              EAX00              Interner Text               
-#     AXKZ04              EAX00              Kennzeichen 04              
-#     AXKZ05              EAX00              Kennzeichen 05              
-#     AXKZ06              EAX00              Kennzeichen 06              
-#     AXKZ07              EAX00              Kennzeichen 07              
-#     AXKZ08              EAX00              Kennzeichen 08              
-#     AXKZ09              EAX00              Kennzeichen 09              
-#     AXKZ10              EAX00              Kennzeichen 10              
-#     AXKZ11              EAX00              Kennzeichen 11              
-#     AXKZ12              EAX00              Kennzeichen 12              
-#     AXKZ13              EAX00              Kennzeichen 13              
-#     AXKZ14              EAX00              Kennzeichen 14              
-#     AXKZ15              EAX00              Kennzeichen 15              
-#     AXDTAE              EAX00              Datum letzte ¢nderung       
-#     AXDFSL              EAX00              Dateif}hrungs-Schl}ssel     
-#     AXSTAT              EAX00              Satzstatus                  
+#     ZTSANR              BZT00              Satznummer
+#     ZTLFNR              BZT00
+#     ZTTX60              BZT00
+#     ZTKZ1               BZT00
+#     ZTKZ2               BZT00
+#     ZTKZ3               BZT00
+#     ZTKZ4               BZT00
+#     ZTDTER              BZT00              Datum Erfassung CJJMMTT
+#     ZTDTAE              BZT00              Datum l. ¢nderung CJJMMTT
+#     ZTSBER              BZT00              Sachb. Erfassung
+#     ZTSBAE              BZT00              Sachb.letzte ¢nderung
+#     AXFNR               EAX00              Firma
+#     AXARTN              EAX00              Artikel/Art-Gruppe
+#     AXSPSL              EAX00              Sprache
+#     AXLFNR              EAX00              Lfd. Nummer
+#     AXABT               EAX00              Abteilungs-Nummer
+#     AXAGRP              EAX00              Abteilungs-Gruppe/Sparte
+#     AXFGRP              EAX00              Firmen-Gruppe
+#     AXTX60              EAX00              Text / 60-stellig
+#     AXKZAB              EAX00              Andruck auf Bestell-Formula
+#     AXKZLF              EAX00              Andruck auf Wareneing-Beleg
+#     AXKZRG              EAX00              Interner Text
+#     AXKZ04              EAX00              Kennzeichen 04
+#     AXKZ05              EAX00              Kennzeichen 05
+#     AXKZ06              EAX00              Kennzeichen 06
+#     AXKZ07              EAX00              Kennzeichen 07
+#     AXKZ08              EAX00              Kennzeichen 08
+#     AXKZ09              EAX00              Kennzeichen 09
+#     AXKZ10              EAX00              Kennzeichen 10
+#     AXKZ11              EAX00              Kennzeichen 11
+#     AXKZ12              EAX00              Kennzeichen 12
+#     AXKZ13              EAX00              Kennzeichen 13
+#     AXKZ14              EAX00              Kennzeichen 14
+#     AXKZ15              EAX00              Kennzeichen 15
+#     AXDTAE              EAX00              Datum letzte ¢nderung
+#     AXDFSL              EAX00              Dateif}hrungs-Schl}ssel
+#     AXSTAT              EAX00              Satzstatus
 
 'EBP00': { # Bestellpositions-Datei
           'BPMNGB-BPMNGL': 'menge_offen',
@@ -1246,108 +1246,108 @@ MAPPINGDIR = {
           'BPDFSL': 'dateifuehrungsschluessel',
           'BPSTAT': 'status',
            },
-    
+
 
 # Eingangsrechnungen
-#     ERFNR               EER00              Firma                 
+#     ERFNR               EER00              Firma
 #     ERABT               EER00              Rg.-Pr}fungs-Abteilung
-#     ERBSTN              EER00              Bestell-Nummer        
-#     ERFNRK              EER00              Firma                 
-#     ERRGST              EER00              abw. Rechnungssteller 
+#     ERBSTN              EER00              Bestell-Nummer
+#     ERFNRK              EER00              Firma
+#     ERRGST              EER00              abw. Rechnungssteller
 #     ERLINR              EER00              Lieferant / Bestellung
-#     ERZRFN              EER00              ZentralEk: Firma      
-#     ERZRLI              EER00              ZentralEk: RgSteller  
+#     ERZRFN              EER00              ZentralEk: Firma
+#     ERZRLI              EER00              ZentralEk: RgSteller
 #     EREGCD              EER00              EG-Code Warenlieferant
 #     ERFNRZ              EER00              zentrale Einkaufsfirma
-#     ERFNRR              EER00              Firma f}r Rahmen      
-#     ERDTWZ              EER00              Zugangsdatum          
-#     ERLFSN              EER00              Lieferscheinnummer    
-#     ERFORM              EER00              KZ:Rechnungs-Art      
-#     ERBUMO              EER00              Buchungsmonat CJJMM     
-#     ERDTBL              EER00              Belegdatum              
-#     EROINF              EER00              OP-Info                 
-#     ERBELN              EER00              Beleg-Nummer            
-#     ERRGNR              EER00              Interne Rg.Nr           
-#     ERBZRG              EER00              Bezogene Rg.-Nr         
-#     ERSTSL              EER00              Steuer-Schl}ssel 1      
-#     ERSTS2              EER00              Steuer-Schl}ssel 2      
-#     ERSTSF              EER00              Steuer-Schl}ssel Fracht 
-#     ERSTSZ              EER00              Steuer-Schl}ssel Zoll   
-#     ERSKSL              EER00              Skonto-Schl}ssel        
-#     ERDTVA              EER00              Valuta-Datum            
-#     ERZAHL              EER00              Zahl-Sperre             
-#     ERVCDE              EER00              Verfolgungscode         
-#     ERINFO              EER00              Info                        
-#     ERBUI1              EER00              Informationsfeld 1          
-#     ERBUI2              EER00              Informationsfeld 2          
-#     ERBUI3              EER00              Informationsfeld 3          
-#     ERBUI4              EER00              Informationsfeld 4          
-#     ERTCOD              EER00              PTT Teilnehmercode          
-#     ERPFZI              EER00              PrfZf Mod                   
-#     ERTLNR              EER00              PTT Teilnehmernummer        
-#     ERREFN              EER00              CH:VESR-Nr                  
-#     ERBKLF              EER00              Laufnr. vers. Banken/Konten 
-#     ERDTRE              EER00              Rechnungseingangsdatum      
-#     ERLEMO              EER00              Leistungsmonat              
-#     ERSTMO              EER00              Storno / Buchungsmonat      
-#     ERSTSB              EER00              Storno / Sachbearbeiter     
-#     ERDTSA              EER00              Storno/Datum der Ausf}hrung 
-#     ERWSL               EER00              W{hrungs-Kennzeichen        
-#     ERKURS              EER00              Wechsel-Kurs                
-#     ERKUFA              EER00              Kursfaktor                  
-#     ERKUR2              EER00              Wechsel-Kurs                
-#     ERKUF2              EER00              Kursfaktor                  
-#     ERBTBT              EER00              Brutto-Betrag               
-#     ERMWBT              EER00              Vorsteuer-Betrag 1          
-#     ERMWB2              EER00              Vorsteuer-Betrag 2          
-#     ERFRBT              EER00              Fracht-Betrag               
-#     ERZOBT              EER00              Zoll-Betrag                 
-#     ERNKBT              EER00              Nebenkosten                 
-#     ERRBBT              EER00              Gesamt-Rabatt 1             
-#     ERRBB2              EER00              Gesamt-Rabatt 2             
-#     ERSKBZ              EER00              Skontof{higer Betrag      
-#     ERSKBT              EER00              Skonto-Betrag             
-#     ERMWNT              EER00              Vorsteuer-Betrag 1 NETTO  
-#     ERMWN2              EER00              Vorsteuer-Betrag 2 NETTO  
-#     ERFNBT              EER00              Fracht-Betrag NETTO       
-#     ERZNBT              EER00              Zoll-Betrag NETTO         
-#     ERKZRB              EER00              KZ:FIBU-S{tze erstellen   
+#     ERFNRR              EER00              Firma f}r Rahmen
+#     ERDTWZ              EER00              Zugangsdatum
+#     ERLFSN              EER00              Lieferscheinnummer
+#     ERFORM              EER00              KZ:Rechnungs-Art
+#     ERBUMO              EER00              Buchungsmonat CJJMM
+#     ERDTBL              EER00              Belegdatum
+#     EROINF              EER00              OP-Info
+#     ERBELN              EER00              Beleg-Nummer
+#     ERRGNR              EER00              Interne Rg.Nr
+#     ERBZRG              EER00              Bezogene Rg.-Nr
+#     ERSTSL              EER00              Steuer-Schl}ssel 1
+#     ERSTS2              EER00              Steuer-Schl}ssel 2
+#     ERSTSF              EER00              Steuer-Schl}ssel Fracht
+#     ERSTSZ              EER00              Steuer-Schl}ssel Zoll
+#     ERSKSL              EER00              Skonto-Schl}ssel
+#     ERDTVA              EER00              Valuta-Datum
+#     ERZAHL              EER00              Zahl-Sperre
+#     ERVCDE              EER00              Verfolgungscode
+#     ERINFO              EER00              Info
+#     ERBUI1              EER00              Informationsfeld 1
+#     ERBUI2              EER00              Informationsfeld 2
+#     ERBUI3              EER00              Informationsfeld 3
+#     ERBUI4              EER00              Informationsfeld 4
+#     ERTCOD              EER00              PTT Teilnehmercode
+#     ERPFZI              EER00              PrfZf Mod
+#     ERTLNR              EER00              PTT Teilnehmernummer
+#     ERREFN              EER00              CH:VESR-Nr
+#     ERBKLF              EER00              Laufnr. vers. Banken/Konten
+#     ERDTRE              EER00              Rechnungseingangsdatum
+#     ERLEMO              EER00              Leistungsmonat
+#     ERSTMO              EER00              Storno / Buchungsmonat
+#     ERSTSB              EER00              Storno / Sachbearbeiter
+#     ERDTSA              EER00              Storno/Datum der Ausf}hrung
+#     ERWSL               EER00              W{hrungs-Kennzeichen
+#     ERKURS              EER00              Wechsel-Kurs
+#     ERKUFA              EER00              Kursfaktor
+#     ERKUR2              EER00              Wechsel-Kurs
+#     ERKUF2              EER00              Kursfaktor
+#     ERBTBT              EER00              Brutto-Betrag
+#     ERMWBT              EER00              Vorsteuer-Betrag 1
+#     ERMWB2              EER00              Vorsteuer-Betrag 2
+#     ERFRBT              EER00              Fracht-Betrag
+#     ERZOBT              EER00              Zoll-Betrag
+#     ERNKBT              EER00              Nebenkosten
+#     ERRBBT              EER00              Gesamt-Rabatt 1
+#     ERRBB2              EER00              Gesamt-Rabatt 2
+#     ERSKBZ              EER00              Skontof{higer Betrag
+#     ERSKBT              EER00              Skonto-Betrag
+#     ERMWNT              EER00              Vorsteuer-Betrag 1 NETTO
+#     ERMWN2              EER00              Vorsteuer-Betrag 2 NETTO
+#     ERFNBT              EER00              Fracht-Betrag NETTO
+#     ERZNBT              EER00              Zoll-Betrag NETTO
+#     ERKZRB              EER00              KZ:FIBU-S{tze erstellen
 #     ERKZRA              EER00              KZ: Gesamt-Rabatte umlegen
-#     ERKZNT              EER00              KZ: Rechnung netto buchen 
-#     ERKZFZ              EER00              KZ: Fracht/Zoll umlegen   
-#     ERKZAN              EER00              KZ: Anlagen-Gut           
-#     ERKZBN              EER00              KZ: Berlin                
-#     ERKZSP              EER00              KZ J/N                    
-#     ERKZEM              EER00              KZ: Einmal-Lieferant      
-#     ERKZKS              EER00              KZ: Kurssicherung           
-#     ERSBER              EER00              KZ: Sachbearbeiter/Erfassun 
-#     ERKZBT              EER00              Sonderbetrag                
-#     ERKZGK              EER00              GU K}rzPos                  
-#     ERF1N2              EER00              Reservefeld 2 1.0           
-#     ERF1N3              EER00              Reservefeld 3 1.0           
-#     ERF1WR              EER00              Feld 1 - 15/2               
-#     ERF3WR              EER00              Feld 3 - 15/2               
-#     ERF4WR              EER00              Feld 4 - 15/2               
-#     ERF5WR              EER00              Feld 5 - 15/2               
-#     ERF6WR              EER00              Feld 6 - 15/2               
-#     ERF1MG              EER00              Reservefeld Menge 1 13P3    
-#     ERF2MG              EER00              Reservefeld Menge 2 13P3    
-#     ERFA12              EER00              Reservefeld 2 10A           
-#     ERFA13              EER00              Reservefeld 3 10A           
-#     ERFA14              EER00              Reservefeld 4 10A           
-#     ERF1A2              EER00              Reservefeld 2 1A            
-#     ERF1A3              EER00              Reservefeld 3 1A            
-#     ERF1A4              EER00              Reservefeld 4 1A            
-#     ERF1A5              EER00              Reservefeld 5 1A            
-#     ERF1A6              EER00              Reservefeld 6 1A            
-#     ERFDT1              EER00              Reservefeld 1 Datum         
-#     ERFDT2              EER00              Reservefeld 2 Datum         
-#     ERFK20              EER00              Kunden-Spez                 
-#     ERDTER              EER00              Datum Erfassung CJJMMTT     
-#     ERDTST              EER00              Erstelldatum/Stapelbuchunge 
-#     ERDTBU              EER00              Buchungsdatum in der FIBU   
-#     ERDFSL              EER00              Dateif}hrungs-Schl}ssel     
-#     ERSTAT              EER00              Satzstatus 
+#     ERKZNT              EER00              KZ: Rechnung netto buchen
+#     ERKZFZ              EER00              KZ: Fracht/Zoll umlegen
+#     ERKZAN              EER00              KZ: Anlagen-Gut
+#     ERKZBN              EER00              KZ: Berlin
+#     ERKZSP              EER00              KZ J/N
+#     ERKZEM              EER00              KZ: Einmal-Lieferant
+#     ERKZKS              EER00              KZ: Kurssicherung
+#     ERSBER              EER00              KZ: Sachbearbeiter/Erfassun
+#     ERKZBT              EER00              Sonderbetrag
+#     ERKZGK              EER00              GU K}rzPos
+#     ERF1N2              EER00              Reservefeld 2 1.0
+#     ERF1N3              EER00              Reservefeld 3 1.0
+#     ERF1WR              EER00              Feld 1 - 15/2
+#     ERF3WR              EER00              Feld 3 - 15/2
+#     ERF4WR              EER00              Feld 4 - 15/2
+#     ERF5WR              EER00              Feld 5 - 15/2
+#     ERF6WR              EER00              Feld 6 - 15/2
+#     ERF1MG              EER00              Reservefeld Menge 1 13P3
+#     ERF2MG              EER00              Reservefeld Menge 2 13P3
+#     ERFA12              EER00              Reservefeld 2 10A
+#     ERFA13              EER00              Reservefeld 3 10A
+#     ERFA14              EER00              Reservefeld 4 10A
+#     ERF1A2              EER00              Reservefeld 2 1A
+#     ERF1A3              EER00              Reservefeld 3 1A
+#     ERF1A4              EER00              Reservefeld 4 1A
+#     ERF1A5              EER00              Reservefeld 5 1A
+#     ERF1A6              EER00              Reservefeld 6 1A
+#     ERFDT1              EER00              Reservefeld 1 Datum
+#     ERFDT2              EER00              Reservefeld 2 Datum
+#     ERFK20              EER00              Kunden-Spez
+#     ERDTER              EER00              Datum Erfassung CJJMMTT
+#     ERDTST              EER00              Erstelldatum/Stapelbuchunge
+#     ERDTBU              EER00              Buchungsdatum in der FIBU
+#     ERDFSL              EER00              Dateif}hrungs-Schl}ssel
+#     ERSTAT              EER00              Satzstatus
 
 
 'ESL00': { # Stapelschnittstelle LAGER
@@ -1419,286 +1419,286 @@ MAPPINGDIR = {
     'SLSANR': 'stapelsatznr'
 },
 
-#     VPFNR               EVP00              Firma                    
-#     VPHERK              EVP00              KZ: Herkunft             
-#     VPHKNR              EVP00              Herkunfts-Nummer         
+#     VPFNR               EVP00              Firma
+#     VPHERK              EVP00              KZ: Herkunft
+#     VPHKNR              EVP00              Herkunfts-Nummer
 #     VPHKPO              EVP00              Herkunfts-Position-Nummer
-#     VPVGNR              EVP00              Vorgangs-Nummer          
+#     VPVGNR              EVP00              Vorgangs-Nummer
 #     VPVGPO              EVP00              Vorgangs-Positions-Nummer
-#     VPBSTN              EVP00              BestellNr./AuftragsNr.   
-#     VPBSTP              EVP00              Bestell-Position         
-#     VPKZIE              EVP00              Kz: Intern/Extern        
-#     VPCBSN              EVP00              Bestell-Nr.  / Copy      
-#     VPCBSP              EVP00              Bestell-Pos. / Copy      
-#     VPANNR              EVP00              Anfrage                  
-#     VPANPO              EVP00              Anfrageposition          
-#     VPABT               EVP00              Abteilung / Bestellung   
-#     VPABTH              EVP00              Abteilung / Herkunft        
-#     VPAGRP              EVP00              Abteilungs-Gruppe/Sparte    
-#     VPFNRH              EVP00              Firma / Herkunft            
-#     VPFNRZ              EVP00              zentrale Einkaufsfirma      
-#     VPFNRR              EVP00              Firma f}r Rahmen            
-#     VPTXHK              EVP00              KZ: Herkunft des Textes     
-#     VPKETX              EVP00              Kz: Posit.-Texte eingesetzt 
-#     VPURSA              EVP00              Verursacher                 
-#     VPSBN2              EVP00              Zust{ndiger Eink{ufer       
-#     VPSBN5              EVP00              Anfordernder Sachbearbeiter 
-#     VPSBNR              EVP00              Sachbearbeiter / Stapelsatz 
-#     VPSBDI              EVP00              Sachbearbeiter/ Disposition 
-#     VPABDI              EVP00              Abteilung / Disposition     
-#     VPABC               EVP00              ABC-Klassifizierung         
-#     VPDIVA              EVP00              Variante f. Bestellvorschla 
-#     VPARTN              EVP00              Artikel-Nummer              
-#     VPSFFX              EVP00              Artikel Suffix              
-#     VPEAN               EVP00              EAN-Nummer                  
-#     VPLIAR              EVP00              Lief-Art                    
-#     VPKZSO              EVP00              Kz: Sonderartikel = 1       
-#     VPKZBE              EVP00              Kz: Ohne Bestandf}hrung     
-#     VPARTG              EVP00              Artikel-Gruppe              
-#     VPKEAG              EVP00              Kz: Art.-Gruppe eingesetzt  
-#     VPARTH              EVP00              Artikel-Haupt-Gruppe        
-#     VPKEHG              EVP00              Kz: Hpt.-Gruppe eingesetzt  
-#     VPLGNR              EVP00              Lagernummer                 
-#     VPKELG              EVP00              Kz: Lager eingesetzt        
-#     VPWERK              EVP00              Werk                        
-#     VPEMPF              EVP00              Empfangsstelle          
-#     VPTFDI              EVP00              Teilefamilie/Dispo      
-#     VPTFEK              EVP00              Teilefamilie/Eink.      
-#     VPDIGP              EVP00              Disponenten-Gruppe      
-#     VPEKGP              EVP00              Einkaufs-Gruppe         
-#     VPKST               EVP00              Kostenstelle            
-#     VPKTR               EVP00              Kostentr{ger            
-#     VPUKTR              EVP00              Kostentr{ger UnterNr    
-#     VPKTO               EVP00              Kontonummer             
+#     VPBSTN              EVP00              BestellNr./AuftragsNr.
+#     VPBSTP              EVP00              Bestell-Position
+#     VPKZIE              EVP00              Kz: Intern/Extern
+#     VPCBSN              EVP00              Bestell-Nr.  / Copy
+#     VPCBSP              EVP00              Bestell-Pos. / Copy
+#     VPANNR              EVP00              Anfrage
+#     VPANPO              EVP00              Anfrageposition
+#     VPABT               EVP00              Abteilung / Bestellung
+#     VPABTH              EVP00              Abteilung / Herkunft
+#     VPAGRP              EVP00              Abteilungs-Gruppe/Sparte
+#     VPFNRH              EVP00              Firma / Herkunft
+#     VPFNRZ              EVP00              zentrale Einkaufsfirma
+#     VPFNRR              EVP00              Firma f}r Rahmen
+#     VPTXHK              EVP00              KZ: Herkunft des Textes
+#     VPKETX              EVP00              Kz: Posit.-Texte eingesetzt
+#     VPURSA              EVP00              Verursacher
+#     VPSBN2              EVP00              Zust{ndiger Eink{ufer
+#     VPSBN5              EVP00              Anfordernder Sachbearbeiter
+#     VPSBNR              EVP00              Sachbearbeiter / Stapelsatz
+#     VPSBDI              EVP00              Sachbearbeiter/ Disposition
+#     VPABDI              EVP00              Abteilung / Disposition
+#     VPABC               EVP00              ABC-Klassifizierung
+#     VPDIVA              EVP00              Variante f. Bestellvorschla
+#     VPARTN              EVP00              Artikel-Nummer
+#     VPSFFX              EVP00              Artikel Suffix
+#     VPEAN               EVP00              EAN-Nummer
+#     VPLIAR              EVP00              Lief-Art
+#     VPKZSO              EVP00              Kz: Sonderartikel = 1
+#     VPKZBE              EVP00              Kz: Ohne Bestandf}hrung
+#     VPARTG              EVP00              Artikel-Gruppe
+#     VPKEAG              EVP00              Kz: Art.-Gruppe eingesetzt
+#     VPARTH              EVP00              Artikel-Haupt-Gruppe
+#     VPKEHG              EVP00              Kz: Hpt.-Gruppe eingesetzt
+#     VPLGNR              EVP00              Lagernummer
+#     VPKELG              EVP00              Kz: Lager eingesetzt
+#     VPWERK              EVP00              Werk
+#     VPEMPF              EVP00              Empfangsstelle
+#     VPTFDI              EVP00              Teilefamilie/Dispo
+#     VPTFEK              EVP00              Teilefamilie/Eink.
+#     VPDIGP              EVP00              Disponenten-Gruppe
+#     VPEKGP              EVP00              Einkaufs-Gruppe
+#     VPKST               EVP00              Kostenstelle
+#     VPKTR               EVP00              Kostentr{ger
+#     VPUKTR              EVP00              Kostentr{ger UnterNr
+#     VPKTO               EVP00              Kontonummer
 #     VPINFN              EVP00              Informationsnummern-Feld
-#     VPINFA              EVP00              Informationsart         
-#     VPPROJ              EVP00              Projekt-Nummer          
-#     VPUPRJ              EVP00              Unter-Projekt-Nummer    
-#     VPZUD3              EVP00              Feld f}r 3.Zuordnung    
-#     VPKZD3              EVP00              KZ: 3.Zuordnung             
-#     VPKZAR              EVP00              KZ: Rahmen / Abruf          
-#     VPBSAB              EVP00              Nummer des bez. Rahmenvert. 
-#     VPBSAP              EVP00              Pos-Nr des bez. Rahmenvert. 
-#     VPKERA              EVP00              Kz: Rahmen eingesetzt       
-#     VPFABG              EVP00              Fremdarbeitsgang            
-#     VPKZFG              EVP00              Kz. Fremdarbeitsgang        
-#     VPHRST              EVP00              Hersteller                  
-#     VPX3VP              EVP00              Verpackungsvorschrift       
-#     VPLIAU              EVP00              Lieferanten-Auftrags-Nummer 
-#     VPPREW              EVP00              Preis/Wert                  
-#     VPKZWR              EVP00              Preisdimension              
-#     VPWSL               EVP00              W{hrungs-Kennzeichen        
-#     VPKZPR              EVP00              Kz: Gesch{tzter Preis       
-#     VPKZRD              EVP00              KZ Rabatte               
-#     VPKEPR              EVP00              Kz: Preis eingesetzt     
-#     VPMGVB              EVP00              Vorschlagsmenge          
-#     VPMNGE              EVP00              Bestell-Menge/Bestell-Eh 
-#     VPMNGB              EVP00              Bestell-Menge/Bestandsf. 
-#     VPFAKT              EVP00              Umrechn.-Faktor  ER-->BE 
-#     VPMEER              EVP00              Mg.-Einheit/ Bestellung  
+#     VPINFA              EVP00              Informationsart
+#     VPPROJ              EVP00              Projekt-Nummer
+#     VPUPRJ              EVP00              Unter-Projekt-Nummer
+#     VPZUD3              EVP00              Feld f}r 3.Zuordnung
+#     VPKZD3              EVP00              KZ: 3.Zuordnung
+#     VPKZAR              EVP00              KZ: Rahmen / Abruf
+#     VPBSAB              EVP00              Nummer des bez. Rahmenvert.
+#     VPBSAP              EVP00              Pos-Nr des bez. Rahmenvert.
+#     VPKERA              EVP00              Kz: Rahmen eingesetzt
+#     VPFABG              EVP00              Fremdarbeitsgang
+#     VPKZFG              EVP00              Kz. Fremdarbeitsgang
+#     VPHRST              EVP00              Hersteller
+#     VPX3VP              EVP00              Verpackungsvorschrift
+#     VPLIAU              EVP00              Lieferanten-Auftrags-Nummer
+#     VPPREW              EVP00              Preis/Wert
+#     VPKZWR              EVP00              Preisdimension
+#     VPWSL               EVP00              W{hrungs-Kennzeichen
+#     VPKZPR              EVP00              Kz: Gesch{tzter Preis
+#     VPKZRD              EVP00              KZ Rabatte
+#     VPKEPR              EVP00              Kz: Preis eingesetzt
+#     VPMGVB              EVP00              Vorschlagsmenge
+#     VPMNGE              EVP00              Bestell-Menge/Bestell-Eh
+#     VPMNGB              EVP00              Bestell-Menge/Bestandsf.
+#     VPFAKT              EVP00              Umrechn.-Faktor  ER-->BE
+#     VPMEER              EVP00              Mg.-Einheit/ Bestellung
 #     VPMEBE              EVP00              Mg.-Einheit/ Bestandsf}hr
-#     VPKEME              EVP00              KZ: MEH eingesetzt       
-#     VPKZBD              EVP00              KZ: Bestell-Druck        
-#     VPKZDR              EVP00              KZ: Bestell-Druck        
-#     VPKZAB              EVP00              KZ: Bestell-Abschlu~     
-#     VPKZAL              EVP00              KZ: EAL00 versorgen      
-#     VPKZMB              EVP00              KZ: Materialbeistellung  
-#     VPKZQU              EVP00              KZ: Qualit{tspr}fung        
-#     VPKEQU              EVP00              Kz: Qualit{ts-KZ gesetzt    
-#     VPKZTF              EVP00              KZ: Teillieferung erlaubt   
-#     VPKZUE              EVP00              KZ: Unter-/!berlieferung    
-#     VPPZUE              EVP00              %-Satz erlaubte !nter/!berL 
-#     VPPZGL              EVP00              %-Satz VollGeliefert        
-#     VPKZST              EVP00              KZ: Streckengesch{ft        
-#     VPKZSP              EVP00              KZ: Sperre f}r !bernahme    
-#     VPKZRE              EVP00              KZ: Reorganisierbar         
-#     VPKZMO              EVP00              KZ: Modifizierbar           
-#     VPPMTX              EVP00              Kz. Text vorhanden          
-#     VPKZBS              EVP00              Beschaffungs-Schl}ssel      
-#     VPKZAD              EVP00              KZ: Artikel-Nr andrucken    
-#     VPKZBT              EVP00              KZ Batch                    
-#     VPKZAN              EVP00              Anfrage                     
-#     VPKZTX              EVP00              Kz Texte                    
-#     VPKZDI              EVP00              Im Dialog bearbeitet        
-#     VPKZDT              EVP00              Format Wunschtermin         
-#     VPKZLI              EVP00              Lieferanten{nderung m¦glich 
-#     VPKZIV              EVP00              Interne Verarbeitung        
-#     VPKZCZ              EVP00              Chargenzertifikat           
-#     VPFNRK              EVP00              Fnr/Zugriff Lief-Adresse    
-#     VPLINR              EVP00              Lieferanten-Nummer          
-#     VPKELI              EVP00              Kz: Lieferant bestimmen     
-#     VPVANR              EVP00              Lieferadresse               
-#     VPSPSL              EVP00              Sprachenschl}ssel           
-#     VPINQT              EVP00              Kz. Lieferanten-Zertif.     
-#     VPDTLT              EVP00              Liefertermin                
-#     VPLTWW              EVP00              Liefertermin / Woche        
-#     VPKZLT              EVP00              KZ: Art Liefertermin        
-#     VPKELT              EVP00              KZ: Liefertermin eingesetzt 
-#     VPDTER              EVP00              Datum Erstellung            
-#     VPDTAL              EVP00              Datum der Lieferanten-AB    
-#     VPTGLE              EVP00              Tage Liefererinnerung       
-#     VPAUFA              EVP00              Fertigung: Auftragsart      
-#     VPZONR              EVP00              Fertigung: ZuordnungsNr.    
-#     VPAVGR              EVP00              Fertigung: AV-Gruppe        
-#     VPVNUM              EVP00              Fertigung: Versionsnummer   
-#     VPLFNR              EVP00              Fertigung: lfd.Nr. Planung  
-#     VPHRKF              EVP00              Fertigung: Herkunft         
-#     VPFHRK              EVP00              Fertigung Herkunft          
-#     VPKZGF              EVP00              Fertigung: Generierung      
-#     VPKZFA              EVP00              Art Fremdarbeitsgang       
-#     VPFNRA              EVP00              Auftragsfirma              
-#     VPFZUO              EVP00              Fertigung Zuordnung        
-#     VPFAU2              EVP00              Fertigungsauftragsnummer 2 
-#     VPF1N1              EVP00              Feld 1 1/0                 
-#     VPF3N1              EVP00              Feld 3 1/0                 
-#     VPF5N1              EVP00              Feld 5 1/0                 
-#     VPF1N6              EVP00              Feld 6 1/0                 
-#     VPF1N7              EVP00              Feld 7 1/0                 
-#     VPF1A9              EVP00              Reservefeld 9 1A           
-#     VPF1A0              EVP00              Reservefeld 10 1A          
-#     VPF1AA              EVP00              Feld 11 1A                 
-#     VPF1AB              EVP00              Reservefeld 12 1A          
-#     VPF1AC              EVP00              Reservefeld 13 1A          
-#     VPF1AD              EVP00              Reservefeld 14 1A         
-#     VPF1AE              EVP00              Reservefeld 15 1A         
-#     VPF1AF              EVP00              Reservefeld 16 1A         
-#     VPF1AG              EVP00              Reservefeld 17 1A         
-#     VPF1AH              EVP00              Reservefeld 18 1A         
-#     VPF1A5              EVP00              Reservefeld 1 5A          
-#     VPF11A              EVP00              Reservefeld 1 10 A        
-#     VPFDT1              EVP00              Reservefeld 1 Datum       
-#     VPFDT2              EVP00              Reservefeld 2 Datum       
-#     VPFA11              EVP00              Reservefeld 1 10A         
-#     VPFA12              EVP00              Reservefeld 2 10A         
-#     VPFWR1              EVP00              Reservefeld Wert 1 15P2   
-#     VPFWR2              EVP00              Reservefeld Wert 2 15P2   
-#     VPFWR3              EVP00              Reservefeld Wert 3 15P2   
-#     VPFMG1              EVP00              Reservefeld Menge 1 13P3  
-#     VPFMG2              EVP00              Reservefeld Menge 2 13P3  
-#     VPFMG3              EVP00              Reservefeld Menge 3 13P3  
-#     VPFK21              EVP00              Kunden-Spez 2             
-#     VPFK22              EVP00              Kunden-Spez 3             
-#     VPKZBG              EVP00              Kennzeichen Bearbeitung   
-#     VPDTAE              EVP00              Datum letzte ¢nderung     
-#     VPSBAE              EVP00              SB letzte ¢nderung        
-#     VPDTPR              EVP00              Datum letzte Pr}fung      
-#     VPUEBN              EVP00              Lfd.Nr. der !bernahme     
-#     VPDFSL              EVP00              Dateif}hrungs-Schl}ssel   
-#     VPSTAT              EVP00              Satzstatus                
+#     VPKEME              EVP00              KZ: MEH eingesetzt
+#     VPKZBD              EVP00              KZ: Bestell-Druck
+#     VPKZDR              EVP00              KZ: Bestell-Druck
+#     VPKZAB              EVP00              KZ: Bestell-Abschlu~
+#     VPKZAL              EVP00              KZ: EAL00 versorgen
+#     VPKZMB              EVP00              KZ: Materialbeistellung
+#     VPKZQU              EVP00              KZ: Qualit{tspr}fung
+#     VPKEQU              EVP00              Kz: Qualit{ts-KZ gesetzt
+#     VPKZTF              EVP00              KZ: Teillieferung erlaubt
+#     VPKZUE              EVP00              KZ: Unter-/!berlieferung
+#     VPPZUE              EVP00              %-Satz erlaubte !nter/!berL
+#     VPPZGL              EVP00              %-Satz VollGeliefert
+#     VPKZST              EVP00              KZ: Streckengesch{ft
+#     VPKZSP              EVP00              KZ: Sperre f}r !bernahme
+#     VPKZRE              EVP00              KZ: Reorganisierbar
+#     VPKZMO              EVP00              KZ: Modifizierbar
+#     VPPMTX              EVP00              Kz. Text vorhanden
+#     VPKZBS              EVP00              Beschaffungs-Schl}ssel
+#     VPKZAD              EVP00              KZ: Artikel-Nr andrucken
+#     VPKZBT              EVP00              KZ Batch
+#     VPKZAN              EVP00              Anfrage
+#     VPKZTX              EVP00              Kz Texte
+#     VPKZDI              EVP00              Im Dialog bearbeitet
+#     VPKZDT              EVP00              Format Wunschtermin
+#     VPKZLI              EVP00              Lieferanten{nderung m¦glich
+#     VPKZIV              EVP00              Interne Verarbeitung
+#     VPKZCZ              EVP00              Chargenzertifikat
+#     VPFNRK              EVP00              Fnr/Zugriff Lief-Adresse
+#     VPLINR              EVP00              Lieferanten-Nummer
+#     VPKELI              EVP00              Kz: Lieferant bestimmen
+#     VPVANR              EVP00              Lieferadresse
+#     VPSPSL              EVP00              Sprachenschl}ssel
+#     VPINQT              EVP00              Kz. Lieferanten-Zertif.
+#     VPDTLT              EVP00              Liefertermin
+#     VPLTWW              EVP00              Liefertermin / Woche
+#     VPKZLT              EVP00              KZ: Art Liefertermin
+#     VPKELT              EVP00              KZ: Liefertermin eingesetzt
+#     VPDTER              EVP00              Datum Erstellung
+#     VPDTAL              EVP00              Datum der Lieferanten-AB
+#     VPTGLE              EVP00              Tage Liefererinnerung
+#     VPAUFA              EVP00              Fertigung: Auftragsart
+#     VPZONR              EVP00              Fertigung: ZuordnungsNr.
+#     VPAVGR              EVP00              Fertigung: AV-Gruppe
+#     VPVNUM              EVP00              Fertigung: Versionsnummer
+#     VPLFNR              EVP00              Fertigung: lfd.Nr. Planung
+#     VPHRKF              EVP00              Fertigung: Herkunft
+#     VPFHRK              EVP00              Fertigung Herkunft
+#     VPKZGF              EVP00              Fertigung: Generierung
+#     VPKZFA              EVP00              Art Fremdarbeitsgang
+#     VPFNRA              EVP00              Auftragsfirma
+#     VPFZUO              EVP00              Fertigung Zuordnung
+#     VPFAU2              EVP00              Fertigungsauftragsnummer 2
+#     VPF1N1              EVP00              Feld 1 1/0
+#     VPF3N1              EVP00              Feld 3 1/0
+#     VPF5N1              EVP00              Feld 5 1/0
+#     VPF1N6              EVP00              Feld 6 1/0
+#     VPF1N7              EVP00              Feld 7 1/0
+#     VPF1A9              EVP00              Reservefeld 9 1A
+#     VPF1A0              EVP00              Reservefeld 10 1A
+#     VPF1AA              EVP00              Feld 11 1A
+#     VPF1AB              EVP00              Reservefeld 12 1A
+#     VPF1AC              EVP00              Reservefeld 13 1A
+#     VPF1AD              EVP00              Reservefeld 14 1A
+#     VPF1AE              EVP00              Reservefeld 15 1A
+#     VPF1AF              EVP00              Reservefeld 16 1A
+#     VPF1AG              EVP00              Reservefeld 17 1A
+#     VPF1AH              EVP00              Reservefeld 18 1A
+#     VPF1A5              EVP00              Reservefeld 1 5A
+#     VPF11A              EVP00              Reservefeld 1 10 A
+#     VPFDT1              EVP00              Reservefeld 1 Datum
+#     VPFDT2              EVP00              Reservefeld 2 Datum
+#     VPFA11              EVP00              Reservefeld 1 10A
+#     VPFA12              EVP00              Reservefeld 2 10A
+#     VPFWR1              EVP00              Reservefeld Wert 1 15P2
+#     VPFWR2              EVP00              Reservefeld Wert 2 15P2
+#     VPFWR3              EVP00              Reservefeld Wert 3 15P2
+#     VPFMG1              EVP00              Reservefeld Menge 1 13P3
+#     VPFMG2              EVP00              Reservefeld Menge 2 13P3
+#     VPFMG3              EVP00              Reservefeld Menge 3 13P3
+#     VPFK21              EVP00              Kunden-Spez 2
+#     VPFK22              EVP00              Kunden-Spez 3
+#     VPKZBG              EVP00              Kennzeichen Bearbeitung
+#     VPDTAE              EVP00              Datum letzte ¢nderung
+#     VPSBAE              EVP00              SB letzte ¢nderung
+#     VPDTPR              EVP00              Datum letzte Pr}fung
+#     VPUEBN              EVP00              Lfd.Nr. der !bernahme
+#     VPDFSL              EVP00              Dateif}hrungs-Schl}ssel
+#     VPSTAT              EVP00              Satzstatus
 
 
 'EWZ00': { # Bestellpositionszusatzinformationen
-     # 'WZFGRP': 'Firmen-Gruppe              ', 
-     # 'WZFNR ': 'Firma                      ', 
-     # 'WZAGRP': 'Abteilungs-Gruppe/Sparte   ', 
-     # 'WZABT ': 'Einkaufs-Abteilung         ', 
-     # 'WZARTH': 'Artikel-Haupt-Gruppe       ', 
-     # 'WZARTG': 'Artikel-Gruppe             ', 
+     # 'WZFGRP': 'Firmen-Gruppe              ',
+     # 'WZFNR ': 'Firma                      ',
+     # 'WZAGRP': 'Abteilungs-Gruppe/Sparte   ',
+     # 'WZABT ': 'Einkaufs-Abteilung         ',
+     # 'WZARTH': 'Artikel-Haupt-Gruppe       ',
+     # 'WZARTG': 'Artikel-Gruppe             ',
      'WZARTN': 'artnr',
      'WZBSTN': 'bestellnr',
      'WZBSTP': 'bestellpos',
-     # 'WZFNRK': 'Firma                      ', 
-     # 'WZLINR': 'Lieferanten-Nummer         ', 
-     # 'WZSBN2': 'SB: Zust{ndiger Eink{ufer  ', 
-     # 'WZKZSE': 'KZ: Serien-Nr./ Charge     ', 
-     # 'WZKZSO': 'KZ: Sonderartikel          ', 
-     # 'WZKZBE': 'KZ: Ohne Bestandsf}hrung   ', immer 0 
-     # 'WZKZLG': 'KZ:Lagerzugang Buchen      ', 
-     # 'WZKZSP': 'KZ:Lagerzugang sperren     ', 
-     # 'WZKZQU': 'KZ:Qualit{ts-Kontrolle     ', 
-     # 'WZKZSM': 'KZ:Schlechtmengen-Info     ', 
-     # 'WZMEER': 'Mengeneinheit/Erfassung    ', 
-     # 'WZMEBE': 'Mengeneinheit/Bestandsf.   ', 
-     # 'WZFAKT': 'Faktor: Erf. -> Bestf.     ', 
+     # 'WZFNRK': 'Firma                      ',
+     # 'WZLINR': 'Lieferanten-Nummer         ',
+     # 'WZSBN2': 'SB: Zust{ndiger Eink{ufer  ',
+     # 'WZKZSE': 'KZ: Serien-Nr./ Charge     ',
+     # 'WZKZSO': 'KZ: Sonderartikel          ',
+     # 'WZKZBE': 'KZ: Ohne Bestandsf}hrung   ', immer 0
+     # 'WZKZLG': 'KZ:Lagerzugang Buchen      ',
+     # 'WZKZSP': 'KZ:Lagerzugang sperren     ',
+     # 'WZKZQU': 'KZ:Qualit{ts-Kontrolle     ',
+     # 'WZKZSM': 'KZ:Schlechtmengen-Info     ',
+     # 'WZMEER': 'Mengeneinheit/Erfassung    ',
+     # 'WZMEBE': 'Mengeneinheit/Bestandsf.   ',
+     # 'WZFAKT': 'Faktor: Erf. -> Bestf.     ',
      'WZWVNR': 'warenvereinnahmungsnr',
-     # 'WZSBWZ': 'SB: Zugangspr}fung         ', 
-     #'WZBNWZ': 'Beleg-Nr./Zugang', 
+     # 'WZSBWZ': 'SB: Zugangspr}fung         ',
+     #'WZBNWZ': 'Beleg-Nr./Zugang',
      'WZDTWZ': 'zugang_date',
-     # 'WZMJBU': 'Buchungs-Monat             ', 
-     'WZLBWZ': 'lagerbewegung_zugang', # referenziert 
-     # 'WZREKL': 'Reklamationsnummer         ', 
-     # 'WZGBNR': 'Vertriebseinheit           ', 
-     # 'WZRIMW': 'WZ-RefNr f}r Image         ', 
+     # 'WZMJBU': 'Buchungs-Monat             ',
+     'WZLBWZ': 'lagerbewegung_zugang', # referenziert
+     # 'WZREKL': 'Reklamationsnummer         ',
+     # 'WZGBNR': 'Vertriebseinheit           ',
+     # 'WZRIMW': 'WZ-RefNr f}r Image         ',
      # 'WZLFSN': 'lieferschennr', # scheinbar immer 0000000
-     'WZLGNR': 'lager', 
-     # 'WZLGPL': 'Lager-Platz                ', 
-     # 'WZWERK': 'Werksnummer                ', 
-     # 'WZANLP': 'Anlieferungs-Ort           ', 
-     # 'WZMGWE': 'Gepr.Zugangs-Mg./Erf.Einh  ', 
-     # 'WZMGWB': 'Gepr.Zugangs-Mg./ Bst.F}hrg', 
-     # 'WZMGOB': 'Ausschu~-Mg. / Bestandsf.  ', 
-     # 'WZKZQD': 'Qualit{tsdaten             ', 
-     # 'WZSBRG': 'SB: Rechnungs-Pr}fung      ', 
-     'WZRGNR': 'rechnungsnr', 
-     'WZRGPO': 'rechnungsposnr', 
-     'WZDTRG': 'rechnungs_date', 
-     'WZLBWR': 'lagerbewegung_rechnung', 
-     # 'WZKZRB': 'KZ:Rg. in FIBU buchen      ', 
-     # 'WZKZBO': 'LiBonusVarbSts             ', 
-     # 'WZKZRG': 'Pseudoechnung              ', 
-     # 'WZKRZR': 'K}rzungsreferenz           ', 
-     # 'WZKRZA': 'K}rzungsart                ', 
-     # 'WZGDIR': 'Referenz f}r Differenz     ', 
-     'WZPREA': 'tatsaechlicher_preis', 
-     'WZPREW': 'bestell_preis', 
-     # 'WZKZWR': 'Preisdimension             ', 
-     # 'WZWSL ': 'Waehrungs-Kennzeichen', 
-     'WZKURS': 'kurs_zugang', 
-     'WZKUFA': 'kursfaktor_zugang', 
-     'WZBUBT': 'buchungsbetrag', 
-     # 'WZLWRB': 'Rabatt-Betrag/W{h          ', 
-     # 'WZLWNB': 'Nebenkosten/W{h            ', 
-     # 'WZLWFR': 'Fracht-Betrag/W{h          ', 
-     # 'WZLWZO': 'Zoll-Betrag/W{h            ', 
-     # 'WZSKBT': 'Skonto-Betrag/W{h          ', 
-     # 'WZKZRA': 'KZ: Rabattaufteilung vorh. ', 
-     # 'WZKZNT': 'KZ: Rechnung netto buchen  ', 
-     'WZMGRE': 'menge_berechnet', 
-     # 'WZMGRB': 'menge_berechnet', 
-     # 'WZSTSL': 'Steuerschl}ssel            ', 
-     # 'WZMWBT': 'Vorsteuerbetrag            ', 
-     # 'WZKTR ': 'Kostentr{ger               ', 
-     # 'WZUKTR': 'Kostentr{gerunternummer    ', 
-     # 'WZPROJ': 'Projekt                    ', 
-     # 'WZUPRJ': 'Projektunternummer         ', 
-     # 'WZKST ': 'Kostenstelle               ', 
-     'WZKTO': 'konto', 
-     'WZBTXT': 'buchungstext', 
-     'WZOPSN': 'opnr', 
-     'WZART': 'art', 
+     'WZLGNR': 'lager',
+     # 'WZLGPL': 'Lager-Platz                ',
+     # 'WZWERK': 'Werksnummer                ',
+     # 'WZANLP': 'Anlieferungs-Ort           ',
+     # 'WZMGWE': 'Gepr.Zugangs-Mg./Erf.Einh  ',
+     # 'WZMGWB': 'Gepr.Zugangs-Mg./ Bst.F}hrg',
+     # 'WZMGOB': 'Ausschu~-Mg. / Bestandsf.  ',
+     # 'WZKZQD': 'Qualit{tsdaten             ',
+     # 'WZSBRG': 'SB: Rechnungs-Pr}fung      ',
+     'WZRGNR': 'rechnungsnr',
+     'WZRGPO': 'rechnungsposnr',
+     'WZDTRG': 'rechnungs_date',
+     'WZLBWR': 'lagerbewegung_rechnung',
+     # 'WZKZRB': 'KZ:Rg. in FIBU buchen      ',
+     # 'WZKZBO': 'LiBonusVarbSts             ',
+     # 'WZKZRG': 'Pseudoechnung              ',
+     # 'WZKRZR': 'K}rzungsreferenz           ',
+     # 'WZKRZA': 'K}rzungsart                ',
+     # 'WZGDIR': 'Referenz f}r Differenz     ',
+     'WZPREA': 'tatsaechlicher_preis',
+     'WZPREW': 'bestell_preis',
+     # 'WZKZWR': 'Preisdimension             ',
+     # 'WZWSL ': 'Waehrungs-Kennzeichen',
+     'WZKURS': 'kurs_zugang',
+     'WZKUFA': 'kursfaktor_zugang',
+     'WZBUBT': 'buchungsbetrag',
+     # 'WZLWRB': 'Rabatt-Betrag/W{h          ',
+     # 'WZLWNB': 'Nebenkosten/W{h            ',
+     # 'WZLWFR': 'Fracht-Betrag/W{h          ',
+     # 'WZLWZO': 'Zoll-Betrag/W{h            ',
+     # 'WZSKBT': 'Skonto-Betrag/W{h          ',
+     # 'WZKZRA': 'KZ: Rabattaufteilung vorh. ',
+     # 'WZKZNT': 'KZ: Rechnung netto buchen  ',
+     'WZMGRE': 'menge_berechnet',
+     # 'WZMGRB': 'menge_berechnet',
+     # 'WZSTSL': 'Steuerschl}ssel            ',
+     # 'WZMWBT': 'Vorsteuerbetrag            ',
+     # 'WZKTR ': 'Kostentr{ger               ',
+     # 'WZUKTR': 'Kostentr{gerunternummer    ',
+     # 'WZPROJ': 'Projekt                    ',
+     # 'WZUPRJ': 'Projektunternummer         ',
+     # 'WZKST ': 'Kostenstelle               ',
+     'WZKTO': 'konto',
+     'WZBTXT': 'buchungstext',
+     'WZOPSN': 'opnr',
+     'WZART': 'art',
      'WZDTER': 'erfassungs_date',
      'WZIINF': 'info_intern',
-     # 'WZINFN': 'Informationsnummer         ', 
-     # 'WZINFA': 'Informationsnummernart     ', 
-     # 'WZF1A3': 'Reservefeld 3 1A           ', 
-     # 'WZF1A4': 'Reservefeld 4 1A           ', 
-     # 'WZF1A5': 'Reservefeld 5 1A           ', 
-     # 'WZF1A6': 'Reservefeld 6 1A           ', 
-     # 'WZF1A7': 'Reservefeld 7 1A           ', 
-     # 'WZF1A8': 'Reservefeld 8 1A           ', 
-     # 'WZF1N2': 'Reservefeld 2 1/0          ', 
-     # 'WZF1N3': 'Reservefeld 3 1/0          ', 
-     # 'WZF1N4': 'Reservefeld 4 1/0          ', 
-     # 'WZF1N5': 'Reservefeld 5 1/0          ', 
-     # 'WZF1N6': 'Reservefeld 6 1/0          ', 
-     # 'WZFSN1': 'Reservefeld 1 Satznummer   ', 
-     # 'WZFSN2': 'Reservefeld 2 Satznummer   ', 
-     # 'WZFA11': 'Reservefeld 1 10A          ', 
-     # 'WZFA12': 'Reservefeld 2 10A          ', 
-     # 'WZFDT1': 'Reservefeld 1 Datum        ', 
-     # 'WZFDT2': 'Reservefeld 2 Datum        ', 
-     # 'WZFWR1': 'Reservefeld 1 Wert         ', 
-     # 'WZFWR2': 'Reservefeld 2 Wert         ', 
-     # 'WZFWR3': 'Reservefeld 3 Wert         ', 
-     # 'WZFMG1': 'Reservefeld 1 Menge        ', 
-     # 'WZFMG2': 'Reservefeld 2 Menge        ', 
-     # 'WZFMG3': 'Reservefeld 3 Menge        ', 
-     # 'WZFK20': 'Kunden-Spez                ', 
-     'WZKZST': 'status', 
-     #'WZMGST': 'Status Mg./ Bst.F}hrg      ', 
-     'WZSTAT': 'satzstatus', 
+     # 'WZINFN': 'Informationsnummer         ',
+     # 'WZINFA': 'Informationsnummernart     ',
+     # 'WZF1A3': 'Reservefeld 3 1A           ',
+     # 'WZF1A4': 'Reservefeld 4 1A           ',
+     # 'WZF1A5': 'Reservefeld 5 1A           ',
+     # 'WZF1A6': 'Reservefeld 6 1A           ',
+     # 'WZF1A7': 'Reservefeld 7 1A           ',
+     # 'WZF1A8': 'Reservefeld 8 1A           ',
+     # 'WZF1N2': 'Reservefeld 2 1/0          ',
+     # 'WZF1N3': 'Reservefeld 3 1/0          ',
+     # 'WZF1N4': 'Reservefeld 4 1/0          ',
+     # 'WZF1N5': 'Reservefeld 5 1/0          ',
+     # 'WZF1N6': 'Reservefeld 6 1/0          ',
+     # 'WZFSN1': 'Reservefeld 1 Satznummer   ',
+     # 'WZFSN2': 'Reservefeld 2 Satznummer   ',
+     # 'WZFA11': 'Reservefeld 1 10A          ',
+     # 'WZFA12': 'Reservefeld 2 10A          ',
+     # 'WZFDT1': 'Reservefeld 1 Datum        ',
+     # 'WZFDT2': 'Reservefeld 2 Datum        ',
+     # 'WZFWR1': 'Reservefeld 1 Wert         ',
+     # 'WZFWR2': 'Reservefeld 2 Wert         ',
+     # 'WZFWR3': 'Reservefeld 3 Wert         ',
+     # 'WZFMG1': 'Reservefeld 1 Menge        ',
+     # 'WZFMG2': 'Reservefeld 2 Menge        ',
+     # 'WZFMG3': 'Reservefeld 3 Menge        ',
+     # 'WZFK20': 'Kunden-Spez                ',
+     'WZKZST': 'status',
+     #'WZMGST': 'Status Mg./ Bst.F}hrg      ',
+     'WZSTAT': 'satzstatus',
      'WZSAN2': 'bezogener_satz_EWZ00',
-     'WZSANR': 'satznummer_warenzugang', 
+     'WZSANR': 'satznummer_warenzugang',
 },
 
 'ISA00': {# MyPL Schnittstelle: Komissionierbeleg
@@ -1766,7 +1766,7 @@ MAPPINGDIR = {
           'IZSTAT': 'status',
           'IZSANR': 'satznr',
           },
- 
+
 # LSU00 - Lagerstatistik
 # SUFNR    A         2  0    1    2 Firma
 # SUARTN   A        20  0    3   22 Artikelnummer
@@ -1782,7 +1782,7 @@ MAPPINGDIR = {
 # SUME08   P   11    6  3   71   76 Monatsendbestand Aug.
 # SUME09   P   11    6  3   77   82 Monatsendbestand Sep.
 # SUME10   P   11    6  3   83   88 Monatsendbestand Okt.
-# SUME11   P   11    6  3   89   94 Monatsendbestand Nov. 
+# SUME11   P   11    6  3   89   94 Monatsendbestand Nov.
 # SUME12   P   11    6  3   95  100 Monatsendbestand De
 # SUSA01   P   13    7  3  101  107 Summe Abg{nge Jan.
 # SUSA02   P   13    7  3  108  114 Summe Abg{nge Feb.
@@ -1801,7 +1801,7 @@ MAPPINGDIR = {
 # SUMMIN   P   11    6  3  195  200 Niedrigster Bestand
 # SUMMAX   P   11    6  3  201  206 H¦chster Bestand
 # SUANZB   P    5    3  0  207  209 Anzahl Bewegungen
-# SUANZV   P    5    3  0  210  212 Anzahl Verbr{uche  
+# SUANZV   P    5    3  0  210  212 Anzahl Verbr{uche
 # SUANZM   P    2    2  0  213  214 Anzahl Monate
 # SUSTAT   A         1  0  215  215 Satzstatus
 
@@ -2173,7 +2173,7 @@ MAPPINGDIR = {
         # 'XADFSL': Dateif}hrungs-Schl}ssel
         'XASTAT': 'satzstatus',
        },
-    
+
 'XLB00': { # Lagerbewegungen
         #'LBFGRP': 'Firmen-Gruppe',
         #'LBFNR ': 'Firma',
@@ -2304,7 +2304,7 @@ MAPPINGDIR = {
           # 'TYDFSL': 'Dateifuehrungs-Schluessel',
           'TYSTAT': 'satzstatus'},
 
-# SMKDIFP    XLF00      XLF00F01   Lagerbestands-F}hrungs-Datei    
+# SMKDIFP    XLF00      XLF00F01   Lagerbestands-F}hrungs-Datei
 # LFFNR    A         2  0    1    2 Firma
 # LFARTN   A        20  0    3   22 Artikel-Nummer
 # LFLGNR   S    4    4  0   23   26 Lager
@@ -2319,7 +2319,7 @@ MAPPINGDIR = {
 # LFFNRM   A         2  0   63   64 Mandanten-Nummer
 # LFLINR   A         8  0   65   72 Hauptlieferant
 # LFLIAR   A        20  0   73   92 Lieferanten-Artikel-Nr
-# LFKWWB   P    3    2  0   93   94 Wiederbeschaffungszeit TTT  
+# LFKWWB   P    3    2  0   93   94 Wiederbeschaffungszeit TTT
 # LFKWEZ   P    3    2  0   95   96 Eindeckzeit in TTT
 # LFPREE   P   15    8  2   97  104 Letzter Einkaufspreis
 # LFPRVR   P   15    8  2  105  112 Verrechnungspreis
@@ -2357,58 +2357,58 @@ MAPPINGDIR = {
 # LFMGB1   P   11    6  3  321  326 Vorab- Menge: Einkauf
 # LFMGB2   P   11    6  3  327  332 Vorab- Menge: Fertigung
 # LFMGB3   P   11    6  3  333  338 Verbuchte Mg: Einkauf
-# LFMGB4   P   11    6  3  339  344 Verbuchte Mg: Fertigung    
+# LFMGB4   P   11    6  3  339  344 Verbuchte Mg: Fertigung
 # LFMGK1   P   11    6  3  345  350 Fertigung: Reserv. Mg. WBZ
 # LFMGK2   P   11    6  3  351  356 Fertigung: Reserv. Mg. EDZ
-# LFMGK3   P   11    6  3  357  362 Fertigung: Gesamt-Reservier 
-# LFMGK4   P   11    6  3  363  368 Zugeteilt für Lieferschein  
-# LFMGOP   P   11    6  3  369  374 Gesamte OP-Menge            
-# LFMGQU   P   11    6  3  375  380 Bestand in QltPrf           
-# LFMGQ2   P   11    6  3  381  386 Bestand in QltPrf 2         
-# LFLWA1   P   15    8  2  387  394 Gesamter Auftragswert       
-# LFLWA2   P   15    8  2  395  402 Lieferschein-Wert           
-# LFLWA3   P   15    8  2  403  410 vorabvermerkter Wert        
-# LFNARB   P    3    2  0  411  412 Numerisches Arbeitsfeld     
-# LFDTIN   P    7    4  0  413  416 Datum letzte Inventur       
-# LFKZIN   S    1    1  0  417  417 KZ Inventur-Sperre          
-# LFMGIB   P   11    6  3  418  423 Bestand bei Inventur-Beginn 
-# LFLWIB   P   15    8  2  424  431 Lagerwert nach Inventur     
-# LFEKIB   P   15    8  2  432  439 LEK bei Inventur-Beginn     
-# LFBELI   P    9    5  0  440  444 Beleg-Nr/Inventur           
-# LFMGIN   P   11    6  3  445  450 Inventur-Bestand            
-# LFDTIE   P    7    4  0  451  454 Datum der Inventurliste     
-# LFKZWR   S    1    1  0  455  455 Preisdimension Lager        
-# LFKZIA   S    1    1  0  456  456 Kz. Inventurabwicklung      
-# LFKZCS   S    1    1  0  457  457 KZ Chargenzuordnung         
-# LFKZPS   S    1    1  0  458  458 KZ Programmsperre           
-# LFDTLZ   P    7    4  0  459  462 Datum letzter Lagerzugang   
-# LFDTLA   P    7    4  0  463  466 Datum letzter Lagerabgang   
-# LFF1A1   A         1  0  467  467 Reservefeld 1 1A            
-# LFF1A2   A         1  0  468  468 Reservefeld 2 1A            
-# LFF1A3   A         1  0  469  469 Reservefeld 3 1A            
-# LFF1A4   A         1  0  470  470 Reservefeld 4 1A            
-# LFF1A5   A         1  0  471  471 Reservefeld 5 1A            
-# LFFDT1   P    7    4  0  472  475 Reservefeld 1 Datum         
-# LFFDT2   P    7    4  0  476  479 Reservefeld 2 Datum         
-# LFFA10   A        10  0  480  489 Reservefeld 1 10A           
-# LFFWR1   P   15    8  2  490  497 Reservefeld Wert 1 15P2     
-# LFFWR2   P   15    8  2  498  505 Reservefeld Wert 2 15P2  
-# LFFWR3   P   15    8  2  506  513 Reservefeld Wert 3 15P2  
-# LFFWR4   P   15    8  2  514  521 Reservefeld Wert 4 15P2  
-# LFFMG1   P   13    7  3  522  528 Reservefeld Menge 1 13P3 
-# LFFMG2   P   13    7  3  529  535 Reservefeld Menge 2 13P3 
-# LFFMG3   P   13    7  3  536  542 Reservefeld Menge 3 13P3 
-# LFFMG4   P   13    7  3  543  549 Reservefeld Menge 4 13P3 
-# LFFK20   A        20  0  550  569 Kundenindividuelles Feld 
-# LFDTAE   P    7    4  0  570  573 Datum letzte Änderung    
-# LFKZAK   S    1    1  0  574  574 KZ Aktualität            
-# LFDFSL   A        10  0  575  584 Dateiführungs-Schlüssel  
-# LFSTAT   A         1  0  585  585 Satzstatus               
+# LFMGK3   P   11    6  3  357  362 Fertigung: Gesamt-Reservier
+# LFMGK4   P   11    6  3  363  368 Zugeteilt für Lieferschein
+# LFMGOP   P   11    6  3  369  374 Gesamte OP-Menge
+# LFMGQU   P   11    6  3  375  380 Bestand in QltPrf
+# LFMGQ2   P   11    6  3  381  386 Bestand in QltPrf 2
+# LFLWA1   P   15    8  2  387  394 Gesamter Auftragswert
+# LFLWA2   P   15    8  2  395  402 Lieferschein-Wert
+# LFLWA3   P   15    8  2  403  410 vorabvermerkter Wert
+# LFNARB   P    3    2  0  411  412 Numerisches Arbeitsfeld
+# LFDTIN   P    7    4  0  413  416 Datum letzte Inventur
+# LFKZIN   S    1    1  0  417  417 KZ Inventur-Sperre
+# LFMGIB   P   11    6  3  418  423 Bestand bei Inventur-Beginn
+# LFLWIB   P   15    8  2  424  431 Lagerwert nach Inventur
+# LFEKIB   P   15    8  2  432  439 LEK bei Inventur-Beginn
+# LFBELI   P    9    5  0  440  444 Beleg-Nr/Inventur
+# LFMGIN   P   11    6  3  445  450 Inventur-Bestand
+# LFDTIE   P    7    4  0  451  454 Datum der Inventurliste
+# LFKZWR   S    1    1  0  455  455 Preisdimension Lager
+# LFKZIA   S    1    1  0  456  456 Kz. Inventurabwicklung
+# LFKZCS   S    1    1  0  457  457 KZ Chargenzuordnung
+# LFKZPS   S    1    1  0  458  458 KZ Programmsperre
+# LFDTLZ   P    7    4  0  459  462 Datum letzter Lagerzugang
+# LFDTLA   P    7    4  0  463  466 Datum letzter Lagerabgang
+# LFF1A1   A         1  0  467  467 Reservefeld 1 1A
+# LFF1A2   A         1  0  468  468 Reservefeld 2 1A
+# LFF1A3   A         1  0  469  469 Reservefeld 3 1A
+# LFF1A4   A         1  0  470  470 Reservefeld 4 1A
+# LFF1A5   A         1  0  471  471 Reservefeld 5 1A
+# LFFDT1   P    7    4  0  472  475 Reservefeld 1 Datum
+# LFFDT2   P    7    4  0  476  479 Reservefeld 2 Datum
+# LFFA10   A        10  0  480  489 Reservefeld 1 10A
+# LFFWR1   P   15    8  2  490  497 Reservefeld Wert 1 15P2
+# LFFWR2   P   15    8  2  498  505 Reservefeld Wert 2 15P2
+# LFFWR3   P   15    8  2  506  513 Reservefeld Wert 3 15P2
+# LFFWR4   P   15    8  2  514  521 Reservefeld Wert 4 15P2
+# LFFMG1   P   13    7  3  522  528 Reservefeld Menge 1 13P3
+# LFFMG2   P   13    7  3  529  535 Reservefeld Menge 2 13P3
+# LFFMG3   P   13    7  3  536  542 Reservefeld Menge 3 13P3
+# LFFMG4   P   13    7  3  543  549 Reservefeld Menge 4 13P3
+# LFFK20   A        20  0  550  569 Kundenindividuelles Feld
+# LFDTAE   P    7    4  0  570  573 Datum letzte Änderung
+# LFKZAK   S    1    1  0  574  574 KZ Aktualität
+# LFDFSL   A        10  0  575  584 Dateiführungs-Schlüssel
+# LFSTAT   A         1  0  585  585 Satzstatus
 }
 
 # decides which fields should be convertet to decimal, 2 digits
 DECIMALIZE2 = set(['BUR1', 'BUBUBT', 'BUNEBT', 'BUNEWB', 'BUABZU', 'BUWBBT',
-                   'LBPREW', 'LBLWER', 'LBLWAK', 'LBLWKO', 'LBLWRT', 
+                   'LBPREW', 'LBLWER', 'LBLWAK', 'LBLWKO', 'LBLWRT',
                    'BPPREW', 'BPPRAK', 'BPPREH', 'BPWRTF', 'BLKURS',
                    'PNPRB',
                    'FKBRUT', 'FKNETT', 'FUPNET', 'FUPBUT',

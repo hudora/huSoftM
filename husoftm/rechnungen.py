@@ -14,14 +14,14 @@ from husoftm.tools import sql_quote, sql_escape, pad, date2softm
 
 def kundenauftragsnr_to_rechnungsnr(kundenauftragsnr):
     """Liefert eine Liste mit Rechnungsnummern zurück, die zu einer Kundenauftragsnummer gehören.
-    
+
     Die Nummern werden gemäss https://cybernetics.hudora.biz/intern/trac/wiki/NummernKreise
     mit dem Prefix RG zurückgegeben."""
-    
+
     rows = get_connection().query(['AFK00'], fields=['FKRGNR'],
                    condition="FKNRKD = %s" % (sql_quote(kundenauftragsnr)))
     return [("RG%s" % r[0]) for r in rows]
-    
+
 
 def auftragsnr_to_rechnungsnr(auftragsnr):
     """Liefert eine Liste mit Rechnungsnummern zurück, die zu einer Auftragsnummer gehören.
@@ -52,7 +52,7 @@ def rechnungen_for_kunde(kundennr, mindate=None):
 
 def get_rechnung(rechnungsnr):
     """Liefert ein Tupel aus Rechnungskopf und den Positionen"""
-    
+
     if str(rechnungsnr).startswith('RG'):
         rechnungsnr = str(rechnungsnr)[2:]
     kopf = get_connection().query(['AFK00'],
@@ -94,10 +94,10 @@ def softm_to_invoice(rechnungsnr):
     for attr in 'skontobetrag'.split():
         hint[attr] = rg[attr]
     out = {'hint': hint}
-    for attr in '''kundenauftragsnr auftragsnr versandkosten rechnung_steuranteil rechnungsnr 
+    for attr in '''kundenauftragsnr auftragsnr versandkosten rechnung_steuranteil rechnungsnr
                    zu_zahlen'''.split():
         out[attr] = rg[attr]
-    
+
     out['leistungsdatum'] = rg['versand_date']
     out['kundennr'] = rg['kundennr_rechnungsempfaenger']
     out['erfasst_von'] = rg['sachbearbeiternr']
@@ -110,9 +110,9 @@ def softm_to_invoice(rechnungsnr):
         rabatttext = "%s: %f" % (rabatttext, out['abschlag_prozent'])
     elif out['abschlag_prozent']:
         rabatttext = u"Ab/Zuschläge: %f" % (out['abschlag_prozent'])
-    
+
     out['infotext_kunde'] = '\n'.join([rabatttext])
-    
+
     out['orderlines'] = []
     for ol in get_connection().query(['AFU00'], condition="FURGNR=%s" % sql_escape(rechnungsnr)):
         pprint(ol)
@@ -139,7 +139,7 @@ def softm_to_invoice(rechnungsnr):
 # skontobetrag
 
 #* *hint/...* Felder, die keinen normativen Charakter haben
-#* *hint/abschlag* - Rabatte etc. 
+#* *hint/abschlag* - Rabatte etc.
 #* *zahlungstage* - Zahlungsziel ab Leistungsdatum in Tagen.
 #* *hint/zahlungsdatum* - Zahlungsziel ab Leistungsdatum in Tagen.
 #* *skonto_prozent* - Prozentsatz Skonto. Darf nur vorhanden sein, wenn `skontobetrag` vorhanden ist.
@@ -151,13 +151,13 @@ def softm_to_invoice(rechnungsnr):
 #* *hint/rechnung_steueranteil_bei_skonto* - Steueranteil wenn Skonto gezogen wird.
 #* *hint/steuernr_kunde* - Steuernummer und/oder UStId Kunde
 #* *hint/steuernr_lieferant* - Steuernummer und/oder UStId Lieferant
-#* *lieferadresse/...* Felder des [AddressProtocol][2] (Zum Teil Pflichtfelder). 
+#* *lieferadresse/...* Felder des [AddressProtocol][2] (Zum Teil Pflichtfelder).
 #* *lieferadresse/kundennr* Interne Kundennummer. Kann das [AddressProtocol][2] erweitern.
-#* *rechnungsadresse/...* Felder des [AddressProtocol][2] (Zum Teil Pflichtfelder). Es handelt sich um dne technischen Rechungsempfänger, der nicht vertragsbeteiligter ist. 
+#* *rechnungsadresse/...* Felder des [AddressProtocol][2] (Zum Teil Pflichtfelder). Es handelt sich um dne technischen Rechungsempfänger, der nicht vertragsbeteiligter ist.
 #* *rechnungsadresse/kundennr* Interne Kundennummer. Kann das [AddressProtocol][2] erweitern.
-#* *absenderadresse/...* Aussteller der Rechunung als Felder des [AddressProtocol][2] (Zum Teil Pflichtfelder). 
+#* *absenderadresse/...* Aussteller der Rechunung als Felder des [AddressProtocol][2] (Zum Teil Pflichtfelder).
 #* **orderlines** Sammlung von Rechnungspositionen
-#    
+#
     line = dict(
             guid=p.guid,
             menge=int(p.menge),
@@ -172,7 +172,7 @@ def softm_to_invoice(rechnungsnr):
         )
 
     if f3.ean and int(f3.ean):
-            line['ean']=f3.ean
+        line['ean']=f3.ean
 
 
 def main():

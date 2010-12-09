@@ -18,7 +18,7 @@ Für die Frage, ob ein bestimmter Artikel in einem bestimmten Lager ist, ist bes
     umlagermengen(anlager)                        Alle Artikelmengen, die zur Zeit von einem Lager
                                                   ans andere unterwegs ist
     buchbestand(artnr, lager=0)                   Artikel am Lager
-    buchbestaende(lager=0)                        Alle Artikel an einem Lager 
+    buchbestaende(lager=0)                        Alle Artikel an einem Lager
     freie_menge(artnr)                            Menge, die Verkauft werden kann
     frei_ab(menge, artnr, dateformat="%Y-%m-%d")  ab wann ist eine bestimmte Menge frühstens verfügbar?
     bestand(artnr, lager)                         Wieviel ist zur Zeit an einem Lager oder trifft
@@ -26,7 +26,7 @@ Für die Frage, ob ein bestimmter Artikel in einem bestimmten Lager ist, ist bes
     besteande(lager)                              wie bestand() aber für alle Artikel
     bestandsentwicklung(artnr, dateformat="%Y-%m-%d")            Prognose der Bestandsänderungen
     versionsvorschlag(menge, artnr, date, dateformat="%Y-%m-%d") Vorschlag zur Versionsstückelung
-    
+
 
 Siehe auch https://cybernetics.hudora.biz/intern/trac/wiki/HudoraGlossar zu den Bezeichnungen.
 
@@ -64,11 +64,11 @@ def _umlagermenge_helper(artnr, lager=100):
      - Wenn keine Artikelnummer angegeben wird, dann alle Artikeln die sich
        zu dem gegebenen Zugangslager (lager) unterwegs sind.
     """
-    
+
     # This is just a private helper funcion, which should only be called by umlagermenge and
     # umlagermengen. The reason therefore is, that this function has different return types, depending
     # on the artnr you provide. umlagermenge and umlagermengen are wrappers around this function.
-    
+
     # Das Auslieferungslager steht in AKLGN1, Das Ziellager steht in AKLGN2
     # In APLGNR steht AUCH das Abgangslager
 
@@ -108,53 +108,53 @@ def _umlagermenge_helper(artnr, lager=100):
         if rows and rows[0] and rows[0][0]:
             return as400_2_int(rows[0][0])
     return 0
-    
+
 
 # TODO: use cs module instead of alternativen()
 
 def alternativen(artnr):
     """Gets a list of article numbers which are alternatives (usually versions).
-    
+
     >>> alternativen('14600')
     ['14600', '14600/01', '14600/02', '14600/03']
     """
-    
+
     warnings.warn("hudoftm.bestaende.alternativen() is deprecated,"
                   + " use cs.masterdata.article.alternatives() instead",
-                  DeprecationWarning, stacklevel=2) 
+                  DeprecationWarning, stacklevel=2)
     server = couchdb.client.Server(COUCHSERVER)
     db = server['eap']
     artnrs = db.get(artnr, {}).get('alternatives', [])
     if artnr not in artnrs:
         artnrs.append(artnr)
     return sorted(artnrs)
-    
+
 
 def get_lagerbestand(artnr=None, lager=0):
     """Deprecheated, don't use anymore."""
-    warnings.warn("get_lagerbestand() is deprecated use buchbestand()", DeprecationWarning, stacklevel=2) 
+    warnings.warn("get_lagerbestand() is deprecated use buchbestand()", DeprecationWarning, stacklevel=2)
     return buchbestand(artnr, lager)
-    
+
 
 def buchbestand(artnr, lager=0):
     """Gibt den Buchbestand eines Artikels für ein Lager zurück oder (lager=0) für alle Lager
-    
+
     >>> buchbestand('14600')
     2345
-    
+
     """
-    
+
     rows = get_connection().query('XLF00', fields=['LFMGLP'],
-               condition="LFLGNR=%d AND LFARTN=%s AND LFMGLP<>0 AND LFSTAT<>'X'" % (int(lager), 
+               condition="LFLGNR=%d AND LFARTN=%s AND LFMGLP<>0 AND LFSTAT<>'X'" % (int(lager),
                                                                                     sql_quote(artnr)))
     if rows:
         return as400_2_int(rows[0][0])
     return 0
-    
+
 
 def buchbestaende(lager=0):
     """Gibt den Buchbestand aller Artikel für ein Lager zurück oder (lager=0) für alle Lager
-    
+
     >>> buchbestaende()
     {'01012': 1.0,
      '01013': 246.0,
@@ -166,30 +166,30 @@ def buchbestaende(lager=0):
      '01105': 203.0,
      '01105/01': 799.0,
      '01106/01': 1012.0}
-    
+
     """
-    
+
     rows = get_connection().query('XLF00', fields=['LFARTN', 'SUM(LFMGLP)'], grouping=['LFARTN'],
                condition="LFLGNR=%d AND LFMGLP<>0 AND LFSTAT<>'X'" % (int(lager)))
     return dict([(str(artnr), as400_2_int(quantity)) for artnr, quantity in rows])
-    
+
 
 def get_verfuegbaremenge(artnr=None, lager=0):
     """Deprecheated, don't use anymore."""
     warnings.warn("get_verfuegbaremenge() is deprecated use verfuegbare_menge()",
-                  DeprecationWarning, stacklevel=2) 
+                  DeprecationWarning, stacklevel=2)
     return verfuegbare_menge(artnr, lager)
-    
+
 
 def verfuegbare_menge(artnr, lager=0):
     """Gibt die aktuell verfügbare Menge eines Artikels an einem Lager zurück oder (lager=0) für alle Lager
-    
+
     Achtung! Die verfügbare Menge ist nicht die "freie Menge".
-    
+
     >>> verfuegbare_menge('12345')
     3456
     """
-    
+
     rows = get_connection().query('XLF00', fields=['LFMGLP', 'LFMGK4'],
                condition="LFLGNR=%s AND LFARTN=%s AND LFMGLP<>0 AND LFSTAT<>'X'" % (
                     sql_escape(lager), sql_quote(artnr)))
@@ -198,36 +198,36 @@ def verfuegbare_menge(artnr, lager=0):
         return as400_2_int(menge) - as400_2_int(lfmgk4)
     else:
         return 0
-    
+
 
 def verfuegbare_mengen(lager=0):
     """Gibt die aktuell verfügbaren Mengen aller Artikel eines Lagers zurück. Siehe auch besteande().
-    
+
     >>> verfuegbare_mengen(34)
     {'10106': 6,
      '12551': 2854,
      ...
      '83165': 598}
     """
-    
+
     rows = get_connection().query('XLF00', grouping=['LFARTN'], querymappings={},
                                   fields=['LFARTN', 'SUM(LFMGLP)', 'SUM(LFMGK4)', 'SUM(LFMGLP-LFMGK4)'],
                                   condition="LFLGNR=%s AND LFMGLP<>0 AND LFSTAT<>'X'" % sql_escape(lager))
     return dict([(str(artnr), as400_2_int(menge) - as400_2_int(lfmgk4))
                  for (artnr, menge, lfmgk4, dummy) in rows])
-    
+
 
 def freie_menge(artnr, dateformat="%Y-%m-%d"):
     """Liefert die sofort verkaufbare (freie / available) Menge zurück.
-    
-    Dabei wird nicht beachtet, dass eventuell eine Wiederbeschaffung erfolgen kann. Wenn die Bestände 
+
+    Dabei wird nicht beachtet, dass eventuell eine Wiederbeschaffung erfolgen kann. Wenn die Bestände
     in ferner Zukunft gegen Null gehen, geht auch die (jetzt) verfügbare Menge gegen null.
-    
+
     >>> freie_menge('14600')
     2345
-    
+
     """
-    
+
     today = datetime.date.today().strftime("%Y-%m-%d")
     bestandse = bestandsentwicklung(artnr, dateformat)
     # remove historic data, since this tends to be negative
@@ -240,12 +240,12 @@ def freie_menge(artnr, dateformat="%Y-%m-%d"):
 
 def _bewegungen(artnr, dateformat="%Y-%m-%d", lager=0):
     """Sammeln aller Bewegungen zu einem Artikel."""
-    
+
     # start processing all three queries in separate threads
     bestellmengen_future = huTools.async.Future(bestellmengen, artnr, lager)
     auftragsmengen_future = huTools.async.Future(auftragsmengen, artnr, lager)
     buchbestand_future = huTools.async.Future(buchbestand, artnr, lager)
-    
+
     # This could be sped up by using futures.
     # Startwert ist der Buchbestand
     bewegungen = [(datetime.date.today().strftime(dateformat), int(buchbestand_future()))]
@@ -266,14 +266,14 @@ def _sum_bewegungen(bewegungen):
         menge += bewegungsmenge
         bestentwicklung[datum] = menge
     return bestentwicklung
-    
+
 
 def bestandsentwicklung(artnr, dateformat="%Y-%m-%d", lager=0):
     """Liefert ein Dictionary, dass alle zukünftigen, bzw. noch nicht ausgeführten Bewegungen
-    
+
     für einen Artikel beinhaltet. Ist kein Bestand für den Artikel vorhanden, wird None zurückgegeben.
-    
-    dateformat bestimmt dabei die Keys des Dictionaries und steuert die Granularität. "%Y-%W" sorgt 
+
+    dateformat bestimmt dabei die Keys des Dictionaries und steuert die Granularität. "%Y-%W" sorgt
     z.B. für eine wochenweise Auflösung.
 
     >>> bestandsentwicklung('14865')
@@ -281,7 +281,7 @@ def bestandsentwicklung(artnr, dateformat="%Y-%m-%d", lager=0):
      '2009-03-02': 860,
      '2009-04-01': 560,
      '2009-05-04': 300}
-     
+
      Achtung: Diese Funktion implementiert bis zu 120 Sekunden caching.
     """
     # check if we have a cached result.
@@ -336,15 +336,15 @@ def bestandsentwicklung(artnr, dateformat="%Y-%m-%d", lager=0):
     else:
         # Bestand - die menge fuer 2 Minuten cachen
         memc.set(memc_key, bestentwicklung, 60*2)
-    
+
     return bestentwicklung
 
 
 def bestellmengen(artnr, lager=0):
     """Liefert eine liste mit allen Bestellten aber noch nicht gelieferten Wareneingängen.
-    
+
     >>> bestellmengen('14865')
-    
+
     {datetime.date(2009, 2, 20): 1200,
      datetime.date(2009, 5, 5): 300}
     """
@@ -356,18 +356,18 @@ def bestellmengen(artnr, lager=0):
                                   grouping='BPDTLT', condition=condition)
     return dict([(x['liefer_date'], as400_2_int(x['SUM(BPMNGB-BPMNGL)']))
                  for x in rows if as400_2_int(x['SUM(BPMNGB-BPMNGL)']) > 0])
-    
+
 
 def auftragsmengen(artnr, lager=None):
     """Liefert eine Liste offener Aufträge für einen Artikel OHNE UMLAGERUNGEN.
-    
+
     >>> auftragsmengen(14865)
     {datetime.date(2009, 3, 2): 340,
      datetime.date(2009, 4, 1): 300,
      datetime.date(2009, 5, 4): 260,
      datetime.date(2009, 6, 2): 300}
     """
-    
+
     condition = (
     "AKAUFN=APAUFN"
     " AND AKAUFA<>'U'"                # kein Umlagerungsauftrag
@@ -377,7 +377,7 @@ def auftragsmengen(artnr, lager=None):
     " AND (APMNG-APMNGF) > 0"  # (noch) zu liefernde menge ist positiv
     " AND AKSTAT<>'X'"                # Auftrag nicht logisch gelöscht
     " AND AKKZVA=0")                  # Auftrag nicht als 'voll ausgeliefert' markiert
-    
+
     if lager:
         # Achtung, hier gibt es KEIN Lager 0 in der Tabelle. D.h. APLGNR=0 gibt nix
         condition = condition + (" AND APLGNR=%d" % lager)
@@ -390,13 +390,13 @@ def auftragsmengen(artnr, lager=None):
 
 def get_offene_auftraege(lager=100):
     """Liefert eine Liste offener Aufträge OHNE UMLAGERUNGEN.
-    
+
     Ported to connection2 from MoftS.lib.mofts.client.as400.py to be used in logistik/versandauslastung
     """
     # TODO: merge w/ auftragsmengen_alle_artikel()
     mappings = {
             'APARTN': 'artnr',
-            # das kann bei ueberlieferungen zu negativen werten fuehren 
+            # das kann bei ueberlieferungen zu negativen werten fuehren
             # und ist bei auftraegen mit mengenaenderungen gelegentlich 0 - siehe Case 227:
             'APMNG-APMNGF-APMNGG': 'menge',
             'APMNG': 'bestellmenge',
@@ -434,7 +434,7 @@ def auftragsmengen_alle_artikel(lager=0, umlagerungen=False):
                datetime.date(2008, 11, 24): 763,
                datetime.date(2008, 11, 27): 200}}
     """
-    
+
     condition = (
     "AKAUFN=APAUFN"
     " AND APSTAT<>'X'"                # Position nicht logisch gelöscht
@@ -445,7 +445,7 @@ def auftragsmengen_alle_artikel(lager=0, umlagerungen=False):
 
     if not umlagerungen: # kein Umlagerungsauftrag:
         condition += " AND AKAUFA<>'U'"
-    
+
     if lager:
         # Achtung, hier gibt es KEIN Lager 0 in der Tabelle. D.h. APLGNR=0 gibt nix
         condition += " AND APLGNR=%d" % lager
@@ -459,11 +459,11 @@ def auftragsmengen_alle_artikel(lager=0, umlagerungen=False):
         if row['menge_offen']:
             ret.setdefault(str(row['artnr']), {})[row['liefer_date']] = as400_2_int(row['menge_offen'])
     return ret
-    
+
 
 def versionsvorschlag(menge, orgartnr, date, dateformat="%Y-%m-%d"):
     """Gib einen Vorschlag für Zusammenstellung von Artikeln zurück.
-    
+
     >>> versionsvorschlag(2000, '22006', '2009-01-04')
     (True, [(1184, '22006'), (816, '22006/03')])
     >>> versionsvorschlag(2000, '76095', '2009-01-04')
@@ -479,10 +479,10 @@ def versionsvorschlag(menge, orgartnr, date, dateformat="%Y-%m-%d"):
         if benoetigt <= 0:
             return True, ret
     return False, ret
-    
+
 def frei_am(menge, artnr, date, dateformat="%Y-%m-%d"):
     """Ermittelt, ob die Menge für einen Artikel zu dem Datum date frei ist.
-    
+
     Rückgabewert ist ein Tupel. Dessen erster Eintrag gibt an, ob die Menge vorhanden ist,
     der zweite Eintrag entspricht der gesamt freien Menge zu diesem Datum.
     """
@@ -502,25 +502,25 @@ def frei_am(menge, artnr, date, dateformat="%Y-%m-%d"):
 
 def frei_ab(menge, artnr, dateformat="%Y-%m-%d", lager=0):
     """Finds the earliest date when menge is frei (available) or None if it isn't available at all.
-    
+
     >>> frei_ab(50, '76095')
     None
     >>> frei_ab(500, '01104')
     datetime.date(2008, 11, 22)
     """
-    
+
     # Algorythmus: vom Ende der Bestandskurve nach hinten gehen, bis wir an einen punkt Kommen, wo die
     # Kurve niedriger ist, als die geforderte Menge - ab da ist die Menge frei.
-    
+
     today = datetime.date.today().strftime("%Y-%m-%d")
     bentwicklung = bestandsentwicklung(artnr, dateformat, lager)
     # remove historic data, since this tends to be negative
     bentwicklung = dict([x for x in bentwicklung.items() if x[0] >= today])
-    
+
     # shortcut: the bestand never drops below menge
     if bentwicklung and min(bentwicklung.values()) >= int(menge):
         return datetime.date.today()
-    
+
     bentwicklung = bentwicklung.items()
     bentwicklung.sort(reverse=True)
     previous_date = None
@@ -532,11 +532,11 @@ def frei_ab(menge, artnr, dateformat="%Y-%m-%d", lager=0):
                 return False
         previous_date = datum
     return None
-    
+
 
 def get_umlagerungen(artnr=None):
     """Ermittelt wieviel Umlagerungen für einen Artikel unterwegs sind"""
-    warnings.warn("get_umlagerungen() is deprecated use umlagermenge()", DeprecationWarning, stacklevel=2) 
+    warnings.warn("get_umlagerungen() is deprecated use umlagermenge()", DeprecationWarning, stacklevel=2)
     return umlagermenge(artnr, anlager=100)
 
 
@@ -554,23 +554,23 @@ def umlagermenge(artnr, anlager=100):
 def get_lagerbestandmitumlagerungen(artnr):
     """Deprecheated, don't use anymore."""
     warnings.warn("get_lagerbestandmitumlagerungen() is deprecated use bestand()",
-                  DeprecationWarning, stacklevel=2) 
+                  DeprecationWarning, stacklevel=2)
     return bestand(artnr, lager=100)
-    
+
 
 def bestand(artnr, lager=0):
     """Ermittelt den Lagerbestand (Buchbestand + kurzum in diesem Lager eintreffene Güter) eines Artikels.
-    
+
     >>> bestand('76095')
     53
     """
-    
+
     return buchbestand(artnr, lager=lager) + umlagermenge(artnr, lager)
-    
+
 
 def besteande(lager):
     """Ermittelt den Lagerbestand (Buchbestand + in diesem Lager eintreffene Güter) aller Artikel am Lager.
-    
+
     >>> bestaende(100)
     {'01013': 61,
      '01020': 96,
@@ -582,34 +582,34 @@ def besteande(lager):
      'WK83162': 380,
      'WK84020': 68}
      """
-    
+
     rows = get_connection().query('XLF00', fields=['LFARTN', 'LFMGLP'],
                condition="LFLGNR=%d AND LFMGLP<>0 AND LFSTAT<>'X'" % (int(lager)))
     bbesteande = dict([(str(row[0]), as400_2_int(row[1])) for row in rows])
-    
+
     # Offene Umlagerungen an dieses Lager zurechnen.
     uml = umlagermengen(anlager=lager)
     for artnr, umlagerungsmenge in uml.items():
         bbesteande[str(artnr)] = bbesteande.get(artnr, 0) + as400_2_int(umlagerungsmenge)
     return bbesteande
-    
+
 
 # class TestUmlagerungen(unittest.TestCase):
 #     """Testet die Berechnung der Umlagerungen."""
-#     
+#
 #     def test_misc(self):
 #         """Performs tests on several functions and compares their results.
-#         
+#
 #         It performs checks for every article in stock, so it is very time consuming and can only work during
 #         low activity periods because of constant changes in stock during daytime.
 #         """
-#         
+#
 #         lager = 100
 #         bstnde = besteande(lager)
 #         for artnr, menge in bstnde.items():
 #             bstnd = bestand(artnr, lager)
 #             self.assertEqual(bstnd, menge)
-#             
+#
 #             umenge = umlagermenge(artnr, lager)
 #             bbestand = buchbestand(artnr, lager)
 #             self.assertEqual(bbestand+umenge, menge)
@@ -641,7 +641,7 @@ def _test():
         #print "bestand(%r, 100) = " % artnr,
         ((bestand(artnr, 100)))
     return frei_ab(1000, '14600/03')
-    
+
 
 if __name__ == '__main__':
     _test()

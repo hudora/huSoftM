@@ -108,13 +108,13 @@ def _softm_to_dict(row):
                land=husoftm2.tools.land2iso(row['laenderkennzeichen']),  # D
                plz=row.get('plz', ''),                                  # 42477
                ort=row.get('ort', ''),                                  # Neurade
-               tel=row.get('tel', ''),                                  #
-               fax=row.get('fax', ''),                                  #
+               tel=row.get('tel', ''),
+               fax=row.get('fax', ''),
                mobil=row.get('mobil', ''),
                mail=row.get('mail', ''),
                mitgliednr=row.get('mitgliednr', ''),
-               ustid=row.get('ustid', ''),                              #
-               adressdatei_id=row.get('adressdatei_id', ''),            #
+               ustid=row.get('ustid', ''),
+               adressdatei_id=row.get('adressdatei_id', ''),
                company=row.get('company', ''),                          # '06'
                verband=row.get('verband', ''),
                # gebiet=row.get('gebiet', ''),                          # ': u'04'

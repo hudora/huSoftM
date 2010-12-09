@@ -540,7 +540,7 @@ def extended_order_protocol2softm(order, auftragsart=None, abgangslager=None):
     # oder so:
     # -    orders = husoftm.auftraege.find_text(guidtext)
     #    if orders:
-    #        raise RuntimeError('Auftrag mit guid %r bereits vorhanden: %r' 
+    #        raise RuntimeError('Auftrag mit guid %r bereits vorhanden: %r'
     #                            % (order['guid'], orders[0]['auftragsnr']))
 
     while True:

@@ -101,20 +101,20 @@ def get_lieferadressen(kundennr):
 
 def _softm_to_dict(row):
     ret = dict(kundennr="SC%s" % row.get('kundennr', ''),               # 10003
-               name1=row.get('name1', ''),                              # Sport & Mode Auer
+               name1=row.get('name1', ''),                              # Sport A
                name2=row.get('name2', ''),
                name3=row.get('name3', ''),
                strasse=row.get('strasse', ''),                          # Marktplatz 5
                land=husoftm2.tools.land2iso(row['laenderkennzeichen']),  # D
-               plz=row.get('plz', ''),                                  # 75387
-               ort=row.get('ort', ''),                                  # Neubulach
-               tel=row.get('tel', ''),                                  # 07053/7910
-               fax=row.get('fax', ''),                                  # 07053/6041
+               plz=row.get('plz', ''),                                  # 42477
+               ort=row.get('ort', ''),                                  # Neurade
+               tel=row.get('tel', ''),                                  #
+               fax=row.get('fax', ''),                                  #
                mobil=row.get('mobil', ''),
                mail=row.get('mail', ''),
                mitgliednr=row.get('mitgliednr', ''),
-               ustid=row.get('ustid', ''),                              # '132838685'
-               adressdatei_id=row.get('adressdatei_id', ''),            # 123656179
+               ustid=row.get('ustid', ''),                              #
+               adressdatei_id=row.get('adressdatei_id', ''),            #
                company=row.get('company', ''),                          # '06'
                verband=row.get('verband', ''),
                # gebiet=row.get('gebiet', ''),                          # ': u'04'

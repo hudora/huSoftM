@@ -276,7 +276,7 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
     if rows:
         return rows
 
-    #logging.debug("Starting SQL query: %s", args)
+    # logging.debug("Starting SQL query: %s", args)
     start = time.time()
     args_encoded = urllib.urlencode({'q': hujson.dumps(args)})
     url = "/sql?" + args_encoded
@@ -298,7 +298,7 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
     else:
         rows = [tuple([_fix_field(data, name) for data, name in zip(row, fields)]) for row in rows]
 
-    logging.debug("Done SQL query in %.3fs: %s", time.time() - start, args)
+    # logging.debug("Done SQL query in %.3fs: %s", time.time() - start, args)
     memcache.add(key='husoftm_query_%r_%r' % (querymappings, args),
                  value=rows, time=cachingtime)
     return rows

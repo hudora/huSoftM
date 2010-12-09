@@ -52,7 +52,6 @@ def _auftraege(additional_conditions=None, mindate=None, maxdate=None, limit=Non
     conditions = ["AKSTAT<>'X'",
                   'ATAUFN=AKAUFN',
                   'ATAUPO=0',
-                  # 'ATTART=8',
                   ]
     if mindate and maxdate:
         conditions.append("AKDTER BETWEEN %s AND %s" % (date2softm(mindate), date2softm(maxdate)))
@@ -67,13 +66,14 @@ def _auftraege(additional_conditions=None, mindate=None, maxdate=None, limit=Non
     koepfe = {}
     kopftexte = {}
     # Köfe samt Kopftexten einlesen
+    # TODO: was ist, wenn es keine Kopftexte gibt?
     for kopf in query(['AAK00', 'AAT00'], ordering=['AKAUFN DESC'], condition=condition,
                       limit=limit, ua='husoftm2.auftraege'):
         d = dict(kundennr="SC%s" % kopf['kundennr_warenempf'],
                  auftragsnr=kopf['auftragsnr'],
                  auftragsnr_kunde=kopf['auftragsnr_kunde'],
-                 erfassung=kopf['erfassung_date'],
-                 aenderung=kopf['aenderung_date'],
+                 erfassung=kopf['AAK_erfassung_date'],
+                 aenderung=kopf['AAK_aenderung_date'],
                  sachbearbeiter=husoftm2.sachbearbeiter.resolve(kopf['sachbearbeiter']),
                  anliefertermin=kopf['liefer_date'],
                  teillieferung_erlaubt=(kopf['teillieferung_erlaubt'] == 1),
@@ -108,6 +108,7 @@ def _auftraege(additional_conditions=None, mindate=None, maxdate=None, limit=Non
 
     allauftrnr = koepfe.keys()
     while allauftrnr:
+        # In 50er Schritten Auftragspositionen lesen und den 50 Aufträgen zuordnen
         batch = allauftrnr[:50]
         allauftrnr = allauftrnr[50:]
         for row in query(['AAP00'], condition="APSTAT<>'X' AND APAUFN IN (%s)" % ','.join(batch)):

@@ -222,10 +222,10 @@ MAPPINGDIR = {
           # 'AKKZNN': 'Kz.Nachnahme',
           # 'AKKZAR': 'Kz.Leihart',
           # 'AKABTP': 'Abt. für Prüfung KD-Zusatz',
-          'AKDTER': 'erfassung_date',
+          'AKDTER': 'AAK_erfassung_date',
           # 'AKZTER': 'Uhrzeit der Erfassung',
           # 'AKDTAE': 'Datum l. Änderung CJJMMTT',
-          'AKZTAE': 'aenderung_date',
+          'AKZTAE': 'AAK_aenderung_date',
           # 'AKDTAB': 'Datum letzte Auftragsbestät',
           # 'AKDTLF': 'lieferschein_date'  # 'Datum letzter Lieferschein',
           # 'AKDTKB': # 'Datum ltzt. Kommissionierbel',
@@ -751,7 +751,7 @@ MAPPINGDIR = {
 
 'ALK00': {  # Lieferscheinköpfe
           'LKSANK': 'satznr',
-          # 'LKSANB': 'bezogener_kopf',
+          'LKSANB': 'bezogener_kopf',
           # Die Angabe ist nur gefüllt, falls mit der Variante 'Kommissionierbeleg vor Lieferschein'
           # gearbeitet wird. Für jeden Lieferschein wird zusätzlich zum Kommissionierbeleg-Kopfsatz
           # ein eigener Kopfsatz angelegt, die ALN00-Sätze für den Lieferschein werden aber nicht
@@ -799,19 +799,18 @@ MAPPINGDIR = {
           'LKAUFS': 'auftragsnr',
           # Nummer des Auftrags In diesem Feld steht die zu dem Lieferschein gehörende Auftragsnummer.
           # Bei Sammellieferscheinen wird die Auftragsnummer der ersten Lieferscheinposition gespeichert.
-          #'LKDTLT': 'liefer_date',
+          'LKDTLT': 'anliefer_date',
           #'LKKZ02': 'hrl_status',
           # 'LKKZVA': 'alle_positionen_fakturiert',
           # *ZERO noch nicht alle Pos fakturiert
           # 1     alle Positionen sind fakturiert
-          'LKDTER': 'erfassung_date',
-          'LKZTER': 'erfassung_time',
-          'LKDTAE': 'aenderung_date',
-          'LKZTAE': 'aenderung_time',
+          'LKDTER': 'ALK_erfassung_date',
+          'LKZTER': 'ALK_erfassung_time',
+          'LKDTAE': 'ALK_aenderung_date',
+          'LKZTAE': 'ALK_aenderung_time',
           #'LKDFSL': 'dateifuehrungsschluessel',
           #'LKSTAT': 'satzstatus',
          },
-
 
 
 'ALN00': {  # Positionsdatei für KB/Lieferschein

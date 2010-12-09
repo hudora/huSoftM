@@ -49,6 +49,7 @@ def _lieferscheine(additional_conditions=None, limit=None, header_only=False):
                  ort=kopf.get('ort', ''),
                  tel=kopf.get('tel', ''),
                  fax=kopf.get('fax', ''),
+                 art=kopf.get('art', ''),
                  )
                  # 'art': u'',
                  # 'teillieferung_erlaubt': 1,
@@ -58,7 +59,7 @@ def _lieferscheine(additional_conditions=None, limit=None, header_only=False):
         if kopf.get('bezogener_kopf'):
             pos_key = str(kopf['bezogener_kopf'])
         auftragsnr2satznr[kopf['auftragsnr']] = pos_key
-        satznr2auftragsnr[pos_key] = kopf['auftragsnr']
+        satznr2auftragsnr[pos_key] = str(kopf['auftragsnr'])
         koepfe[pos_key] = d
 
     if header_only:
@@ -92,7 +93,7 @@ def _lieferscheine(additional_conditions=None, limit=None, header_only=False):
 
         # Texte
         for row in query(['AAT00'], ordering=['ATTART', 'ATLFNR'], cachingtime=cachingtime,
-                         condition="ATAUFN IN (%s)" % ','.join([str(x) for x in batch])):
+                         condition="ATAUFN IN (%s)" % ','.join([str(satznr2auftragsnr[x]) for x in batch])):
             row['textart'] = int(row['textart'])
             if row['textart'] == 5:
                 postexte.setdefault(row['auftragsnr'], {}
@@ -143,7 +144,7 @@ def _lieferscheine(additional_conditions=None, limit=None, header_only=False):
 
         for auftragsnr, lieferaddresse in lieferaddressen.items():
             pos_key = auftragsnr2satznr[auftragsnr]
-            koepfe[pos_key]['lieferadresse'] = lieferaddresse
+            koepfe[pos_key]['lieferadresse'].update(lieferaddresse)
 
     return koepfe.values()
 
@@ -169,14 +170,24 @@ def lieferscheine_auftrag(auftragsnr, header_only=False):
     return _lieferscheine(["LKAUFS = %s" % sql_quote(auftragsnr)], header_only=header_only)
 
 
+def get_lieferschein(lieferscheinnr, header_only=False):
+    """Gibt ein Lieferscheindict für eine Lieferscheinnummer zurück"""
+    lieferscheinnr = str(int(lieferscheinnr.strip('SL')))  # clean up, avoid attacks
+    lscheine = _lieferscheine(["LKLFSN = %s" % sql_quote(lieferscheinnr)], limit=1, header_only=header_only)
+    if lscheine:
+        return lscheine[0]
+    return {}
+
+
 def _selftest():
     """Test basic functionality"""
     from pprint import pprint
     import datetime
     header = False
-    print len(get_changed_after(datetime.date(2010, 12, 1)))
     #(get_auftrag_by_guid('Online_20101202', header_only=header))
     pprint(lieferscheine_auftrag('SO1163764', header_only=header))
+    print get_changed_after(datetime.date(2010, 12, 1))
+    pprint(get_lieferschein('SL4173969'))
     #(get_auftrag('Online_20101202', header_only=header))
     #(auftraege_kunde('SC66669', limit=20, header_only=header))
     # Kommibeleg(3023551)

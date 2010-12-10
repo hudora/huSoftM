@@ -77,6 +77,14 @@ httpProxy.createServer(function (req, res) {
               query = JSON.parse(querystring.parse(parsedurl.query).q);
               // build the SQL query
               querystr = "SELECT " + query.fields.join(',') + " FROM " + query.tablenames.join(',');
+              if (query.joins) {
+                  query.joins.forEach(function(x) {
+                      jointable = x[0];
+                      leftattr = x[1];
+                      rightattr = x[2];
+                      querystr = querystr + ' LEFT OUTER JOIN ' + jointable + ' ON ' + leftattr + '=' + rightattr;
+                  });
+              };
               if (query.condition)
                   querystr = querystr + ' WHERE ' + query.condition.replace(/';/g, "");
               if (query.grouping)

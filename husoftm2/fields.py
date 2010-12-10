@@ -92,7 +92,7 @@ MAPPINGDIR = {
           # 'AKABEM': 'Ab-Empfänger: R = Rg-Zahler',
           # Das Feld wird mit der Angabe lt. Auftragsart vorbesetzt, es wird nur benötigt, falls
           # Warenempfänger und Rechnungsempfänger unterschiedlich sind.
-          # *BLANK	Warenempfänger,  R Rechnungsempfänger, V Lieferadresse
+          # *BLANK      Warenempfänger,  R Rechnungsempfänger, V Lieferadresse
           # 'AKRGEM': 'Rechnungsempfänger',
           # *BLANK Rechnungszahler
           # 1      Warenempf‰nger - Als Rechnungsadresse wird die Adresse des Warenempfängers gedruckt.
@@ -194,12 +194,12 @@ MAPPINGDIR = {
           # Eine Eingabe ist nur zulässig, wenn für die oben angegebene Auftragsart Streckengeschäft
           # zul‰ssig ist. Streckengeschäftsaufträge laufen generell ohne Bestandsführung, es werden jedoch
           # Lieferscheine gedruckt.
-          # *ZERO	kein Streckengesch‰ft
-          # 1	Streckengesch‰ft ohne Bestandsf ̧hrung
-          # 2	Kundenindividuell
-          # 3	Bestellware direkt an Kunden
+          # *ZERO       kein Streckengesch‰ft
+          # 1   Streckengesch‰ft ohne Bestandsf ̧hrung
+          # 2   Kundenindividuell
+          # 3   Bestellware direkt an Kunden
           #     Die Rechnungsfreigabe erfolgt mit der Rechnungsprüfung der zugehörigen Bestellung
-          # 4	Bestellware über Lager an Kunden
+          # 4   Bestellware über Lager an Kunden
           #     Die Rechnungsfreigabe erfolgt mit dem Warenzugang der zugehörigen Bestellung
           # 'AKKZWS': 'WZ/RE-Sperre',
           # 'AKKZIN': 'Kennzeichen interner Beleg',
@@ -257,7 +257,7 @@ MAPPINGDIR = {
           # 'AKAWRT': 'Auftragswert',
           # Angabe in Hauptwährung. Summe der offenen Positionswerte dieses Auftrags.
           # 'AKSTOR': 'Kennzeichen Stornierung',
-          # Vorgangsart	- Festlegung, ob es sich bei der Rechnungsschreibung um eine Gutschrift oder
+          # Vorgangsart - Festlegung, ob es sich bei der Rechnungsschreibung um eine Gutschrift oder
           # Stornierung handelt. Der Eintrag wird aus der Auftragsart übernommen. *ZERO Gutschrift,  1 Rechnung
           # 'AKFORM': 'Rechnungsart',
           # 'AKMJBU': 'Buchungsmonat',
@@ -2669,6 +2669,337 @@ MAPPINGDIR = {
         # 'XADFSL': Dateif}hrungs-Schl}ssel
         'XASTAT': 'satzstatus',
        },
+
+'XXC00': {
+          # Kunden-/Lieferantenzusatz
+          #
+          # Hier werden zus{tzliche Daten f}r den Kunden oder Lieferanten
+          # hinterlegt. Diese Datei wird sowohl von der Warenwirtschaft als
+          # auch vom Rechnungswesen ben¦tigt  und enth{lt wichtige Daten,
+          # wie z.B. MWSt-Zuordnung, EU-USt-IdNr etc.
+          'XCADAR': 'art',
+          # Festlegung, ob die Adressnummer eine Kunden- oder eine
+          # Lieferantennummer enth{lt.
+          # D           Kunde/Debitor
+          # K           Lieferant/Kreditor
+          'XCADNR': 'XXC_nr',  # Kunde/Lieferant
+          # XCLISP   Liefersperre                                    S    1 0   12   12
+          #          *ZERO       keine Liefersperre
+          #          1           Liefersperre
+          # XCFGRP   Firmengruppe                                    A    2     13   14
+          # XCAWRT   Offener Auftragswert                            P   15 2   15   22
+          #          In diesem Feld sind die offenen Positionswerte aus der
+          #          Auftragspositionsdatei aufsummiert. Allerdings k¦nnen aufgrund
+          #          der Parameterisierung bestimmte Auftragsarten und Positionen
+          #          dabei unber}cksichtigt bleiben.
+          #          Die wichtigsten sind:
+          #           Auftragspositionen mit Kreditlimitsperre bleiben generell
+          #           unber}cksichtigt.
+          #           Rahmenpositionen werden nur ber}cksichtigt, falls lt. Steuerung
+          #           Auftrag 'Rahmen f}r Kreditlimit = ja' (PABNKL = 0).
+          #           Positionen werden nur ber}cksichtigt, falls lt. Auftragsart
+          #           'Kreditlimitpr}fung = ja' (PAAFA4 = leer/0/1).
+          #  XCAKWR   Offener Auftragswert f}r Kreditlimit            P   15 2   23   30
+          #           Je nach Parameterisierung der Kreditlimitpr}fung ergibt sich der
+          #           relevante Positionswert aus:
+          #             a) offener Positionswert               (KLmt bei Erfassung)
+          #             b) Positionswert der zugeteilten Menge (KLmt bei Zuteilung)
+          #           In diesem Feld sind die entsprechenden Positionswerte aus der
+          #           Auftragspositionsdatei aufsummiert. Allerdings k¦nnen aufgrund
+          #           der Parameterisierung bestimmte Auftragsarten und Positionen
+          #           dabei unber}cksichtigt bleiben.
+          #           Die wichtigsten sind:
+          #           Auftragspositionen mit Kreditlimitsperre bleiben generell
+          #          unber}cksichtigt.
+          #          Rahmenpositionen werden nur ber}cksichtigt, falls lt. Steuerung
+          #          Auftrag 'Rahmen f}r Kreditlimit = ja' (PABNKL = 0).
+          #          Positionen werden nur ber}cksichtigt, falls lt. Auftragsart
+          #          'Kreditlimitpr}fung = ja' (PAAFA4 = leer/0).
+          # XCCOMP   Company-Kennzeichen                             A    3     31   33
+          # XCIAKZ   Inland/Ausland                                  S    1 0   34   34
+          #          Festlegung, ob Lieferant am Inlands- bzw. Auslandzahlungsverkehr
+          #          teilnimmt.
+          #          Bei Kunden wird normalerweise immer eine 0 angegeben.
+          #          F}r Mischkonten kann die Auswahl 1 bzw. 2 angegeben werden.
+          #          PTYP Tabelle
+          #          *ZERO       Inlandszahlungsverkehr / Lastschriften
+          #                      Der Lieferant wird }ber den Inlandszahlungsverkehr
+          #
+          #                       abgewickelt.
+          #                       Der Kunde kann am Lastschriftverfahren bzw. an der
+          #                       debitorischen Auszahlungen teilnehmen.
+          #           1           Auslandszahlungsverkehr
+          #           2           Inlands- und Auslandszahlungsverkehr
+          #                       Alle OP's in Hauptw{hrung werden im Inlandszahlungsver
+          #                       beglichen. Alle OP's in W{hrungen werden im Auslands-
+          #                       zahlungsverkehr bezahlt.
+          #  XCKZAD   Adresse {nderbar                                S    1 0   35   35
+          #           *ZERO       Adresse ist nicht {nderbar
+          #           1           Adresse ist {nderbar
+          'XCINFL': 'lieferantennummer',
+          # Falls bekannt, kann hier die Lieferantennummer eingetragen werden, die uns der Kunde zugewiesen
+          # hat.
+          #  XCEGCD   EU-L{ndercode                                   A    2     48   49
+          'XCUSTN': 'xxc_ustid', # USt-IdNr
+          # EU-einheitliche Steuernummer (USt-IdNr, VAT-Nr).
+          # Beim Druck der USt-IdNr ist zus{tzlich noch der EU-L{ndercode
+          # mitzudrucken.
+          # Die Umsatzsteueridentifikationsnummer hat folgenden Aufbau:
+          #  Land              ]   L{nge   ] Numerisch
+          #  ------------------]-----------]--------------------------------
+          #  Belgien           ]       9   ] ja
+          #  D{nemark          ]       8   ] ja
+          #  Deutschland       ]       9   ] ja   Die Stelle 09 ist eine
+          #                    ]           ]      Pr}fziffer }ber die Stellen
+          #                    ]           ]      01 bis 08. Das System setzt
+          #                    ]           ]      die Pr}fziffer automatisch
+          #                    ]           ]      ein und l¦scht die Stellen
+          #                    ]           ]      10 bis 12.
+          #                    ]           ]
+          #  Spanien           ]       9   ] ja   die erste und letzte
+          #                    ]           ]      Stelle bzw. die erste oder
+          #                    ]           ]      die letzte Stelle kann ein
+          #                    ]           ]      Buchstabe sein
+          #                    ]           ]
+          #  Griechenland      ]       8   ] ja
+          #  Frankreich        ]      11   ] ja
+          #  Irland            ]       8   ] nein die zweite Stelle kann
+          #                    ]           ]      und die letzte Stelle muss
+          #                    ]           ]      ein Buchstabe sein
+          #  Italien           ]      11   ] ja
+          #  Luxemburg         ]       8   ] ja
+          #  Niederlande       ]      12   ] nein die drittletzte Stelle ist
+          #                    ]           ]      der Buchstabe B
+          #  Portugal          ]       9   ] ja
+          #  Gro~britannien    ] 9 oder 12 ] ja
+          #  \sterreich        ]       9   ] nein erste Stelle = U
+          #  Finnland          ]       8   ] ja
+          #  Schweden          ]      12   ] ja
+          #  XCKZUS   Kennzeichen USt-IdNr                            S    1 0   62   62
+          #           *ZERO       keine USt-IdNr, da au~erhalb EU/Inland
+          #           1           Kd/Li innerhalb EU, mit USt-IdNr
+          #           2           Kd/Li innerhalb EU, USt-IdNr unklar
+          #           3           Kd/Li innerhalb EU, ohne USt-IdNr
+          #           4           wie 3, jedoch Privatperson
+          #  XCMWKZ   Steuerprofil                                    S    2 0   63   64
+          #  XCLIMI   Kreditlimit                                     P   15 2   65   72
+          #           Angabe in Hauptw{hrung.
+          #           Die Angabe bei einem Kunden ist Voraussetzung f}r eine
+          #           Kreditlimitpr}fung im Bereich der Auftragsbearbeitung.
+          #  XCSKSL   Skontoschl}ssel                                 S    3 0   73   75
+          #           Angabe des Skontoschl}ssels des Kunden bzw. Lieferanten.
+          #           Ist kein Skontoschl}ssel angegeben, wird f}r die Finanzbuch-
+          #           haltung der entsprechende Vorbesetzungsskontoschl}ssel aus dem
+          #           Parameter Debitoren bzw. Kreditoren verwendet.
+          #  XCDKSL   Delkredereschl}ssel                             S    3 0   76   78
+          #           Angabe des Skontoschl}ssels des Kunden bzw. Lieferanten.
+          #           Ist kein Skontoschl}ssel angegeben, wird f}r die Finanzbuch-
+          #           haltung der entsprechende Vorbesetzungsskontoschl}ssel aus dem
+          #           Parameter Debitoren bzw. Kreditoren verwendet.
+          # XCMASP   Mahnsperre Kunde                                A    1     79   79
+          #          *BLANK      keine Mahnsperre
+          #          N           sonstige
+          #          1           gesperrt f}r 1 Mahnlauf
+          #          2           gesperrt f}r 2 Mahnl{ufe
+          #          3           gesperrt f}r 3 Mahnl{ufe
+          #          4           gesperrt f}r 4 Mahnl{ufe
+          #          5           gesperrt f}r 5 Mahnl{ufe
+          #          6           gesperrt f}r 6 Mahnl{ufe
+          #          7           gesperrt f}r 7 Mahnl{ufe
+          #          8           gesperrt f}r 8 Mahnl{ufe
+          #          9           gesperrt f}r 9 Mahnl{ufe
+          # XCKDZA   Teilnahme am Lastschriftverfahren               A    1     80   80
+          #           Festlegung, ob/wie der Kunde am Lastschriftverfahren teilnimmt
+          #           Hinweis zum Einsatz in der Schweiz:
+          #           Die Kennzeichen 1 bis 3 sind nur aktiv, sofern die Felder PXVESR
+          #           (VESR-Codierung 'CH') im Firmenparameter und PAAVKZ (VESR-
+          #           Codierung 'CH') im Auftragsartenparameter ebenfalls auf 1
+          #           gesetzt wurden.
+          #           PTYP Tabelle
+          #           *BLANK      kein LastschriftenVrf / VESR-Einzahlung
+          #           A           Abbuchungsverfahren
+          #                       Die OP's des Kunden werden }ber den Lastschriftenlauf
+          #                       Kunden eingezogen. Auf den Datentr{ger (im Rahmen des
+          #                       Lastschriftenlaufes) wird der Textschl}ssel 04 f}r
+          #                       Lastschrift (Abbuchungsverfahren) geschrieben.
+          #           D           direct debit
+          #                       Kunde wird im Lastschriftenlauf nur ber}cksichtigt, we
+          #                       beim Aufruf das Kennzeichen 'D' selektiert wird.
+          #           L           Lastschriftverfahren
+          #                       Die OP's des Kunden werden }ber den Lastschriftenlauf
+          #                       Kunden eingezogen. Auf den Datentr{ger (im Rahmen des
+          #                       Lastschriftenlaufes) wird der Textschl}ssel 05 f}r
+          #                       Lastschrift (Einzugserm{chtigungsverfahren) geschriebe
+          #           1           VESR-Einzahlungsscheine (Nettobetr{ge)
+          #                       Wird eine 1 gesetzt, so erstellt das Fakturadruckprogr
+          #                       zus{tzlich einen ESR/VESR-Einzahlungsschein (Netto-Net
+          #           2           VESR-Einzahlungsscheine (Bruttobetr{ge)
+          #                       Wird eine 2 gesetzt, so erstellt das Fakturadruckprogr
+          #                       zus{tzlich einen ESR/VESR-Einzahlungsschein (Brutto-Br
+          #           3           VESR-Einzahlungsscheine (Nto/BtoBetr{ge)
+          #                       Wird eine 3 gesetzt, so erstellt das Fakturadruckprogr
+          #                       zus{tzlich einen ESR/VESR-Einzahlungsschein (Netto-Bru
+          #  XCBOKZ   Bonit{t                                         A    1     81   81
+          #           *BLANK      ohne Bonit{t
+          #  XCKLTA   Kunden-/Lieferantentexte                        A    1     82   82
+          # 'XCINF1':  # Infofeld 1
+          'XCVERB': 'verbandskonto',  # Verbands-/Mischkonto
+          #           Bei Zugeh¦rigkeit des Kunden/Lieferanten zu einem Verband oder
+          #           Mischkonto ist hier die Nummer des Verbandes oder des Misch-
+          #           kontos einzutragen.
+          #           Bei einem Mischkonto vom Typ N ist hier die Debitorennummer ein-
+          #           zutragen.
+          #  XCKRED   Verbands-/Mischkontosatz                        A    1     92   92
+          #           REFFLD  XREF       XREFF01    XXKRED
+          #           COLHDG  Vbnd/MKpf
+          #           Festlegung, ob es sich bei diesem Konto um einen Verbandskopf-
+          #           satz oder um einen Mischkontenkopfsatz handelt.
+          #           Verband:
+          #             Die Eingabe V bedeutet, dass ein Verbandskopfsatz angelegt
+          #             wird. Die Mitglieder werden durch die Eingabe der
+          #             Verbandskopfsatznummer diesem Verband zugeordnet.
+          #           Mischkonto:
+          #             Die Eingabe M bedeutet, dass ein Mischkontenkopfsatz angelegt
+          #             wird. Die Mitglieder werden durch die Eingabe der
+          #             Mischkontenkopfsatznummer diesem Mischkonto zugeordnet.
+          #           Die Eingabe N bedeutet, dass ein Debitor und ein Kreditor zu
+          #           einem Mischkonto zusammengefasst werden sollen.
+          #           Die Mischkontennummer beim Debitor muss mit der Debitorennummer
+          #           gef}llt werden. Bleibt sie leer, wird sie vom Programm
+          #
+          #            eingesetzt.
+          #            Die Mischkontennummer beim Kreditor muss ebenfalls mit dieser
+          #            Debitorennummer gef}llt werden.
+          #            Die Debitorennummer und die Kreditorennummer m}ssen identisch
+          #            sein. Debitor=Kreditor=Mischkonto
+          #            *BLANK      kein Verbandssatz
+          #            M           Mischkontensatz mit Kopfsatz
+          #            N           Mischkontensatz ohne Kopfsatz
+          #            V           Verbandssatz
+          'XCMGVB': 'mitgliedsnr',  # Mitgliedsnummer beim Verband
+          #   XCSEDA   Rechnungsdatenaustausch per EDIFACT             S    1 0  101  101
+          #            *ZERO       kein Datenaustausch
+          #            1           nimmt an SEDAS teil
+          #                        Ist nur erlaubt, wenn in der Auftragssteuerung Teil 1
+          #                       SEDAS-Schnittstelle aktiviert ist.
+          #           2           Rechnungsdaten per EDIFACT }bermitteln
+          #                       Ist nur erlaubt, wenn in der Auftragssteuerung Teil 1
+          #                       EDIFACT-Schnittstelle aktiviert ist.
+          #  XCBBN    Bundeseinheitliche Betriebsnummer               S    8 0  102  109
+          #  XCBBS    Bundeseinheitliche Betriebsstellennummer        S    6 0  110  115
+          #  XCKDRZ   Rechenzentrum                                   A    8    116  123
+          #  XCVRKZ   Rechnungsliste erstellen                        S    1 0  129  129
+          #           *ZERO       keine Rechnungsliste
+          #           1           Rechnungsliste ohne SEDAS
+          #           2           Rechnungsliste und  SEDAS
+          #           3           keine Rechnungsliste, nur SEDAS
+          #  XCRGKZ   Rechnung drucken                                S    1 0  130  130
+          #            *ZERO       Rg nicht drucken, kein SEDAS
+          #            1           Rg drucken, kein SEDAS
+          #            2           Rg und SEDAS drucken
+          #            3           Rg nicht drucken, nur SEDAS
+          #   XCKOIN   Kontoinhaber                                    A   40    131  170
+          #   XCPAUO   Artikelunabh{ngige Objektpreise                 S    1 0  171  171
+          #            Festlegung, ob und f}r welche Rabattarten (normale Preise /
+          #            Rabatte und Naturalrabatte) Konditionen in der Preisdatei vor-
+          #            handen sind. Dabei sind nur artikelabh{ngige bzw. unabh{ngige, s.
+          #            o.) Konditionen einer Kundennummer und eines Objektes von Bedeu-
+          #            tung. Dieses Kennzeichen dient zur Performance-Verbesserung bei
+          #            der Konditionsermittlung.
+          #           *ZERO       keine Konditionen
+          #           1           normale Konditionen
+          #           2           Naturalrabatte
+          #           3           Naturalrabatte und normale Konditionen
+          #  XCPAAO   Artikelabh{ngige Objektpreise                   S    1 0  172  172
+          #           Festlegung, ob und f}r welche Rabattarten (normale Preise /
+          #           Rabatte und Naturalrabatte) Konditionen in der Preisdatei vor-
+          #           handen sind. Dabei sind nur artikelabh{ngige bzw. unabh{ngige, s.
+          #           o.) Konditionen einer Kundennummer und eines Objektes von Bedeu-
+          #           tung. Dieses Kennzeichen dient zur Performance-Verbesserung bei
+          #           der Konditionsermittlung.
+          #           *ZERO       keine Konditionen
+          #           1           normale Konditionen
+          #           2           Naturalrabatte
+          #           3           Naturalrabatte und normale Konditionen
+          #  XCPAU    Artikelunabh{ngige Preise                       S    1 0  173  173
+          #           Festlegung, ob und f}r welche Rabattarten (normale Preise /
+          #           Rabatte und Naturalrabatte) Konditionen in der Preisdatei vor-
+          #           handen sind. Dabei sind nur artikelabh{ngige (bzw. unabh{ngige,
+          #           s.o.) Konditionen mit Angabe einer Kundennummer aber ohne Angabe
+          #           eines Objektes von Bedeutung. Dieses Kennzeichen dient zur
+          #           Performance-Verbesserung bei der Konditionsermittlung.
+          #           *ZERO       keine Konditionen
+          #           1           normale Konditionen
+          #           2           Naturalrabatte
+          #           3           Naturalrabatte und normale Konditionen
+          #  XCPAA    Artikelabh{ngige Preise                         S    1 0  174  174
+          #           Festlegung, ob und f}r welche Rabattarten (normale Preise /
+          #           Rabatte und Naturalrabatte) Konditionen in der Preisdatei vor-
+          #           handen sind. Dabei sind nur artikelabh{ngige (bzw. unabh{ngige,
+          #           s.o.) Konditionen mit Angabe einer Kundennummer aber ohne Angabe
+          #           eines Objektes von Bedeutung. Dieses Kennzeichen dient zur
+          #           Performance-Verbesserung bei der Konditionsermittlung.
+          #           *ZERO       keine Konditionen
+          #           1           normale Konditionen
+          #           2           Naturalrabatte
+          #           3           Naturalrabatte und normale Konditionen
+          #  XCHSTU   Hierarchiebereich Kunde/Lieferant               P    3 0  175  176
+          #           Alle Organisationseinheiten werden einem Hierarchiebereich
+          #           zugeordnet. Der Hierarchiebereich unterscheidet OrgEh in Bezug
+          #           auf ihre Stellung in der Hierarchie. Einer Hierarchie k¦nnen
+          #           alle Hierarchiebereiche oder nur einige zugeordnet sein. Dabei
+          #           werden die gew}nschten Hierarchiebereiche den Hierarchieebenen
+          #           der Hierarchie zugeordnet. Ein Bereich kann in unterschiedlichen
+          #           Hierarchien unterschiedlichen Ebenen zugeordnet sein. Hierin
+          #           liegt der eigentliche Grund, weshalb die Zuordnung einer
+          #           Hierarchieebene nicht direkt bei der OrgEh erfolgen kann.
+          #           Es wird empfohlen, Hierarchiebereiche in 10-er Schritten
+          #           anzulegen, um flexibel auf Erweiterungen der hierarchischen
+          #           Struktur reagieren zu k¦nnen.
+          #           PGM  UPX02CL
+          #  XCRGST   Rechnungssteller                                A    8    237  244
+          #           Wenn der Rechnungssteller vom Warenlieferanten abweicht, so ist
+          #           hier der Kreditor/Lieferant zu hinterlegen, welcher die Rechnung
+          #           stellt. Diese Angabe wird in der Bestellverwaltung und
+          #           Rechnungspr}fung vorbesetzt.
+          #  XCKZBO   Bonit{t                                         A    1    245  245
+          #           Das Bonit{tskennzeichen wird nur von SoftM Auftrag ausgewertet.
+          #           Um die Bonit{tspr}fung zu aktivieren, ist zum einen ein
+          #           Kreditlimit einzutragen und zum anderen die Bonit{t zu pflegen.
+          #           Das Bonit{tskennzeichen kann vom hierzu berechtigten Anwender
+          #           in der SoftM Dokumentation erweitert bzw. ge{ndert werden.
+          #           !ber das Bonit{tskennzeichen kann gesteuert werden, dass
+          #           a) Auftr{ge des Kunden unabh{ngig vom verf}gbaren Kreditlimit
+          #              generell in die Kreditlimitsperre laufen,
+          #           b) differenzierte Liefersperren gesetzt werden k¦nnen.
+          #           *BLANK      Kunde hat Bonit{t
+          #           F           F{llige Posten
+          #           K           Klage l{uft
+          #  XCSKRL   Skontoausweis auf RgListe                       A    1    246  246
+          #           REFFLD  XREF       XREFF01    XXA1
+          #           COLHDG  Skonto RgL
+          #           Festlegung, ob auf Rechnungslisten und SEDAS-!bertragungen f}r
+          #           Verb{nde Skonto ausgewiesen wird.
+          #           *ZERO       Skonto nicht ausweisen
+          #           1           Skonto ausweisen
+          #                       Der Skontobetrag wird bezogen auf den Warenwert zzgl.
+          #                       Mehrwertsteuer ausgewiesen.
+          #  XCEDIL   Lieferscheindatenaustausch per EDIFACT          S    1 0  247  247
+          #           Zus{tzlich zum Lieferscheindruck k¦nnen wahlweise die
+          #           Lieferscheindaten per EDIFACT }bermittelt werden.
+          #           *ZERO       ohne EDIFACT
+          #           1           mit EDIFACT
+          #                       Ist nur erlaubt, wenn in der Auftragssteuerung Teil 1
+          #                       EDIFACT-Schnittstelle aktiviert ist.
+          #  XCPRIA   Inland/Ausland Konditionsermittlung             S    1 0  248  248
+          #           Festlegung, ob Inlands- oder Auslandskonditionen gelten.
+          #           *ZERO       Inlandskonditionen
+          #           1           Auslandskonditionen
+          #  XCWSLN   W{hrung                                         A    3    249  251
+          #  XCDTWN   W{hrung neu g}ltig ab                           P    7 0  252  255
+          #  XCE2RP   Schl}ssel                                       A    4    259  262
+          'XCE2IL': 'XXC_iln',
+          },
 
 'XLB00': {  # Lagerbewegungen
         #'LBFGRP': 'Firmen-Gruppe',

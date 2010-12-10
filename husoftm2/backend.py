@@ -186,6 +186,7 @@ def _get_tablename(name):
 
 
 def query(tables=None, condition=None, fields=None, querymappings=None,
+          joins=None,
           grouping=None, ordering=None, limit=None, ua='', cachingtime=300):
     r"""Execute a SELECT on the AS/400 turning the results in a list of dicts.
 
@@ -223,6 +224,16 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
     ... 'SUM(LFMGLP)': 'menge'})) #doctest: +ELLIPSIS
     [{'menge': '0', 'artnr': '65166/01'}, {'menge': '0', 'artnr': '65198'}, ...]
 
+    You can use 'joins' to define LEFT OUTER JOINs. E.g.:
+    >>>  rows = query(['XKD00'],
+                 condition="KDKDNR='%8d'" % int(kundennr),
+                 joins=[('XXC00', 'KDKDNR', 'XCADNR'),
+                        ('XKS00', 'KDKDNR', 'KSKDNR'),
+                        ('AKZ00', 'KDKDNR', 'KZKDNR')])
+
+    Will result in "SELECT * FROM XKD00 LEFT OUTER JOIN XXC00 ON KDKDNR=XCADNR LEFT OUTER 
+    JOIN XKS00 ON KDKDNR=KSKDNR LEFT OUTER JOIN AKZ00 ON KDKDNR=KZKDNR WHERE KDKDNR='   10001'".
+
     We also should be - to a certain degree - be Unicode aware:
     >>> query(u'XKD00', u"KDKDNR LIKE '%18287'")[0]['ort'].encode('utf8')
     'G\xc3\xbcnzburg'
@@ -240,6 +251,8 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
     if isinstance(fields, basestring):
         fields = [fields]
 
+    if not joins:
+        joins = []
     if not grouping:
         grouping = []
     if not ordering:
@@ -252,7 +265,11 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
         raise RuntimeError("Please give fieldnames.")
     if querymappings is None and len(fields) != 1:
         querymappings = {}
-        for table in tables:
+        jointables = [table for table, foo, bar in joins]
+        for table in tables + jointables:
+            # dubletten = set(querymappings.values()) & set(MAPPINGDIR.get(table, {}).values())
+            # if dubletten:
+            #     logging.warning('field name clash: %s' % list(dubletten))
             querymappings.update(MAPPINGDIR.get(table, {}))
 
     if not fields:  # decuce fieldnames from querymappings
@@ -271,6 +288,10 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
         args['ordering'] = ordering
     if limit:
         args['limit'] = limit
+    if joins:
+        # ensure a list of 3-tuples
+        joins = [(_get_tablename(a), b, c) for (a, b, c) in joins]
+        args['joins'] = joins
 
     rows = memcache.get('husoftm_query_%r_%r' % (querymappings, args))
     if rows:

@@ -91,6 +91,7 @@ def get_lieferadressen(kundennr):
 
 
 def _softm_to_dict(row):
+    row = dict((k, v) for (k, v) in row.items() if v is not None)
     ret = dict(kundennr="SC%s" % row.get('kundennr', ''),               # 10003
                name1=row.get('name1', ''),                              # Sport A
                name2=row.get('name2', ''),

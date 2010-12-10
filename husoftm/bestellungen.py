@@ -17,16 +17,16 @@ from husoftm.tools import sql_escape, sql_quote, date2softm
 class Bestellung(object):
     """Repräsentiert eine bestellung in SoftM."""
     pass
-    
+
 
 def kursfaktorkorrektur(rows, kursname='kurs', kursfaktorname='kursfaktor', umdrehen=True):
     """Wandelt einen Kurs anhand des Kursfaktors inhand das von uns gewohnte Format.
-    
+
     d.h. wenn man 1.33 US$ für einen Euro bekommt, spichert SoftM, dass man für den
     Euro 0.75 U$ bekommt. Dazu wird auch noch mit dem Kursfaktor skaliert um
     Rundungsfehler zu vermeiden. Diese Routine verwandelt alles zurück in das gewohnte
     Format und gibt "Decimal" Objekte mit 4 Nachkommatellen zurück.
-    
+
     Wenn umdrehen == False dann werden nur Kursfaktor und Nachkommastellen angepasst
     """
     if not isinstance(rows, list):
@@ -41,11 +41,11 @@ def kursfaktorkorrektur(rows, kursname='kurs', kursfaktorname='kursfaktor', umdr
                 row[kursname] = (Decimal(str(row[kursname]))/multiplikator).quantize(Decimal(10) ** -4)
         ret.append(row)
     return ret
-    
+
 
 def get_bestellung(bestellnr):
     """Liefert alle Positionen zu einer bestellnr.
-    
+
     >>> bestellungen(43123)
     [{kopfdaten},
      [{'artnr': u'64114',
@@ -70,31 +70,31 @@ def get_bestellung(bestellnr):
       'zugang_date': None},
       ...]
     ]
-    
+
     """
-    
+
     kopf = get_connection('bestellungen.get_bestellung').query('EBL00', ordering=['BLBSTN DESC'],
         condition="BLSTAT<>'X' AND BLBSTN=%s" % sql_escape(bestellnr))
     if len(kopf) != 1:
         raise RuntimeError('inkonsistente Kopfdaten in EBL00')
     kopf = kursfaktorkorrektur(kopf)[0]
-    
+
     # leer? WTF?
     # print get_connection().query('ESL00', condition="SLBSTN=%s" % sql_escape(ponr))
-    
+
     # BZT00 - zusatztexte
     # positionen = get_connection().query(['EBP00', 'EWZ00'], ordering=['BPBSTN DESC', 'BPDTLT'],
     #     condition="WZBSTN=BPBSTN AND WZBSTP=BPBSTP AND BPSTAT<>'X' AND BPBSTN=%s" % sql_escape(ponr))
     positionen = get_connection().query(['EBP00'], ordering=['BPBSTN DESC', 'BPDTLT'],
         condition="BPSTAT<>'X' AND BPBSTN=%s" % sql_escape(bestellnr))
     # detailierte Informationen über den Zugang gibts in EWZ00
-    
+
     # AND BPKZAK=0 to get only the open ones
-    # Buchungsdaten: SELECT * FROM SMKDIFP/BBU00 WHERE BUBELN = 900003977 
+    # Buchungsdaten: SELECT * FROM SMKDIFP/BBU00 WHERE BUBELN = 900003977
     # Lagerveraenderung: SELECT * FROM SMKDIFP/XLB00 WHERE LBBSTN = '43072'
     # ?: SELECT * FROM EWZ00 WHERE WZBSTN = 43072
     return kopf, positionen
-    
+
 
 def _get_zugaenge_helper(rows):
     """Sammelt daten zu einer Bestellung aus verschiedenen Tabellen."""
@@ -118,37 +118,37 @@ def _get_zugaenge_helper(rows):
         row['_lagerbuchungen'] = lagerbuchungen
         ret.append(row)
     return ret
-    
+
 
 def get_zugaenge_artnr(artnr):
     """Liefert alle Warenzugaenge eines Artikels"""
-    
+
     rows = get_connection('bestellungen.get_zugaenge_artnr').query('EWZ00', ordering=['WZDTWZ'],
         condition="WZARTN='%s'" % sql_escape(artnr))
     return _get_zugaenge_helper(rows)
-    
+
 
 def get_zugaenge_bestellnr(bestellnr):
     """Liefert alle Warenzugaenge einer Bestellnummer"""
-    
+
     rows = get_connection('bestellungen.get_zugaenge_bestellnr').query('EWZ00', # ordering=['WZDTWZ'],
         condition="WZBSTN=%s" % sql_escape(bestellnr))
     return _get_zugaenge_helper(rows)
-    
+
 
 def get_zugaenge_warenvereinnahmungsnr_simple(bestellnr, warenvereinnahmungsnr):
     """Liefert alle Warenzugaenge zu einer Bestellnummer und zug. Warenvereinnahmungsnummer.
-    
+
     Sammelt *nicht* alle Daten zu einer Bestellung, sondern nur die jeweils gelieferten Positionen.
     """
     rows = get_connection().query('EWZ00', condition="WZBSTN=%s and WZWVNR=%s" %
                                   (sql_quote(bestellnr), sql_quote(warenvereinnahmungsnr)))
     return rows
-    
+
 
 def get_bestellungen_artnr(artnr):
     """Liefert alle Warenzugaenge einer Artikelnummer."""
-    
+
     # BZT00 - zusatztexte
     positionen = get_connection('bestellungen.get_bestellungen_artnr').query(['EBP00', 'EBL00'], ordering=['BPDTLT'],
         condition="BLBSTN=BPBSTN AND BLSTAT<>'X' AND BPSTAT<>'X' AND BPARTN=%s" % sql_quote(artnr))
@@ -158,7 +158,7 @@ def get_bestellungen_artnr(artnr):
                                      if x['artnr'] == artnr]
         for zugang in position['_zugaenge']:
             # Buchungsdaten
-            buchungen = get_connection().query('BBU00', 
+            buchungen = get_connection().query('BBU00',
                 condition='BUBELN=%s' % sql_escape(zugang['rechnungsnr']))
             zugang['_fibubuchungen'] = kursfaktorkorrektur(buchungen, umdrehen=False)
         position['_lager_stapelschnittstelle'] = get_connection().query(
@@ -171,18 +171,18 @@ def get_bestellungen_artnr(artnr):
 
 def bestellungskoepfe(mindate=None, maxdate=None, additional_conditions=None, limit=None):
     conditions = ["BLSTAT<>'X'"]
-    
+
     if mindate and maxdate:
         conditions.append("BPDTER BETWEEN %s AND %s" % (date2softm(mindate), date2softm(maxdate)))
     elif mindate:
         conditions.append("BPDTER > %s" % date2softm(mindate))
     elif maxdate:
         conditions.append("BPDTER < %s" % date2softm(maxdate))
-    
+
     # You should REALLY know what you are doing!
     if additional_conditions:
         conditions.extend(additional_conditions)
-    
+
     condition = " AND ".join(conditions)
     rows = get_connection('bestellungen.bestellungskoepfe').query('EBL00', ordering=['BLBSTN DESC', 'BLDTBE'], condition=condition, limit=limit)
     return rows
@@ -190,7 +190,7 @@ def bestellungskoepfe(mindate=None, maxdate=None, additional_conditions=None, li
 
 def bestellungen(mindate=None, maxdate=None, additional_conditions=None, limit=None):
     """Liefert eine Liste mit allen bestellten aber nicht stornierten Wareneingängen.
-    
+
     >>> bestellungen()
     [{'artnr': u'64114',
       'bestellmenge': 300,
@@ -213,37 +213,37 @@ def bestellungen(mindate=None, maxdate=None, additional_conditions=None, limit=N
       'wunsch_date': None,
       'zugang_date': None},
       ...]
-    
+
     """
-    
+
     conditions = ["BPSTAT<>'X'"]
-    
+
     if mindate and maxdate:
         conditions.append("BPDTER BETWEEN %s AND %s" % (date2softm(mindate), date2softm(maxdate)))
     elif mindate:
         conditions.append("BPDTER > %s" % date2softm(mindate))
     elif maxdate:
         conditions.append("BPDTER < %s" % date2softm(maxdate))
-    
+
     # You should REALLY know what you are doing!
     if additional_conditions:
         conditions.extend(additional_conditions)
-    
+
     condition = " AND ".join(conditions)
-    
+
     rows = get_connection().query('EBP00', ordering=['BPBSTN DESC', 'BPDTLT'], condition=condition, limit=limit)
     # AND BPKZAK=0 to get only the open ones
     return rows
-    
+
 
 def testbestellung():
     """Experimental code for understandign SoftM."""
-    
+
     fieldwidth = 13
     bestellungen_artnr = get_bestellungen_artnr('10167')
-    
+
     print "B=Bestellposition, Z=Warenzugang S=Lagerstapelschnittstelle L=Lagerbuchung"
-    bestellfelder = ['erfassung_date', 'artnr', 'kurs', 'lager', 'bestellmenge', 'gelieferte_menge', 
+    bestellfelder = ['erfassung_date', 'artnr', 'kurs', 'lager', 'bestellmenge', 'gelieferte_menge',
                      'gebuchte_menge',
   'tatsaechlicher_preis', 'bestell_preis_eur', 'abgerufener_positionswert',
   'streckengeschaeft',
@@ -258,7 +258,7 @@ def testbestellung():
         else:
             print ("%%%ds" % fieldwidth) % '-',
     print
-    
+
     lagerstapelfelder = ['beleg_date', 'artnr', 'kurs', 'lager', 'menge', 'rechnungs_date', None,
                          'wert', None, 'lager_korrektur_wert',
                          None,
@@ -271,13 +271,13 @@ def testbestellung():
             print ("%%%ds" % fieldwidth) % feldname[:fieldwidth],
         else:
             print ("%%%ds" % fieldwidth) % '-',
-        
+
     print
-    
+
     zugangsfelder = ['rechnungs_date', 'artnr', 'kurs_zugang', 'lager', 'menge_berechnet', 'zugang_date',
                      None,
                      'tatsaechlicher_preis', 'bestell_preis', 'buchungsbetrag',
-                     'rechnungsnr', 
+                     'rechnungsnr',
                      'lagerbewegung_zugang', 'buchungstext']
     print "  Z ",
     for feldname in zugangsfelder:
@@ -286,10 +286,10 @@ def testbestellung():
         else:
             print ("%%%ds" % fieldwidth) % '-',
     print
-    
-    buchungsfleder = ['beleg_date', 'artnr', 'kurs', 'lager', 'menge', 'zugangsmenge', 'bewegungsmenge', 
+
+    buchungsfleder = ['beleg_date', 'artnr', 'kurs', 'lager', 'menge', 'zugangsmenge', 'bewegungsmenge',
                       'wert', 'wert_aktuell', 'wert_erfassung',
-                      'lagerwert_vor_buchung', 
+                      'lagerwert_vor_buchung',
     'bestand_vor_buchung',
 'bestandsaenderung', 'belegnummer']
     print "   L",
@@ -299,7 +299,7 @@ def testbestellung():
         else:
             print ("%%%ds" % fieldwidth) % '-',
     print
-    
+
     fibufelder = [
   'beleg_date',
   'op_info',
@@ -328,7 +328,7 @@ def testbestellung():
             print ("%%%ds" % fieldwidth) % '-',
     print
 
-    
+
     for bestellung in bestellungen_artnr:
         print "B   ",
         for feldname in bestellfelder:
@@ -336,7 +336,7 @@ def testbestellung():
                 data = bestellung[feldname]
             else:
                 data = '-'
-            print ("%%%ds" % fieldwidth) % data, 
+            print ("%%%ds" % fieldwidth) % data,
         print
         for stapel in bestellung['_lager_stapelschnittstelle']:
             print " S  ",
@@ -345,9 +345,9 @@ def testbestellung():
                     data = stapel[feldname],
                 else:
                     data = '-'
-                print ("%%%ds" % fieldwidth) % data, 
+                print ("%%%ds" % fieldwidth) % data,
             print
-            
+
         for zugang in bestellung['_zugaenge']:
             print "  Z ",
             for feldname in zugangsfelder:
@@ -355,23 +355,23 @@ def testbestellung():
                     data = zugang[feldname]
                 else:
                     data = '-'
-                print ("%%%ds" % fieldwidth) % data, 
+                print ("%%%ds" % fieldwidth) % data,
             print
             for buchung in zugang['_lagerbuchungen']:
                 print "   L",
                 for feldname in buchungsfleder:
-                    print ("%%%ds" % fieldwidth) % buchung[feldname], 
+                    print ("%%%ds" % fieldwidth) % buchung[feldname],
                 print
             for buchung in zugang['_fibubuchungen']:
                 print " F  ",
                 for feldname in fibufelder:
-                    print ("%%%ds" % fieldwidth) % buchung[feldname], 
+                    print ("%%%ds" % fieldwidth) % buchung[feldname],
                 print
         print
 
 
 class MiscTests(unittest.TestCase):
-    
+
     def test_kursfaktorkorrektur(self):
         raise
         self.assertEqual(kursfaktorkorrektur([{'kurs': 751, 'kursfaktor': 4}]),
@@ -386,7 +386,7 @@ class MiscTests(unittest.TestCase):
                          [{'kurs': Decimal("0.0100"), 'kursfaktor': 1}])
         self.assertEqual(kursfaktorkorrektur({'kurs': 1000, 'kursfaktor': 0}),
                          [{'kurs': Decimal("0.0010"), 'kursfaktor': 0}])
-    
+
 
 if __name__ == '__main__':
     (get_bestellung(43248))

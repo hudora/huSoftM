@@ -12,9 +12,9 @@ hudson: dependencies test statistics coverage
 	grep "our code has been rated at" < .pylint.out | cut -d '/' -f 1 | cut -d ' ' -f 7 >> .pylint.score
 
 check:
-	find husoftm -name '*.py' | xargs /usr/local/hudorakit/bin/hd_pep8
-	/usr/local/hudorakit/bin/hd_pylint husoftm
-		# (cd odbc_bridge; make check)
+	pep8 -r --ignore=E501 husoftm2/ husoftm/
+	sh -c 'PYTHONPATH=. pyflakes *.py husoftm2/ husotftm/'
+	-sh -c 'PYTHONPATH=. pylint -iy --max-line-length=110 husoftm2/ husoftm/' # -rn
 
 build:
 	python setup.py build sdist

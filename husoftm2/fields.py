@@ -12,7 +12,7 @@ Copyright (c) 2007, 2008, 2009 HUDORA GmbH. All rights reserved.
 __revision__ = "$Revision$"
 
 MAPPINGDIR = {
-'ABV00': {# Adressdaten zu Aufträgen die in die Stapelschnittstelle geschrieben werden
+'ABV00': {  # Adressdaten zu Aufträgen die in die Stapelschnittstelle geschrieben werden
           'BVVGNR': 'vorgang',
           #'BVLFDS': 'stapelsatznummer',
           'BVAART': 'adressart',
@@ -29,7 +29,7 @@ MAPPINGDIR = {
           'BVKZAD': 'Adressaufbereitung',
         },
 
-'AAK00': {# Auftragsköpfe
+'AAK00': {  # Auftragsköpfe
           # 'AKFNR ': 'Firma',
           'AKAUFN': 'auftragsnr',
           'AKSBNR': 'sachbearbeiter',
@@ -37,30 +37,87 @@ MAPPINGDIR = {
           # 'AKAGRP': 'Abteilungs-Gruppe/Sparte',
           # 'AKFGRP': 'Firmen-Gruppe',
           'AKAUFA': 'art',
-          # 'AKRANR': 'Rahmenvereinbarungs-Nr.',
+          # Als Auftragsart darf nur ein Wert angegeben werden, der als zulässige Auftragsart in der
+          # Parameterdatei hinterlegt ist. Sie steuert, wie der Auftrag im System abgewickelt werden soll.
+          # So kann u.a. auftragsartenabhängig festgelegt werden:
+          # * Soll die Auftragsbest‰tigung gedruckt werden?
+          # * Muss die bezogene Rechnung angegeben werden? (z.B. bei Gutschriften oder Nachbelastungen)
+          # * Ist Streckengesch‰ft zul‰ssig?
+          # * Soll die Kreditlimitprüfung durchgeführt werden?
+          # * Sind Sofortformulare möglich bzw. Pflicht?
+          # * Sind Sammelbelege möglich (Lieferschein, Rechnung)?
+          # * Welche Schnittstellen (Lager, Statistik, FiBu, Kostenrechnung) sollen versorgt werden?
+          # Zum Teil werden diese Festlegungen auch verwendet, um Eingabefelder vorzubesetzen.
+          # 'AKRANR': 'Rahmenauftrag',
+          # Die Angabe ist nur gefüllt, wenn bei der Auftragserfassung auf eine bereits bestehende
+          # Rahmenvereinbarung Bezug genommen und die Rahmenauftragsnummer für den gesamten Auftrag
+          # angegeben wurde.
           # 'AKKANR': 'Übergeordneter Auftrag',
+          # Soll für einen Auftrag ein Bezug zu einem bereits bestehenden Hauptauftrag hergestellt
+          # werden, so ist hier die Nummer dieses Hauptauftrags einzugeben. Intern wird eine neue
+          # Auftragsnummer vergeben. Die Kopfdaten des neuen Auftrags werden mit denen des
+          # Hauptauftrags vorbesetzt. Die Angabe 'Hauptauftrag' ist nur dann gefüllt, wenn bei der
+          # Auftragserfassung eine entsprechende manuelle Eingabe erfolgte. Falls für einen Auftrag
+          # ein Bezug zu einem bereits bestehenden 'Hauptauftrag' hergestellt werden soll, so ist
+          #  hier die Nummer dieses Hauptauftrags einzugeben. Intern wird eine neue Auftragsnummer
+          # vergeben. Die Kopfdaten des neuen Auftrags werden mit denen des Hauptauftrags vorbesetzt.
           # 'AKFNRM': 'Mandanten-nr',
           'AKKDNR': 'kundennr_warenempf',
           # 'AKKDN3': 'Kunden-Nr/Verbraucher',
           # 'AKEGCD': 'Ländercode / EG',
           # 'AKUSTN': 'USt-Id-nr',
+          # EU-einheitliche Steuernummer (USt-IdNr, VAT-Nr). Beim Druck der USt-IdNr ist zus‰tzlich noch
+          # der EU-L‰ndercode mitzudrucken.
           # 'AKVANR': 'Versandadress-Nr.',
+          # Dreistellige Nummer, unter der zus‰tzliche Lieferadressen zum Kunden verwaltet werden. Falls
+          # für den Auftrag eine abweichende Lieferadresse verwendet werden soll, die in der
+          # Lieferadressdatei gespeichert ist, kann die Nummer der Lieferadresse hier angegeben werden.
+          # Die Nummer kann auch über F5=Lieferadressübersicht ausgewählt werden.
           # 'AKALS1': 'Alphasortierung/Warenempfän',
           # 'AKKDRG': 'Kundennr.Rechnungs-Empfänge',
+          # Das Feld wird mit dem Rechnungszahler lt. Kundenzusatzdatei vorbesetzt. Die
+          # Rechnungszahler-Kundennummer muss in den Datei XKD00, XKS00 und AKZ00 gespeichert sein.
+          # Wird ein abweichender Rechnungszahler angegeben, dann wird dessen Adresse bei der
+          # Kopfdateneingabe als Rechnungsadresse angezeigt. Als Lieferadresse wird in diesem Fall die
+          # Adresse lt. Kundennummer 1 angezeigt, falls keine Lieferadresse angegeben wurde.
+          # Falls ein abweichender Rechnungszahler angegeben wird, werden folgende Daten aus dem
+          # Rechnungszahler geholt.
+          # Kundensaldensatz: Kreditlimit
+          # Kundenzusatz: Liefersperre Adresse änderbar, Kz Sammelrechnung, Zahlungsbedingung, Rabatte
           # 'AKALS2': 'Alphasortierung/Rech-Empfän',
           # 'AKVERB': 'Verband/Mischkonto',
+          # Bei Zugehörigkeit des Kunden/Lieferanten zu einem Verband oder Mischkonto ist hier die Nummer
+          # des Verbandes oder des Mischkontos einzutragen. Bei einem Mischkonto vom Typ N ist hier die
+          # Debitorennummer einzutragen.
           # 'AKABEM': 'Ab-Empfänger: R = Rg-Zahler',
+          # Das Feld wird mit der Angabe lt. Auftragsart vorbesetzt, es wird nur benötigt, falls
+          # Warenempfänger und Rechnungsempfänger unterschiedlich sind.
+          # *BLANK	Warenempfänger,  R Rechnungsempfänger, V Lieferadresse
           # 'AKRGEM': 'Rechnungsempfänger',
+          # *BLANK Rechnungszahler
+          # 1      Warenempf‰nger - Als Rechnungsadresse wird die Adresse des Warenempfängers gedruckt.
           'AKNRKD': 'auftragsnr_kunde',
-          'AKDTKD': 'auftragsdatum_kunde',
+          # 'AKDTKD': 'auftragsdatum_kunde',
+          # Datum, das der Kunde bei der Auftragserteilung mitgeteilt Das Datum ist als Information
+          # für den Kunden gedacht.
           # 'AKDTLE': 'Leih-Datum',
-          'AKDTKW': 'kundenwunsch_date',
+          # 'AKDTKW': 'kundenwunsch_date',
+          # Termin, zu dem der Kunde die Ware erhalten soll. Für unbestimmte Termine oder
+          # Rahmenkonditionen kann der Sonderwert '999999' eingegeben werden. Dieser Termin kann
+          # die Konditionsermittlung beeinflussen. Der Termin kann über die automatische
+          # Terminermittlung bei der Erfassung vorbesetzt werden.
           # 'AKJWKW': 'Kundenwunschtermin CJJWW',
-          # 'AKPROB': 'Objekt/Projekt/Aktion',
+          # 'AKPROB': 'Objekt/Projekt/Aktion'
+          # Zusätzliches Zugriffskriterium bei der Konditionsermittlung in der Auftragsbearbeitung.
           # 'AKDTVA': 'Valuta-Datum/Erfassung',
+          # Bei Offenen Posten ist das Valutadatum das Datum, ab dem die Fälligkeit gerechnet wird.
+          # Wird kein Skontoschlüssel eingegeben, entspricht das Valutadatum dem Fälligkeitsdatum.
+          # Wird ein Skontoschlüssel eingegeben, ist das Valutadatum das Datum, ab dem die
+          # Fälligkeiten gemäß Skontoschlüssel berechnet werden.
           # 'AKVALT': 'Abstandstage Valuta',
           'AKDTLT': 'liefer_date',
-          'AKIK01': 'fixtermin',
+          # Termin, zu dem die Ware das Lager verlassen soll.
+          # 'AKIK01': 'fixtermin',
           # 'AKJWLT': 'Liefertermin CJJWW',
           # 'AKX3ZB': 'Zahlungsbedingungs-Schlüsse',
           # 'AKX3VA': 'Versandarten-Schlüssel',
@@ -76,70 +133,132 @@ MAPPINGDIR = {
           # 'AKNTY2': 'Typ/Zus. Nebenkosten 2',
           # 'AKX4N2': 'Textschl. zus. Nebenkosten',
           # 'AKRBP1': 'Auftrags-Rabatt-%-1',
+          # Sollen statt Rabatten Zuschl‰ge eingegeben werden, so sind die Prozentsätze negativ einzugeben.
+          # Mögliche Vorbesetzungen:
+          # Keine Vorbesetzung
+          # Rabatt lt. Kundenzusatz Rechnungsempfänger
+          # Rabatt lt. Versandart Warenempfänger
+          # Rabatt lt. Preisdatei Waren- bzw. Rechnungsempfänger
           # 'AKRBP2': 'Auftrags-Rabatt-%-2',
           # 'AKX3R1': 'Textschl. Rabatt 1',
+          # In der Validierungsdatei kann zu diesem Rabattschlüssel eine Rabattgruppe hinterlegt werden.
+          # Außerdem kann dort für Positionsrabatte angegeben werden, ob es sich um einen Rabatt handelt,
+          # der den Positionswert vermindert, oder um einen Zuschlag, der ihn erhöht.
           # 'AKX3R2': 'Textschl. Rabatt 2',
           # 'AKKZRX': 'Kz.Rabatt Brutto',
+          # Festlegung, wie der zweite Auftragsrabatt berechnet werden soll. PTYP Tabelle
+          # *ZERO Rabatt 2 auf Positionswert Netto
+          # 1     Rabatt 2 auf Positionswert Brutto
           # 'AKMWKZ': 'Umsatz-Steuerprofil',
           # 'AKWSL ': 'Währungs-Kennzeichen',
+          # Vorbesetzung mit dem Währungsschlüssel lt. Kundenzusatz- bzw. Kundenadressatz des
+          # Rechnungsempfängers. Währungsschlüssel müsse im Parametersatz 'Währungen' angelegt werden.
           # 'AKKURS': 'Wechsel-Kurs',
+          # Mit diesem Umrechnungsfaktor können die Angaben in Auftragswährung (Preise, Rabatte und
+          # Nebenkosten) in die Hauptwährung der Firma umgerechnet werden:
+          # Wert (Hauptwährung) := Wert (Vorgangswährung) * Umrechnungsfaktor ggf. modifiziert um den Währungsfaktor
+          # Wenn die Bezugswährung für Wechselkurse (im Regelfall "EUR") mit der Hauptwährung der Firma
+          # übereinstimmt, dann ist dieser Umrechnungsfaktor identisch mit dem Wechselkurs.
           # 'AKKUFA': 'Kursfaktor',
+          # Festlegung, auf wieviele Fremdw‰hrungseinheiten sich der Wechselkurs bezieht:
+          # *ZERO Kurs pro Fremdw‰hrungseinheit
+          # 1     Kurs pro 10 Fremdw‰hrungseinheiten
+          # 2     Kurs pro 100 Fremdw‰hrungseinheiten
+          # 3     Kurs pro 1000 Fremdw‰hrungseinheiten
           # 'AKSPSL': 'Sprache',
+          # Mit dem Sprachschlüssel l‰sst sich steuern, welche Texte in den Formularen gedruckt werden.
+          # Voraussetzung dafür ist, dass die zu druckenden Texte (z.B. Versand-, Liefer- und
+          # Zahlungsbedingungen) in der entsprechenden Sprache hinterlegt sind.
+          # Gültige Eingaben müssen in der Validierungsdatei unter dem zugehörigen Prüftyp hinterlegt sein.
           # 'AKVRT1': 'Vertreter 1',
           # 'AKVRT2': 'Vertreter 2',
           # 'AKPRZA': 'Aufteilungs-%-Satz',
+          # ei Provisionssplitting (Vertreter 2 ist angegeben) wird hier festgelegt, welchen Prozentanteil
+          # der fälligen Provision der Vertreter 1 erhalten soll.
           # 'AKBZRG': 'Bezogene RG-nr',
-          'AKLGN1': 'auslieferungslager',
-          'AKLGN2': 'zugangslager',
+          # Das Feld wird nur angezeigt, wenn lt. Auftragsart die Angabe einer bezogenen Rechnungsnummer
+          # erfoderlich ist (z.B. Gut- schriftsaufträge). Die hier eingegebene bezogene Rechnungsnummer
+          # wird nach der Fakturierung des Auftrags an die Buchhaltung übergeben.
+          # Dient als Vorbesetzung f ̧r Erfassung der Auftragsposition (statt Hauptlager aus Artikelstamm).
+          # 'AKLGN1': 'auslieferungslager',
+          # 'AKLGN2': 'zugangslager',
+          # Bei Umbuchungsauftr‰gen und Leihauftr‰gen ist hier das empfangende Lager angegeben.
           # 'AKTRNR': 'Touren-nr',
           # 'AKLINR': 'Lieferant bei Strecke',
+          # Bei Streckenaufträgen mit Streckenart = 3 bzw. 4 muss bei der Positionsbearbeitung ein
+          # Lieferant angegeben werden. Wird der Lieferant bereits im Auftragskopf eingegeben, dann wird
+          # dieser Wert als Vorbesetzung für die Positionserfassung verwendet.
           # 'AKSPED': 'Spediteur',
           # 'AKKZBE': 'Steuerung Best.-Druck',
           # 'AKKZST': 'Kennzeichen Streckengeschäf',
+          # Eine Eingabe ist nur zulässig, wenn für die oben angegebene Auftragsart Streckengeschäft
+          # zul‰ssig ist. Streckengeschäftsaufträge laufen generell ohne Bestandsführung, es werden jedoch
+          # Lieferscheine gedruckt.
+          # *ZERO	kein Streckengesch‰ft
+          # 1	Streckengesch‰ft ohne Bestandsf ̧hrung
+          # 2	Kundenindividuell
+          # 3	Bestellware direkt an Kunden
+          #     Die Rechnungsfreigabe erfolgt mit der Rechnungsprüfung der zugehörigen Bestellung
+          # 4	Bestellware über Lager an Kunden
+          #     Die Rechnungsfreigabe erfolgt mit dem Warenzugang der zugehörigen Bestellung
           # 'AKKZWS': 'WZ/RE-Sperre',
           # 'AKKZIN': 'Kennzeichen interner Beleg',
+          # Über dieses Kennzeichen kˆnnen Vorg‰nge als interne Belege gekennzeichnet werden.
+          # Bei internen Belegen wird im Rechnungsformular im Anschriftsbereich der Hinweis
+          # "interner Beleg / nicht verschicken gedruckt"
           # 'AKKZBO': 'Steuerung Bonus-Abrechnung',
-          'AKKZTF': 'teillieferung', # bzw. Teilfakturierung
+          'AKKZTF': 'teillieferung_erlaubt',  # bzw. Teilfakturierung
+          # Bei Teillieferung zul‰ssig = nein wird der Kommissionierbeleg bzw. Lieferschein erst dann
+          # gedruckt, wenn alle Positionen des Auftrags lieferbar sind.
           # 'AKKZSR': 'Kz.Drucken in Sammelrech=1',
           # 'AKKZZF': 'un-/versteuert',
           'AKKZVA': 'voll_ausgeliefert',
+          # Sind alle Positionen eines Auftrags geliefert, so steht das Kennzeichen auf 1 andernfalls auf 0.
           # 'AKKZZU': 'Kz.Bevorzugte Zuteilung',
           # 'AKKZRK': 'Kz: Rückstand möglich',
+          # Festlegung, ob Rückstand erlaubt ist. Ist Rückstand nicht erlaubt, so werden auch nicht
+          # vollständig lieferbare Positionen nach Fakturierung auf 'voll ausgeliefert' gesetzt.
           # 'AKKZSL': 'Kz.Sammel-Lieferschein',
           # 'AKKZNN': 'Kz.Nachnahme',
           # 'AKKZAR': 'Kz.Leihart',
           # 'AKABTP': 'Abt. für Prüfung KD-Zusatz',
-          'AKDTER': 'erfassung_date',
+          'AKDTER': 'AAK_erfassung_date',
           # 'AKZTER': 'Uhrzeit der Erfassung',
           # 'AKDTAE': 'Datum l. Änderung CJJMMTT',
-          # 'AKZTAE': 'Uhrzeit letzte Änderung',
+          'AKZTAE': 'AAK_aenderung_date',
           # 'AKDTAB': 'Datum letzte Auftragsbestät',
-          # 'AKDTLF': 'Datum letzter Lieferschein',
-          # 'AKDTKB': 'Datum ltzt.Kommissionierbel',
-          # 'AKDTFA': 'Datum letzte Rechnung/Gutsc',
+          # 'AKDTLF': 'lieferschein_date'  # 'Datum letzter Lieferschein',
+          # 'AKDTKB': # 'Datum ltzt. Kommissionierbel',
+          # 'AKDTFA': 'rechnung_date  # Fakturierungsdatum
+          # Datum der Vorbereitung der letzten Rechnung/Gutschrift. Das tatsächliche Datum des letzten
+          # Rechnungs-/Gutschriftsdrucks steht in der Rechnungskopfdatei.
           # 'AKKZAE': 'AB: nur geänderte Posit.',
+          # Auftragsbest‰tigung nur für geänderte Positionen drucken
           # 'AKFKZA': 'Formular-KZ AB',
           # 'AKFKZK': 'Formular-KZ Kommission.Bele',
           # 'AKFKZL': 'Formular-KZ Lieferschein',
           # 'AKFKZR': 'Formular-KZ Rechnung/Gutsch',
           # 'AKSFAA': 'AB Sofort',
-          'AKSFAL': 'LF Sofort',
-          'AKSFAK': 'Komm.-Beleg sofort',
+          # 'AKSFAL': 'LF Sofort',
+          # 'AKSFAK': 'Komm.-Beleg sofort',
           # 'AKSFAR': 'RG Sofort',
           # 'AKABCO': 'Anzahl AB',
-          'AKKBCO': 'anzahl_kommissionierbelege',
-          'AKLSCO': 'anzahl_liefscheine',
-          # 'AKRGCO': 'Anzahl Rechnungen',
+          # 'AKKBCO': 'anzahl_kommibelege',
+          # 'AKLSCO': 'anzahl_liefscheine',
+          # 'AKRGCO': 'anzahl_rechnungen',
           # 'AKOQZO': 'Outqueue-Zuordnung',
           # 'AKGEB ': 'Gebiet',
           # 'AKBRAN': 'Branche',
           # 'AKPLZ':  'plz',
-          'AKLKZ': 'land',
+          # 'AKLKZ': 'land',
           # 'AKVRG1': 'Vertriebs-Gruppe 1',
           # 'AKVRG2': 'Vertriebs-Gruppe 2',
           # 'AKDSTK': 'Distrikt',
           # 'AKAWRT': 'Auftragswert',
+          # Angabe in Hauptwährung. Summe der offenen Positionswerte dieses Auftrags.
           # 'AKSTOR': 'Kennzeichen Stornierung',
+          # Vorgangsart	- Festlegung, ob es sich bei der Rechnungsschreibung um eine Gutschrift oder
+          # Stornierung handelt. Der Eintrag wird aus der Auftragsart übernommen. *ZERO Gutschrift,  1 Rechnung
           # 'AKFORM': 'Rechnungsart',
           # 'AKMJBU': 'Buchungsmonat',
           # 'AKKZWR': 'Kz wertmäßig',
@@ -151,19 +270,20 @@ MAPPINGDIR = {
           # 'AKKZSH': 'Hrst Strecke',
           # 'AKDTRV': 'Rahmen: gültig ab',
           # 'AKDTRB': 'Rahmen: gültig bis',
-          # 'AKKDN1': 'Adresse 1',
+          # 'AKKDN1': 'Adresse 1', # Adressnummer
           # 'AKKDN2': 'Adresse 2',
           # 'AKZUOR': 'Zuordnung für dezentrale An',
           # 'AKDFSL': 'Dateiführungs-Schlüssel',
           # 'AKSTAT': 'satzstatus'
+          # 'AKRSA6': 'Satznummer Ansprechpartner',
          },
 
-'AAP00': { # Auftragspositionen
+'AAP00': {  # Auftragspositionen
           'APMNG-APMNGF-APMNGG': 'menge_offen',
            # 'APFNR ': 'Firma',
-           # 'APAUFN': 'Auftrags-nr',
+           'APAUFN': 'auftragsnr',
            'APAUPO': 'position',
-           'APSBNR': 'sachbearbeiter',
+           # 'APSBNR': 'sachbearbeiter',
            # 'APABT':  'Abteilungs-nr',
            # 'APAGRP': 'Abteilungs-Gruppe/Sparte',
            # 'APFGRP': 'Firmen-Gruppe',
@@ -183,31 +303,75 @@ MAPPINGDIR = {
            # 'APBSTP': 'Bestell-Position',
            # 'APLHNR': 'LH-Nr.',
            # 'APLHPO': 'Leihauftrags-Pos',
-           'APVGNR': 'vorgangs_nr',
-           'APVGPO': 'vorgangs_position',
+           # 'APVGNR': 'vorgangs_nr',
+           # 'APVGPO': 'vorgangs_position',
            # 'APFAUN': 'Fertigungsauftrag',
            # 'APPROB': 'Objekt/Projekt/Aktion',
            'APARTN': 'artnr',
            # 'APARTG': 'Artikel-Gruppe',
            # 'APARTH': 'Artikel-Haupt-Gruppe',
            # 'APKZSO': 'Kennzeichen Sonderartikel',
-           'APLGNR': 'lager',
+           # 'APLGNR': 'lager',
            # 'APLGRP': 'Lagergruppe',
            # 'APLGPL': 'Lager-Platz',
            # 'APKZBE': 'Ohne Bestandsführung',
            # 'APKZSE': 'Serien-/Chargenartikel',
-           'APKZKO': 'komponentenaufloesung',
-           'APKZPS': 'Positionsbezogener Set',
+           # 'APKZKO': 'komponentenaufloesung',
+           # 'APKZPS': 'Positionsbezogener Set',
            # 'APKZEP': 'KZ: Eigen-Produkt',
+           # *ZERO       Eigenprodukt
+           # 1           Handelsware
+           # 2           Werbematerial
            # 'APKZMU': 'Muster-Artikel',
+           # *ZERO       Normalposition
+           # 1           Musterartikel
+           # 2           kostenlose Lieferung
+           # 3           Naturalrabatt
            'APMNG': 'bestellmenge',               # Die Menge, die der Kunde haben will
-           'APMNGL': 'Menge zu liefern',
-           'APMNGG': 'Menge/Liefersch.nichtfakt',
+           # Mengenangaben
+           # Die offene (noch nicht fakturierte) Menge ergibt sich aus:
+           #      APMNG - APMNGF
+           # Die offene (noch nicht gelieferte) Menge ergibt sich aus:
+           #      APMNG - APMNGF - APMNGG
+           # Die offene (noch nicht zugeteilte) Menge ergibt sich aus:
+           #      APMNG - APMNGF - APMNGG - APMNGL
+           #      (diese Menge ist auch f}r den Auftragsbestand zu
+           #      ber}cksichtigen)
+           # Die zur Fakturierung freigegebene Mengen werden nicht mehr auf
+           # Auftragspositionsebene verwaltet, sie stehen in der ALN00.
+           # Grund: Zu einer Position k¦nnen mehrere Lieferscheine existieren,
+           # die noch nicht fakturiert sind.
+           # Die zugeteilte Menge errechnet sich aus:
+           #      APMNGL +  APMNGG - Summe LNMNGR (zur Fakturierung
+           #                                      freigegebene, aber noch
+           #                                      nicht fakturierte
+           #                                      Mengen dieser Pos)
+           #   Menge, die im n{chsten Kommissionierbeleg oder Lieferschein
+           #   (abh{ngig von der Parameterisierung) gedruckt werden soll.
+           # 'APMNGL': 'Menge zu liefern',
+           # 'APMNGG': 'Menge/Liefersch.nichtfakt',
+           # Menge, }ber die bisher Lieferscheine geschrieben wurden und die
+           # noch nicht fakturiert wurde. (Es k¦nnen mehrere Lieferscheine
+           # geschrieben worden sein|) Beim Lieferscheindruck wird diese
+           # Menge erh¦ht, bei der Fakturierung und beim Lieferscheinstorno
+           # vermindert. Achtung: Wird in der Lieferscheinr}ckmeldung eine
+           # vom Beleg abweichende Menge freigegeben, so wird dieses
+           # Mengenfeld erst bei der Fakturierung korrigiert. Grund: Vor der
+           # Fakturierung kann die R}ckmeldung jederzeit zur}ckgenommen
+           # werden. Dieses Feld verhindert bis dahin die erneute
+           # Stapelzuteilung| (!ber den Parameter PADMGG wird gesteuert, ob
+           # evtl. doch sofort nach der R}ckmeldung eine erneute Zuteilung
+           # m¦glich ist.)
            'APMNGF': 'fakturierte_menge',          # Menge, die geliefert und fakturiert ist
-           'APMNGR': 'Menge AFA35',
-           'APMNGB': 'Bestellmenge in ME XLF',
-           'APMESL': 'Mengen-Einheit',
-           'APMEKZ': 'ME XLF/AAP',
+           # Bereits fakturierte Menge aller Rechnungen f}r diese
+           # Auftragsposition. Unber}cksichtigt bleiben Proforma- und
+           # Vorabrechnungen, sowie die aus der Lieferscheinr}ckmeldung
+           # abrufbaren wertm{~igen Rechnungsarten. Bei Rahmenpositionen
+           # stellt die fakturierte Menge die Summe der bisher abgerufenen
+           # 'APMNGR': 'Menge AFA35',
+           # 'APMNGB': 'Bestellmenge in ME XLF',
+           # 'APMESL': 'Mengen-Einheit',
+           # 'APMEKZ': 'ME XLF/AAP',
            # 'APDEZI': 'Anzahl Dezimalstellen',
            # 'APVOLM': 'Inhalt VKE/Gebinde',
            # 'APGANZ': 'Bestellte Gebinde',
@@ -217,47 +381,132 @@ MAPPINGDIR = {
            # 'APGANP': 'Gebinde verpackt',
            # 'APGANR': 'Gebinde AFA35',
            # 'APGEWI': 'Gewicht',
-           'APPREV': 'verkaufspreis',
+           # 'APPREV': 'verkaufspreis',
            # 'APPEBN': 'Ebene Preisfindung',
            # 'APKZPR': 'Preiskennzeichen Verkauf',
            # 'APMEPR': 'Preis-Einheit',
            # 'APFAPR': 'Faktor APMEH --> APMEPR',
-           'APFWRT': 'fakturierter_wert',
-           'APOWRT': 'offener_auftragswert',
-           'APPREL': 'listenpreis',
+           # 'APFWRT': 'fakturierter_wert',
+           # Der fakturierte Positionswert.
+           # Bei Rahmenpositionen der Wert der abgerufenen Positionen.
+           # 'APOWRT': 'offener_auftragswert',
+           # Der noch nicht fakturierte Positionswert.
+           # Bei Rahmenpositionen der Wert der noch nicht abgerufenen
+           # Positionen.
+           # 'APPREL': 'listenpreis',
+           # Der Preis aus dem Artikelstamm oder der Preisdatei kann nicht
+           # ge{ndert werden.
            # 'APPREE': 'Einstands-Preis',
+           # Die Definition, welcher Einstandspreis angezeigt werden soll,
+           # wird in den Firmenparametern Teil 1 (XPX00E01/PXBWKZ) festgelegt.
            # 'APPRKZ': 'Preiskennzeichen Lager',
            # 'APWSLE': 'Währungsschlüssel: EK',
            # 'APKURS': 'Wechselkurs EK',
            # 'APKUFA': 'Kursfaktor/EK',
            # 'APRBP1': 'Pos-Rabatt-1',
+           # Abh{ngig vom Rabattkennzeichen kann es sich um einen Betrag,
+           # einen Prozentsatz, einen Betrag pro Menge oder einen Betrag pro
+           # Gebindeanzahl handeln.
+           # Die Festlegung, ob es sich um einen Rabatt oder um einen
+           # Zuschlag handelt, erfolgt auf zwei Arten:
+           # 1.) Eine negative Eingabe wird im Normalfall als Zuschlag
+           #     behandelt.
+           # 2.) !ber den Rabatttextschl}ssel kann bereits definiert werden,
+           #     ob es sich um einen Zu- oder Abschlag handelt. Die
+           #     Festlegung bei der Rabattart wird links neben dem
+           #     Rabatteingabefeld angezeigt: + f}r Zuschl{ge
+           #                                     - f}r Abschl{ge
+           #    Vorbesetzung mit dem Rabatt lt. Artikel- bzw. Preisdatei.
+           #    Wieviele Rabatte angeboten werden, kann im Parametersatz
+           #    'Steuerung Auftrag' festgelegt werden (Feld PABRAB)
+           #    Rabatt 1 abh{ngig vom Rabattkennzeichen 1
            # 'APRBP2': 'Pos-Rabatt-2',
            # 'APRBP3': 'Pos-Rabatt-3',
            # 'APRBP4': 'Pos-Rabatt-4',
            # 'APKZR1': 'Berechnung Rabatt 1',
+           # *ZERO       Rabatt in Prozent
+           # 1           Rabatt als Betrag
+           # 2           Rabatt als Betrag pro Menge
+           #             abh{ngig von Preisdimension (z.B. Rabatt per 100)
+           # 3           Rabatt als Betrag pro Gebindeanzahl
+           #             nur erlaubt, falls mit Gebinde gearbeitet wird.
            # 'APKZR2': 'Berechnung Rabatt 2',
            # 'APKZR3': 'Berechnung Rabatt 3',
            # 'APKZR4': 'Berechnung Rabatt 4',
            # 'APX3R1': 'Textschl. Rabatt 1',
+           # In der Validierungsdatei kann zu diesem Rabattschl}ssel eine
+           # Rabattgruppe hinterlegt werden. Au~erdem kann dort f}r
+           # Positionsrabatte angegeben werden, ob es sich um einen Rabatt
+           # handelt, der den Positionswert vermindert, oder um einen
+           # Zuschlag, der ihn erh¦ht.
            # 'APX3R2': 'Textschl. Rabatt 2',
            # 'APX3R3': 'Textschl. Rabatt 3',
            # 'APX3R4': 'Textschl. Rabatt 4',
            # 'APKZRU': 'Kz.Rabatt versteckt',
-           # 'APKZRX': 'Kz.Rabatte Brutto',
-           # 'APKZRB': 'Kz: kein Auftragsrabatt = 1',
+           # *ZERO       Rabatte werden ausgewiesen
+           #  1           Rabatte werden n. ausgewiesen
+           #              Rabatte werden in den Formularen nicht ausgewiesen. Al
+           #              Verkaufspreis wird der um den Rabatt verminderte
+           #              Verkaufspreis gedruckt.
+           #            # 'APKZRX': 'Kz.Rabatte Brutto',
+           # *ZERO       Rabatt auf Nettopreis
+           #             Folgerabatte (falls in Prozent) werden immer vom berei
+           #             verringerten Wert gerechnet
+           #             Beispiel: 100 EUR - 10% = 90, 90 - 10% = 81 EUR
+           # 1           Rabatt auf Bruttopreis
+           #             Folgerabatte (falls in Prozent) werden immer vom Brutt
+           #             gerechnet
+           #             Beispiel: 100 EUR - 10% - 10% = 80 EUR
+           # 'APKZRB': 'Kz: kein Auftragsrabatt = 1', Festlegung, ob ein Auftragsrabatt f}r die Position g}ltig ist.
            # 'APKZET': 'Steuerung Sortiments-Rabatt',
            # 'APKZSR': 'Sortiments-Rabatt gewährt',
            # 'APMWAR': 'Steuerart / Artikel',
            'APDTLT': 'liefer_date',
+           # Termin, zu dem die Ware das Lager verlassen soll.
+           # F}r unbestimmte Termine oder Rahmenkonditionen kann der
+           # Sonderwert '999999' eingegeben werden. Dieser Termin steuert den
+           # Zeitpunkt der Zuteilung und der Belegschreibung. Au~erdem kann
+           # er die Konditionsermittlung und die Berechnung des Kreditlimits
+           # beeinflussen.
            # 'APJWLT': 'Liefertermin CJJWW',
-           'APDTKD': 'kundenwunsch_date',
+           # 'APDTKD': 'kundenwunsch_date',
+           # Termin, zu dem der Kunde die Ware erhalten soll.
+           # F}r unbestimmte Termine oder Rahmenkonditionen kann der
+           # Sonderwert '999999' eingegeben werden. Dieser Termin steuert den
+           # Zeitpunkt der Zuteilung und beeinflusst die Konditionsermittlung.
            # 'APJWKD': 'Kundenwunschtermin CJJWW',
-           'APDTLN': 'neuliefer_date',
+           # 'APDTLN': 'neuliefer_date',
+           # Bei Positionen mit R}ckstandsverwaltung wird nach der ersten
+           # Teillieferung der 'Liefertermin' durch den 'Liefertermin neu'
+           # ersetzt. F}r unbestimmte Termine oder Rahmenkonditionen kann der
+           # Sonderwert '999999' eingegeben werden.
            # 'APJWLN': 'Liefertermin neu CJJWW',
            # 'APKZTE': 'Kz: Termin-Format: 1 =WW/JJ',
            # 'APKZAB': 'Position in AB gedruckt',
-           'APKZAE': 'geaendert',
+           # 'APKZAE': 'geaendert',
+           # Dieses Kennzeichen wird in der Auftrags{nderung gesetzt, wenn
+           # sich folgende Daten ge{ndert haben:
+           #      Auftragskopf: Liefertermin (+ Fnkt 'Kopfdaten }bernehmen')
+           #      AuftragsPos : generell
+           #      Auftragstext: Texte aus Auftragspositionsauskunft oder wenn der/die
+           #      Auftragskopf/-position gel¦scht wird.
+           # *ZERO       keine ¢nderung seit letztem AB-Druck
+           # 1           ge{ndert nach letztem AB-Druck
            # 'APKZST': 'Kennzeichen Streckengeschäf',
+           # Festlegung der Streckenabwicklung f}r diese Position.
+           # *ZERO       keine Strecke
+           # 1           Strecke ohne Bestellung
+           # 2           Strecke ohne Bestellung
+           # 3           direkte Strecke
+           #             Es wird eine Bestellung im Einkauf erzeugt, die Ware g
+           #             direkt vom Lieferanten an den Kunden. Die Fakturierung
+           #             den Kunden wird bei der Buchung der Lieferanten-
+           #             eingangsrechnung automatisch aktiviert.
+           # 4           Strecke }ber Lager
+           #             Es wird eine Bestellung im Einkauf erzeugt, die Ware g
+           #             vom Lieferanten ans Lager und von dort an den Kunden.
+           #             Liefermengenzuteilung erfolgt nach der Buchung des War
+           #             zugangs.
            # 'APKZFA': 'Rg-Freigabe',
            # 'APKZEK': 'Schnittstelle Einkauf',
            # 'APKZBD': 'Steuerung Best.-Druck',
@@ -265,13 +514,55 @@ MAPPINGDIR = {
            # 'APHERK': 'Herkunft',
            # 'APKZSS': 'Kz Stapelschnittstelle',
            # 'APFA1A': 'Lieferschein-Auslösung',
+           # Es werden nur Positionen mit Kennzeichen 'Kommissionierbeleg
+           # drucken' im Kommissionierschein gedruckt. Das Kennzeichen wird
+           # gesetzt:
+           #   - bei der Auftragsbearbeitung, falls der Termin erreicht und
+           #     die Ware verf}gbar ist
+           #   - bei der Freigabe von zugeteilten R}ckst{nden f}r die
+           #     Kommissionierbeleg-Schreibung
+           #   - f}r R}ckstandspositionen beim Druck des Kommissionierbelegs,
+           #     wenn f}r einen Kunden der Kommissionierbeleg f}r einen neu
+           #     erfassten Auftrag gedruckt wird und die Funktion 'Pr}fung
+           #     R}ckst{nde beim Kommissionierbelegdruck' (PARPKB in APX00E04
+           #     aktiviert ist
+           # *BLANK      keine Lieferscheinausl¦sung
+           # L           R}ckstandsposition mit Zuteilung
+           # M           Manuell freigegebene, zugeteilte
+           #             R}ckstandposition
+           # N           neue Position, zugeteilt bei Erfassung
+           #             bzw. bei Erreichen des entsprechenden Termins
            # 'APKZLA': 'Lieferschein-Auslösung 2',
            # 'APLFKZ': 'Kz. Lfsch drucken',
-           'APKZZL': 'zuteilungskennzeichen',
-           'APKZFG': 'KB/LS-Feigabe',
-           'APKZRE': 'Lieferschein -Auslösung',
+           # *ZERO       Lieferschein nicht drucken
+           # 1           LfSn wird gedruckt, wenn LfTrm erreicht
+           #             Lieferschein wird gedruckt, wenn der Liefertermin erre
+           #             ist. Liegt der Liefertermin innerhalb des Lieferschein
+           #             raumes, so wird das Kennzeichen automatisch gesetzt. L
+           #             der Liefertermin au~erhalb dieses Zeitraums, so ist ei
+           #             Liefermengeneingabe nur zul{ssig, wenn dies lt. Parame
+           #             sierung (Steuerung Auftragsbearbeitung: Kz Zuteilung)
+           #             m¦glich ist.
+           # 2           LfSn obwohl LfTrm nicht erreicht
+           #             Der Lieferschein soll geschrieben werden, obwohl der L
+           #             termin noch nicht erreicht ist (manueller LfSnAbruf)
+           # 3           LfSn drucken weil Zugang
+           #              Der Lieferschein muss geschrieben werden, weil die
+           #             Bestellung, in der die Auftragspositionsmenge reservie
+           #             wurde, am Lager zugegangen ist.
+           # 'APKZZL': 'zuteilungskennzeichen',
+           # Herkunft der Zuteilung
+           # PTYP Tabelle
+           # *ZERO       Zuteilung aus Auftragserfassung
+           # 1           Zuteilung per Automatik
+           # 2           Zuteilung per Dialog
+           # 3           Zuteilung per Automatik + Lager{nderung
+           #             Nur m¦glich, wenn die Funktion 'Alternativlager' aus
+           #             Steuerung Auftrag 1 (PABGA2 <> ' ') eingesetzt ist.
+           # 'APKZFG': 'KB/LS-Feigabe',
+           # 'APKZRE': 'Lieferschein -Auslösung',
            # 'APKZZU': 'Kz.Bevorzugte Zuteilung',
-           'APKZLF': 'Kz:Im LfSchein andrucken',
+           # 'APKZLF': 'Kz:Im LfSchein andrucken',
            # 'APKZVL': 'Vorab-Lieferschein',
            # 'APKZRD': 'Kz:Pos in Rech.nicht andr.=',
            # 'APKZSF': 'Kz: In Sofort-Form andrucke',
@@ -281,12 +572,50 @@ MAPPINGDIR = {
            # 'APKZSU': 'Kz:keine Umsatzstatistik=1',
            # 'APKZBA': 'Kz: kein Auftragsbestand=1',
            # 'APKZRK': 'Kz: Rückstand erlaubt = 1',
+           # Festlegung, wie die Position im Fall einer Teillieferung
+           # behandelt werden soll.
+           # Bei R}ckstandsverwaltung = Nein wird bei der
+           # Lieferscheinr}ckmeldung die Angabe 'voll ausgeliefert' mit 'Ja'
+           # vorbesetzt. Bei der Auftragserfassung wird das Kennzeichen in
+           # der Position mit der Angabe lt. Auftragskopf vorbesetzt. Bei
+           # Auslaufartikeln wird der Wert generell mit 'Nein' vorbesetzt.
            'APKZVA': 'voll_ausgeliefert',
+           # Die Festlegung 'Position voll ausgeliefert' erfolgt bei der
+           # Lieferscheinr}ckmeldung. Eine Position gilt auch dann als voll
+           # ausgeliefert, wenn die fakturierte Menge gr¦~er oder gleich der
+           # bestellten Menge ist  Das Kennzeichen 'Voll ausgeliefert' wird
+           # nur aufgrund manueller Eingaben gesetzt.
+           # PTYP Tabelle
+           # *ZERO       Position ist noch offen
+           # 1           Position voll ausgeliefert
            # 'APKZAF': 'Kz:Abruf aus Rahmenauftrag',
            # 'APKZRA': 'Kz:Rahmen-Pos',
+           # Wertm{~ige Rahmenpositionen:
+           # Rahmenpositionen mit der Bestellmenge 1 werden als wertm{~ige
+           # Rahmen gef}hrt. Bei Abrufen werden der offene und fakturierte
+           # Positionswert ganz normal vermindert. Die fakturierte Menge wird
+           # aber erst dann erh¦ht (0 -> 1), wenn der offene Positionswert 0
+           # ist  Erst dadurch wird die Position als erledigt gekennzeichnet.
+           # PTYP Tabelle
+           # *ZERO       kein Rahmen
+           # 1           Rahmen
            # 'APKZPA': 'Kz:Preisänderung = 1',
-           'APKZTA': 'Kz:Terminänderung = 1',
-           'APKZMA': 'Kz:Mengenänderung = 1',
+           # Wird gesetzt bei nachtr{glichen Preis{nderungen
+           # PTYP Tabelle
+           # *ZERO       Preis seit Erfassung nicht ge{ndert
+           # 1           Preis wurde ge{ndert
+           # 9           Preis aus Bonus
+           # 'APKZTA': 'Kz:Terminänderung = 1',
+           # Festlegung, ob Termin ge{ndert wurde.
+           # Wird bei nachtr{glichen Liefertermin{nderungen gesetzt.
+           # PTYP Tabelle
+           # *ZERO       Termin seit Erfassung nicht ge{ndert
+           # 1           Termin wurde ge{ndert
+           # 'APKZMA': 'Kz:Mengenänderung = 1',
+           # Wird gesetzt bei nachtr{glichen Mengen{nderungen
+           # PTYP Tabelle
+           # *ZERO       Menge seit Erfassung nicht ge{ndert
+           # 1           Menge wurde ge{ndert
            # 'APPRVK': 'Provisions-Kennzeichen',
            # 'APPWRT': 'Provisionswert',
            # 'APPRV1': 'Provisions-%-Satz 1',
@@ -302,7 +631,21 @@ MAPPINGDIR = {
            # 'APZUOR': 'Zuordnung für dezentrale An',
            # 'APRES1': 'Firma/Herkunft',
            # 'APFA3A': 'Bestell-Zusammenfass./Dispo',
-           'APFA4A': 'Teil-Zuteilungs-Verbot',
+           'APFA4A': 'teilzuteilungsverbot',
+           # Information }ber die Teilzuteilung
+           # PTYP Tabelle
+           # *BLANK      Teilzuteilung erlaubt
+           # *ZERO       Teilzuteilung erlaubt
+           # 1           Teilzuteilung verboten
+           #             Bei Zuteilungen aus externer Beschaffung (Einkauf bzw.
+           #             Fertigung) wird dieses Kennzeichen nicht ber}cksichtig
+           #             d.h. die Zuteilung erfolgt generell, auch bei Teilmeng
+           # 2           Teilzuteilung folgt
+           #             Es folgen noch weitere Teilzuteilungen aus der externe
+           #             Beschaffung.
+           # 3           Zuteilung abgeschlossen
+           #             Die letzte Teilzuteilung aus der externen Beschaffung
+           #             erfolgt.
            # 'APKZBF': 'ZUSATZANGABE RAHMEN/ABRUF',
            # 'APDRKZ': 'Preisdruck',
            # 'APHLKZ': 'Kz Hochregal',
@@ -316,13 +659,24 @@ MAPPINGDIR = {
            # 'APDTRV': 'Rahmen: gültig ab',
            # 'APDTRB': 'Rahmen: gültig bis',
            # 'APAUPS': 'bezogene Position',
+           # Wird ein Set bei der Erfassung aufgel¦st, d.h. je Komponente
+           # eine eigene Position angelegt, so sollen f}r den Druck diese
+           # Positionen als zusammengeh¦riger Block erkennbar sein.
+           # Beim Setartikel stimmen Position und bezogene Position }berein.
+           # PTYP nicht aktiv
            # 'APSNPF': 'StzNr Preisfindung',
-           'APMG01': 'Menge 1',
+           # 'APMG01': 'Menge 1',
            # 'APWR01': 'Preis 1',
-           # 'APPR01': '%-Satz 1',
-           'APDTZU': 'Datum Zuteilung',
-           'APZTZU': 'Uhrzeit Zuteilung HHMMSS',
-           'APJNZU': 'Jobnr Zuteilung',
+           # 'APPR01': '%-Satz 1', Marge in Prozent
+           #                   (Verkaufspreis - Einstandspreis) x 100
+           # Berechnung:       --------------------------------------
+           #                                 Verkaufspreis
+           # Bei der Marge f}r einen kompletten Vorgang sind f}r die Angaben
+           # Verkaufspreis und Einstandspreis die entsprechenden Summen }ber
+           # alle Positionen einzusetzen.
+           # 'APDTZU': 'Datum Zuteilung',
+           # 'APZTZU': 'Uhrzeit Zuteilung HHMMSS',
+           # 'APJNZU': 'Jobnr Zuteilung',
            # 'APDTER': 'Datum Format CJJMMTT',
            # 'APZTER': 'Uhrzeit der Erfassung',
            # 'APDTAE': 'Datum Format CJJMMTT',
@@ -332,10 +686,28 @@ MAPPINGDIR = {
            # 'APSTAT': 'Satzstatus',
           },
 
-'AAT00': {# Auftrags-Texte
+'AAT00': {  # Auftrags-Texte
           'ATAUFN': 'auftragsnr',
           'ATAUPO': 'auftragsposition',
           'ATTART': 'textart',
+          # 1           Benutzer aus B2B Shop
+          # 2           Abweichende Artikelbezeichnung
+          #             Pos: ATTX60 Stelle  1-60:  abweichende Artikelbezeichn
+          #             Kopf: individuell verwendet
+          # 4           Zusatztexte
+          #             (keine Anzeige im AAU05 / kein Druck auf Formularen)
+          #             (Eingabe z.B. im AIS31FE: Umsatzauskunft-Detailanzeige
+          #             ? wird anscheinend nirgends verwendet/unterst}tzt ?
+          # 5           Statistische Warennummer
+          #             ATTX60 Stelle 45-60:  Statistische Warennummer bei SoA
+          #             (vor Release 6.2 war die Statistische WaNr unter Texta
+          #             Feld ATTX60, Stelle 45-60 gespeichert)
+          # 6           Texte f}r ¢nderungs-AB aus Einkauf
+          # 7           Faxnummer (Position = 0)
+          # 7           Auftragstexte vor Position
+          # 8           Auftragsanfangstexte (Position = 0)
+          # 8           Auftragstexte nach Position
+          # 9           Auftragsendetexte
           'ATLFNR': 'nr',
           'ATTX60': 'text',
           'ATKZAB': 'andruck_ab',
@@ -343,7 +715,7 @@ MAPPINGDIR = {
           'ATKZRG': 'andruck_re',
          },
 
-'AKZ00': {# Kundenstamm für Auftragsverwaltung
+'AKZ00': {  # Kundenstamm für Auftragsverwaltung
           'KZKDNR': 'Kunden-nr',
           #'KZSBNR': 'zuständiger Sachbearbeiter',
           'KZVRT': 'vertreter',
@@ -373,57 +745,106 @@ MAPPINGDIR = {
           #'KZRGCO': 'Formularanz./ Rechnung',
           #'KZTELF': 'tel',
           #'KZTFAX': 'fax',
-          'KZINFO': 'sachbearbeiter',
+          'KZINFO': 'betreuer',
           'KZDTAE': 'updated_at',
 },
 
-'ALK00': {# Lieferscheinköpfe
+'ALK00': {  # Lieferscheinköpfe
           'LKSANK': 'satznr',
           'LKSANB': 'bezogener_kopf',
-          'LKSBNR': 'sachbearbeiter',
+          # Die Angabe ist nur gefüllt, falls mit der Variante 'Kommissionierbeleg vor Lieferschein'
+          # gearbeitet wird. Für jeden Lieferschein wird zusätzlich zum Kommissionierbeleg-Kopfsatz
+          # ein eigener Kopfsatz angelegt, die ALN00-Sätze für den Lieferschein werden aber nicht
+          # dupliziert.
+          #'LKSBNR': 'sachbearbeiter', # Wird bei der Stapelfreigabe mit 999999  ̧berschrieben.
           'LKLGNR': 'lager',
-          'LKX3VA': 'versandart',
-          'LKKZTF': 'teilfakturiert',
+          # 'LKX3VA': 'versandart',
+          #'LKKZTF': 'teilfakturiert',
           'LKKDRG': 'rechnungsempfaenger',
           'LKKDNR': 'warenempfaenger',
           'LKLFSN': 'lieferscheinnr',
-          'LKDTLF': 'letzter_lieferschein_date',
-          'LKZTLF': 'letzter_lieferschein_time',
-          'LKDTST': 'lieferschein_storno_date',
-          'LKKZSL': 'sammellieferschein',
-          'LKKZLF': 'druckkennzeichen',
-          'LKKBNR': 'kommissionierbelegnr',
-          'LKDTKB': 'letzter_kommissionierbeleg_date',
-          'LKZTKB': 'letzter_kommissionierbeleg_time',
-          'LKLFDN': 'laufendenr',
-          'LKBELN': 'belegnr_freigabe',
-          # 'LKFGNR': 'Freigabenr AFA20
-          # 'LKFGSB': 'Sachbearb. Freigabe
-          'LKDTFG': 'freigabe_date',
-          'LKZTFG': 'freigabe_time',
-          'LKFGI1': 'freigabe_info1',
-          'LKFGI2': 'freigabe_info2',
+          'LKDTLF': 'lieferschein_date',
+          'LKZTLF': 'lieferschein_time',
+          # Wird für automatisch erstellte Lieferscheine bei der Lieferscheinschreibung (AFA37) mit dem
+          # Tagesdatum, und für manuell erstellte Lieferscheine bei der Erfassung Versand-/Speditionsdaten
+          # (AVS10) mit Datum 0 gefüllt.
+          #'LKDTST': 'lieferschein_storno_date',
+          # Das Datum des letzten Belegstornos wird erst eingetragen, wenn alle Positionen des Belegs
+          # storniert worden sind. Es kann nur der Beleg storniert werden, der in der Belegfreigabe
+          # auch freigegeben werden kann. Je nach Parameterisierung ist das der Kommissionierbeleg oder
+          # der Lieferschein.
+          #'LKKZSL': 'sammellieferschein',
+          #'LKKZLF': 'druckkennzeichen',
+          'LKKBNR': 'kommibelegnr',
+          'LKDTKB': 'kommibeleg_date',
+          'LKZTKB': 'kommibeleg_time',
+          # 999999: Rechnungsfreigabe im Stapel erfolgt 888888: Belegfreigabe im Stapel erfolgt
+          #'LKLFDN': 'laufendenr',
+          # Die lfd. Nummer wird pro Kunde vergeben. Sie wird die Kommissionierbelegdaten für
+          # unterschiedliche Lieferadressen des gleichen Kunden zu trennen. Die Vergabe der lfd. Nummer
+          # erfolgt bei der Vorbereitung des Kommissionierbelegs bzw. Lieferscheins (AFA35). Beim Wechsel
+          # der Auftragsnummer wird geprüft, ob in den Dateien ALD/ALK bereits Daten existieren, die in
+          # Warenempfänger und Lieferadresse mit den Angaben des zu bearbeitenden Auftrags
+          # übereinstimmen. Wird keine Übereinstimmung gefunden, dann wird eine neue lfd. Nummer vergeben.
+          #'LKBELN': 'belegnr_freigabe',
+          # Lieferschein vor Fakturierfreigabe: Lieferscheinnummer
+          # Lieferschein nach Fakturierfreigabe: Kommissionierbelegnummer
+          #'LKFGNR': 'Freigabenr AFA20
+          #'LKFGSB': 'Sachbearb. Freigabe
+          #'LKDTFG': 'freigabe_date',
+          #'LKZTFG': 'freigabe_time',
+          #'LKFGI1': 'freigabe_info1',
+          #'LKFGI2': 'freigabe_info2',
           #'LKFGLC': 'Anzahl Liefsch.'
           'LKAUFS': 'auftragsnr',
-          'LKDTLT': 'liefer_date',
-          'LKKZ02': 'hrl_status',
-          'LKKZVA': 'alle_positionen_fakturiert',
-          'LKDTER': 'erfassung_date',
-          'LKZTER': 'erfassung_time',
-          'LKDTAE': 'aenderung_date',
-          'LKZTAE': 'aenderung_time',
-          'LKDFSL': 'dateifuehrungsschluessel',
-          'LKSTAT': 'satzstatus',
+          # Nummer des Auftrags In diesem Feld steht die zu dem Lieferschein gehörende Auftragsnummer.
+          # Bei Sammellieferscheinen wird die Auftragsnummer der ersten Lieferscheinposition gespeichert.
+          'LKDTLT': 'anliefer_date',
+          #'LKKZ02': 'hrl_status',
+          # 'LKKZVA': 'alle_positionen_fakturiert',
+          # *ZERO noch nicht alle Pos fakturiert
+          # 1     alle Positionen sind fakturiert
+          'LKDTER': 'ALK_erfassung_date',
+          'LKZTER': 'ALK_erfassung_time',
+          'LKDTAE': 'ALK_aenderung_date',
+          'LKZTAE': 'ALK_aenderung_time',
+          #'LKDFSL': 'dateifuehrungsschluessel',
+          #'LKSTAT': 'satzstatus',
          },
 
-'ALN00': {# Lieferscheinpositionen
-          'LNSANK': 'satznr_kopf',
+
+'ALN00': {  # Positionsdatei für KB/Lieferschein
+          # Die Lieferscheinpositionsdatei enthält die Detailinformationen zu den einzelnen Lieferungen
+          # einer Auftragsposition. Für den Mengen- und Wertabgleich zwischen Auftrag und
+          # Lagerbestandsführung werden folgende Sätze NICHT berücksichtigt:
+          #     * Rechnungsvorbereitung ist gelaufen (LNRGST = 3)
+          #     * Lieferscheinposition ohne Bestandsf ̧hrung (LNKZBE = 1)
+          #
+          # Für den Mengen- und Wertabgleich zwischen Auftrag und Lagerbestandsführung werden die Werte
+          # wie folgt ermittelt:
+          #     * Zugeteilte Menge: Lieferscheinmenge (LNMNGL), falls Position fakturierbar ist (LNKZFF=1)
+          #     * Offener Lieferwert: Lieferscheinwert (LNLWA1), falls Position fakturierbar ist (LNKZFF=1)
+          #     * Vorabgebuchte Menge: Zu fakturierende Menge (LNMNGR), falls Position für Fakturierung
+          #       ausgewählt ist (LNRGST = 2)
+          #     * Auftragsmenge: Differenz aus Lieferscheinmenge (LNMNGL) und zu fakturierender Menge
+          #       (LNMNGR), falls Position für Fakturierung ausgew‰hlt ist (LNKZRV = 2)
+          #
+          # Die Ermittlung dieser Werte pro Auftragspositon erledigt das Programm AFA06.
+          'LNSANK': 'satznr_kopf',  # Satznummer des Kommissionierbelegs bzw. Lieferscheins in ALK00.
+          # PAKZKB = 0: Satznummer des Lieferscheins
+          # PAKZKB = 1: Satznummer des Kommissionierbelegs und des Lieferscheins (ein gemeinsamer Kopfsatz)
+          # PAKZKB = 2: Satznummer des Kommissionierbelegs
           'LNSANP': 'satznr',
           # 'LNKANR': 'Übergeordnete Auftrags-Nr.
+          # Soll für einen Auftrag ein Bezug zu einem bereits bestehenden Hauptauftrag hergestellt werden,
+          # so ist hier die Nummer dieses Hauptauftrags einzugeben. Intern wird eine neue Auftragsnummer
+          # vergeben. Die Kopfdaten des neuen Auftrags werden mit denen des Hauptauftrags vorbesetzt.
+          # Die Angabe 'Hauptauftrag' ist nur dann gefüllt, wenn bei der Auftragserfassung eine
+          # entsprechende manuelle Eingabe erfolgte.
           'LNAUFN': 'auftragsnr',
           'LNAUPO': 'auftrags_position',
           'LNARTN': 'artnr',
-          'LNKZKO': 'setartikel',
+          'LNKZKO': 'setartikel',  # *ZERO Normalartikel, 1 Setartikel
           'LNBSTN': 'bestellnr',
           'LNBSTP': 'bestellposition',
           # 'LNVKE':  'verkaufseinheit', # ist immer leer
@@ -432,14 +853,22 @@ MAPPINGDIR = {
           #'LNKZBE': 'Kz:keine Bestandsführung =1
           'LNMNGO': 'menge_offen',
           'LNDTLT': 'liefertermin_date',
-          #'LNJWLT': 'liefertermin_woche',
+          # Bei der Stapelfreigabe werden nur Lieferscheine freigegeben, deren Liefertermin nicht nach
+          # dem Freigabedatum liegt.
+          #'LNJWLT': 'liefertermin_woche',  # Liefertermin im Format HJJWW (Jahrhundert/Jahr/Woche)
           'LNKZRK': 'rueckstand_erlaubt',
+          # Festlegung, wie die Position im Fall einer Teillieferung behandelt werden soll. Bei
+          # Rückstandsverwaltung = Nein wird bei der Lieferscheinrückmeldung die Angabe 'voll ausgeliefert'
+          # mit 'Ja' vorbesetzt. Bei der Auftragserfassung wird das Kennzeichen in der Position mit der
+          # Angabe lt. Auftragskopf vorbesetzt. Bei Auslaufartikeln wird der Wert generell mit 'Nein'
+          # vorbesetzt.
           #'LNKZZL': 'zuteilungskennzeichen',
+          # *ZERO, Zuteilung aus Auftragserfaassung 1, per Automatik, 2 per Dialog
           'LNKZZU': 'bevorzugte_zuteilung',
           'LNKDRG': 'rechnungsempfaenger',
           'LNKDNR': 'kundennr',
           'LNLFSN': 'lieferscheinnr',
-          'LNMNGL': 'menge',
+          'LNMNGL': 'menge',  # Menge lt. Lieferschein
           'LNDTLF': 'lieferschein_date',
           'LNZTLF': 'lieferschein_time',
           #'LNKZVL': 'KZ. Vorab-Lieferschein
@@ -450,19 +879,31 @@ MAPPINGDIR = {
           #'LNKZFF': 'Kz: Pos ist fakturierbar =
           'LNDTST': 'storno_date',
           #'LNKZRE': 'lieferschein_ausloesung',
-          'LNKBNR': 'kommissionierbelegnr',
+          'LNKBNR': 'kommibelegnr',
           'LNMNGK': 'menge_komissionierbeleg',
           'LNDTKB': 'komissionierbeleg_date',
           'LNZTKB': 'komissionierbeleg_time',
           'LNKZKB': 'komissionierbeleg_drucken',
+          # Kommissionierbeleg drucken
+          # *ZERO Kommissionierbeleg nicht drucken
+          # 1 Kommissionierbeleg vorbereitet
+          # 2 Kommissionierbeleg gedruckt
           'LNRGST': 'rechnungsstatus',
+          # *ZERO Rechnung noch nicht bearbeitet
+          # 1 Lieferung freigegeben
+          # 2 Lieferschein gedruckt
+          # 3 Rechnung gedruckt
           'LNDTVS': 'versand_date',
-          'LNSTOR': 'gutschrift',
-          'LNBELP': 'kommissionierbeleg_position',
+          'LNSTOR': 'gutschrift',  # Rechnung/Gutschrift
+          # *ZERO Lieferscheinkopf für Normalauftrag
+          # 1     Lieferscheinkopf für Gutschriftsauftrag
+          'LNBELP': 'kommibeleg_position',
           #'LNFGNR': 'Freigabenr AFA20
           #'LNFNFA': 'Fehlernr FG. AFA20
           'LNLSTO': 'lieferscheinstorno',
           'LNMNGF': 'menge_fakturierung',
+          #  Bei LNKZFA = 0: fakturierte Menge,
+          # Bei LNKZFA <> 0: zu fakturierende Menge
           'LNKZV2': 'voll_ausgeliefert',
           #'LNPSTA': 'Packstatus
           #'LNKZVS': 'Kz versandfertig
@@ -477,11 +918,15 @@ MAPPINGDIR = {
           'LNDTAE': 'aenderung_date',
           'LNZTAE': 'aenderung_time',
           'LNDFSL': 'dateiführungsschluessel',
+          # Dieses Feld wird von dem Programm, das eine Änderung an Daten dieses Satzes vornimmt,
+          # während des Änderungsvorgangs mit der Bildschirmidentifikation des ‰ndernden Bildschirms belegt.
           'LNSTAT': 'satzstatus',
+          # *BLANK Satz ist aktiv
+          # X Satz steht zum Lôschen an (auf Satz kann in den Anwendungsprogr. nicht mehr zugegriffen werden)
           'LNSBNR': 'sachbearbeiter_bearbeitung',
          },
 
-'AFK00': # Rechnungsköpfe
+'AFK00':  # Rechnungsköpfe
      {
      'FKFNR ': 'firma',
      # 'FKABT ': 'Abteilungs-Nummer',
@@ -609,7 +1054,7 @@ MAPPINGDIR = {
      'FKZTER': 'erfassung_time',
      },
 
-'AFU00': # Rechnungspositionen
+'AFU00':  # Rechnungspositionen
         {
         #'FUFNR': 'firma',
         #'FURGNR': 'rechnungsnr',
@@ -648,6 +1093,14 @@ MAPPINGDIR = {
         # 'FUKZBE': 'Ohne Bestandsf}hrung',
         'FUKZST': 'Kennzeichen Streckengesch{f',
         'FUKZKO': 'Mit Komponentenaufl¦sung',
+        # Im Parametersatz: Steuerung Auftragsbearbeitung kann festgelegt
+        # werden, ob ein Set bestandsgef}hrt sein kann oder nicht. Ist ein
+        # Set bestandsgef}hrt, so kann auf Positionsebene entschieden
+        # werden, ob das Set in Komponenten aufgel¦st wird.
+        # *ZERO       Set nicht in Komponenten aufl¦sen
+        #             d.h. Set wird wie normaler Artikel behandelt.
+        # 1           Set in Komponenten aufl¦sen
+        #             Bestandsf}hrung auf Komponentenebene (Standard)
         'FUKZRB': 'Kz: kein Auftragsrabatt = 1',
         'FUKZRD': 'Kz:Pos in Rech.nicht andr.=',
         'FUKZRU': 'Kz.Rabatt versteckt',
@@ -655,6 +1108,12 @@ MAPPINGDIR = {
         # 'FUKZSE': 'Serien-/Chargenartikel',
         # 'FUKZSO': 'Kennzeichen Sonderartikel',
         # 'FUKZPS': 'Positionsbezogener Set',
+        # Bei Auftragspositionen mit Setartikeln ist hier hinterlegt, ob
+        # f}r die Position eine spezielle Setkomponentendefinition ein-
+        # gegeben wurde.
+        # PTYP Tabelle
+        # *ZERO       kein positionsbezogener Set
+        # 1           positionsbezogener Set
         # 'FUPRKZ': 'Preiskennzeichen Lager',
         # 'FUKZEP': 'KZ: Eigen-Produkt',
         'FUKZZU': 'Zuschlagssatz',
@@ -691,7 +1150,7 @@ MAPPINGDIR = {
         },
 
 
-'ASK00': {# Set/Komponenten
+'ASK00': {  # Set/Komponenten
            # 'SKFNR':  'firma',
            'SKARTN': 'artnr',
            # 'SKAUFN': 'Auftrags-nr',
@@ -717,7 +1176,7 @@ MAPPINGDIR = {
          #'VAFGRP'  Firmen-Gruppe
          #'VAAGRP'  Abteilungs-Gruppe/Sparte
          #'VAABT'  Abteilungs-nr
-         'VASANR': 'satznr', # gepackt
+         'VASANR': 'satznr',  # gepackt
          #'VAX3VS'  Versandarten-Schlüssel
          #'VAX3LB'  Lieferbedingungs-Schlüssel
          #'VAINFO'  Interne Information
@@ -731,7 +1190,7 @@ MAPPINGDIR = {
          'VASTAT': 'satzstatus',
        },
 
-'BBU00': { # Buchungspositionen in der Buchhaltung
+'BBU00': {  # Buchungspositionen in der Buchhaltung
     # 'BUFNR':  'Firmennr. Sachbuchung',
     # 'BUBHKZ': 'Buchhaltungskennz. D,K,S',
     'BUPKTO': 'personenkonto',
@@ -748,7 +1207,7 @@ MAPPINGDIR = {
     #'BUBUSL': 'externe Belegart',
     #'BUBLRA': 'Anzeigebelegart',
     #'BUBLRE': 'externe Belegart',
-    'BUSOHA': 'soll_oder_haben', # 'S' oder 'H'
+    'BUSOHA': 'soll_oder_haben',  # 'S' oder 'H'
     'BUGKTO': 'gegenkonto_sachbuchhaltung',
     # 'BUGKSH': 'Gegenkonto-Soll/Haben',
     'BUOINF': 'op_info',
@@ -820,7 +1279,7 @@ MAPPINGDIR = {
     # 'BUKZSB': 'Kennz. Schattenbuchung',
     # 'BUSPAR': 'Abteilungs-Gruppe/Sparte',
     # 'BUKZNB': 'Kennz. durch Nebenbuchh.',
-    'BUUSR1': 'user_1', # name des Sachbaerbeiters
+    'BUUSR1': 'user_1',  # name des Sachbaerbeiters
     # 'BUUSR2': 'User 2',
     # 'BUMBR':  'Member',
     'BUDTER': 'erfassung_date',
@@ -854,7 +1313,7 @@ MAPPINGDIR = {
 },
 
 
-'BED00': { # Datei fuer die Zentrale-Meldung innerg. Warenverk.
+'BED00': {  # Datei fuer die Zentrale-Meldung innerg. Warenverk.
           'EDFNR ': 'firmennr',
           'EDPKTO': 'personenkonto',
           'EDBEKZ': 'berichtigungskennzeichen',
@@ -966,7 +1425,7 @@ MAPPINGDIR = {
 #     OPKZPW              BOP00              W{hrungsart
 
 
-'EBL00': { # Bestellköpfe
+'EBL00': {  # Bestellköpfe
      #'BLFNR ': 'firma',
      'BLBSTN': 'bestellnr',
      #'BLFNRH': 'Firma / Herkunft',
@@ -1111,10 +1570,10 @@ MAPPINGDIR = {
 #     AXDFSL              EAX00              Dateif}hrungs-Schl}ssel
 #     AXSTAT              EAX00              Satzstatus
 
-'EBP00': { # Bestellpositions-Datei
+'EBP00': {  # Bestellpositions-Datei
           'BPMNGB-BPMNGL': 'menge_offen',
           # 'BPFNR ': 'Firma',
-          'BPBSTN': 'bestellnr', # bei uns auch als P.O. bekannt
+          'BPBSTN': 'bestellnr',  # bei uns auch als P.O. bekannt
           'BPBSTP': 'bestellpos',
           # 'BPBSAB': 'Nummer des bez. Rahmenvert.',
           # 'BPBSAP': 'Pos-Nr des bez. Rahmenvert.',
@@ -1125,7 +1584,7 @@ MAPPINGDIR = {
           # 'BPAGRP': 'Abteilungs-Gruppe/Sparte',
           # 'BPFGRP': 'Firmen-Gruppe',
           'BPHPOS': 'hauptpositionnr',
-          'BPBDIF': 'beschaffung_deckung', # Tg BeschffgT. - DeckgT.',
+          'BPBDIF': 'beschaffung_deckung',  # Tg BeschffgT. - DeckgT.',
           # 'BPANNR': 'Anfrage',
           # 'BPANPO': 'Anfrageposition            ',
           'BPARTN': 'artnr',
@@ -1350,7 +1809,7 @@ MAPPINGDIR = {
 #     ERSTAT              EER00              Satzstatus
 
 
-'ESL00': { # Stapelschnittstelle LAGER
+'ESL00': {  # Stapelschnittstelle LAGER
     #'SLABT ': 'Abteilungs-Nummer',
     #'SLAGRP': 'Abteilungs-Gruppe/Sparte',
     #'SLFNR ': 'Firma',
@@ -1359,7 +1818,7 @@ MAPPINGDIR = {
     #'SLARTG': 'Artikel-Gruppe',
     #'SLARTH': 'Artikel-Haupt-Gruppe',
     'SLLGNR': 'lager',
-    'SLMNG ': 'menge', # "Einzelmenge"
+    'SLMNG ': 'menge',  # "Einzelmenge"
     # 'SLMESL': 'mengeneinheit', inner 1
     # 'SLFAKT': 'Umrechn.-Faktor  ER-->BE', immer 1
     'SLPREW': 'wert',
@@ -1408,7 +1867,7 @@ MAPPINGDIR = {
     #'SLMNGI': 'Menge als Zusatzinfo', immer 0
     #'SLWRTI': 'Wert als Zusatzinfo', # immer 0
     'SLLBW ': 'lagerbewegungsnr',
-    'SLLWKO': 'lager_korrektur_wert', # 'Korrektur-Wert des Lagers',
+    'SLLWKO': 'lager_korrektur_wert',  # 'Korrektur-Wert des Lagers',
     # 'SLLWFR': 'Korr.Wert Lg. / Frachtantei', immer 0
     # 'SLLWZO': 'Korr.Wert Lg. / Zollanteil', immer 0
     # 'SLSBAE': 'aenderung_sachbearbeiter',
@@ -1587,7 +2046,7 @@ MAPPINGDIR = {
 #     VPSTAT              EVP00              Satzstatus
 
 
-'EWZ00': { # Bestellpositionszusatzinformationen
+'EWZ00': {  # Bestellpositionszusatzinformationen
      # 'WZFGRP': 'Firmen-Gruppe              ',
      # 'WZFNR ': 'Firma                      ',
      # 'WZAGRP': 'Abteilungs-Gruppe/Sparte   ',
@@ -1615,7 +2074,7 @@ MAPPINGDIR = {
      #'WZBNWZ': 'Beleg-Nr./Zugang',
      'WZDTWZ': 'zugang_date',
      # 'WZMJBU': 'Buchungs-Monat             ',
-     'WZLBWZ': 'lagerbewegung_zugang', # referenziert
+     'WZLBWZ': 'lagerbewegung_zugang',  # referenziert
      # 'WZREKL': 'Reklamationsnummer         ',
      # 'WZGBNR': 'Vertriebseinheit           ',
      # 'WZRIMW': 'WZ-RefNr f}r Image         ',
@@ -1701,10 +2160,10 @@ MAPPINGDIR = {
      'WZSANR': 'satznummer_warenzugang',
 },
 
-'ISA00': {# MyPL Schnittstelle: Komissionierbeleg
+'ISA00': {  # MyPL Schnittstelle: Komissionierbeleg
           'IAFNR': 'firma',
           'IALGNR': 'lagernr',
-          'IAKBNR': 'kommissionierbelegnr',
+          'IAKBNR': 'kommibelegnr',
           'IAAUFN': 'auftragsnr',
           'IADATE': 'anforderung_date',
           'IATIME': 'anforderung_time',
@@ -1713,7 +2172,7 @@ MAPPINGDIR = {
           'IASANR': 'satznr',
          },
 
-'ISB00': {# MyPL Schnittstelle: Lagerbuchungsschnittstelle
+'ISB00': {  # MyPL Schnittstelle: Lagerbuchungsschnittstelle
           'IBFNR': 'firma',
           'IBBWSL': 'bewegungsschluessel',
           'IBLGNR': 'lager',
@@ -1725,10 +2184,10 @@ MAPPINGDIR = {
           'IBSTAT': 'status',
          },
 
-'ISK00': {# MyPL Schnittstelle: Warenzugang aus Umlagerung
+'ISK00': {  # MyPL Schnittstelle: Warenzugang aus Umlagerung
           'IKFNR': 'firma',
-          'IKKBNR': 'kommissionierbelegnr',
-          'IKKPOS': 'kommissionierbelegposition',
+          'IKKBNR': 'kommibelegnr',
+          'IKKPOS': 'kommibelegposition',
           # TODO: inkonsistenz: in lagerschnittstelle.py wird dies folgendermassen definiert:
           # 'IKKBNR': 'komminr',
           # 'IKKPOS': 'kommiposition',
@@ -1742,10 +2201,10 @@ MAPPINGDIR = {
           'IKSANR': 'satznr',
          },
 
-'ISR00': {# MyPL Schnittstelle: KB-Rückmeldung
+'ISR00': {  # MyPL Schnittstelle: KB-Rückmeldung
           'IRFNR': 'firma',
-          'IRKBNR': 'kommissionierbelegnr',
-          'IRKPOS': 'kommissionierbelegposition',
+          'IRKBNR': 'kommibelegnr',
+          'IRKPOS': 'kommibelegposition',
           'IRAUFN': 'auftragsnr',
           'IRAUPO': 'auftragsposition',
           'IRMENG': 'rueckmeldemenge',
@@ -1756,7 +2215,7 @@ MAPPINGDIR = {
           'IRSTAT': 'status',
          },
 
-'ISZ00': {# MyPL Schnittstelle: Warenzugang aus Auftrag
+'ISZ00': {  # MyPL Schnittstelle: Warenzugang aus Auftrag
           'IZFNR ': 'firma',
           'IZBSTN': 'bestellnr',
           'IZWVNR': 'warenvereinnahmungsnr',
@@ -1806,20 +2265,57 @@ MAPPINGDIR = {
 # SUSTAT   A         1  0  215  215 Satzstatus
 
 
-'XAD00': {# Abweichende Lieferadressen
+'XAD00': {  # Abweichende Lieferadressen / Bestelladdressdatei
+          # ADANW - Anwendung  -> scheinbar immer A oder E
+          'ADRGNR': 'nr',  # Auftrags/Rechnungs/Bestellnummer-Nummer usw.
+          #  * Auftragsnummer f}r ADAART 0/1
+          #  * Rechnungsnummer f}r ADAART 2/3
+          #  * Bestellnummer f}r ADAART 5/6/7/8
+          #  * Satznummer Rechnungskopf f}r ADAART 4/9
+          #  * Satznummer Lieferscheinkopf f}r ADAART 12
+          #  * Angebotsnummer f}r ADAART 13/14
+          # Falls SoftM Auftrag und SoftM FiBu eingesetzt sind, wird bei der
+          # Fakturierung von Auftr{gen f}r Einmalkunden f}r die FiBu der
+          # Satz mit dem Satzschl}ssel FA/RGNR/2 im Fakturierungsupdate
+          # erzeugt.
+          # F}r das L¦schen der S{tze mit ADAART = 0/1 ist ausschlie~lich
+          # SoftM Auftrag zust{ndig. Die S{tze mit ADAART = 2/3 m}ssen
+          # von SoftM FiBu gel¦scht werden.
+          # ADAART - Adressart
+          #  *ZERO       Rechnungsadresse Auftrag (Auftrag)
+          #  01          Lieferadresse Auftrag (Auftrag)
+          #  02          Adresse f}r OP/Einmaldebitor
+          #  03          Adresse f}r OP/Einmalkreditor
+          #  04          Rechnungsadresse Faktura (Auftrag)
+          #  05          Lieferantenadresse Bestellung (Einkauf)
+          #  06          Lieferadresse Bestellung (Einkauf)
+          #  08          Lieferadresse Anfrage (Einkauf)
+          #  09          Lieferadresse Faktura (Auftrag)
+          #  12          Lieferadresse Lieferschein (Auftrag)
+          #  13          Rechnungsadresse Angebot (Auftrag)
+          #  14          Lieferadresse Angebot (Auftrag)
+          #  18          Abweichende Rechnungsanschrift (Einkauf)
+          # ADPKTO   Personenkonto
+          #          Je nach Anwendung wird das Personenkonto unterschiedlich gef}llt.
+          #          SoftM Einkauf:
+          #          ADAART = 18:  Rechnungssteller aus der Rechnung (Datei EER00)
+          #          ADAART = 5/6: Lieferant aus der Bestellung (Datei EBL00)
+          #          ADAART = 8:   leer"
+          #          SoftM Auftrag:
+          #          Bei Angebotsadressen ist das Personenkonto der Angebotskunde.
+          #          In allen anderen F{llen ist das Personenkonto leer.
           'ADNAME': 'name1',
           'ADNAM2': 'name2',
           'ADNAM3': 'name3',
-          'ADNAM4': 'name4',
+          # 'ADNAM4': 'name4',
           'ADSTR': 'strasse',
           'ADPLZ': 'plz',
           'ADORT': 'ort',
           'ADLKZ': 'laenderkennzeichen',
-          #'ADORTT': 'ortsteil',
-          'ADKZAD': 'adressaufbereitung',
+          # 'ADKZAD': 'adressaufbereitung', - fuer legacy Daten
          },
 
-'XAR00': {# Artikelstamm
+'XAR00': {  # Artikelstamm
            'ARARTN': 'artnr',
            'ARSTAT': 'status',
            'ARARTH': 'artikelhauptgruppe',
@@ -1884,7 +2380,7 @@ MAPPINGDIR = {
            'ARDTER': 'erfassung_date',
            'ARDTAE': 'aenderung_date', },
 
-'XCK00': { # Ablaufkontrolle
+'XCK00': {  # Ablaufkontrolle
           'CKJNUM': 'jobnr',
           'CKBLNA': 'blockname',
           'CKJNAM': 'jobname',
@@ -1910,7 +2406,7 @@ MAPPINGDIR = {
           'CKSTAT': 'satzstatus',
           },
 
-'XED00': { # Intrastat-Meldungs-Datei
+'XED00': {  # Intrastat-Meldungs-Datei
             'EDINKZ': 'kennziffer',
             'EDFORM': 'anmeldeform',
             'EDSITZ': 'sitz_versender_empfaenger',
@@ -1944,37 +2440,37 @@ MAPPINGDIR = {
             'EDFIL9': 'fueller09',
           },
 
-'XKD00': {# Kundenadressen
+'XKD00': {  # Kundenadressen - ist eine "Logische Datei (View)" basierend auf der XXA00
           'KDKDNR': 'kundennr',
           'KDNAME': 'name1',
           'KDNAM2': 'name2',
           'KDNAM3': 'name3',
-          'KDNAM4': 'name4',
+          # 'KDNAM4': 'name4',
           'KDSTR': 'strasse',
           'KDPLZ': 'plz',
           'KDORT': 'ort',
           'KDLKZ': 'laenderkennzeichen',
           'KDTELF': 'tel',
           'KDTFAX': 'fax',
-          'KDMOBI': 'mobil',
-          'KDPSTF': 'postfach', # gelegentlich genutzt
-          'KDPLZP': 'postfach_plz', # wenig genutzt
+          # 'KDMOBI': 'mobil',
+          # 'KDPSTF': 'postfach',      # gelegentlich genutzt
+          # 'KDPLZP': 'postfach_plz',  # wenig genutzt
           #'KDORTP': 'Ortsname (Postfach-PLZ)', # gelegentlich genutzt
           #'KDPLZF': 'PLZ Firma', # sehr wenig genutzt
           # 'KDGESF': 'Geschäftsführer', # wenig genutzt
-          'KDALSO': 'sortierfeld',
+          # 'KDALSO': 'sortierfeld',
           # 'KDSPSL': 'Sprache', # Werte 1 & 2
           # 'KDWSL ': 'Währungs-Kennzeichen',
-          'KDKGRP': 'kundengruppe', # alphanum
-          'KDEMAL': 'mail',
-          'KDHOME': 'url',
-          'KDSANR': 'adressdatei_id',
+          # 'KDKGRP': 'kundengruppe',  # alphanum
+          # 'KDEMAL': 'mail',
+          # 'KDHOME': 'url',
+          # 'KDSANR': 'adressdatei_id',
           'KDDTER': 'erfassung_date',
           'KDDTAE': 'aenderung_date',
           #'KDSTAT': 'satzstatus',
           },
 
-'XKS00': { # Kundenzusatzdaten
+'XKS00': {  # Kundenzusatzdaten
           'KSKDNR': 'kundennr',
           'KSLISP': 'liefersperre',
           'KSAWRT': 'offener_aftragswert',
@@ -2007,7 +2503,7 @@ MAPPINGDIR = {
           'KCE2IL': 'iln',
           },
 
-'XPN00': { # Konditionen / Preise
+'XPN00': {  # Konditionen / Preise
     # 'PNFNR ': 'Firma',
     # 'PNANW ': 'Anwendung',
     'PNSANR': 'satznummer',
@@ -2031,9 +2527,9 @@ MAPPINGDIR = {
 
 },
 
-'XPR00': { # Koditionen / Preise
+'XPR00': {  # Koditionen / Preise
     'PRFNR': 'firma',
-    'PRANW': 'anwendung', # 'E' == Einkauf
+    'PRANW': 'anwendung',  # 'E' == Einkauf
     # 'PRIB': 'Datenart',
     # 'PRANW1': 'Preismodul',
     'PRSANR': 'satznr_xpn00',
@@ -2108,7 +2604,7 @@ MAPPINGDIR = {
     #'PRDFSL': 'Dateif}hrungs-Schl}ssel',
 },
 
-'XXA00': { # Adressen von Kunden und Lieferanten
+'XXA00': {  # Adressen von Kunden und Lieferanten
         # 'XAFNR ': Firma
         'XAKDNR': 'kundennr',
         # 'XAKZKD': Kz Kunde
@@ -2141,7 +2637,7 @@ MAPPINGDIR = {
         # 'XASPSL': Sprache
         # 'XAWSL ': W{hrungs-Kennzeichen
         # 'XAFGRP': Firmen-Gruppe
-        'XAKGRP': 'kunden_gruppe', # Preisliste
+        'XAKGRP': 'kunden_gruppe',  # Preisliste
         # 'XALGRP': Lieferanten-Gruppe
         # 'XAISIC': ISIC-Schl}ssel
         # 'XARPMK': RPM-Kreis
@@ -2174,7 +2670,7 @@ MAPPINGDIR = {
         'XASTAT': 'satzstatus',
        },
 
-'XLB00': { # Lagerbewegungen
+'XLB00': {  # Lagerbewegungen
         #'LBFGRP': 'Firmen-Gruppe',
         #'LBFNR ': 'Firma',
         #'LBAGRP': 'Abteilungs-Gruppe/Sparte',
@@ -2186,10 +2682,10 @@ MAPPINGDIR = {
         # 'LBSBNR': 'sachbearbeiter_erfassung',
         # 'LDWSID': 'herkunft', # z.B. 'EINKAUF'
         # 'LBSAKZ': 'SA',
-        'LBBWSL': 'bewegungsschluessel', # 22 = Warenzugang
-        'LBBELN': 'belegnummer', # == Nummer in der Fibu
+        'LBBWSL': 'bewegungsschluessel',  # 22 = Warenzugang
+        'LBBELN': 'belegnummer',          # == Nummer in der Fibu
         'LBDTBL': 'beleg_date',
-        'LBBUMO': 'buchungsmonat', # format: CJJMM
+        'LBBUMO': 'buchungsmonat',        # format: CJJMM
         #'LBLKTR': 'Kostentr{ger',
         #'LBKST ': 'Kostenstelle',
         #'LBPROJ': 'Projekt',
@@ -2216,17 +2712,17 @@ MAPPINGDIR = {
         'LBLWAK': 'wert_aktuell',
         # 'LBLWKO': 'lagerwert_korrektur', # scheinbar immer identisch mit LBLWAK
         'LBLWRT': 'lagerwert_vor_buchung',
-        'LBMNGE': 'bewegungsmenge', # 'Bewegungs-Menge lt. Eingabe',
+        'LBMNGE': 'bewegungsmenge',       # 'Bewegungs-Menge lt. Eingabe',
         # 'LBMEER': 'Mengeneinheit/Erfassung', # immer 1
         # 'LBFAKT': 'Umrechn.-Faktor  ER-->BE', # immer 1
         'LBMNGB': 'menge',
-        'LBMNGZ': 'zugangsmenge', # Zugangsmenge nach Umlagerung',
+        'LBMNGZ': 'zugangsmenge',  # Zugangsmenge nach Umlagerung',
         # 'LBMNGL': 'Menge noch am Lager', # FIFO - Menge? - scheinbar immer 0
         # 'LBMNGO': 'Menge Vorab-Bewertet', # scheinbar immer 0
         # 'LBMNGS': 'Abgangsmenge mit Statistik', - scheinbar immer 0
         # 'LBMGOP': 'Menge als offener Posten', - scheinbar immer 0
         'LBMGLP': 'bestand_vor_buchung',
-        'LBMGKO': 'bestandsaenderung', # Bestandsänderung am Lager',
+        'LBMGKO': 'bestandsaenderung',    # Bestandsänderung am Lager',
         #'LBBSTN': 'bestellnr',
         #'LBBSTP': 'bestellpos',
         # 'LBFNRK': 'Firmen-Nr./Lieferant',
@@ -2246,12 +2742,12 @@ MAPPINGDIR = {
         'LBSANR': 'satznummer',
     },
 
-'XSB00': { # Sachbearbeiter
+'XSB00': {  # Sachbearbeiter
         'SBSBNR': 'id',
         'SBNAME': 'name',
     },
 
-'XTY00': { # Versandarten
+'XTY00': {  # Versandarten
           'TYFNR': 'firma',
           'TYANW': 'anwendung',
           'TYVSAR': 'versandart',
@@ -2418,25 +2914,26 @@ DECIMALIZE2 = set(['BUR1', 'BUBUBT', 'BUNEBT', 'BUNEWB', 'BUABZU', 'BUWBBT',
                    'FUPORB', 'FUPREV'])
 
 # maps datefield to related timefield for generating datetime objects
-DATETIMEDIR = {'LKDTLF': 'LKZTLF', # letzter_lieferschein
-               'LKDTKB': 'LKZTKB', # letzter_kommissionierbeleg
-               'LKDTER': 'LKZTER', # erfassung
-               'LKDTAE': 'LKZTAE', # aenderung
-               'LNDTLF': 'LNZTLF', # lieferschein
-               'LNDTER': 'LNZTER', # erfassung
-               'LNDTAE': 'LNZTAE', # aenderung
+DATETIMEDIR = {'LKDTLF': 'LKZTLF',  # letzter_lieferschein
+               'LKDTKB': 'LKZTKB',  # letzter_kommibeleg
+               'LKDTER': 'LKZTER',  # erfassung
+               'LKDTAE': 'LKZTAE',  # aenderung
+               'LNDTLF': 'LNZTLF',  # lieferschein
+               'LNDTER': 'LNZTER',  # erfassung
+               'LNDTAE': 'LNZTAE',  # aenderung
                'IKDATE': 'IKTIME',
                'LNDTKB': 'LNZTKB',
                'IZDTWZ': 'IZTIME',
-               'SKDTAE': 'SKZTAE', # komponenten
-               'CKANFD': 'CKANFZ', # XCK00 start
-               'CKENDD': 'CKENDZ', # XCK00 ende
-               'FKDTER': 'FKZTER', # Rechnungskopf erfassung_date
-               'FUDTER': 'FUZTER', # Rechnungsposition erfassung_date
+               'SKDTAE': 'SKZTAE',  # komponenten
+               'CKANFD': 'CKANFZ',  # XCK00 start
+               'CKENDD': 'CKENDZ',  # XCK00 ende
+               'FKDTER': 'FKZTER',  # Rechnungskopf erfassung_date
+               'FUDTER': 'FUZTER',  # Rechnungsposition erfassung_date
                }
 
 # Fields which need padding before beeing used in SQL queries
 PADDINGFIELDS = {
     'AKKDNR': "%8s",
     'FKKDNR': "%8s",
+    'KDKDNR': "%8s",
 }

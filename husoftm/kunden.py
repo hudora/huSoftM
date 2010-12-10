@@ -15,7 +15,7 @@ import husoftm.tools
 
 class Kunde(object):
     """Representation of SoftM "Kunden" data objects."""
-    
+
     def __init__(self, kundennr='', name1='', name2='', name3='', name4='',
                  strasse='', plz='', ort='', land=''):
         self.kundennr = kundennr
@@ -29,23 +29,23 @@ class Kunde(object):
         self.land = land
         self.sortierfeld = self.fax = self.tel = self.aenderung = self.iln = self.erfassung = None
         self.sachbearbeiter = self.mail = self.mobil = self.unsere_lieferantennr = self.adressdatei_id = None
-    
+
     def __repr__(self):
-        return str(vars(self)) # crude ...
-    
+        return str(vars(self))  # crude ...
+
     def fill_from_softm(self, row):
         """Initializes the object from data returned by SoftM."""
-        self.kundennr = row.get('kundennr', '') # 10003
-        self.sortierfeld = row.get('sortierfeld', '') # AUER* NEUB
-        self.name1 = row.get('name1', '') # Sport & Mode Auer
-        self.name2 = row.get('name2', '') # 
-        self.name3 = row.get('name3', '') # 
-        #self.name4 = row.get('name4', '') # 
-        self.strasse = row.get('strasse', '') # Marktplatz 5
-        self.plz = row.get('plz', '') # 75387
-        self.ort = row.get('ort', '') # Neubulach
-        self.tel = row.get('tel', '') # 07053/7910
-        self.fax = row.get('fax', '') # 07053/6041
+        self.kundennr = row.get('kundennr', '')        # 10003
+        self.sortierfeld = row.get('sortierfeld', '')  # AUER* NEUB
+        self.name1 = row.get('name1', '')              # Sport ...
+        self.name2 = row.get('name2', '')
+        self.name3 = row.get('name3', '')
+        #self.name4 = row.get('name4', '')
+        self.strasse = row.get('strasse', '')
+        self.plz = row.get('plz', '')
+        self.ort = row.get('ort', '')
+        self.tel = row.get('tel', '')
+        self.fax = row.get('fax', '')
         #self.url = row.get('url', '')
         self.mobil = row.get('mobil', '')
         self.mail = row.get('mail', '')
@@ -87,36 +87,36 @@ class Kunde(object):
         self.gebiet = row.get('gebiet', '')
         self.branche = row.get('branche', '')
         self.distrikt = row.get('distrikt', '')
-        # 'skontoschluessel': 16, 
-        # 'mahnsperre': u'', 
-        # 'delcredereschl\xc3\xbcssel': 0, 
-        # 'bonnitaet': u'', 
-        # 'liefersperre': 0, 
-        # 'kreditlimit2': 0, 
-        # 'lastschrift': u'', 
-        # 'offener_aftragswert': 2.7000000000000002, 
-        # 'kreditlimit': 2.7000000000000002, 
-        # 'inland_ausland': 0, 
+        # 'skontoschluessel': 16,
+        # 'mahnsperre': u'',
+        # 'delcredereschl\xc3\xbcssel': 0,
+        # 'bonnitaet': u'',
+        # 'liefersperre': 0,
+        # 'kreditlimit2': 0,
+        # 'lastschrift': u'',
+        # 'offener_aftragswert': 2.7000000000000002,
+        # 'kreditlimit': 2.7000000000000002,
+        # 'inland_ausland': 0,
         # self.satzstatus = row.get('satzstatus', '')
         self.satzstatus = husoftm.connection2.get_connection().query('XKD00', fields=['KDSTAT'], condition="KDKDNR = %s" % husoftm.tools.sql_quote(row.get('kundennr')))
         return self
-    
+
 
 def get_kundennummern():
     """Returns a list of all 'Kundennummern'."""
-    
+
     rows = husoftm.connection2.get_connection().query('XKD00', fields=['KDKDNR'])
     return [int(x[0]) for x in rows]
 
 
 def get_changed_after(date):
     """Returns a list of all Kundennummern where the underlaying Data has changed since <date>."""
-    
+
     date = int(date.strftime('1%y%m%d'))
     rows = husoftm.connection2.get_connection().query('XKD00', fields=['KDKDNR'],
                                           condition="KDDTER>%d OR KDDTAE>=%d" % (date, date))
     ret = set([int(x[0]) for x in rows])
-    # 
+    #
     rows = husoftm.connection2.get_connection().query('AKZ00', fields=['KZKDNR'],
                                           condition="KZDTAE>=%d" % (date))
     ret = ret|set([int(x[0]) for x in rows])
@@ -126,10 +126,10 @@ def get_changed_after(date):
 #@caching.cache_function(60*60*2)
 def get_kunde(kdnnr):
     """Get the Kunde object representing Kundennummer <kdnnr>.
-    
+
     <kdnnr> must be an Integer in the Range 10000..99999.
     If no data exists for that KdnNr ValueError is raised."""
-    
+
     rows = husoftm.connection2.get_connection().query(['XKD00', 'XKS00', 'AKZ00'],
            condition="KDKDNR='%8d' AND KSKDNR='%8d' AND KZKDNR LIKE '%s'" % (int(kdnnr), int(kdnnr),
                      '%' + str(kdnnr)))
@@ -147,23 +147,23 @@ def get_kunde(kdnnr):
                condition="KDKDNR='%8d'" % (int(kdnnr)))
     if len(rows) > 1:
         raise RuntimeError("Mehr als einen Kunden gefunden: %r" % kdnnr)
-    
+
     if not rows:
         raise ValueError("Keine Daten für Kundennummer %r gefunden" % kdnnr)
-        
+
     return Kunde().fill_from_softm(rows[0])
-    
+
 
 @caching.cache_function(60*60*2)
 def get_kunde_by_iln(iln):
     """Get Kunden Address based on ILN.
-    
+
     See http://cybernetics.hudora.biz/projects/wiki/AddressProtocol for the structure of returned data.
-    
+
     <kdnnr> must be an valit GLN/ILN encoded as an String.
     If no data exists for that GLN/ILN ValueError is raised.
     """
-    
+
     rows = husoftm.connection2.get_connection().query(['XKS00'], condition="KCE2IL='%s'" % (int(iln), ))
     if rows:
         # stammadresse

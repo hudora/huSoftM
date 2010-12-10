@@ -10,15 +10,10 @@ Copyright (c) 2007 HUDORA GmbH. All rights reserved.
 
 import datetime
 import doctest
-import logging
 import sys
 import time
 import unittest
-from husoftm.fields import PADDINGFIELDS
-
-
-logging.basicConfig(level=logging.DEBUG)
-LOG = logging.getLogger('husoftm.tools')
+from husoftm2.fields import PADDINGFIELDS
 
 
 # SoftM verwendet scheinbar Autokennzeichen
@@ -27,7 +22,6 @@ LOG = logging.getLogger('husoftm.tools')
 # BTW: Die FIFA verwendet noch andere codes!
 
 SOFTMLKZ2ISOLAND = {'': 'DE',
-                    'D': 'DE',
                     ' D': 'DE',   # - ja, mit führendem Leerzeichen, gibts ...
                     '???': '??',  # WTF
                     'A': 'AT',    # Oesterreich
@@ -40,6 +34,7 @@ SOFTMLKZ2ISOLAND = {'': 'DE',
                     'CH': 'CH',   # Schweiz
                     'CY': 'CY',   # Zypern (Cyprus)
                     'CZ': 'CZ',   # Tschechische Republik
+                    'D': 'DE',
                     'DK': 'DK',   # Daenemark
                     'E': 'ES',    # Spanien
                     'EST': 'EE',  # Estland
@@ -177,7 +172,7 @@ def str2softmdate(value, fmt='%Y-%m-%d'):
     '1060225'
     """
     date = datetime.datetime.strptime(value, fmt)
-    return date2softm(value)
+    return date2softm(date)
 
 
 def sql_escape(data):
@@ -206,51 +201,8 @@ def sql_quote(data):
 def pad(field, value):
     """Pad field to fixed length"""
     if field in PADDINGFIELDS:
-        return PADDINGFIELDS[field] % value
-    return value
-
-
-def create_range(fieldname, start=None, end=None, func=None):
-    """
-    Create range statement for field named fieldname
-
-    func is a function that needs to be applied to start and end.
-    If func is None, an anonymous identity function will be created.
-    """
-
-    if func is None:
-        func = lambda x: x
-
-    if start and end:
-        condition = "BETWEEN %s AND %s" % (func(start), func(end))
-    elif start:
-        condition = "> %s" % func(start)
-    elif end:
-        condition = "< %s" % func(end)
-    else:
-        return ""
-    return " ".join((fieldname, condition))
-
-
-def set_attributes(src, dest):
-    """
-    Set attributes of an object taken from a dictionary(-like) object.
-
-    Only keys which are lowercase are used.
-
-    >>> class testobject(object):
-    ...     pass
-    ...
-    >>> obj = testobject()
-    >>> attribs = {'value': 0xaffe, 'name': 'ck', 'Hobby': 'horse riding'}
-    >>> set_attributes(attribs, obj)
-    >>> vars(obj)
-    {'name': 'ck', 'value': 45054}
-    """
-
-    for key, value in src.items():
-        if key.islower():  # uppercase: SoftM fild names, lowercase: plain-text field names
-            setattr(dest, key, value)
+        return sql_quote(PADDINGFIELDS[field] % value)
+    return sql_quote(value)
 
 
 class _GenericTests(unittest.TestCase):

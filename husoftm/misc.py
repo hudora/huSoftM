@@ -13,7 +13,7 @@ from husoftm.connection2 import get_connection
 
 def bestellungen():
     """Liefert eine liste mit allen bestellten aber nicht stornierten Wareneingängen.
-    
+
     >>> bestellungen()
     [{'artnr': u'64114',
       'bestellmenge': 300,
@@ -36,11 +36,11 @@ def bestellungen():
       'wunsch_date': None,
       'zugang_date': None},
       ...]
-    
+
     """
-    
+
     warnings.warn("misc.bestellungen() is deprecated use module bestellungen instead",
-                  DeprecationWarning, stacklevel=2) 
+                  DeprecationWarning, stacklevel=2)
                           # detailierte Informationen gibts in EWZ00
     rows = get_connection().query('EBP00', ordering=['BPBSTN DESC', 'BPDTLT'], condition="BPSTAT<>'X'")
     # AND BPKZAK=0 to get only the open ones

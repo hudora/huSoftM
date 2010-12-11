@@ -36,7 +36,7 @@ def get_kunde(kundennr):
     
     kundennr = kundennr.strip('SC')
     rows = query(['XKD00'],
-                 condition="KDKDNR='%8d'" % int(kundennr),
+                 condition="KDKDNR='%8d' AND KDSTAT<>'X'" % int(kundennr),
                  joins=[('XXC00', 'KDKDNR', 'XCADNR'),
                         ('XKS00', 'KDKDNR', 'KSKDNR'),
                         ('AKZ00', 'KDKDNR', 'KZKDNR')])

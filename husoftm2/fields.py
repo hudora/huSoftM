@@ -2304,14 +2304,14 @@ MAPPINGDIR = {
           #          SoftM Auftrag:
           #          Bei Angebotsadressen ist das Personenkonto der Angebotskunde.
           #          In allen anderen F{llen ist das Personenkonto leer.
-          'ADNAME': 'name1',
-          'ADNAM2': 'name2',
-          'ADNAM3': 'name3',
+          'ADNAME': 'XAD_name1',
+          'ADNAM2': 'XAD_name2',
+          'ADNAM3': 'XAD_name3',
           # 'ADNAM4': 'name4',
-          'ADSTR': 'strasse',
-          'ADPLZ': 'plz',
-          'ADORT': 'ort',
-          'ADLKZ': 'laenderkennzeichen',
+          'ADSTR': 'XAD_strasse',
+          'ADPLZ': 'XAD_plz',
+          'ADORT': 'XAD_ort',
+          'ADLKZ': 'XAD_laenderkennzeichen',
           # 'ADKZAD': 'adressaufbereitung', - fuer legacy Daten
          },
 

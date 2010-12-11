@@ -33,7 +33,6 @@ def get_kunde(kundennr):
     <kundennr> must be an Integer in the Range 10000..99999.
     If no data exists for that KdnNr ValueError is raised."""
 
-    
     kundennr = kundennr.strip('SC')
     rows = query(['XKD00'],
                  condition="KDKDNR='%8d' AND KDSTAT<>'X'" % int(kundennr),

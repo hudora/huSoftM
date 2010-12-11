@@ -38,7 +38,7 @@ AUFTRAGSARTEN = {
 }
 
 
-def _auftraege(additional_conditions=None, mindate=None, maxdate=None, limit=None, header_only=False):
+def _auftraege(additional_conditions=None, addtables=[], mindate=None, maxdate=None, limit=None, header_only=False):
     """
     Alle Aufträge ermitteln
     `additional_conditions` kann eine Liste von SQL-Bedingungen enthalten, die die Auftragssuche einschränken.
@@ -50,9 +50,7 @@ def _auftraege(additional_conditions=None, mindate=None, maxdate=None, limit=Non
     Wenn header_only == True, werden nur Auftragsköpfe zurück gegeben, was deutlich schneller ist.
     """
 
-    conditions = ["AKSTAT<>'X'",
-                  "ADAART=1",
-                  ]
+    conditions = ["AKSTAT<>'X'"]
     if mindate and maxdate:
         conditions.append("AKDTER BETWEEN %s AND %s" % (date2softm(mindate), date2softm(maxdate)))
     elif mindate:
@@ -67,10 +65,8 @@ def _auftraege(additional_conditions=None, mindate=None, maxdate=None, limit=Non
     kopftexte = {}
 
     # Köpfe und Adressen einlesen
-    for kopf in query(['AAK00'], ordering=['AKAUFN DESC'], condition=condition,
-                      joins=[('XKD00', 'AKKDNR', 'KDKDNR'),
-                             ('XAD00', 'AKAUFN', 'ADRGNR'),
-                             ('AAT00', 'AKAUFN', 'ATAUFN')],  # die Texte um nach GUIDs suchen zu können
+    for kopf in query(['AAK00'] + addtables, ordering=['AKAUFN DESC'], condition=condition,
+                      joins=[('XKD00', 'AKKDNR', 'KDKDNR')],
                              limit=limit, ua='husoftm2.auftraege'):
         d = dict(kundennr="SC%s" % kopf['kundennr_warenempf'],
                  auftragsnr=kopf['auftragsnr'],
@@ -85,15 +81,6 @@ def _auftraege(additional_conditions=None, mindate=None, maxdate=None, limit=Non
                  # * *auftragsnr_kunde* - id of the order submitted by the customer
                  # * *info_kunde* - Freitext der für den Empfänger relevanz hat
                  )
-        if kopf.get('XAD_name1'):
-            d['lieferadresse'] = dict(name1=kopf['XAD_name1'],
-                                      name2=kopf['XAD_name2'],
-                                      name3=kopf['XAD_name3'],
-                                      strasse=kopf['XAD_strasse'],
-                                      land=husoftm2.tools.land2iso(kopf['XAD_laenderkennzeichen']),
-                                      plz=kopf['XAD_plz'],
-                                      ort=kopf['XAD_ort'],
-                                      )
         koepfe[kopf['auftragsnr']] = d
 
     if header_only:
@@ -106,6 +93,20 @@ def _auftraege(additional_conditions=None, mindate=None, maxdate=None, limit=Non
         # In 50er Schritten Auftragspositionen lesen und den 50 Aufträgen zuordnen
         batch = allauftrnr[:50]
         allauftrnr = allauftrnr[50:]
+
+        # Abweichende Lieferadressen
+        for row in query(['XAD00'], ua='husoftm2.lieferscheine',
+                         condition="ADAART=1 AND ADRGNR IN (%s)" % ','.join([str(x) for x in batch])):
+            print batch
+            print row
+            koepfe[row['nr']]['lieferadresse'] = dict(name1=kopf['name1'],
+                                                      name2=kopf['name2'],
+                                                      name3=kopf['name3'],
+                                                      strasse=kopf['strasse'],
+                                                      land=husoftm2.tools.land2iso(kopf['laenderkennzeichen']),
+                                                      plz=kopf['plz'],
+                                                      ort=kopf['ort'],
+                                                      )
 
         # Positionen einlesen
         for row in query(['AAP00'], condition="APSTAT<>'X' AND APAUFN IN (%s)" % ','.join((str(x) for x in batch)),
@@ -152,7 +153,7 @@ def get_auftrag_by_guid(guid, header_only=False):
     """Auftrag mit GUID guid zurueckgeben. ACHTUNG guids sind cniht zwingend eindeutig!"""
     # TO BE FIXED
     condition = "ATTX60 = %s AND ATAUPO = 0 AND ATTART = 8 AND ATAUFN=AKAUFN" % sql_quote("#:guid:" + guid)
-    auftraege = _auftraege([condition], header_only=header_only)
+    auftraege = _auftraege([condition], addtables=['AAT00'], header_only=header_only)
     if len(auftraege) > 1:
         raise RuntimeError("Mehr als ein Auftrag mit guid %s vorhanden" % guid)
     if not auftraege:

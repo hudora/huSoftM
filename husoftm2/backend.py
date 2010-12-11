@@ -231,7 +231,7 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
                         ('XKS00', 'KDKDNR', 'KSKDNR'),
                         ('AKZ00', 'KDKDNR', 'KZKDNR')])
 
-    Will result in "SELECT * FROM XKD00 LEFT OUTER JOIN XXC00 ON KDKDNR=XCADNR LEFT OUTER 
+    Will result in "SELECT * FROM XKD00 LEFT OUTER JOIN XXC00 ON KDKDNR=XCADNR LEFT OUTER
     JOIN XKS00 ON KDKDNR=KSKDNR LEFT OUTER JOIN AKZ00 ON KDKDNR=KZKDNR WHERE KDKDNR='   10001'".
 
     We also should be - to a certain degree - be Unicode aware:

@@ -2304,14 +2304,14 @@ MAPPINGDIR = {
           #          SoftM Auftrag:
           #          Bei Angebotsadressen ist das Personenkonto der Angebotskunde.
           #          In allen anderen F{llen ist das Personenkonto leer.
-          'ADNAME': 'XAD_name1',
-          'ADNAM2': 'XAD_name2',
-          'ADNAM3': 'XAD_name3',
+          'ADNAME': 'name1',
+          'ADNAM2': 'name2',
+          'ADNAM3': 'name3',
           # 'ADNAM4': 'name4',
-          'ADSTR': 'XAD_strasse',
-          'ADPLZ': 'XAD_plz',
-          'ADORT': 'XAD_ort',
-          'ADLKZ': 'XAD_laenderkennzeichen',
+          'ADSTR': 'strasse',
+          'ADPLZ': 'plz',
+          'ADORT': 'ort',
+          'ADLKZ': 'laenderkennzeichen',
           # 'ADKZAD': 'adressaufbereitung', - fuer legacy Daten
          },
 
@@ -2740,7 +2740,7 @@ MAPPINGDIR = {
           # Falls bekannt, kann hier die Lieferantennummer eingetragen werden, die uns der Kunde zugewiesen
           # hat.
           #  XCEGCD   EU-L{ndercode                                   A    2     48   49
-          'XCUSTN': 'xxc_ustid', # USt-IdNr
+          'XCUSTN': 'xxc_ustid',  # USt-IdNr
           # EU-einheitliche Steuernummer (USt-IdNr, VAT-Nr).
           # Beim Druck der USt-IdNr ist zus{tzlich noch der EU-L{ndercode
           # mitzudrucken.

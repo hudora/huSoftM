@@ -9,6 +9,7 @@ Copyright (c) 2010 HUDORA. All rights reserved.
 
 from husoftm2.backend import query
 
+
 def texte_trennen(texte):
     """Trennt Texte in eine Liste aus Texten und ein Dict aus spezial Bezeichnern ('#:guid:1234')"""
 
@@ -29,7 +30,7 @@ def texte_trennen(texte):
 
 def texte_auslesen(auftragsnrs, postexte=None, kopftexte=None):
     """Gibt Positions und Kopftexte für eine Liste von Auftragsnummern zurück."""
-    
+
     postexte = postexte or {}
     kopftexte = kopftexte or {}
     allauftrnr = auftragsnrs[:]
@@ -56,5 +57,3 @@ def texte_auslesen(auftragsnrs, postexte=None, kopftexte=None):
             elif row['auftragsposition'] == 0 and row['textart'] in (8, 9):
                 kopftexte.setdefault(row['auftragsnr'], []).append(row['text'].strip())
     return postexte, kopftexte
-
-

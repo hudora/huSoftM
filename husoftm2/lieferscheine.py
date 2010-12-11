@@ -17,7 +17,6 @@ def _lieferscheine(additional_conditions=None, limit=None, header_only=False):
     cachingtime = 60 * 60 * 12
     conditions = ["LKLFSN<>0",
                   "LKSTAT<>'X'",
-                  "ADAART=1"
                   ]
     if additional_conditions:
         conditions.extend(additional_conditions)
@@ -26,11 +25,10 @@ def _lieferscheine(additional_conditions=None, limit=None, header_only=False):
     auftragsnr2satznr = {}
     satznr2auftragsnr = {}
 
-    # Lieferscheinkopf JOIN Kundenadresse JOIN Lieferadresse um die Anzahl der Queries zu minimieren
+    # Lieferscheinkopf JOIN Kundenadresse um die Anzahl der Queries zu minimieren
+    # JOIN Lieferadresse geht nicht, weil wir "ADAART=1" mit DB2/400 nicht klappt
     for kopf in query(['ALK00'], ordering=['LKSANK DESC'], condition=condition, limit=limit,
-                      joins=[('XKD00', 'LKKDNR', 'KDKDNR'),
-                             ('XAD00', 'LKSANK', 'ADRGNR')
-                             ],
+                      joins=[('XKD00', 'LKKDNR', 'KDKDNR')],
                       cachingtime=cachingtime, ua='husoftm2.lieferscheine'):
         d = dict(positionen=[],
                  auftragsnr="SO%s" % kopf['auftragsnr'],
@@ -60,15 +58,6 @@ def _lieferscheine(additional_conditions=None, limit=None, header_only=False):
                  # 'voll_ausgeliefert': 1,
                  # 'anliefer_date': datetime.date(2010, 12, 2)}
 
-        if kopf.get('XAD_name1'):
-            d['lieferadresse'] = dict(name1=kopf['XAD_name1'],
-                                      name2=kopf['XAD_name2'],
-                                      name3=kopf['XAD_name3'],
-                                      strasse=kopf['XAD_strasse'],
-                                      land=husoftm2.tools.land2iso(kopf['XAD_laenderkennzeichen']),
-                                      plz=kopf['XAD_plz'],
-                                      ort=kopf['XAD_ort'],
-                                      )
         pos_key = str(kopf['satznr'])
         if kopf.get('bezogener_kopf'):
             pos_key = str(kopf['bezogener_kopf'])
@@ -87,6 +76,18 @@ def _lieferscheine(additional_conditions=None, limit=None, header_only=False):
         # In 50er Schritten Auftragspositionen & Texte lesen und den 50 Aufträgen zuordnen
         batch = satznr[:50]
         satznr = satznr[50:]
+
+        # Abweichende Lieferadressen
+        for row in query(['XAD00'], cachingtime=cachingtime, ua='husoftm2.lieferscheine',
+                         condition="ADAART=1 AND ADRGNR IN (%s)" % ','.join([str(x) for x in batch])):
+            koepfe[str(row['nr'])]['lieferadresse'] = dict(name1=kopf['name1'],
+                                                           name2=kopf['name2'],
+                                                           name3=kopf['name3'],
+                                                           strasse=kopf['strasse'],
+                                                           land=husoftm2.tools.land2iso(kopf['laenderkennzeichen']),
+                                                           plz=kopf['plz'],
+                                                           ort=kopf['ort'],
+                                                           )
 
         # Positionen & Positionstexte zuordnen
         for row in query(['ALN00'], condition="LNSTAT<>'X' AND LNSANK IN (%s)" % ','.join([str(x) for x in batch]),
@@ -130,8 +131,8 @@ def _lieferscheine(additional_conditions=None, limit=None, header_only=False):
 def get_changed_after(date, limit=None, header_only=False):
     """Liefert die Lieferscheinnummern zurück, die nach <date> geändert wurden."""
     date = int(date.strftime('1%y%m%d'))
-    conditions = ["LKLFSN <> 0",
-                  "LKSTAT <> 'X'",
+    conditions = ["LKLFSN<>0",
+                  "LKSTAT<>'X'",
                   "(LKDTER>%d OR LKDTAE>=%d)" % (date, date),
                   ]
     condition = " AND ".join(conditions)
@@ -163,9 +164,10 @@ def _selftest():
     import datetime
     header = False
     #(get_auftrag_by_guid('Online_20101202', header_only=header))
-    pprint(lieferscheine_auftrag('SO1163764', header_only=header))
-    print get_changed_after(datetime.date(2010, 12, 1))
-    pprint(get_lieferschein('SL4173969'))
+    #pprint(lieferscheine_auftrag('SO1163764', header_only=header))
+    #print get_changed_after(datetime.date(2010, 12, 1))
+    #pprint(get_lieferschein('SL4173969'))
+    pprint(get_lieferschein('SL4176141'))
     #(get_auftrag('Online_20101202', header_only=header))
     #(auftraege_kunde('SC66669', limit=20, header_only=header))
     # Kommibeleg(3023551)

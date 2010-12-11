@@ -14,7 +14,6 @@ import cs.caching as caching
 import datetime
 import re
 import unittest
-import warnings
 import huTools.decorators as decorators
 import copy
 
@@ -55,8 +54,8 @@ def verkaufspreis(artnr, kundennr, bestelldatum=datetime.date.today()):
     artnr_str = sql_quote(artnr)
 
     # 1. Preis für Kunde hinterlegt?
-    condition=("PNSANR=PRSANR and PRANW='A' and PRSTAT=' ' and PNSTAT=' ' AND "
-               "PRARTN = %s and PRDTBI >= %s AND PRDTVO <= %s" % (artnr_str, date_str, date_str))
+    condition = ("PNSANR=PRSANR and PRANW='A' and PRSTAT=' ' and PNSTAT=' ' AND "
+                 "PRARTN = %s and PRDTBI >= %s AND PRDTVO <= %s" % (artnr_str, date_str, date_str))
 
     condition_kunde = condition + " AND PRKDNR = %s" % kundennr_str
     rows = get_connection().query(['XPN00', 'XPR00'], ordering='PRDTVO', condition=condition_kunde)
@@ -182,7 +181,7 @@ def get_artikel(artnr=None, ean=None):
     cond1 = "ARARTN=%s" % sql_quote(artnr)
     cond2 = "AREAN=%s" % sql_quote(ean)
     if artnr and ean:
-        condition = cond1+" AND "+cond2
+        condition = cond1 + " AND " + cond2
     elif artnr:
         condition = cond1
     elif ean:
@@ -257,7 +256,7 @@ def komponentenaufloesung(mengenliste):
         if rows == None:  # empty lists are cached too, so check against None here
             rows = get_connection().query(['ASK00'], fields=['SKLFNR', 'SKKART', 'SKMENG'],
                                           condition="SKARTN='%s'" % artnr)
-            memc.set('husoftm.komponentencache.%r' % (artnr), rows, 60*60*72)  # 4 d
+            memc.set('husoftm.komponentencache.%r' % (artnr), rows, 60 * 60 * 72)  # 4 d
         if not rows:
             # kein Setartikel
             ret.append((menge, artnr))
@@ -304,7 +303,6 @@ def get_umschlag(artnr):
     memc = caching.get_cache()
     cacheddata = memc.get('husoftm.umschlag.%r' % (artnr))
     if cacheddata:
-        del memc
         return cacheddata
 
     condition = (
@@ -325,8 +323,7 @@ def get_umschlag(artnr):
                    querymappings={'SUM(FUMNG)': 'menge', 'FKDTFA': 'rechnung_date'})
     ret = [(x['rechnung_date'], as400_2_int(x['menge'])) for x in rows if x['menge'] > 0]
 
-    memc.set('husoftm.umschlag.%r' % (artnr), ret, 60*60*24*6)  # 6 d
-    del memc
+    memc.set('husoftm.umschlag.%r' % (artnr), ret, 60 * 60 * 24 * 6)  # 6 d
     return ret
 
 
@@ -362,7 +359,7 @@ def abgabepreisbasis(artnr):
     for row in rows:
         menge = as400_2_int(row['menge'])
         if menge:
-            ret.append((row['rechnung_date'], float(row['nettopreis'])/float(row['menge']), menge, float(row['nettopreis'])))
+            ret.append((row['rechnung_date'], float(row['nettopreis']) / float(row['menge']), menge, float(row['nettopreis'])))
     ret.sort()
     return ret
 
@@ -392,7 +389,7 @@ def _test():
     """Diverse einfache Tests."""
     abgabepreisbasis('14600')
     get_umschlag('14600')
-    _auf_zwei_stellen(1.0/3.0)
+    _auf_zwei_stellen(1.0 / 3.0)
     komponentenaufloesung([(5, '00049')]),
     ([(5, u'A42438'), (5, u'A42439'), (5, u'A42440'), (10, u'A42441')]
         == komponentenaufloesung([(5, '00049')]))

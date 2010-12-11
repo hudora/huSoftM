@@ -61,7 +61,7 @@ class ALN00(SoftMreadOnlyTable):
         self.name_status = 'LNSTAT'
         self.tablename = 'ALN00'
         self.name_schluessel = 'LNSANP'
-        self.fieldmappings = { # too complex
+        self.fieldmappings = {  # too complex
                               }
 
 
@@ -193,7 +193,7 @@ def _fill_table(cursor, name, data):
         line = line.strip()
         if line and not line.startswith('#'):
             data = [x.strip() for x in line.strip('|').split('|')]
-            placeholder = ','.join(['?']*len(data))
+            placeholder = ','.join(['?'] * len(data))
             cursor.execute('INSERT INTO %s VALUES (%s)' % (name, placeholder), tuple(data))
 
 
@@ -252,7 +252,7 @@ def init_testtables():
     """
     _fill_table(cursor, 'ALN00', testdata3)
 
-    cursor.execute("VACUUM") # forces commit to disk
+    cursor.execute("VACUUM")  # forces commit to disk
     cursor.close()
     conn.close()
 

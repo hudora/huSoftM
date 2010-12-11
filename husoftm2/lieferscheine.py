@@ -8,7 +8,7 @@ Copyright (c) 2007, 2010 HUDORA GmbH. All rights reserved.
 """
 
 from husoftm2.backend import query
-from husoftm2.tools import sql_escape, sql_quote, land2iso
+from husoftm2.tools import sql_quote
 from husoftm2.texte import texte_trennen, texte_auslesen
 import husoftm2.sachbearbeiter
 
@@ -163,16 +163,10 @@ def _selftest():
     from pprint import pprint
     import datetime
     header = False
-    #(get_auftrag_by_guid('Online_20101202', header_only=header))
-    #pprint(lieferscheine_auftrag('SO1163764', header_only=header))
-    #print get_changed_after(datetime.date(2010, 12, 1))
-    #pprint(get_lieferschein('SL4173969'))
+    pprint(lieferscheine_auftrag('SO1163764', header_only=header))
+    print get_changed_after(datetime.date(2010, 12, 1))
+    pprint(get_lieferschein('SL4173969'))
     pprint(get_lieferschein('SL4176141'))
-    #(get_auftrag('Online_20101202', header_only=header))
-    #(auftraege_kunde('SC66669', limit=20, header_only=header))
-    # Kommibeleg(3023551)
-    # (vars(Lieferschein(4034544)))
-    # kbpos2artnr(3023551, 1)
 
 
 if __name__ == '__main__':

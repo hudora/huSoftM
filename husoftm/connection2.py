@@ -97,14 +97,14 @@ def _fix_field(data, feldname):
     if feldname in DECIMALIZE2:
         # convert to 2 digits significant Decimal()
         return Decimal(str(data)).quantize(Decimal(10) ** -2)
-    elif isinstance(data, unicode): # fix strings
+    elif isinstance(data, unicode):  # fix strings
         # due to various levels of braindamage in various programs we get unicode objects with latin-1
         # strings in them. So we first force unicode() -> str() and then decode to unicode
         try:
             data = data.decode('latin-1')
         except UnicodeEncodeError:
             rawdata = repr(data).strip('u')
-            data = eval(rawdata, {}, {}) # this allows the odbc_bridge to 0wn us
+            data = eval(rawdata, {}, {})  # this allows the odbc_bridge to 0wn us
             data = data.decode('latin-1')
         return data.strip()
     else:
@@ -121,7 +121,7 @@ def _combine_date_and_time(mappings, fieldname, data, fields, row):
     except ValueError:
         return {}
     if (timepos and row[timepos] and
-        not str(row[timepos]).startswith('9999')): # Zeit = 9999: Unbestimmt
+        not str(row[timepos]).startswith('9999')):  # Zeit = 9999: Unbestimmt
         if len(str(int(data))) == 7:
             return {basename: datetime.datetime(*(
                 time.strptime(str(int(data)), '1%y%m%d')[:3]
@@ -217,9 +217,9 @@ class MoftSconnection(object):
             for table in tables:
                 querymappings.update(MAPPINGDIR.get(table, {}))
 
-        if not fields: # decuce fieldnames from querymappings
+        if not fields:  # decuce fieldnames from querymappings
             fields = querymappings.keys()
-        if not fields: # still nothing found
+        if not fields:  # still nothing found
             raise RuntimeError("can't deduce field names, check fields.py")
 
         querystr = ["SELECT %s FROM %s" % (','.join(fields),
@@ -263,7 +263,7 @@ class MoftSconnection(object):
             rows = _rows2dict(fields, querymappings, rows)
         else:
             rows = [tuple([_fix_field(data, name) for data, name in zip(row, fields)]) for row in rows]
-        mapdelta = time.time()-start
+        mapdelta = time.time() - start
         LOG.info("%.3fs/%.3fs, %d rows: %s" % (querydelta, mapdelta, len(rows), querystr))
         return rows
 

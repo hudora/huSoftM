@@ -7,7 +7,7 @@ Created by Christian Klein on 2010-03-15.
 Copyright (c) 2010 HUDORA GmbH. All rights reserved.
 """
 
-from husoftm2.tools import sql_escape, sql_quote, date2softm, land2iso, pad
+from husoftm2.tools import sql_escape, sql_quote, date2softm, pad
 from husoftm2.texte import texte_trennen, texte_auslesen
 from husoftm2.backend import query
 import husoftm2.sachbearbeiter

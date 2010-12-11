@@ -319,7 +319,9 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
     else:
         rows = [tuple([_fix_field(data, name) for data, name in zip(row, fields)]) for row in rows]
 
-    # logging.debug("Done SQL query in %.3fs: %s", time.time() - start, args)
+    delta = time.time() - start
+    if delta > 5:
+        logging.warning("Slow (%.3fs) SQL query in  %s", delta, args)
     memcache.add(key='husoftm_query_%r_%r' % (querymappings, args),
                  value=rows, time=cachingtime)
     return rows

@@ -15,7 +15,7 @@ import sys
 from decimal import Decimal
 from husoftm.connection2 import get_connection
 from husoftm.tools import sql_quote
-from pprint import pprint # used for doctests
+from pprint import pprint  # used for doctests
 
 
 def preisentwicklung(artnrs):

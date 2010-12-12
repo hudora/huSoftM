@@ -39,6 +39,8 @@ def get_kunde(kundennr):
                  joins=[('XXC00', 'KDKDNR', 'XCADNR'),
                         ('XKS00', 'KDKDNR', 'KSKDNR'),
                         ('AKZ00', 'KDKDNR', 'KZKDNR')])
+    # Kreditoren aus XXC00 entfernen - im JOIN geht das nicht
+    rows = [x for x in rows if x.get('art') != 'K']
     if len(rows) > 1:
         raise RuntimeError("Mehr als einen Kunden gefunden: %r" % kundennr)
     if not rows:
@@ -118,7 +120,6 @@ def _softm_to_dict(row):
                unsere_lieferantennr=row.get('unsere_lieferantennumemr', ''),
               )
     if 'iln' in row and row['iln']:
-        print str(row['iln'])
         ret['iln'] = unicode(int(row['iln'])).strip()
     if row['erfassung_date']:
         ret['erfassung'] = row['erfassung_date']
@@ -139,6 +140,7 @@ def _selftest():
     print get_changed_after(datetime.date(2010, 11, 1))
     print get_lieferadressen('SC28000')
     print get_kunde('10001')
+    print get_kunde('SC67100')
 
 
 if __name__ == '__main__':

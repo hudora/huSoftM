@@ -128,7 +128,7 @@ def _lieferscheine(additional_conditions=None, limit=None, header_only=False):
     return koepfe.values()
 
 
-def get_changed_after(date, limit=None, header_only=False):
+def get_changed_after(date, limit=None):
     """Liefert die Lieferscheinnummern zurück, die nach <date> geändert wurden."""
     date = int(date.strftime('1%y%m%d'))
     conditions = ["LKLFSN<>0",

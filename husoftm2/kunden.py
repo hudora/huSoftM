@@ -21,9 +21,9 @@ betreuerdict = {
             'alangen': 'Anja Langen',
             'cblumberg': 'Claudia Blumberg',
             'cgerlach': 'Christoph Gerlach',
-            'dgrossmann', u'Dirk Grossmann',
-            'export', u'Export',
-            'falin': u'Fuesun Alin'
+            'dgrossmann': u'Dirk Grossmann',
+            'export': u'Export',
+            'falin': u'Fuesun Alin',
             'jtiszekker': u'Juergen Tiszekker',
             'jwestpahl': u'Jutta Westphal',
             'kschulze': u'Katrin Schulze',

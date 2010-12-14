@@ -12,6 +12,24 @@ import datetime
 import husoftm2.tools
 
 
+betreuerdict = {
+            'verkauf': 'Verkaufsinnendienst',
+            'bbonrath': 'Birgit Bonrath',
+            'cgiermann': 'Carsten Giermann',
+            'ngerloff': 'Nadiene Gerloff',
+            'ajames': 'Andrea James',
+            'alangen': 'Anja Langen',
+            'cblumberg': 'Claudia Blumberg',
+            'cgerlach': 'Christoph Gerlach',
+            'dgrossmann', u'Dirk Grossmann',
+            'export', u'Export',
+            'falin': u'Fuesun Alin'
+            'jtiszekker': u'Juergen Tiszekker',
+            'jwestpahl': u'Jutta Westphal',
+            'kschulze': u'Katrin Schulze',
+}
+
+
 def get_kundennummern():
     """Returns a list of all 'Kundennummern'"""
     rows = query('XKD00', fields=['KDKDNR'])
@@ -109,7 +127,6 @@ def _softm_to_dict(row):
                ustid=row.get('ustid', ''),
                adressdatei_id=row.get('adressdatei_id', ''),
                company=row.get('company', ''),                          # '06'
-               verband=row.get('verband', ''),
                # gebiet=row.get('gebiet', ''),                          # ': u'04'
                # distrikt=row.get('distrikt', ''),                      # ': u'16'
                # vertreter=row.get('vertreter', ''),                    # ': u'201'
@@ -119,6 +136,11 @@ def _softm_to_dict(row):
                interne_firmennr=row.get('interne_firmennr', ''),        # ': u''
                unsere_lieferantennr=row.get('unsere_lieferantennumemr', ''),
               )
+    ret['betreuer'] = betreuerdict.get(ret['betreuer_handle'], '')
+    if not ret['betreuer']:
+        logging.error('Kunde %s (%s) hat keinen gültigen Betreuer' % (ret['name1'], ret['kundennr']))
+    if 'verband' in row:
+        ret['verband'] = 'SC%s' % row['verband']
     if 'iln' in row and row['iln']:
         ret['iln'] = unicode(int(row['iln'])).strip()
     if row['erfassung_date']:
@@ -132,6 +154,7 @@ def _softm_to_dict(row):
 
 def _selftest():
     """Test basic functionality"""
+    from pprint import pprint
     get_kundennummern()
     get_kunde('66669')
     print get_kunde('SC66669')
@@ -139,6 +162,8 @@ def _selftest():
     print get_kunde_by_iln('4306544000008')
     print get_changed_after(datetime.date(2010, 11, 1))
     print get_lieferadressen('SC28000')
+    pprint(get_kunde('64090'))
+    print get_kunde('SC64000')
     print get_kunde('10001')
     print get_kunde('SC67100')
 

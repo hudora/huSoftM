@@ -2475,7 +2475,7 @@ MAPPINGDIR = {
           'KSLISP': 'liefersperre',
           'KSAWRT': 'offener_aftragswert',
           'KSAKWR': 'kreditlimit',
-          'KSCOMP': 'company',
+          # 'KSCOMP': 'company',
           'KSIAKZ': 'inland_ausland',
           'KSFNRK': 'interne_firmennr',
           'KSINFL': 'unsere_lieferantennumemr',

@@ -13,7 +13,7 @@ hudson: dependencies test statistics coverage
 
 check:
 	pep8 -r --ignore=E501 husoftm2/ husoftm/
-	sh -c 'PYTHONPATH=. pyflakes *.py husoftm2/ husotftm/'
+	sh -c 'PYTHONPATH=. pyflakes *.py husoftm2/ husoftm/'
 	-sh -c 'PYTHONPATH=. pylint -iy --max-line-length=110 husoftm2/ husoftm/' # -rn
 
 build:

@@ -24,7 +24,7 @@ import husoftm.mock_as400
 try:
     Pyro.core.initClient(banner=False)
 except:
-    pass # function not available in newer Pyro distributions
+    pass  # function not available in newer Pyro distributions
 
 
 LOG = logging.getLogger('huSoftM.sql')
@@ -37,7 +37,7 @@ def _combine_date_and_time(mappings, fields, i, row, rowdict):
     timefield = DATETIMEDIR[fields[i]]
     timepos = fields.index(timefield)
     if (timepos and row[timepos] and
-        not str(row[timepos]).startswith('99')): # Zeit = 999999: Unbestimmt
+        not str(row[timepos]).startswith('99')):  # Zeit = 999999: Unbestimmt
         try:
             if len(str(int(row[i]))) == 7:
                 rowdict[basename] = datetime.datetime(*(
@@ -62,10 +62,10 @@ class PyRoMoftSconnection(object):
     def _fix_field(self, data):
         """Fix field types returned by DB2/400."""
 
-        if isinstance(data, str): # fix strings
+        if isinstance(data, str):  # fix strings
             return data.strip().decode('latin-1').encode('utf-8')
         elif isinstance(data, float):
-            if data == int(data): # fix floats:
+            if data == int(data):  # fix floats:
                 return int(data)
             else:
                 return float(data)

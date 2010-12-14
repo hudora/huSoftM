@@ -10,7 +10,7 @@ Copyright (c) 2007 HUDORA GmbH. All rights reserved.
 __revision__ = "$Revision$"
 
 from husoftm.connection2 import get_connection
-from husoftm.tools import sql_escape, sql_quote, land2iso, set_attributes
+from husoftm.tools import sql_quote, land2iso, set_attributes
 import cs.caching
 import logging
 
@@ -37,7 +37,7 @@ def get_lieferscheine_rechnungsstatus(lieferscheinnrs):
                 'MIN(LNRGST)': 'rechnungsstatus'}
 
     if lieferscheinnrs:
-        condition="LKSANK=LNSANK AND (LKLFSN IN (%s))" % ", ".join(str(lsnr) for lsnr in lieferscheinnrs)
+        condition = "LKSANK=LNSANK AND (LKLFSN IN (%s))" % ", ".join(str(lsnr) for lsnr in lieferscheinnrs)
         rows = get_connection().query(["ALK00", "ALN00"], fields=mappings.keys(),
                                       condition=condition,
                                       grouping=["LKLFSN"],
@@ -64,7 +64,7 @@ def kommibelege_for_auftrag(auftragsnr):
     return [Kommibeleg(row['kommissionierbelegnr']) for row in rows]
 
 
-@cs.caching.cache_function(60*60*72) # 3 days
+@cs.caching.cache_function(60 * 60 * 72)  # 3 days
 def kbpos2artnr(komminr, posnr):
     """Gibt die Artikelnummer zu einer bestimmten Position eines Kommissionierbelegs zurück."""
     rows = get_connection().query('ALN00', fields=['LNARTN'],

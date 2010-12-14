@@ -231,7 +231,7 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
                         ('XKS00', 'KDKDNR', 'KSKDNR'),
                         ('AKZ00', 'KDKDNR', 'KZKDNR')])
 
-    Will result in "SELECT * FROM XKD00 LEFT OUTER JOIN XXC00 ON KDKDNR=XCADNR LEFT OUTER 
+    Will result in "SELECT * FROM XKD00 LEFT OUTER JOIN XXC00 ON KDKDNR=XCADNR LEFT OUTER
     JOIN XKS00 ON KDKDNR=KSKDNR LEFT OUTER JOIN AKZ00 ON KDKDNR=KZKDNR WHERE KDKDNR='   10001'".
 
     We also should be - to a certain degree - be Unicode aware:
@@ -319,7 +319,9 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
     else:
         rows = [tuple([_fix_field(data, name) for data, name in zip(row, fields)]) for row in rows]
 
-    # logging.debug("Done SQL query in %.3fs: %s", time.time() - start, args)
+    delta = time.time() - start
+    if delta > 5:
+        logging.warning("Slow (%.3fs) SQL query in  %s", delta, args)
     memcache.add(key='husoftm_query_%r_%r' % (querymappings, args),
                  value=rows, time=cachingtime)
     return rows

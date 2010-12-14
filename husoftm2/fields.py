@@ -2488,7 +2488,7 @@ MAPPINGDIR = {
           'KSBOKZ': 'bonnitaet',
           # 'KSKLTA': 'Kd/Li-Texte anzeigen',
           # 'KSINF1': 'Inf. 1',
-          'KCVERB': 'verband',
+          'KCVERB': 'verbandsnr',
           #'KSKRED': 'Verbands-/Mischkto-Satz',
           'KCMGVB': 'mitgliednr',
           #'KCBBN':  'Bundeseinheitl.Betriebsnr.',
@@ -2672,7 +2672,6 @@ MAPPINGDIR = {
 
 'XXC00': {
           # Kunden-/Lieferantenzusatz
-          #
           # Hier werden zus{tzliche Daten f}r den Kunden oder Lieferanten
           # hinterlegt. Diese Datei wird sowohl von der Warenwirtschaft als
           # auch vom Rechnungswesen ben¦tigt  und enth{lt wichtige Daten,
@@ -2740,7 +2739,7 @@ MAPPINGDIR = {
           # Falls bekannt, kann hier die Lieferantennummer eingetragen werden, die uns der Kunde zugewiesen
           # hat.
           #  XCEGCD   EU-L{ndercode                                   A    2     48   49
-          'XCUSTN': 'xxc_ustid', # USt-IdNr
+          'XCUSTN': 'xxc_ustid',  # USt-IdNr
           # EU-einheitliche Steuernummer (USt-IdNr, VAT-Nr).
           # Beim Druck der USt-IdNr ist zus{tzlich noch der EU-L{ndercode
           # mitzudrucken.

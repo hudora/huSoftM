@@ -7,7 +7,6 @@ Created by Maximillian Dornseif on 2009-07-02.
 Copyright (c) 2009 HUDORA. All rights reserved.
 """
 
-import types
 import unittest
 from decimal import Decimal
 from husoftm.connection2 import get_connection
@@ -33,12 +32,12 @@ def kursfaktorkorrektur(rows, kursname='kurs', kursfaktorname='kursfaktor', umdr
         rows = [rows]
     ret = []
     for row in rows:
-        multiplikator = Decimal(10**(row[kursfaktorname]))
+        multiplikator = Decimal(10 ** (row[kursfaktorname]))
         if row[kursname]:
             if umdrehen:
-                row[kursname] = (1/(Decimal(str(row[kursname]))/multiplikator)).quantize(Decimal(10) ** -4)
+                row[kursname] = (1 / (Decimal(str(row[kursname])) / multiplikator)).quantize(Decimal(10) ** -4)
             else:
-                row[kursname] = (Decimal(str(row[kursname]))/multiplikator).quantize(Decimal(10) ** -4)
+                row[kursname] = (Decimal(str(row[kursname])) / multiplikator).quantize(Decimal(10) ** -4)
         ret.append(row)
     return ret
 
@@ -131,7 +130,7 @@ def get_zugaenge_artnr(artnr):
 def get_zugaenge_bestellnr(bestellnr):
     """Liefert alle Warenzugaenge einer Bestellnummer"""
 
-    rows = get_connection('bestellungen.get_zugaenge_bestellnr').query('EWZ00', # ordering=['WZDTWZ'],
+    rows = get_connection('bestellungen.get_zugaenge_bestellnr').query('EWZ00',  # ordering=['WZDTWZ'],
         condition="WZBSTN=%s" % sql_escape(bestellnr))
     return _get_zugaenge_helper(rows)
 
@@ -327,7 +326,6 @@ def testbestellung():
         else:
             print ("%%%ds" % fieldwidth) % '-',
     print
-
 
     for bestellung in bestellungen_artnr:
         print "B   ",

@@ -480,7 +480,7 @@ ABA00 = {
 'BAARTN': dict(name='artikel', format='A20', required=True,
                doc='''Zur Festlegung des Artikels ist die Artikelnummer anzugeben.'''),
 'BAMNG': dict(name='bestellmenge', format='P11.3', required=True),
-'BADTLT': dict(name='anliefertermin', format='P7.0', # required=True,
+'BADTLT': dict(name='anliefertermin', format='P7.0',  # required=True,
                doc='''APDTLT Termin, zu dem die Ware das Lager verlassen soll. Für unbestimmte Termine oder
                       Rahmenkonditionen kann der Sonderwert '999999' eingegeben werden. Dieser Termin
                       steuert den Zeitpunkt der Zuteilung und der Belegschreibung. Außerdem kann er die

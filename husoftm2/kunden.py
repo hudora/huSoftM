@@ -51,13 +51,14 @@ def get_kunde(kundennr):
     <kundennr> must be an Integer in the Range 10000..99999.
     If no data exists for that KdnNr ValueError is raised."""
 
-    
     kundennr = kundennr.strip('SC')
     rows = query(['XKD00'],
-                 condition="KDKDNR='%8d'" % int(kundennr),
+                 condition="KDKDNR='%8d' AND KDSTAT<>'X'" % int(kundennr),
                  joins=[('XXC00', 'KDKDNR', 'XCADNR'),
                         ('XKS00', 'KDKDNR', 'KSKDNR'),
                         ('AKZ00', 'KDKDNR', 'KZKDNR')])
+    # Kreditoren aus XXC00 entfernen - im JOIN geht das nicht
+    rows = [x for x in rows if x.get('art') != 'K']
     if len(rows) > 1:
         raise RuntimeError("Mehr als einen Kunden gefunden: %r" % kundennr)
     if not rows:
@@ -140,7 +141,7 @@ def _softm_to_dict(row):
         logging.error('Kunde %s (%s) hat keinen gültigen Betreuer' % (ret['name1'], ret['kundennr']))
     if 'verband' in row:
         ret['verband'] = 'SC%s' % row['verband']
-    if 'iln' in row:
+    if 'iln' in row and row['iln']:
         ret['iln'] = unicode(int(row['iln'])).strip()
     if row['erfassung_date']:
         ret['erfassung'] = row['erfassung_date']
@@ -163,6 +164,8 @@ def _selftest():
     print get_lieferadressen('SC28000')
     pprint(get_kunde('64090'))
     print get_kunde('SC64000')
+    print get_kunde('10001')
+    print get_kunde('SC67100')
 
 
 if __name__ == '__main__':

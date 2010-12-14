@@ -56,7 +56,7 @@ class Kunde(object):
         #self.updated_at = row.get('aendertung_date', '') # 2007-04-11
         #self.mitgliednr = row.get('mitgliednr', '')
         #self.ustid = row.get('ustid', '') # '132838685'
-        self.adressdatei_id = row.get('adressdatei_id', '') # 123656179
+        self.adressdatei_id = row.get('adressdatei_id', '')  # 123656179
         #self.company = row.get('company', '') # '06'
         #self.verband = row.get('verband', '')
         #self.gebiet = row.get('gebiet', '') # ': u'04'
@@ -66,14 +66,14 @@ class Kunde(object):
         #self.versandart = row.get('versandart', '') # ': u''
         if 'iln' in row:
             self.iln = unicode(int(row['iln'])).strip()
-        self.land = husoftm.tools.land2iso(row['laenderkennzeichen']) # D
+        self.land = husoftm.tools.land2iso(row['laenderkennzeichen'])  # D
         if row['erfassung_date']:
             self.erfassung = row['erfassung_date']
         if row['aenderung_date']:
             self.aenderung = row['aenderung_date']
         else:
             self.aenderung = self.erfassung
-        self.sachbearbeiter = row.get('sachbearbeiter', '') # ': u'Birgit Bonrath'
+        self.sachbearbeiter = row.get('sachbearbeiter', '')  # ': u'Birgit Bonrath'
         #self.verpackungsvorschrift = row.get('verpackungsvorschrift', '') # ': u'',
         #self.lieferbedingung = row.get('lieferbedingung', '') # ': u''
         #self.auslieferunglager = row.get('auslieferunglager', 0) # ': 0
@@ -119,7 +119,7 @@ def get_changed_after(date):
     #
     rows = husoftm.connection2.get_connection().query('AKZ00', fields=['KZKDNR'],
                                           condition="KZDTAE>=%d" % (date))
-    ret = ret|set([int(x[0]) for x in rows])
+    ret = ret | set([int(x[0]) for x in rows])
     return list(ret)
 
 
@@ -154,7 +154,7 @@ def get_kunde(kdnnr):
     return Kunde().fill_from_softm(rows[0])
 
 
-@caching.cache_function(60*60*2)
+@caching.cache_function(60 * 60 * 2)
 def get_kunde_by_iln(iln):
     """Get Kunden Address based on ILN.
 
@@ -225,7 +225,7 @@ def get_lieferadressen_all():
     return dict(("%s/%03d" % (row['kundennr'], int(row['versandadresssnr'])), row) for row in rows)
 
 
-@caching.cache_function(60*60*2)
+@caching.cache_function(60 * 60 * 2)
 def get_kundenbetreuer(kundennr):
     """'Liefert einen String, der den Betreuer im Hause für einen bestimmten Kunden identifizert oder ''."""
     rows = husoftm.connection2.get_connection().query(['AKZ00'], fields=['KZINFO'],

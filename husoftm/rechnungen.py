@@ -83,6 +83,7 @@ def get_rechnung(rechnungsnr):
 
     return kopf, positionen.values()
 
+
 def softm_to_invoice(rechnungsnr):
     """Erzeugt daten nach dem very simple invoice Protocol"""
     from pprint import pprint
@@ -117,62 +118,25 @@ def softm_to_invoice(rechnungsnr):
     for ol in get_connection().query(['AFU00'], condition="FURGNR=%s" % sql_escape(rechnungsnr)):
         pprint(ol)
         outol = {}
-        for attr in '''menge  artnr abschlag rechungsbetrag warenwert'''.split(): # zu_zahlen
+        for attr in '''menge  artnr abschlag rechungsbetrag warenwert'''.split():  # zu_zahlen
             outol[attr] = ol[attr]
         out['orderlines'].append(outol)
 
-    pprint(out)
+    #line = dict(
+    #        guid=p.guid,
+    #        menge=int(p.menge),
+    #        artnr=p.artnr,
+    #        #kundenartnr=f3.artnr_kunde,
+    #        #name=f3.artikelbezeichnung.strip(),
+    #        infotext_kunde=p.text
+    #        #einzelpreis=int(abs(f3.verkaufspreis)*100),
+    #        #warenwert=int(p.wert_netto*100),
+    #        #zu_zahlen=int(abs(f3.wert_brutto)*100),
+    #        #abschlag=int(f4.positionsrabatt_gesamt*100)
+    #    )
 
- #'Kennzeichen Streckengesch{f': 0,
- #'Kz.Rabatt versteckt': 0,
- #'Kz.Rabatte Brutto': 0,
- #'Kz: kein Auftragsrabatt = 1': 0,
- #'Kz:Pos in Rech.nicht andr.=': 0,
- #'Zuschlagssatz': 0,
-
-
-    #'kundennr_warenempfaenger': '14849',
-    #'skontierfaehiger_betrag': Decimal('-1496.84'),
-#* **rechnungsbetrag** - Rechnungsbetrag ohne Steuer als String mit zwei Nachkommastellen. Entspricht `warenwert` - `Abschlag`.
-#* *steuer_prozent* - mehrwertsteuer Prozentsatz (19, pro Rechnung kann es nur einen Mehrwertsteuersatz geben) *
-
-# skontobetrag
-
-#* *hint/...* Felder, die keinen normativen Charakter haben
-#* *hint/abschlag* - Rabatte etc.
-#* *zahlungstage* - Zahlungsziel ab Leistungsdatum in Tagen.
-#* *hint/zahlungsdatum* - Zahlungsziel ab Leistungsdatum in Tagen.
-#* *skonto_prozent* - Prozentsatz Skonto. Darf nur vorhanden sein, wenn `skontobetrag` vorhanden ist.
-#* *skontotage* - Tage ab Lieferung innerhalb derer Skonto gezogen werden kann
-#* *hint/skontodatum* - Datum bis zu dem Skonto gewährt wird. Darf nur vorhanden sein, wenn `skontotage`
-#* *hint/skontobetrag* - Wie viel Euro macht das Skonto aus.
-#* *zu_zahlen_bei_skonto* - Zu zahlender Betrag, wenn Skonto gezogen werden kann. (incl. Steuer)
-#* *hint/rechnungsbetrag_bei_skonto* - Rechnungsbetrag mit Skonto angewendet.
-#* *hint/rechnung_steueranteil_bei_skonto* - Steueranteil wenn Skonto gezogen wird.
-#* *hint/steuernr_kunde* - Steuernummer und/oder UStId Kunde
-#* *hint/steuernr_lieferant* - Steuernummer und/oder UStId Lieferant
-#* *lieferadresse/...* Felder des [AddressProtocol][2] (Zum Teil Pflichtfelder).
-#* *lieferadresse/kundennr* Interne Kundennummer. Kann das [AddressProtocol][2] erweitern.
-#* *rechnungsadresse/...* Felder des [AddressProtocol][2] (Zum Teil Pflichtfelder). Es handelt sich um dne technischen Rechungsempfänger, der nicht vertragsbeteiligter ist.
-#* *rechnungsadresse/kundennr* Interne Kundennummer. Kann das [AddressProtocol][2] erweitern.
-#* *absenderadresse/...* Aussteller der Rechunung als Felder des [AddressProtocol][2] (Zum Teil Pflichtfelder).
-#* **orderlines** Sammlung von Rechnungspositionen
-#
-    line = dict(
-            guid=p.guid,
-            menge=int(p.menge),
-            artnr=p.artnr,
-            #kundenartnr=f3.artnr_kunde,
-            #name=f3.artikelbezeichnung.strip(),
-            infotext_kunde=p.text
-            #einzelpreis=int(abs(f3.verkaufspreis)*100),
-            #warenwert=int(p.wert_netto*100),
-            #zu_zahlen=int(abs(f3.wert_brutto)*100),
-            #abschlag=int(f4.positionsrabatt_gesamt*100)
-        )
-
-    if f3.ean and int(f3.ean):
-        line['ean']=f3.ean
+    #if f3.ean and int(f3.ean):
+    #    line['ean'] = f3.ean
 
 
 def main():

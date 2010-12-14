@@ -38,7 +38,7 @@ class SqliteConnector_mixin(object):
         cur = conn.cursor()
         cur.execute(sqlstr)
         ret = cur.rowcount
-        cur.execute("VACUUM") # forces commit to disk
+        cur.execute("VACUUM")  # forces commit to disk
         return ret
 
     def sql_update(self, sqlstr):
@@ -47,7 +47,7 @@ class SqliteConnector_mixin(object):
         cur = conn.cursor()
         cur.execute(sqlstr)
         ret = cur.rowcount
-        cur.execute("VACUUM") # forces commit to disk
+        cur.execute("VACUUM")  # forces commit to disk
         return ret
 
 

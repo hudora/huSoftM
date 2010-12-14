@@ -19,7 +19,7 @@ def get_kundennummern():
 
 
 def get_changed_after(date):
-    """Returns a list of all Kundennummern where the underlaying Data has changed since <date>."""
+    """Returns a list of all Kundennummern where the underlying Data has changed since <date>."""
 
     date = int(date.strftime('1%y%m%d'))
     rows1 = query('XKD00', fields=['KDKDNR'], condition="KDDTER>%d OR KDDTAE>=%d" % (date, date))
@@ -33,9 +33,9 @@ def get_kunde(kundennr):
     <kundennr> must be an Integer in the Range 10000..99999.
     If no data exists for that KdnNr ValueError is raised."""
 
-    kundennr = kundennr.strip('SC')
+    kundennr = int(kundennr.strip('SC'))
     rows = query(['XKD00'],
-                 condition="KDKDNR='%8d' AND KDSTAT<>'X'" % int(kundennr),
+                 condition="KDKDNR='%8d' AND KDSTAT<>'X'" % kundennr,
                  joins=[('XXC00', 'KDKDNR', 'XCADNR'),
                         ('XKS00', 'KDKDNR', 'KSKDNR'),
                         ('AKZ00', 'KDKDNR', 'KZKDNR')])

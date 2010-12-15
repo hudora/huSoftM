@@ -5,6 +5,7 @@
 bestaende.py - high level functions to access SoftM on the AS/400.
 
 Created by Maximillian Dornseif on 2006-10-19.
+Copyright (c) 2006-2010 HUDORA. All rights reserved.
 
 Hier werden Warenbestände, verfügbare Mengen und dergleichen ermittelt.
 
@@ -29,7 +30,16 @@ Für die Frage, ob ein bestimmter Artikel in einem bestimmten Lager ist, ist bes
     versionsvorschlag(menge, artnr, date, dateformat="%Y-%m-%d") Vorschlag zur Versionsstückelung
 
 
-Siehe auch https://cybernetics.hudora.biz/intern/trac/wiki/HudoraGlossar zu den Bezeichnungen.
+Es gibt verschiedene Mengen von denen wir reden.
+ * Bezogen aufs Lager
+   * verfügbare menge - ist die Menge die wir am Lager haben und die zur Zeit noch keinem Kundenauftrag
+     zugeordnet ist, d.h. die noch nicht zugeteilt ist.
+   * freie menge - ist die Menge die wir noch verkaufen können (entspricht der verfügbaren Menge abzüglich
+     der noch nicht zugeteilten Kundenaufträge)
+ * bezogen auf Aufträge
+   * bestellmenge - wieviel will der Kunde haben will
+   * gelieferte - menge wieviel schon geliefert wurde
+   * offene menge - wieviel noch zu liefern ist
 
 """
 
@@ -110,32 +120,7 @@ def _umlagermenge_helper(artnr, lager=100):
     return 0
 
 
-# TODO: use cs module instead of alternativen()
-
-def alternativen(artnr):
-    """Gets a list of article numbers which are alternatives (usually versions).
-
-    >>> alternativen('14600')
-    ['14600', '14600/01', '14600/02', '14600/03']
-    """
-
-    warnings.warn("hudoftm.bestaende.alternativen() is deprecated,"
-                  + " use cs.masterdata.article.alternatives() instead",
-                  DeprecationWarning, stacklevel=2)
-    server = couchdb.client.Server(COUCHSERVER)
-    db = server['eap']
-    artnrs = db.get(artnr, {}).get('alternatives', [])
-    if artnr not in artnrs:
-        artnrs.append(artnr)
-    return sorted(artnrs)
-
-
-def get_lagerbestand(artnr=None, lager=0):
-    """Deprecheated, don't use anymore."""
-    warnings.warn("get_lagerbestand() is deprecated use buchbestand()", DeprecationWarning, stacklevel=2)
-    return buchbestand(artnr, lager)
-
-
+#+ 
 def buchbestand(artnr, lager=0):
     """Gibt den Buchbestand eines Artikels für ein Lager zurück oder (lager=0) für alle Lager
 
@@ -238,36 +223,45 @@ def freie_menge(artnr, dateformat="%Y-%m-%d"):
         return 0
 
 
+#+
 def _bewegungen(artnr, dateformat="%Y-%m-%d", lager=0):
     """Sammeln aller Bewegungen zu einem Artikel."""
 
-    # start processing all three queries in separate threads
-    bestellmengen_future = huTools.async.Future(bestellmengen, artnr, lager)
-    auftragsmengen_future = huTools.async.Future(auftragsmengen, artnr, lager)
-    buchbestand_future = huTools.async.Future(buchbestand, artnr, lager)
-
     # This could be sped up by using futures.
     # Startwert ist der Buchbestand
-    bewegungen = [(datetime.date.today().strftime(dateformat), int(buchbestand_future()))]
+    bewegungen = [(datetime.date.today().strftime(dateformat), int(buchbestand(artnr, lager)))]
     # Bestellmengen positiv
-    bewegungen.extend([(x[0].strftime(dateformat), int(x[1])) for x in bestellmengen_future().items()])
+    bewegungen.extend([(x[0].strftime(dateformat), int(x[1])) for x in bestellmengen(artnr, lager).items()])
     # Auftragsmengen negativ
-    bewegungen.extend([(x[0].strftime(dateformat), -1 * x[1]) for x in auftragsmengen_future().items()])
+    bewegungen.extend([(x[0].strftime(dateformat), -1 * x[1]) for x in auftragsmengen(artnr, lager).items()])
     bewegungen.sort()
     return bewegungen
 
 
-def _sum_bewegungen(bewegungen):
-    """Bewegungsmengen aufsummieren."""
+#+
+def _bewegungen_to_bestaende(bewegungen):
+    """Bewegungsmengen aufsummieren.
+    
+    >>> _bewegungen_to_bestaende({'2009-02-20': 1200,
+                                  '2009-03-02': 100,
+                                  '2009-04-01': -150,
+                                  '2009-05-04': -1000})
+    {'2009-02-20': 1200,
+     '2009-03-02': 1300,
+     '2009-04-01': 1150,
+     '2009-05-04': 150}
+    """
 
+    # TODO: docstring -> beispiel
+    
     menge = 0
     bestentwicklung = {}
-    for datum, bewegungsmenge in bewegungen:
+    for datum, bewegungsmenge in sorted(bewegungen):
         menge += bewegungsmenge
         bestentwicklung[datum] = menge
     return bestentwicklung
 
-
+#+
 def bestandsentwicklung(artnr, dateformat="%Y-%m-%d", lager=0):
     """Liefert ein Dictionary, dass alle zukünftigen, bzw. noch nicht ausgeführten Bewegungen
 
@@ -281,65 +275,51 @@ def bestandsentwicklung(artnr, dateformat="%Y-%m-%d", lager=0):
      '2009-03-02': 860,
      '2009-04-01': 560,
      '2009-05-04': 300}
-
-     Achtung: Diese Funktion implementiert bis zu 120 Sekunden caching.
     """
-    # check if we have a cached result.
-    memc = caching.get_cache()
-    memc_key = 'husoftm.bestandsentwicklung.%r.%r.%r' % (artnr, dateformat, lager)
-    cache = memc.get(memc_key)
-    if cache:
-        return cache
 
     # Auflösung von Set-Artikeln in ihre Unterartikel.
     # Die Bestandsentwicklung des Sets der Bestandsentwicklung der Unterartikel dividiert durch
     # die jeweilige Anzahl der Unterartikel pro Set entsprechen.
-    components = husoftm.artikel.komponentenaufloesung([(1, artnr)])
-    bestentw_all = []
-    for mng_set, artnr_set in components:
-        bestentwicklung = dict(((datum, mng / mng_set) for (datum, mng) in
-                                _sum_bewegungen(_bewegungen(artnr_set, dateformat, lager)).items()))
-        bestentw_all.append(bestentwicklung)
+    komponenten = husoftm.artikel.komponentenaufloesung([(1, artnr)])
+    bestentw_all = []  # list of dicts
+    for komponente_menge, komponente_artnr in komponenten:
+        bewegungen_komponente = _bewegungen(komponente_artnr, dateformat, lager)
+        bestaende_komponente = _bewegungen_to_bestaende(bewegungen_komponente)
+        # Auf "Anteil" am Endprodukt umrechnen
+        bestaende_komponente = dict(((datum, mng / komponente_menge) for (datum, mng) in bestaende_komponente.items()))
+        bestentw_all.append(bestaende_komponente)
 
     # Die kleinste Menge eines Sub-Artikels ist die an diesem Datum verfügbare Menge
-    # !Es gibt Setartikel, deren Unterartikel sich überschneiden.
-    # !Darum die get Methode, mit einem Defaultwert von 99999999
-    commonkeys = [dct.keys() for dct in bestentw_all]
-    commonkeys = set(itertools.chain(*commonkeys))
-    bestentwicklung = {}
-    for key in commonkeys:
-        bestentwicklung[key] = min(dct.get(key, 99999999) for dct in bestentw_all)
+    alldays = [komponentenentwicklung.keys() for komponentenentwicklung in bestentw_all]
+    alldays = set(itertools.chain(*alldays))
+    entwicklung = {}
+    for datum in alldays:
+        entwicklung[datum] = min(entwicklung.get(datum, 99999999) for entwicklung in bestentw_all)
 
     # Bei Setartikeln werden die Auftragsmengen (evtl. auch die Bestellmengen) mal für den Set,
     # und mal für die Subartikel behandelt.
     # Darum hier noch die Bewegungen des Setartikels überlagern
-    if artnr_set != artnr:  # Das darf nur auf Setartikel angewendet werden!
+    if len(komponenten) > 1:  # Handelt es sich um einen Setartikel
+        # TODO: auch set-komponenten erfassen
         bewegungen_set = _bewegungen(artnr, dateformat, lager)
 
         # Bewegungsmengen aus der gerade ermittelten Bestandsendwicklung der Unterartikel erzeugen
-        bestentwicklung = sorted(bestentwicklung.items())
-        date, mng = bestentwicklung[0]
-        bewegungen_sub = [(date, mng)]
-        for date, x in bestentwicklung[1:]:
-            bewegungen_sub.append((date, x - mng))
-            mng = x
+        entwicklung = sorted(entwicklung.items())
+        startdate, startmenge = entwicklung[0]
+        bewegungen_komponenten = [(startdate, startmenge)]
+        menge = startmenge
+        for date, mengenaenderung in entwicklung[1:]:
+            bewegungen_sub.append((date, mengenaenderung - menge))
+            menge = mengenaenderung
 
         # Bewegungen mit denen des Setartikels kombinieren und erneut eine Bestandsentwicklung
         # daraus berechnen
-        bewegungen = bewegungen_sub + bewegungen_set
-        bewegungen.sort()
-        bestentwicklung = _sum_bewegungen(bewegungen)
+        entwicklung = _bewegungen_to_bestaende(bewegungen_komponenten + bewegungen_set)
 
-    if not bestentwicklung:
-        # kein Bestand - diese Information 6 Stunden cachen
-        memc.set(memc_key, bestentwicklung, 60 * 60 * 6)
-    else:
-        # Bestand - die menge fuer 2 Minuten cachen
-        memc.set(memc_key, bestentwicklung, 60 * 2)
-
-    return bestentwicklung
+    return entwicklung
 
 
+#+ 
 def bestellmengen(artnr, lager=0):
     """Liefert eine liste mit allen Bestellten aber noch nicht gelieferten Wareneingängen.
 
@@ -358,6 +338,7 @@ def bestellmengen(artnr, lager=0):
                  for x in rows if as400_2_int(x['SUM(BPMNGB-BPMNGL)']) > 0])
 
 
+#+ 
 def auftragsmengen(artnr, lager=None):
     """Liefert eine Liste offener Aufträge für einen Artikel OHNE UMLAGERUNGEN.
 

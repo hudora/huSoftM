@@ -2461,7 +2461,7 @@ MAPPINGDIR = {
           # 'KDALSO': 'sortierfeld',
           # 'KDSPSL': 'Sprache', # Werte 1 & 2
           # 'KDWSL ': 'Währungs-Kennzeichen',
-          # 'KDKGRP': 'kundengruppe',  # alphanum
+          'KDKGRP': 'kunden_gruppe',  # für Preislisten
           # 'KDEMAL': 'mail',
           # 'KDHOME': 'url',
           # 'KDSANR': 'adressdatei_id',
@@ -2637,7 +2637,7 @@ MAPPINGDIR = {
         # 'XASPSL': Sprache
         # 'XAWSL ': W{hrungs-Kennzeichen
         # 'XAFGRP': Firmen-Gruppe
-        'XAKGRP': 'kunden_gruppe',  # Preisliste
+        'XAKGRP': 'kunden_gruppe',  # für Preisliste
         # 'XALGRP': Lieferanten-Gruppe
         # 'XAISIC': ISIC-Schl}ssel
         # 'XARPMK': RPM-Kreis

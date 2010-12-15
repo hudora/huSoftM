@@ -123,7 +123,6 @@ def _softm_to_dict(row):
                fax=row.get('fax', ''),
                mobil=row.get('mobil', ''),
                mail=row.get('mail', ''),
-               mitgliednr=row.get('mitgliednr', ''),
                ustid=row.get('ustid', ''),
                adressdatei_id=row.get('adressdatei_id', ''),
                company=row.get('company', ''),                          # '06'
@@ -139,8 +138,9 @@ def _softm_to_dict(row):
     ret['betreuer'] = betreuerdict.get(ret['betreuer_handle'], '')
     if not ret['betreuer']:
         logging.error('Kunde %s (%s) hat keinen gültigen Betreuer' % (ret['name1'], ret['kundennr']))
-    if 'verband' in row:
-        ret['verband'] = 'SC%s' % row['verband']
+    if 'verbandsnr' in row:
+        ret['verbandsnr'] = 'SC%s' % row['verbandsnr']
+        ret['mitgliednr'] = row.get('mitgliednr', '')
     if 'iln' in row and row['iln']:
         ret['iln'] = unicode(int(row['iln'])).strip()
     if row['erfassung_date']:

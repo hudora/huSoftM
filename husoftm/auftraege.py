@@ -42,26 +42,26 @@ def auftragsart(art):
 def auftraege(mindate=None, maxdate=None, additional_conditions=None, limit=None):
     """
     Alle Aufträge ermitteln
-    
+
     additional_conditions kann SQL-Bedingungen enthalten, die
     die Auftragssuche einschränken.
-    
+
     TODO: Wenn Datum in additional_conditions, dann Datumsfelder überprüfen und ggf. konvertieren
     """
-    
+
     conditions = ["AKSTAT<>'X'"]
-    
+
     if mindate and maxdate:
         conditions.append("AKDTER BETWEEN %s AND %s" % (date2softm(mindate), date2softm(maxdate)))
     elif mindate:
         conditions.append("AKDTER > %s" % date2softm(mindate))
     elif maxdate:
         conditions.append("AKDTER < %s" % date2softm(maxdate))
-    
+
     # You should REALLY know what you are doing!
     if additional_conditions:
         conditions.extend(additional_conditions)
-    
+
     condition = " AND ".join(conditions)
     rows = get_connection().query('AAK00', ordering=['AKAUFN DESC', 'AKDTLT'], condition=condition, limit=limit)
     return rows
@@ -69,7 +69,7 @@ def auftraege(mindate=None, maxdate=None, additional_conditions=None, limit=None
 
 # def get_auftragskopf(auftragsnr):
 #     """Auftragskopf für Auftrag ermitteln"""
-#     
+#
 #     rows = get_connection().query('AAK00',
 #         condition="AKSTAT<>'X' AND AKAUFN=%s" % sql_quote(auftragsnr))
 #     if len(rows) != 1:
@@ -79,13 +79,13 @@ def auftraege(mindate=None, maxdate=None, additional_conditions=None, limit=None
 
 def get_auftrag(auftragsnr):
     """Auftrag mit Auftragsnummer auftragsnr ermitteln"""
-        
+
     rows = get_connection().query('AAK00',
         condition="AKSTAT<>'X' AND AKAUFN=%s" % sql_escape(auftragsnr))
     if len(rows) != 1:
         raise RuntimeError('inkonsistente Kopfdaten in AAK00 für Auftragsnr %s' % auftragsnr)
     kopf = rows[0]
-    
+
     positionen = get_connection().query(['AAP00'], ordering=['APAUFN DESC', 'APDTLT'],
         condition="APSTAT<>'X' AND APAUFN=%s" % sql_escape(auftragsnr))
     return kopf, positionen
@@ -93,7 +93,7 @@ def get_auftrag(auftragsnr):
 
 def auftraege_for_kunde(kundennr, limit=None):
     """Alle Aufträge für eine Kundennummer ermitteln"""
-    
+
     condition = "AKKDNR = %s" % sql_quote(pad('AKKDNR', kundennr))
     rows = get_connection().query('AAK00', ordering=['AKAUFN DESC', 'AKDTLT'],
                                   condition=condition, limit=limit)
@@ -113,35 +113,35 @@ def auftraege_for_artnr(artnr, additional_conditions=None, limit=None):
 
 def lieferadresse(auftragsnr):
     """Lieferadresse für Auftrag ermitteln"""
-    
+
     conn = get_connection()
     # Gibt es eine abweichende Lieferadresse?
     condition = "ADAART = 1 AND ADRGNR=%s " % sql_quote(auftragsnr)
     rows = conn.query('XAD00', condition=condition)
-    
+
     # if len(rows) > 1:
     #     raise RuntimeError("Es gibt mehr als eine abweichende Lieferadresse für Auftrag %s" % auftragsnr)
     # elif len(rows) == 1:
     #     return rows[0]
     if len(rows) > 0:
         return rows[0]
-    
+
     condition = "AKAUFN=%s AND AKKDNR = KDKDNR" % sql_quote(auftragsnr)
     rows = conn.query(['AAK00', 'XKD00'], condition=condition,
                       fields=['KDNAME', 'KDNAM2', 'KDNAM3', 'KDNAM4', 'KDSTR', 'KDPLZ', 'KDORT', 'KDLKZ'])
     if len(rows) != 1:
         raise RuntimeError('inkonsistente Kopfdaten in AAK00 für Auftragsnr %s' % auftragsnr)
-    
+
     return rows[0]
 
 
 def find_text(text):
     """Durchsucht alle Auftragstexte nach 'text'.
-    
+
     Rückgabewert ist eine Liste mit gefundenen Texten und dazugehörigen Auftragsnummern.
 
     Das ist ganz nützlich, wenn nach einem GUID gesucht werden soll:
-    
+
     >>> find_text('EUDA4BGY')
     [{'auftragsnr': 1130969, 'text': 'Referenz: 0EUDA4BGYJCLT4VSNI2CP5XCPDQ'},
      {'auftragsnr': 1130970, 'text': 'Referenz: 1EUDA4BGYJCLT4VSNI2CP5XCPDQ'}]
@@ -166,7 +166,7 @@ def get_auftragnr(guid):
     """
     Gibt die Auftragsnr zu einem GUID zurück, sofern vorhanden.
     """
-    
+
     condition = "ATTX60 = %s AND ATAUPO = 0 AND ATTART = 8" % sql_quote("#:guid:" + guid)
     rows = get_connection().query('AAT00', fields=['ATAUFN'], condition=condition)
     if rows:

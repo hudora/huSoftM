@@ -24,7 +24,7 @@ import husoftm.mock_as400
 try:
     Pyro.core.initClient(banner=False)
 except:
-    pass # function not available in newer Pyro distributions
+    pass  # function not available in newer Pyro distributions
 
 
 LOG = logging.getLogger('huSoftM.sql')
@@ -37,7 +37,7 @@ def _combine_date_and_time(mappings, fields, i, row, rowdict):
     timefield = DATETIMEDIR[fields[i]]
     timepos = fields.index(timefield)
     if (timepos and row[timepos] and
-        not str(row[timepos]).startswith('99')): # Zeit = 999999: Unbestimmt
+        not str(row[timepos]).startswith('99')):  # Zeit = 999999: Unbestimmt
         try:
             if len(str(int(row[i]))) == 7:
                 rowdict[basename] = datetime.datetime(*(
@@ -57,15 +57,15 @@ class PyRoMoftSconnection(object):
         # finds object automatically if you're running the Name Server.
         self.__server = Pyro.core.getProxyForURI("PYRONAME://pyro-ns.local.hudora.biz/mofts_connector1")
         warnings.warn("hudoftm.connection is deprecated use hudoftm.connection2 instead",
-                      DeprecationWarning, stacklevel=3) 
+                      DeprecationWarning, stacklevel=3)
 
     def _fix_field(self, data):
         """Fix field types returned by DB2/400."""
 
-        if isinstance(data, str): # fix strings
+        if isinstance(data, str):  # fix strings
             return data.strip().decode('latin-1').encode('utf-8')
         elif isinstance(data, float):
-            if data == int(data): # fix floats:
+            if data == int(data):  # fix floats:
                 return int(data)
             else:
                 return float(data)
@@ -262,6 +262,6 @@ MoftSconnectionToTestDB = PyRoMoftSconnectionToTestDB
 
 def get_connection():
     """Get a PyRoMoftSconnection Object. Meant to one day introduce connection pooling."""
-    
+
     # return MoftSconnectionToTestDB()
     return MoftSconnection()

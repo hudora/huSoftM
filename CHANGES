@@ -1,3 +1,5 @@
+0.71:   support for LEFT OUTER JOIN  
+0.70:   softmexpress - nodejs based proxy
 0.68:   neu: husoftm/kontrollator.py - Findet Aufträge die Voll ausgeliefert sind aber keine Rechnung haben
 0.67:   Proxy server for SoftM print server
 0.66:   New function kunden.offene_posten, kunden.kredit_limit

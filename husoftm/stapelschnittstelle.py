@@ -332,7 +332,7 @@ def _auftrag2records(vorgangsnummer, auftrag):
     if hasattr(auftrag, 'anlieferdatum_min') and auftrag.anlieferdatum_min:
         kopf.anliefertermin = date2softm(auftrag.anlieferdatum_min)
     else:
-        kopf.anliefertermin = date2softm(datetime.date.today()) # FIXME +7 days eventually?
+        kopf.anliefertermin = date2softm(datetime.date.today())  # FIXME +7 days eventually?
 
     positionen = []
     texte = []
@@ -398,7 +398,7 @@ def auftrag2softm(auftrag, belegtexte=None):
                            "uuid=%r\n SQL Statement: %r" % (uuid, kopf.to_sql()))
     elif rowcount > 1:
         get_connection().delete('ABK00', 'BKDFSL=%s' % sql_quote(uuid))
-        time.sleep(random.random()/100.0)
+        time.sleep(random.random() / 100.0)
         return auftrag2softm(auftrag, belegtexte)
     else:
         sql = []
@@ -448,7 +448,7 @@ def _order2records(vorgangsnummer, order, auftragsart=None, abgangslager=None):
     if _get_attr(order, 'anlieferdatum_von'):
         kopf.anliefertermin = date2softm(_get_attr(order, 'anlieferdatum_von'))
     else:
-        kopf.anliefertermin = date2softm(datetime.date.today()) # FIXME +7 days eventually?
+        kopf.anliefertermin = date2softm(datetime.date.today())  # FIXME +7 days eventually?
     if _get_attr(order, 'anlieferdatum_bis'):
         kopf.kundenwunschtermin = date2softm(_get_attr(order, 'anlieferdatum_bis'))
     else:
@@ -540,7 +540,7 @@ def extended_order_protocol2softm(order, auftragsart=None, abgangslager=None):
     # oder so:
     # -    orders = husoftm.auftraege.find_text(guidtext)
     #    if orders:
-    #        raise RuntimeError('Auftrag mit guid %r bereits vorhanden: %r' 
+    #        raise RuntimeError('Auftrag mit guid %r bereits vorhanden: %r'
     #                            % (order['guid'], orders[0]['auftragsnr']))
 
     while True:
@@ -579,7 +579,7 @@ def extended_order_protocol2softm(order, auftragsart=None, abgangslager=None):
         # the race condition has hit - remove our entry and retry
         get_connection().delete('ABK00', 'BKDFSL=%s' % sql_quote(uuid))
         # sleep to avoid deadlocks - http://de.wikipedia.org/wiki/CSMA/CD#Das_Backoff-Verfahren_bei_Ethernet
-        time.sleep(random.random()/13.3)
+        time.sleep(random.random() / 13.3)
         # recusively try again
         return extended_order_protocol2softm(order, auftragsart, abgangslager)
     else:
@@ -893,7 +893,7 @@ class _AuftragTests(unittest.TestCase):
         """Tests that 'zusatzliche lieferadresse' (BKVANR) can be converted to sql"""
         vorgangsnummer = 123
         auftrag = _MockAuftrag()
-        auftrag.kundennr = '17200/444' # <-- 004 ist die zusätzliche lieferadresse
+        auftrag.kundennr = '17200/444'  # <-- 004 ist die zusätzliche lieferadresse
         auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
         pos1 = _MockPosition()
         pos1.menge = 10
@@ -935,7 +935,7 @@ class _AuftragTests(unittest.TestCase):
         vorgangsnummer = 123
         auftrag = _MockAuftrag()
         auftrag.kundennr = '17200'
-        auftrag.herkunft = 'E' #EDI
+        auftrag.herkunft = 'E'  # EDI
         auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
         auftrag.positionen = []
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
@@ -1203,7 +1203,7 @@ class _OrderTests(unittest.TestCase):
                  'name1': 'HUDORA GmbH',
                  'name2': '-UMFUHR-',
                  'name3': '',
-                 'versandkosten': 1950, # in Cent
+                 'versandkosten': 1950,  # in Cent
                  'ort': 'Remscheid',
                  'plz': '42897',
                  'strasse': u'Jägerwald 13',

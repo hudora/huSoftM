@@ -15,15 +15,15 @@ import sys
 from decimal import Decimal
 from husoftm.connection2 import get_connection
 from husoftm.tools import sql_quote
-from pprint import pprint # used for doctests
+from pprint import pprint  # used for doctests
 
 
 def preisentwicklung(artnrs):
     """Ermittelt alle Preise für eine Liste von Artikelnummern.
-    
+
     ACHTUNG: erwartet eine Liste von Artikelnummern. In der Regel will man die Preise
     für alle Versionen auf einmal ermitteln.
-    
+
     >>> pprint(preisentwicklung(['77068', '77068/00'])[:4])
     [(datetime.date(2005, 9, 1),
       datetime.date(2006, 7, 3),
@@ -42,10 +42,10 @@ def preisentwicklung(artnrs):
       '77068',
       (Decimal('0.12'), 'USD'))]
     """
-    
+
     # common error: providing a string, not a list
     assert not isinstance(artnrs, basestring)
-    
+
     artnrsstr = ','.join([sql_quote(artnr) for artnr in artnrs])
     rows = get_connection().query(['XPN00', 'XPR00'], ordering='PRDTVO',
         condition=("PNSANR=PRSANR and PRANW='E' and PRSTAT=' ' and PNSTAT=' '"
@@ -55,7 +55,7 @@ def preisentwicklung(artnrs):
              row['artnr'],
              ((Decimal(str(row['preis'])).quantize(Decimal(10) ** -2)),
              row['waehrung'])) for row in rows]
-    
+
 
 if __name__ == '__main__':
     failure_count, test_count = doctest.testmod()

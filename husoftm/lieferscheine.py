@@ -10,7 +10,7 @@ Copyright (c) 2007 HUDORA GmbH. All rights reserved.
 __revision__ = "$Revision$"
 
 from husoftm.connection2 import get_connection
-from husoftm.tools import sql_escape, sql_quote, land2iso, set_attributes
+from husoftm.tools import sql_quote, land2iso, set_attributes
 import cs.caching
 import logging
 
@@ -27,7 +27,7 @@ def get_lieferscheinnrs_for_lager(lager):
 
 def get_lieferscheine_rechnungsstatus(lieferscheinnrs):
     """Liefert den minimalen Rechnungsstatus aller Positionen einer Liste von Lieferscheinen zurück.
-    
+
     lieferscheinnrs is expected to be a list.
 
     Returns a list containing tuples w/ lieferscheinnr and its rechnungsstatus
@@ -35,9 +35,9 @@ def get_lieferscheine_rechnungsstatus(lieferscheinnrs):
 
     mappings = {'LKLFSN': 'lieferscheinnummer',
                 'MIN(LNRGST)': 'rechnungsstatus'}
-    
+
     if lieferscheinnrs:
-        condition="LKSANK=LNSANK AND (LKLFSN IN (%s))" % ", ".join(str(lsnr) for lsnr in lieferscheinnrs)
+        condition = "LKSANK=LNSANK AND (LKLFSN IN (%s))" % ", ".join(str(lsnr) for lsnr in lieferscheinnrs)
         rows = get_connection().query(["ALK00", "ALN00"], fields=mappings.keys(),
                                       condition=condition,
                                       grouping=["LKLFSN"],
@@ -48,7 +48,7 @@ def get_lieferscheine_rechnungsstatus(lieferscheinnrs):
 
 def lieferscheine_for_auftrag(auftragsnr):
     """Return all Lieferschein objects for a given auftragsnr"""
-    
+
     conditions = ["LKAUFS = %s" % sql_quote(auftragsnr), "LKLFSN <> 0"]
     condition = " AND ".join(conditions)
     rows = get_connection().query(["ALK00"], condition=condition)
@@ -57,20 +57,20 @@ def lieferscheine_for_auftrag(auftragsnr):
 
 def kommibelege_for_auftrag(auftragsnr):
     """Return all Kommibeleg objects for a given auftragsnr"""
-    
+
     conditions = ["LKAUFS = %s" % sql_quote(auftragsnr), "LKLFSN = 0"]
     condition = " AND ".join(conditions)
     rows = get_connection().query(["ALK00"], condition=condition)
     return [Kommibeleg(row['kommissionierbelegnr']) for row in rows]
 
 
-@cs.caching.cache_function(60*60*72) # 3 days
+@cs.caching.cache_function(60 * 60 * 72)  # 3 days
 def kbpos2artnr(komminr, posnr):
     """Gibt die Artikelnummer zu einer bestimmten Position eines Kommissionierbelegs zurück."""
     rows = get_connection().query('ALN00', fields=['LNARTN'],
                condition="LNKBNR=%d AND LNBELP=%d" % (int(komminr), int(posnr)))
     return rows[0][0]
-    
+
 
 #@cs.caching.cache_function(60*60*24) # 1 day
 def kbpos2artnr_lager(komminr, posnr):
@@ -96,49 +96,49 @@ class Adresse(object):
     # Sollte dem Adressprotokoll folgen - muss aber noch überprüft werden.
     def __repr__(self):
         return repr(vars(self))
-    
+
 
 class Lieferschein(object):
     """Repräsentiert einen SoftM Lieferschein. Folgt dem Lieferung Protokol.
-    
+
     Siehe https://cybernetics.hudora.biz/projects/wiki/LieferungProtocol
-    
+
     >>> Lieferschein(4034544)
     <Lieferschein object>
     """
 
     condition = "LKLFSN = %d"
-    
+
     def __init__(self, lsnr=None):
         self._read_from_softm(int(lsnr))
 
     def _read_from_softm(self, lsnr):
         """Basierend auf der ALK00 wird ein Datensatz aus allen verwandten Tabellen extrahiert."""
-        
+
         # Lieferscheinkopf JOIN Kundenadresse JOIN Auftragskopf um die Anzahl der Queries zu minimieren
-        conditions = [self.condition % lsnr, "LKKDNR = KDKDNR", "LKAUFS = AKAUFN"]        
+        conditions = [self.condition % lsnr, "LKKDNR = KDKDNR", "LKAUFS = AKAUFN"]
         rows = get_connection().query(['ALK00', 'AAK00', 'XKD00'], condition=" AND ".join(conditions))
         if len(rows) != 1:
             raise RuntimeError("Probleme bei der Auswahl des Lieferscheins - kein Datensatz mit %s" %
                                 (self.condition % lsnr))
         set_attributes(rows[0], self)
-        
+
         self.anlieferdatum = self.liefer_date
         self.anlieferdatum_min = self.anlieferdatum_max = self.anlieferdatum
 
         if self.kundenwunsch_date:
             self.anlieferdatum_max = self.kundenwunsch_date
-        
+
         self.fixtermin = bool(self.fixtermin)
-        
+
         self.pos_key = self.satznr
         if self.bezogener_kopf:
             self.pos_key = self.bezogener_kopf
-        
+
         # Property für delayed execution
         self._positionen = None
         self._infotext_kunde = None
-        
+
         self.lieferadresse = Adresse()
         self._get_abweichendelieferadresse()
 
@@ -156,7 +156,7 @@ class Lieferschein(object):
         """Liste der Lieferscheinpositionen"""
         # TODO: JOIN mit Texten
         if self._positionen is None:
-            
+
             self._positionen = []
             rows = get_connection().query('ALN00', condition="LNSANK = %d" % int(self.pos_key))
             for row in rows:
@@ -164,17 +164,17 @@ class Lieferschein(object):
                 set_attributes(row, position)
                 #position.anfangstext, position.endetext = _get_pos_texte(position.auftrags_position, self.auftragsnr)
                 self._positionen.append(position)
-                
+
         return self._positionen
 
     @property
     def infotext_kunde(self):
         """Texte zu einem Lieferschein"""
-        if self._infotext_kunde is None:        
+        if self._infotext_kunde is None:
             self.anfangstext, self.endetext = _get_pos_texte(auftragsposnr=0, auftragsnr=self.auftragsnr)
             self._infotext_kunde = '\n'.join([self.anfangstext, self.endetext]).strip()
         return self._infotext_kunde
-    
+
     def _get_abweichendelieferadresse(self):
         """Abweichende Lieferadresse wenn vorhanden extrahieren."""
         # Wenn eine gesonderte Lieferadresse angegeben ist, Adresse damit überschreiben
@@ -194,14 +194,14 @@ class Lieferschein(object):
             #  'plz': u'14641',
             #  'strasse': u'Magdeburger Str. 2'}
             set_attributes(row, self)
-    
+
     def __unicode__(self):
         return u"SL%d, %d Positionen, %r" % (self.lieferscheinnr, len(self.positionen), self.liefer_date)
-    
+
 
 class Lieferscheinposition(object):
     """Bildet eine 'Orderline' in einem Lieferschein ab."""
-    
+
     def __init__(self):
         self._anfangstext = None
         self._endetext = None
@@ -209,7 +209,7 @@ class Lieferscheinposition(object):
     def __repr__(self):
         ret = "%d/%d/%d/%d x %s" % (self.menge, self.menge_offen, self.menge_komissionierbeleg,
                                     self.menge_fakturierung, self.artnr)
-        
+
         if self.lieferscheinstorno:
             ret += ', STORNIERT'
         return ret
@@ -225,7 +225,7 @@ class Lieferscheinposition(object):
         if self._endetext == None:
             self._endetext, self._endetext = _get_pos_texte(self.auftrags_position, self.auftragsnr)
         return self._endetext
-    
+
 
 class Kommibeleg(Lieferschein):
     """Bildet einen Komissionierbeleg ab (der datentechnisch in SoftM ein Lieferschein ist)."""
@@ -260,6 +260,6 @@ def _test():
     Kommibeleg(3023551)
     (vars(Lieferschein(4034544)))
     kbpos2artnr(3023551, 1)
-    
+
 if __name__ == '__main__':
     _test()

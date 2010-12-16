@@ -14,13 +14,13 @@ import cs.caching as caching
 import datetime
 import re
 import unittest
-import warnings
 import huTools.decorators as decorators
 import copy
 
+
 def _auf_zwei_stellen(floatnum):
     """Converts a float to a Decimal() object with two digits precision.
-    
+
     >>> _auf_zwei_stellen(1.0/3.0)
     0.33
     """
@@ -45,7 +45,7 @@ def verkaufspreis(artnr, kundennr, bestelldatum=datetime.date.today()):
 
     >>> verkaufspreis('04711', 94763)
     {'preis': Decimal('13.00'), 'herkunft': 'Kundenpreis'}
-    
+
     """
 
     # Kundennr als Zeichenkette
@@ -54,8 +54,8 @@ def verkaufspreis(artnr, kundennr, bestelldatum=datetime.date.today()):
     artnr_str = sql_quote(artnr)
 
     # 1. Preis für Kunde hinterlegt?
-    condition=("PNSANR=PRSANR and PRANW='A' and PRSTAT=' ' and PNSTAT=' ' AND "
-               "PRARTN = %s and PRDTBI >= %s AND PRDTVO <= %s" % (artnr_str, date_str, date_str))
+    condition = ("PNSANR=PRSANR and PRANW='A' and PRSTAT=' ' and PNSTAT=' ' AND "
+                 "PRARTN = %s and PRDTBI >= %s AND PRDTVO <= %s" % (artnr_str, date_str, date_str))
 
     condition_kunde = condition + " AND PRKDNR = %s" % kundennr_str
     rows = get_connection().query(['XPN00', 'XPR00'], fields=["PNPRB"], ordering='PRDTVO', condition=condition_kunde)
@@ -79,7 +79,7 @@ def verkaufspreis(artnr, kundennr, bestelldatum=datetime.date.today()):
 @decorators.memoize
 def buchdurchschnittspreis(artnr):
     """Gibt den (aktuellen) Buchdurchschnittspreis für einen Artikel zurück.
-    
+
     >>> buchdurchschnittspreis('04711')
     13.65
     """
@@ -94,11 +94,11 @@ def buchdurchschnittspreis(artnr):
 @decorators.memoize
 def preis(artnr):
     """Gibt den (aktuellen) Listenpreis für einen Artikel zurück.
-    
+
     >>> preis('04711')
     13.65
     """
-    
+
     rows = get_connection().query('XAR00', fields=['ARPREV'],
                                   condition="ARARTN=%s AND ARSTAT<>'X'" % sql_quote(artnr))
     if rows:
@@ -109,51 +109,51 @@ def preis(artnr):
 
 class Artikel(object):
     """Repräsentiert einen Artikel in SoftM."""
-    
+
     def fill_from_softm(self, row):
-        self.artnr = row.get('artnr', '') # u'14600'
-        self.laenge = row.get('laenge', '') # 0.14999999999999999
-        self.tiefe = row.get('tiefe', '') # 0.78000000000000003
-        self.breite = row.get('breite', '') # 0.29999999999999999
-        self.volumen = row.get('volumen', '') # 0
-        self.gewicht = row.get('gewicht', '') # 3.2330000000000001
-        self.gewicht_netto = row.get('gewicht_netto', '') # 3.2330000000000001
-        self.abc1 = row.get('abc1', '') # u'A'
-        self.abc2 = row.get('abc2', '') # u'A'
-        self.abc3 = row.get('abc3', '') # u'A'
-        self.ean = int(row.get('ean', '')) # wird als float übertragen, Beispiel: 4005998080337.0
+        self.artnr = row.get('artnr', '')  # u'14600'
+        self.laenge = row.get('laenge', '')  # 0.14999999999999999
+        self.tiefe = row.get('tiefe', '')  # 0.78000000000000003
+        self.breite = row.get('breite', '')  # 0.29999999999999999
+        self.volumen = row.get('volumen', '')  # 0
+        self.gewicht = row.get('gewicht', '')  # 3.2330000000000001
+        self.gewicht_netto = row.get('gewicht_netto', '')  # 3.2330000000000001
+        self.abc1 = row.get('abc1', '')  # u'A'
+        self.abc2 = row.get('abc2', '')  # u'A'
+        self.abc3 = row.get('abc3', '')  # u'A'
+        self.ean = int(row.get('ean', ''))  # wird als float übertragen, Beispiel: 4005998080337.0
         self.status = row.get('status', '')
-        self.zolltarifnummer = row.get('zolltarifnummer', '') # u'95010090'
-        self.ursprungsland = row.get('ursprungsland', '') # 720
-        self.handelsform = row.get('handelsform', '') # u''
-        self.verkaufsteil = row.get('verkaufsteil', '') # u'2'
-        self.mindestabnahmemenge = row.get('mindestabnahmemenge', '') # 0
-        self.artikelhauptgruppe = row.get('artikelhauptgruppe', '') # u'400'
-        self.matchcode = row.get('matchcode', '') # u'BIG WHEEL, SKATEROLL'
-        self.ersatzartikel = row.get('ersatzartikel', '') # u''
-        self.andruck_in_rechnung = row.get('andruck_in_rechnung', '') # 0
-        self.ARBEZ1 = row.get('ARBEZ1', '') # u'HUDORA Big Wheel, sil'
-        self.ARBEZ2 = row.get('ARBEZ2', '') # u'ber ,Aluscooter, STIW'
-        self.ARBEZ3 = row.get('ARBEZ3', '') # u'A "GUT"'
-        self.zuteilungssperre = row.get('zuteilungssperre', '') # u''
-        self.webshop = row.get('webshop', '') # u''
-        self.setartikel = row.get('setartikel', '') # 0
-        self.listenpreis = row.get('listenpreis', '') # 32.950000000000003
-        self.info = row.get('info', '') # u''
-        self.darreichungsform = row.get('darreichungsform', '') # u''
-        self.artikelgruppe = row.get('artikelgruppe', '') # u'401'
-        self.mengeneinheit = row.get('mengeneinheit', '') # 1
-        self.auslaufartikel = row.get('auslaufartikel', '') # 0
-        self.ist_verpackung = row.get('ist_verpackung', '') # 0
-        self.ersatzteil = row.get('ersatzteil', '') # u'0'
-        self.aenderung_date = row.get('aenderung_date', '') # datetime.date(2007, 4, 28)
-        self.artikeltexte_vorhanden = row.get('artikeltexte_vorhanden', '') # 0
-        # self. = row.get('Sachb.letzte \xc3\x84nderung', '') # 303
-        # self. = row.get('BenutzerPr.letzte \xc3\x84nderung', '') # u'MD'
-        # u'', 'BenutzerPr.Erfassung', '') # u''
-        # self. = row.get('erfassung_date', '') # datetime.date(2004, 12, 2)
-        # self. = row.get('Sachb. Erfassung', '') # 169
-        # self. = row.get('zollgruppe', '') # u''
+        self.zolltarifnummer = row.get('zolltarifnummer', '')  # u'95010090'
+        self.ursprungsland = row.get('ursprungsland', '')  # 720
+        self.handelsform = row.get('handelsform', '')  # u''
+        self.verkaufsteil = row.get('verkaufsteil', '')  # u'2'
+        self.mindestabnahmemenge = row.get('mindestabnahmemenge', '')  # 0
+        self.artikelhauptgruppe = row.get('artikelhauptgruppe', '')  # u'400'
+        self.matchcode = row.get('matchcode', '')  # u'BIG WHEEL, SKATEROLL'
+        self.ersatzartikel = row.get('ersatzartikel', '')  # u''
+        self.andruck_in_rechnung = row.get('andruck_in_rechnung', '')  # 0
+        self.ARBEZ1 = row.get('ARBEZ1', '')  # u'HUDORA Big Wheel, sil'
+        self.ARBEZ2 = row.get('ARBEZ2', '')  # u'ber ,Aluscooter, STIW'
+        self.ARBEZ3 = row.get('ARBEZ3', '')  # u'A "GUT"'
+        self.zuteilungssperre = row.get('zuteilungssperre', '')  # u''
+        self.webshop = row.get('webshop', '')  # u''
+        self.setartikel = row.get('setartikel', '')  # 0
+        self.listenpreis = row.get('listenpreis', '')  # 32.950000000000003
+        self.info = row.get('info', '')  # u''
+        self.darreichungsform = row.get('darreichungsform', '')  # u''
+        self.artikelgruppe = row.get('artikelgruppe', '')  # u'401'
+        self.mengeneinheit = row.get('mengeneinheit', '')  # 1
+        self.auslaufartikel = row.get('auslaufartikel', '')  # 0
+        self.ist_verpackung = row.get('ist_verpackung', '')  # 0
+        self.ersatzteil = row.get('ersatzteil', '')  # u'0'
+        self.aenderung_date = row.get('aenderung_date', '')  # datetime.date(2007, 4, 28)
+        self.artikeltexte_vorhanden = row.get('artikeltexte_vorhanden', '')  # 0
+        # self. = row.get('Sachb.letzte \xc3\x84nderung', '')  # 303
+        # self. = row.get('BenutzerPr.letzte \xc3\x84nderung', '')  # u'MD'
+        # u'', 'BenutzerPr.Erfassung', '')  # u''
+        # self. = row.get('erfassung_date', '')  # datetime.date(2004, 12, 2)
+        # self. = row.get('Sachb. Erfassung', '')  # 169
+        # self. = row.get('zollgruppe', '')  # u''
         if row['erfassung_date']:
             self.erfassung = row['erfassung_date']
         if row['aenderung_date']:
@@ -181,7 +181,7 @@ def get_artikel(artnr=None, ean=None):
     cond1 = "ARARTN=%s" % sql_quote(artnr)
     cond2 = "AREAN=%s" % sql_quote(ean)
     if artnr and ean:
-        condition = cond1+" AND "+cond2
+        condition = cond1 + " AND " + cond2
     elif artnr:
         condition = cond1
     elif ean:
@@ -218,7 +218,7 @@ def guess_artnr(ean):
         return None
     if len(articles) == 1:
         return articles[0].artnr
-    
+
     pattern = re.compile('(\d+)')
 
     # by checking for article sets
@@ -239,24 +239,24 @@ def guess_artnr(ean):
 
 def komponentenaufloesung(mengenliste):
     """Löst Artikel in ihre Komponenten auf.
-    
+
     >>> komponentenaufloesung([(5, '00049'), (4, '00537')])
     [(5, u'A42438'), (5, u'A42439'), (5, u'A42440'), (10, u'A42441'), (4, u'42050/A'), (12, u'42051/A'), (4, u'42052/A')]
     >>> komponentenaufloesung([(2, '00001')])
     [(2, '00001')]
-    
+
     Achtung: Diese Funktion implementiert mehrere Tage caching
     """
-    
+
     ret = []
     for menge, artnr in mengenliste:
         # check if we have a cached result
         memc = caching.get_cache()
         rows = memc.get('husoftm.komponentencache.%r' % (artnr))
-        if rows == None: # empty lists are cached too, so check against None here
+        if rows == None:  # empty lists are cached too, so check against None here
             rows = get_connection().query(['ASK00'], fields=['SKLFNR', 'SKKART', 'SKMENG'],
                                           condition="SKARTN='%s'" % artnr)
-            memc.set('husoftm.komponentencache.%r' % (artnr), rows, 60*60*72) # 4 d
+            memc.set('husoftm.komponentencache.%r' % (artnr), rows, 60 * 60 * 72)  # 4 d
         if not rows:
             # kein Setartikel
             ret.append((menge, artnr))
@@ -269,7 +269,7 @@ def komponentenaufloesung(mengenliste):
 def komponentenaufloesung_order(order):
     """L<C3><B6>st Artikel in ihre Komponenten auf, wie komponentenaufloesung() arbeitet aber mit Objekten
       nach dem VerySimpleOrderProtocol."""
-    
+
     neworderlines = []
     for orderline in order.orderlines:
         neu = komponentenaufloesung([(orderline.menge, orderline.artnr)])
@@ -288,24 +288,23 @@ def komponentenaufloesung_order(order):
 
 def get_umschlag(artnr):
     """Gibt aufgeschlüsselt nach Datum zurück, wie viel Einheiten fakturiert wurden.
-    
+
     >>> get_umschlag('14600')
     [(datetime.date(2005, 1, 25), 104),
      (datetime.date(2005, 1, 27), 8),
      ...
      (datetime.date(2008, 5, 29), 2),
      (datetime.date(2009, 2, 10), 2)]
-     
+
     Achtung: Diese Funktion implementiert mehrere Tage caching.
     """
-    
+
     # check if we have a cached result
     memc = caching.get_cache()
     cacheddata = memc.get('husoftm.umschlag.%r' % (artnr))
     if cacheddata:
-        del memc
         return cacheddata
-    
+
     condition = (
     "FKRGNR=FURGNR"             # JOIN
     " AND FKAUFA<>'U'"          # Keine Umlagerung
@@ -317,29 +316,28 @@ def get_umschlag(artnr):
     " AND FURGNR<>0"            # es gibt eine Rechnungsnummer
     " AND FKMJBU>'10412'"       # keine legacy Daten
     " AND FUARTN=%s")           # nur bestimmten Artikel beachten
-    
+
     rows = get_connection().query(['AFU00', 'AFK00'], fields=['FKDTFA', 'SUM(FUMNG)'],
                    condition=condition % (sql_quote(artnr)),
                    ordering='FKDTFA', grouping='FKDTFA',
                    querymappings={'SUM(FUMNG)': 'menge', 'FKDTFA': 'rechnung_date'})
     ret = [(x['rechnung_date'], as400_2_int(x['menge'])) for x in rows if x['menge'] > 0]
-    
-    memc.set('husoftm.umschlag.%r' % (artnr), ret, 60*60*24*6) # 6 d
-    del memc
+
+    memc.set('husoftm.umschlag.%r' % (artnr), ret, 60 * 60 * 24 * 6)  # 6 d
     return ret
 
 
 def abgabepreisbasis(artnr):
     """Gibt eine Liste mit den durchschnittlichen Rechnungspreisen pro Monat zurück.
-    
+
     Liefert eine Liste von 4-Tuples
     (datum, AVG(preis), menge, gesammtpreis)
-    
+
     [ ...
-    (datetime.date(2009, 2, 10), 32.95, 2, 65.90), 
+    (datetime.date(2009, 2, 10), 32.95, 2, 65.90),
     (datetime.date(2009, 10, 19), 17.44, 2, 34.88)]
     """
-    
+
     condition = (
     "FKRGNR=FURGNR"             # JOIN
     " AND FKAUFA<>'U'"          # Keine Umlagerung
@@ -352,7 +350,7 @@ def abgabepreisbasis(artnr):
     " AND FUPNET>0"             # keine Gutschriften
     " AND FKMJBU>'10412'"       # keine legacy Daten
     " AND FUARTN=%s")           # nur bestimmten Artikel beachten
-    
+
     rows = get_connection().query(['AFU00', 'AFK00'], fields=['FKDTFA', 'SUM(FUMNG)', 'SUM(FUPNET)', 'COUNT(FKRGNR)'],
                    condition=condition % (sql_quote(artnr)),
                    ordering='FKDTFA', grouping='FKDTFA',
@@ -361,7 +359,7 @@ def abgabepreisbasis(artnr):
     for row in rows:
         menge = as400_2_int(row['menge'])
         if menge:
-            ret.append((row['rechnung_date'], float(row['nettopreis'])/float(row['menge']), menge, float(row['nettopreis'])))
+            ret.append((row['rechnung_date'], float(row['nettopreis']) / float(row['menge']), menge, float(row['nettopreis'])))
     ret.sort()
     return ret
 
@@ -376,9 +374,9 @@ class KomponentenaufloesungTests(unittest.TestCase):
                          [(5, u'A42438'), (5, u'A42439'), (5, u'A42440'), (10, u'A42441')])
         self.assertEqual(komponentenaufloesung([[4, u'00049']]),
                          [(4, u'A42438'), (4, u'A42439'), (4, u'A42440'), (8, u'A42441')])
-        self.assertEqual(komponentenaufloesung(((0, '00049'), )), 
+        self.assertEqual(komponentenaufloesung(((0, '00049'), )),
                          [(0, u'A42438'), (0, u'A42439'), (0, u'A42440'), (0, u'A42441')])
-    
+
     def test_uses_cache(self):
         komponentenaufloesung([(3, '00049')])
         oldlen = len(husoftm.mock_as400.querylog)
@@ -391,7 +389,7 @@ def _test():
     """Diverse einfache Tests."""
     abgabepreisbasis('14600')
     get_umschlag('14600')
-    _auf_zwei_stellen(1.0/3.0)
+    _auf_zwei_stellen(1.0 / 3.0)
     komponentenaufloesung([(5, '00049')]),
     ([(5, u'A42438'), (5, u'A42439'), (5, u'A42440'), (10, u'A42441')]
         == komponentenaufloesung([(5, '00049')]))

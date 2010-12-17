@@ -8,11 +8,9 @@ Copyright (c) 2007, 2009, 2010 HUDORA GmbH. All rights reserved.
 """
 
 from husoftm2.backend import query
-from decimal import Decimal
 from husoftm.tools import sql_quote, date2softm
 import datetime
-import re
-import copy
+import husoftm2.kunden
 
 
 def abgabepreis_kunde(artnr, kundennr, auftragsdatum=None):
@@ -42,7 +40,6 @@ def abgabepreis_kunde(artnr, kundennr, auftragsdatum=None):
     # Kundennr als Zeichenkette
     kundennr = int(kundennr.strip('SC'))
     date_str = sql_quote(date2softm(auftragsdatum))
-    artnr_str = sql_quote(artnr)
 
     # 1. Preis für Kunde hinterlegt?
     conditions = ["PNSANR=PRSANR",
@@ -54,18 +51,17 @@ def abgabepreis_kunde(artnr, kundennr, auftragsdatum=None):
                   "PRDTVO<=%s" % date_str,
                   ]
     condition_kunde = conditions + ["PRKDNR=%s" % sql_quote("%8s" % kundennr)]
-    rows = query(['XPN00', 'XPR00'], ordering='PRDTVO', condition=' AND '.join(conditions))
+    rows = query(['XPN00', 'XPR00'], ordering='PRDTVO', condition=' AND '.join(condition_kunde))
     if rows:
-        return (int(float(rows[0]['preis'])*100), 'Kundenpreis')
+        return (int(float(rows[0]['preis']) * 100), 'Kundenpreis')
 
     # 2. Preis aus Preislistennr. des Kunden ermitteln
     kunde = husoftm2.kunden.get_kunde(kundennr)
     if kunde and 'kunden_gruppe' in kunde and kunde['kunden_gruppe']:
-        condition_gruppe = condition + ["PRPRLK = %s" % sql_quote(kdgruppe)]
-        rows = query(['XPN00', 'XPR00'], ordering='PRDTVO',
-                     condition=' AND '.join(conditions))
+        condition_gruppe = conditions + ["PRPRLK = %s" % sql_quote(kunde['kunden_gruppe'])]
+        rows = query(['XPN00', 'XPR00'], ordering='PRDTVO', condition=' AND '.join(condition_gruppe))
         if rows:
-            return (int(float(rows[0]['preis'])*100), 'Preisliste %s' % kunde['kunden_gruppe'])
+            return (int(float(rows[0]['preis']) * 100), 'Preisliste %s' % kunde['kunden_gruppe'])
 
     # 3. Listenpreis aus Artikelstammdaten
     return (listenpreise(artnr), 'Listenpreis')
@@ -86,7 +82,7 @@ def buchdurchschnittspreise(artnrs):
                   "LFARTN IN (%s)" % ','.join([sql_quote(x) for x in artnrs]),
                   "LFSTAT<>'X'"]
     rows = query('XLF00', fields=['LFARTN', 'LFPRBD'], condition=' AND '.join(conditions))
-    return [(artnr, int(float(preis*100))) for (artnr, preis) in rows]
+    return [(artnr, int(float(preis * 100))) for (artnr, preis) in rows]
 
 
 def listenpreise(artnrs):
@@ -100,7 +96,7 @@ def listenpreise(artnrs):
                   "ARSTAT<>'X'"]
 
     rows = query('XAR00', fields=['ARARTN', 'ARPREV'], condition=' AND '.join(conditions))
-    return dict([(x['artnr'], int(100*x['listenpreis'])) for x in rows])
+    return dict([(x['artnr'], int(100 * float(x['listenpreis']))) for x in rows])
 
 
 def durchschnittlicher_abgabepreis(artnr, kundennr=None):
@@ -113,27 +109,27 @@ def durchschnittlicher_abgabepreis(artnr, kundennr=None):
     [ ...
     (datetime.date(2009, 2, 1), 3295, 2, 6590),
     (datetime.date(2009, 10, 1), 1744, 2, 3488)]
-    
+
     Die Funktion ist ausgesprochen langsam - bis zu 8 Sekunden.
     """
 
     conditions = [
-        "FUARTN=%s" % (sql_quote(artnr)), # nur bestimmten Artikel beachten
-        "FKRGNR=FURGNR",  # JOIN
-        "FKAUFA<>'U'",    # Keine Umlagerung
-        "FKSTAT<>'X'",    # nicht gelöscht
-        "FKDTFA>0",       # Druckdatum nicht leer
-        "FUKZRV=2",       # ?
-        "FURGNI<>0",      # ?
-        "FKFORM=' '",     # ?
-        "FURGNR<>0",      # es gibt eine Rechnungsnummer
-        "FUPNET>0",       # keine Gutschriften
-        "FKMJBU>'10412'", # keine legacy Daten
+        "FUARTN=%s" % (sql_quote(artnr)),  # nur bestimmten Artikel beachten
+        "FKRGNR=FURGNR",   # JOIN
+        "FKAUFA<>'U'",     # Keine Umlagerung
+        "FKSTAT<>'X'",     # nicht gelöscht
+        "FKDTFA>0",        # Druckdatum nicht leer
+        "FUKZRV=2",        # ?
+        "FURGNI<>0",       # ?
+        "FKFORM=' '",      # ?
+        "FURGNR<>0",       # es gibt eine Rechnungsnummer
+        "FUPNET>0",        # keine Gutschriften
+        "FKMJBU>'10412'",  # keine legacy Daten
         ]
     if kundennr:
         kundennr = int(kundennr.strip('SC'))
         conditions += ["(FKKDNR=%s OR FKKDRG=%s)" % (sql_quote('%8s' % kundennr), sql_quote('%8s' % kundennr))]
-        
+
     rows = query(['AFU00', 'AFK00'], fields=["FKDTFA", 'SUM(FUMNG)', 'SUM(FUPNET)', 'COUNT(FKRGNR)'],
                  condition=' AND '.join(conditions),
                  grouping='FKDTFA', cachingtime=60 * 60 * 24 * 3,
@@ -143,7 +139,7 @@ def durchschnittlicher_abgabepreis(artnr, kundennr=None):
     umsatz = {}
     for row in rows:
         menge = int(float(row['menge']))
-        nettopreis = float(row['nettopreis'])*100
+        nettopreis = float(row['nettopreis']) * 100
         if menge:
             datum = datetime.date(row['rechnung_date'].year, row['rechnung_date'].month, 1)
             if datum not in mengen:
@@ -152,14 +148,13 @@ def durchschnittlicher_abgabepreis(artnr, kundennr=None):
             umsatz[datum] += int(nettopreis)
     ret = []
     for datum in sorted(mengen.keys()):
-        ret.append((datum, int(umsatz[datum]/mengen[datum]), mengen[datum], umsatz[datum]))
+        ret.append((datum, int(umsatz[datum] / mengen[datum]), mengen[datum], umsatz[datum]))
     return ret
 
 
 def _selftest():
     """Test basic functionality"""
     from pprint import pprint
-    import datetime
     pprint(listenpreise(['14600', '14600/00', '14600/01', '14600/02', '14600/03']))
     pprint(buchdurchschnittspreise(['14600', '14600/00', '14600/01', '14600/02', '14600/03']))
     #pprint(durchschnittlicher_abgabepreis('14600'))

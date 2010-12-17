@@ -10,6 +10,7 @@ Copyright (c) 2007, 2010 HUDORA GmbH. All rights reserved.
 from husoftm2.backend import query
 import datetime
 import husoftm2.tools
+import logging
 
 
 betreuerdict = {

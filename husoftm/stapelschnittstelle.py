@@ -808,8 +808,8 @@ class _AuftragTests(unittest.TestCase):
         pos2.artnr = '22222/09'
         auftrag.positionen = [pos1, pos2]
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
-        kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKVGPO, BKFNR, BKDTKD, BKKDNR)"
-            " VALUES('1','123','xtodayx','1081230','1','2','01','xtodayx','   17200')")
+        # kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKVGPO, BKFNR, BKDTKD, BKKDNR)"
+        #     " VALUES('1','123','xtodayx','1081230','1','2','01','xtodayx','   17200')")
 
         # pos 1
         txt0 = texte[0].to_sql()

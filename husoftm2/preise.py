@@ -15,7 +15,7 @@ import husoftm2.kunden
 
 def abgabepreis_kunde(artnr, kundennr, auftragsdatum=None):
     """
-    Verkaufspreis für einen Artikel in Abhängigkeit von kundennr und auftragsdatum ermitteln ermitteln.
+    Verkaufspreis für einen Artikel in Abhängigkeit von kundennr und Auftragsdatum ermitteln.
 
     Höchste Priorität hat der für einen Kunden hinterlegt Preis.
     Zweithöchste Priorität hat der für die Preisliste (Kundengruppe) hinterlegte Preis
@@ -67,44 +67,52 @@ def abgabepreis_kunde(artnr, kundennr, auftragsdatum=None):
     return (listenpreise(artnr), 'Listenpreis')
 
 
-def buchdurchschnittspreise(artnrs):
-    """Gibt die (aktuellen) Buchdurchschnittspreise in Cent für eine Liste von Artikeln zurück.
+def buchdurchschnittspreise(artnrs=None):
+    """Gibt die (aktuellen) Buchdurchschnittspreise in Cent für ein Dict von Artikeln zurück.
+    Wenn keine Artikelnummern angegeben werden, gibt es alle Buchdurchschinttspreise zurück.
 
     >>> buchdurchschnittspreise(['14600', '14600/00', '14600/01', '14600/02', '14600/03'])
-    [(u'14600', 3165),
-     (u'14600/00', 0),
-     (u'14600/01', 0),
-     (u'14600/02', 3132),
-     (u'14600/03', 3944)]
+    {u'14600': 3165,
+     u'14600/00': 0,
+     u'14600/01': 0,
+     u'14600/02': 3132,
+     u'14600/03': 3944}
     """
 
     conditions = ["LFLGNR=0",
-                  "LFARTN IN (%s)" % ','.join([sql_quote(x) for x in artnrs]),
                   "LFSTAT<>'X'"]
+    if artnrs:
+        conditions += ["LFARTN IN (%s)" % ','.join([sql_quote(x) for x in artnrs])]
     rows = query('XLF00', fields=['LFARTN', 'LFPRBD'], condition=' AND '.join(conditions))
-    return [(artnr, int(float(preis * 100))) for (artnr, preis) in rows]
+    return dict([(artnr, int(float(preis * 100))) for (artnr, preis) in rows])
 
 
-def listenpreise(artnrs):
+def listenpreise(artnrs=None):
     """Gibt den (aktuellen) Listenpreis in Cent für eine Liste von Artikeln zurück.
+    Wenn keine Artikelnummern angegeben werden, gibt es alle Listenpreise zurück.
 
     >>> preise(['04711'])
     {'04711': 1365}
     """
 
-    conditions = ['ARARTN IN (%s)' % ','.join([sql_quote(x) for x in artnrs]),
-                  "ARSTAT<>'X'"]
-
+    conditions = ["ARSTAT<>'X'"]
+    if artnrs:
+        conditions += ['ARARTN IN (%s)' % ','.join([sql_quote(x) for x in artnrs])]
     rows = query('XAR00', fields=['ARARTN', 'ARPREV'], condition=' AND '.join(conditions))
     return dict([(x['artnr'], int(100 * float(x['listenpreis']))) for x in rows])
 
 
-def durchschnittlicher_abgabepreis(artnr, kundennr=None):
+def listenpreis(artnr):
+    return listenpreise([artnr]).values()[0]
+    
+
+def durchschnittlicher_abgabepreis(artnr, kundennr=None, startdatum=None):
     """Gibt eine Liste mit den durchschnittlichen Rechnungspreisen pro Monat zurück.
 
     Liefert eine Liste von 4-Tuples (datum, AVG(preis), menge, umsatz)
 
-    WEnn eine Kundennummer mitgeliefert wird, werden nur Rechungen für diesen Kunden betrachtet.
+    Wenn eine Kundennummer mitgeliefert wird, werden nur Rechungen für diesen Kunden betrachtet.
+    Wenn ein startdatum angegebenw wird, werden nur vorgänge nach diesem Datum betrachtet.
 
     [ ...
     (datetime.date(2009, 2, 1), 3295, 2, 6590),
@@ -124,11 +132,16 @@ def durchschnittlicher_abgabepreis(artnr, kundennr=None):
         "FKFORM=' '",      # ?
         "FURGNR<>0",       # es gibt eine Rechnungsnummer
         "FUPNET>0",        # keine Gutschriften
-        "FKMJBU>'10412'",  # keine legacy Daten
         ]
+
     if kundennr:
         kundennr = int(kundennr.strip('SC'))
-        conditions += ["(FKKDNR=%s OR FKKDRG=%s)" % (sql_quote('%8s' % kundennr), sql_quote('%8s' % kundennr))]
+        conditions = ["(FKKDNR=%s OR FKKDRG=%s)" % (sql_quote('%8s' % kundennr), 
+                                                    sql_quote('%8s' % kundennr))] + conditions
+    if not startdatum:
+        conditions = ["FKDTFA>'10501'"] + conditions  # keine legacy Daten
+    else:
+        conditions = ["FKDTFA>%s" % sql_quote(date2softm(auftragsdatum))[:5]] + conditions
 
     rows = query(['AFU00', 'AFK00'], fields=["FKDTFA", 'SUM(FUMNG)', 'SUM(FUPNET)', 'COUNT(FKRGNR)'],
                  condition=' AND '.join(conditions),

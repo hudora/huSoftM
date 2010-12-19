@@ -11,6 +11,13 @@ import unittest
 from husoftm2.backend import query
 
 
+def get_artikelnummern():
+    """Gibt eine Liste mit allen Artikelnummern zurück."""
+
+    rows = query(['XAR00'], fields=['ARARTN'])
+    return [x[0] for x in rows]
+
+
 def komponentenaufloesung(mengenliste):
     """Löst Artikel in ihre Komponenten auf.
 
@@ -45,6 +52,7 @@ class KomponentenaufloesungTests(unittest.TestCase):
 
 def _test():
     """Diverse einfache Tests."""
+    print get_artikelnummern()
     komponentenaufloesung([(5, '00049')]),
     ([(5, u'A42438'), (5, u'A42439'), (5, u'A42440'), (10, u'A42441')]
         == komponentenaufloesung([(5, '00049')]))

@@ -40,9 +40,8 @@ Es gibt verschiedene Mengen von denen wir reden.
 """
 
 
-from husoftm.connection2 import as400_2_int
 from husoftm.tools import sql_quote
-from husoftm2.backend import query
+from husoftm2.backend import query, as400_2_int
 import datetime
 import husoftm2.artikel
 import itertools

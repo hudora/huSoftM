@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
+
 """
 bestaende.py - high level functions to access SoftM on the AS/400.
 
@@ -32,7 +33,6 @@ Siehe auch https://cybernetics.hudora.biz/intern/trac/wiki/HudoraGlossar zu den 
 
 """
 
-__revision__ = "$Revision$"
 
 from husoftm.connection2 import get_connection, as400_2_int
 from husoftm.tools import sql_escape, sql_quote

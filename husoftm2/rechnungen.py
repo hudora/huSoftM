@@ -12,9 +12,11 @@ from husoftm2.tools import date2softm
 
 
 def get_rechnung_by_date(startdate, enddate=None, limit=None):
-    """Gib eine Liste von Rechnungsnummern zurück, die """
-    
-    conditions = ["FKSTAT <> 'X'", "FKRGNR <> 0", "FKDTER > %s" % date2softm(startdate)]    
+    """Gib eine Liste von Rechnungsnummern zurück, die zwischen startdate und enddate erzeugt wurden."""
+
+    conditions = ["FKSTAT <> 'X'",
+                  "FKRGNR <> 0",
+                  "FKDTER > %s" % date2softm(startdate)]
     if enddate:
         conditions.append("FKDTER <= %s" % date2softm(enddate))
 

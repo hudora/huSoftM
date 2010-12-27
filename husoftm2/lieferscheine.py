@@ -158,11 +158,61 @@ def get_lieferschein(lieferscheinnr, header_only=False):
     return {}
 
 
+def _timedelta_to_hours(td):
+    hours = td.days * 24
+    hours += int(td.seconds/3600)
+    return hours
+
+
+def get_lagerabgang(day):
+    """Liefert im grunde einen ALN00 Auszug für einen Tag - dient statistischen Zwecken."""
+    conditions = ["LNSANK=LKSANB",
+                  "AKAUFN=LNAUFN",
+                  #"LKLFSN>0",
+                  "AKLGN2='0'",
+                  "LNSTAT<>'X'",
+                  "LKSTAT<>'X'",
+                  "LNDTLF=%s" % (sql_quote(day.strftime('1%y%m%d')))]
+
+    rows = query(['ALN00', 'ALK00', 'AAK00'], condition=" AND ".join(conditions),
+            fields=['LNAUFN', 'LNAUPO', 'LNARTN', 'LNKZKO', 'LNKDRG', 'LNKDNR', 'LNLFSN', 'LNMNGL', 'LNDTLF',
+                    'LNDTVS', 'LNMNGF', 'LNDTER', 'LNLWA2', 'LKKDRG', 'LKKDNR', 'LKLFSN', 'LKDTLF', 'LKDTKB',
+                    'LKAUFS', 'LKDTLT', 'AKAUFN', 'AKAUFA', 'AKDTLT', 'AKDTER', 'LNBELP', 'LNDTLT'])
+    ret = []
+    for row in rows:
+        from pprint import pprint
+        data = dict(auftragsnr="SO%s" % row['auftragsnr'],
+                    lieferscheinnr="SL%s" % row['lieferscheinnr'],
+                    menge=int(row['menge_fakturierung']),
+                    auftragsart=row['art'],
+                    artnr=row['artnr'],
+                    warenempfaenger="SC%s" % row['warenempfaenger'],
+                    kundennr="SC%s" % row['rechnungsempfaenger'],
+                    setartikel=(int(row['setartikel']) == 1),
+                    wert=int(row['wert']*100),
+                    auftrag_positionsnr=row['auftrags_position'],
+                    positionsnr=row['kommibeleg_position'],
+                    vorlauf_h=None, durchlauf_h=None, termintreue_h=None,
+                    datum=row['lieferschein_date'],
+                   )
+        anliefer_date = row['ALN_anliefer_date'] or row['anliefer_date']
+        versand_date = row['versand_date'] or row['lieferschein_date']
+        if anliefer_date:
+            row['vorlauf_h'] = _timedelta_to_hours(anliefer_date - row['AAK_erfassung_date']),
+        if versand_date and anliefer_date:
+            row['termintreue_h'] = _timedelta_to_hours(versand_date - anliefer_date)
+        if versand_date:
+            row['durchlauf_h'] = _timedelta_to_hours(versand_date - row['AAK_erfassung_date'])
+        ret.append(data)
+    return ret
+
 def _selftest():
     """Test basic functionality"""
     from pprint import pprint
     import datetime
     header = False
+    print len(get_lagerabgang(datetime.date(2010,12,21)))
+    return
     pprint(lieferscheine_auftrag('SO1163764', header_only=header))
     print get_changed_after(datetime.date(2010, 12, 1))
     pprint(get_lieferschein('SL4173969'))

@@ -749,7 +749,7 @@ MAPPINGDIR = {
           'KZDTAE': 'updated_at',
 },
 
-'ALK00': {  # Lieferscheinköpfe
+'ALK00': { # Lieferscheinköpfe
           'LKSANK': 'satznr',
           'LKSANB': 'bezogener_kopf',
           # Die Angabe ist nur gefüllt, falls mit der Variante 'Kommissionierbeleg vor Lieferschein'
@@ -763,7 +763,7 @@ MAPPINGDIR = {
           'LKKDRG': 'rechnungsempfaenger',
           'LKKDNR': 'warenempfaenger',
           'LKLFSN': 'lieferscheinnr',
-          'LKDTLF': 'lieferschein_date',
+          'LKDTLF': 'ALK_lieferschein_date',
           'LKZTLF': 'lieferschein_time',
           # Wird für automatisch erstellte Lieferscheine bei der Lieferscheinschreibung (AFA37) mit dem
           # Tagesdatum, und für manuell erstellte Lieferscheine bei der Erfassung Versand-/Speditionsdaten
@@ -852,7 +852,7 @@ MAPPINGDIR = {
           #'LNLGPL': 'lagerplatz', # ist immer leer
           #'LNKZBE': 'Kz:keine Bestandsführung =1
           'LNMNGO': 'menge_offen',
-          'LNDTLT': 'liefertermin_date',
+          'LNDTLT': 'ALN_anliefer_date',
           # Bei der Stapelfreigabe werden nur Lieferscheine freigegeben, deren Liefertermin nicht nach
           # dem Freigabedatum liegt.
           #'LNJWLT': 'liefertermin_woche',  # Liefertermin im Format HJJWW (Jahrhundert/Jahr/Woche)
@@ -867,7 +867,7 @@ MAPPINGDIR = {
           'LNKZZU': 'bevorzugte_zuteilung',
           'LNKDRG': 'rechnungsempfaenger',
           'LNKDNR': 'kundennr',
-          'LNLFSN': 'lieferscheinnr',
+          'LNLFSN': 'ALN_lieferscheinnr',
           'LNMNGL': 'menge',  # Menge lt. Lieferschein
           'LNDTLF': 'lieferschein_date',
           'LNZTLF': 'lieferschein_time',
@@ -924,6 +924,7 @@ MAPPINGDIR = {
           # *BLANK Satz ist aktiv
           # X Satz steht zum Lôschen an (auf Satz kann in den Anwendungsprogr. nicht mehr zugegriffen werden)
           'LNSBNR': 'sachbearbeiter_bearbeitung',
+          'LNLWA2': 'wert',
          },
 
 'AFK00':  # Rechnungsköpfe

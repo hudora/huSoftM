@@ -56,7 +56,7 @@ def abgabepreis_kunde(artnr, kundennr, auftragsdatum=None):
         return (int(float(rows[0]['preis']) * 100), 'Kundenpreis')
 
     # 2. Preis aus Preislistennr. des Kunden ermitteln
-    kunde = husoftm2.kunden.get_kunde(kundennr)
+    kunde = husoftm2.kunden.get_kunde(str(kundennr))
     if kunde and 'kunden_gruppe' in kunde and kunde['kunden_gruppe']:
         condition_gruppe = conditions + ["PRPRLK = %s" % sql_quote(kunde['kunden_gruppe'])]
         rows = query(['XPN00', 'XPR00'], ordering='PRDTVO', condition=' AND '.join(condition_gruppe))
@@ -173,7 +173,7 @@ def _selftest():
     #pprint(durchschnittlicher_abgabepreis('14600'))
     pprint(durchschnittlicher_abgabepreis('74501/01', 'SC77900'))
     pprint(abgabepreis_kunde('74501/01', 'SC77900'))
-
+    print len(buchdurchschnittspreise())
 
 if __name__ == '__main__':
     from timeit import Timer

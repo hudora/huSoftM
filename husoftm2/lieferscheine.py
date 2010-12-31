@@ -165,19 +165,19 @@ def _timedelta_to_hours(td):
 
 
 def get_lagerabgang(day):
-    """Liefert im grunde einen ALN00 Auszug für einen Tag - dient statistischen Zwecken."""
-    conditions = ["LNSANK=LKSANB",
-                  "AKAUFN=LNAUFN",
-                  #"LKLFSN>0",
+    """Liefert im Grunde einen ALN00 Auszug für einen Tag - dient statistischen Zwecken."""
+    conditions = [#"LKLFSN>0",
                   "AKLGN2='0'",
                   "LNSTAT<>'X'",
                   "LKSTAT<>'X'",
                   "LNDTLF=%s" % (sql_quote(day.strftime('1%y%m%d')))]
 
-    rows = query(['ALN00', 'ALK00', 'AAK00'], condition=" AND ".join(conditions),
+    rows = query(['ALN00'], condition=" AND ".join(conditions),
             fields=['LNAUFN', 'LNAUPO', 'LNARTN', 'LNKZKO', 'LNKDRG', 'LNKDNR', 'LNLFSN', 'LNMNGL', 'LNDTLF',
                     'LNDTVS', 'LNMNGF', 'LNDTER', 'LNLWA2', 'LKKDRG', 'LKKDNR', 'LKLFSN', 'LKDTLF', 'LKDTKB',
-                    'LKAUFS', 'LKDTLT', 'AKAUFN', 'AKAUFA', 'AKDTLT', 'AKDTER', 'LNBELP', 'LNDTLT'])
+                    'LKAUFS', 'LKDTLT', 'AKAUFN', 'AKAUFA', 'AKDTLT', 'AKDTER', 'LNBELP', 'LNDTLT'],
+          joins=[('ALK00', 'LNSANK', 'LKSANB'),
+                 ('AAK00', 'LNAUFN', 'AKAUFN')])
     ret = []
     for row in rows:
         from pprint import pprint
@@ -197,11 +197,11 @@ def get_lagerabgang(day):
                    )
         anliefer_date = row['ALN_anliefer_date'] or row['anliefer_date']
         versand_date = row['versand_date'] or row['lieferschein_date']
-        if anliefer_date:
+        if anliefer_date and row['AAK_erfassung_date']:
             row['vorlauf_h'] = _timedelta_to_hours(anliefer_date - row['AAK_erfassung_date']),
         if versand_date and anliefer_date:
             row['termintreue_h'] = _timedelta_to_hours(versand_date - anliefer_date)
-        if versand_date:
+        if versand_date and row['AAK_erfassung_date']:
             row['durchlauf_h'] = _timedelta_to_hours(versand_date - row['AAK_erfassung_date'])
         ret.append(data)
     return ret

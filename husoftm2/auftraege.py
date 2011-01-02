@@ -69,7 +69,7 @@ def _auftraege(additional_conditions=None, addtables=[], mindate=None, maxdate=N
                       joins=[('XKD00', 'AKKDNR', 'KDKDNR')],
                              limit=limit, ua='husoftm2.auftraege'):
         d = dict(kundennr="SC%s" % kopf['kundennr_warenempf'],
-                 auftragsnr=kopf['auftragsnr'],
+                 auftragsnr="SO%s" % kopf['auftragsnr'],
                  auftragsnr_kunde=kopf['auftragsnr_kunde'],
                  erfassung=kopf['AAK_erfassung_date'],
                  aenderung=kopf['AAK_aenderung_date'],
@@ -97,8 +97,6 @@ def _auftraege(additional_conditions=None, addtables=[], mindate=None, maxdate=N
         # Abweichende Lieferadressen
         for row in query(['XAD00'], ua='husoftm2.lieferscheine',
                          condition="ADAART=1 AND ADRGNR IN (%s)" % ','.join([str(x) for x in batch])):
-            print batch
-            print row
             koepfe[row['nr']]['lieferadresse'] = dict(name1=kopf['name1'],
                                                       name2=kopf['name2'],
                                                       name3=kopf['name3'],

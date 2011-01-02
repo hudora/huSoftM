@@ -37,7 +37,7 @@ def get_kundennummern():
 
 
 def get_changed_after(date):
-    """Returns a list of all Kundennummern where the underlaying Data has changed since <date>."""
+    """Returns a list of all Kundennummern where the underlying Data has changed since <date>."""
 
     date = int(date.strftime('1%y%m%d'))
     rows1 = query('XKD00', fields=['KDKDNR'], condition="KDDTER>%d OR KDDTAE>=%d" % (date, date))

@@ -78,3 +78,10 @@ Get it at [https://github.com/hudora/huSoftM][7]
 # Changes
 
 See http://github.com/hudora/huSoftM/blob/master/CHANGES
+
+# Copyright
+
+BSD Licensed
+Contains node-http-proxy Copyright (c) 2010 Charlie Robbins, Mikeal Rogers, Fedor Indutny, & Marak Squires.
+Contains colors.js Copyright (c) 2010 Alexis Sellier (cloudhead) , Marak Squires.
+Conatins pool.js Copyright (c) 2010 Mikeal Rogers.

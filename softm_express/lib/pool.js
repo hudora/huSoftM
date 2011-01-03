@@ -1,3 +1,5 @@
+// from https://github.com/mikeal/node-utils/raw/master/pool/main.js
+
 var sys = require('sys')
   , http = require('http')
   , events = require('events')
@@ -16,6 +18,12 @@ function Pool (port, host, https, credentials) {
 sys.inherits(Pool, events.EventEmitter);
 Pool.prototype.getClient = function (cb) {
   for (var i=0;i<this.clients.length;i+=1) {
+    // Check if the client closed unexpectedly
+    if (this.clients[i].readyState === 'closed') {
+      delete this.clients[i];
+      this.clients[i] = http.createClient(this.port, this.host, this.https, this.credentials);
+      this.clients[i].busy = false;
+    }
     if (!this.clients[i].busy) {
       if (this.clients.length > this.maxClients) {
         this.clients[i].end();

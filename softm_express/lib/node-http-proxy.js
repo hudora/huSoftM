@@ -27,7 +27,7 @@
 var util = require('util'),
     http = require('http'),
     events = require('events'),
-    pool = require('pool'),
+    pool = require('./pool'),
     ProxyTable = require('./proxy-table').ProxyTable,
     min = 0, 
     max = 100;

@@ -166,23 +166,25 @@ def _timedelta_to_hours(td):
 
 def get_lagerabgang(day):
     """Liefert im Grunde einen ALN00 Auszug für einen Tag - dient statistischen Zwecken."""
-    conditions = [#"LKLFSN>0",
+    conditions = ["(LKLFSN<>0 OR LNLFSN<>0)",  # durch Umparametrisierung ist mal das und mal das leer ...
                   "AKLGN2='0'",
                   "LNSTAT<>'X'",
                   "LKSTAT<>'X'",
                   "LNDTLF=%s" % (sql_quote(day.strftime('1%y%m%d')))]
 
+    # SoftM Freuden! Das Feld LKSANKB kann ausser zwischen Oktober 2005 und November 2007 
+    # für den join genommen werden, ansonsten kann man LKSANK nehmen.
+
     rows = query(['ALN00'], condition=" AND ".join(conditions),
             fields=['LNAUFN', 'LNAUPO', 'LNARTN', 'LNKZKO', 'LNKDRG', 'LNKDNR', 'LNLFSN', 'LNMNGL', 'LNDTLF',
                     'LNDTVS', 'LNMNGF', 'LNDTER', 'LNLWA2', 'LKKDRG', 'LKKDNR', 'LKLFSN', 'LKDTLF', 'LKDTKB',
                     'LKAUFS', 'LKDTLT', 'AKAUFN', 'AKAUFA', 'AKDTLT', 'AKDTER', 'LNBELP', 'LNDTLT'],
-          joins=[('ALK00', 'LNSANK', 'LKSANB'),
+          joins=[('ALK00', 'LNSANK', 'LKSANK'),
                  ('AAK00', 'LNAUFN', 'AKAUFN')])
     ret = []
     for row in rows:
-        from pprint import pprint
         data = dict(auftragsnr="SO%s" % row['auftragsnr'],
-                    lieferscheinnr="SL%s" % row['lieferscheinnr'],
+                    lieferscheinnr="SL%s" % (int(row['lieferscheinnr']) or int(row['ALN_lieferscheinnr'])),
                     menge=int(row['menge_fakturierung']),
                     auftragsart=row['art'],
                     artnr=row['artnr'],

@@ -185,6 +185,26 @@ def _get_tablename(name):
     return "SMKDIFP.%s" % name
 
 
+
+def execute(url, args, ua=''):
+    """Execute SQL statement"""
+
+    args_encoded = urllib.urlencode({'q':hujson.dumps(args)})
+    url = ("/%s?" % url) + args_encoded
+    digest = hmac.new(_find_credentials(), url, hashlib.sha1).hexdigest()
+    status, headers, content = huTools.http.fetch('http://api.hudora.biz:8082' + url,
+                                                  method='GET', 
+                                                  headers={'X-sig':digest}, 
+                                                  ua='%s/husoftm2.backend' % ua)
+    if status != 200:
+        # TODO: this looks extremely fragile. Must have be drunk while coding this.
+        # needs a better implementation
+        if content.startswith('Internal Error: {\'EXIT\',\n                    {timeout'):
+            raise TimeoutException(content)
+        raise RuntimeError("Server Error: %r" % content)
+    return content
+
+
 def query(tables=None, condition=None, fields=None, querymappings=None,
           joins=None,
           grouping=None, ordering=None, limit=None, ua='', cachingtime=300):
@@ -297,22 +317,9 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
     if rows:
         return rows
 
-    # logging.debug("Starting SQL query: %s", args)
     start = time.time()
-    args_encoded = urllib.urlencode({'q': hujson.dumps(args)})
-    url = "/sql?" + args_encoded
-    digest = hmac.new(_find_credentials(), url, hashlib.sha1).hexdigest()
-    (status, headers, content) = huTools.http.fetch('http://api.hudora.biz:8082' + url,
-                                                    method='GET',
-                                                    headers={'X-sig': digest},
-                                                    ua='%s/husoftm2.backend' % ua)
-    if status != 200:
-        # TODO: this looks extremely fragile. Must have be drunk while coding this.
-        # needs a better implementation
-        if content.startswith('Internal Error: {\'EXIT\',\n                    {timeout'):
-            raise TimeoutException(content)
-        raise RuntimeError("Server Error: %r" % content)
-    rows = hujson.loads(content)
+    result = execute('sql', args, ua=ua)
+    rows = hujson.loads(result)
 
     if querymappings:
         rows = _rows2dict(fields, querymappings, rows)
@@ -321,10 +328,23 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
 
     delta = time.time() - start
     if delta > 5:
-        logging.warning("Slow (%.3fs) SQL query in  %s", delta, args)
+        logging.warning("Slow (%.3fs) SQL query in %s", delta, args)
     memcache.add(key='husoftm_query_%r_%r' % (querymappings, args),
                  value=rows, time=cachingtime)
     return rows
+
+
+def ex(tablename, field, condition=None, ua='', cachingtime=300):
+    """Setze Status in Tabelle auf 'X'"""
+    
+    args = dict(field=field,
+                tablename=tablename,
+                tag=ua)
+    if condition:
+        args['condition'] = condition
+
+    result = execute('x', args, ua=ua)
+    return result
 
 
 if __name__ == '__main__':

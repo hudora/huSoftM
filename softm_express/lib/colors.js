@@ -1,4 +1,4 @@
-q/*
+/*
 colors.js 
 
 Copyright (c) 2010 Alexis Sellier (cloudhead) , Marak Squires

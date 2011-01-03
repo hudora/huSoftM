@@ -79,8 +79,8 @@ function login_required(req, res, handler) {
  * @param {Object} response
  */
 function select(request, response) {
-
-    query = JSON.parse(querystring.parse(parsedurl.query).q);
+    var parsedurl = url.parse(req.url);
+    var query = JSON.parse(querystring.parse(parsedurl.query).q);
     // build the SQL query
     querystr = "SELECT " + query.fields.join(',') + " FROM " + query.tablenames.join(',');
     if (query.joins) {
@@ -116,7 +116,8 @@ function select(request, response) {
  * @param {Object} req
  * @param {Object} res
  */
-function ex(req, res) {
+function x(req, res) {
+    var parsedurl = url.parse(req.url);
 	query = JSON.parse(querystring.parse(parsedurl.query).q);
 	querystr = "UPDATE " + query.tablename + " SET " + query.field + " = 'X'";
 	if(query.condition) {
@@ -136,7 +137,7 @@ function ex(req, res) {
  * Very Simple URL mapper
  */
 MAPPING = {}
-function getHandler(path, method) {	
+function getHandler(path, method) {
 	var tmp = MAPPING[method];
 	if(tmp === undefined) {
 		return undefined;
@@ -156,8 +157,8 @@ addHandler('/info', 'GET', function(req, res) {
 addHandler('/sql', 'GET', function(req, res) {
 	login_required(req, res, select);
 });
-addHandler('/ex', 'POST', function(req, res) {
-	login_required(req, res, ex);
+addHandler('/x', 'GET', function(req, res) {
+	login_required(req, res, x);
 });
 
 
@@ -165,7 +166,10 @@ httpProxy.createServer(function (req, res) {
   var parsedurl = url.parse(req.url);
   var path = parsedurl.pathname;
 
+  console.log(req.client.remoteAddress + ': ' + req.method + " " + path);
+
   handler = getHandler(path, req.method);
+
   if(handler === undefined) {
           res.writeHead(404, {
                     "Content-Type" : 'text/plain',

@@ -125,6 +125,45 @@ def auftragsmengen(artnr, lager=0):
     return dict([(x['liefer_date'], as400_2_int(x['menge_offen'])) for x in rows if x['menge_offen'] > 0])
 
 
+def auftragsmengen_alle_artikel():
+    """Liefert eine Liste offener Aufträge aller Artikel furu alle Läger.
+
+    >>> auftragsmengen_alle_artikel(34)
+    {'14550': {datetime.date(2008, 11, 30): 3450,
+               datetime.date(2008, 12, 1): 8,
+               datetime.date(2008, 12, 15): 5056},
+     '14565': {datetime.date(2009, 2, 9): 750,
+               datetime.date(2009, 3, 23): 1008,
+               datetime.date(2009, 4, 27): 625},
+     '14566': {datetime.date(2009, 2, 2): 4000,
+               datetime.date(2009, 6, 1): 400},
+     '14635': {datetime.date(2008, 11, 19): 20,
+               datetime.date(2008, 11, 24): 763,
+               datetime.date(2008, 11, 27): 200}}
+    """
+
+    conditions = [
+    "AKAUFN=APAUFN",
+    "AKAUFA<>'U'",               # keine Umlagerungen
+    "APSTAT<>'X'",               # Position nicht logisch gelöscht
+    "APKZVA=0",                  # Position nicht als 'voll ausgeliefert' markiert
+    "(APMNG-APMNGF) > 0",        # (noch) zu liefernde menge ist positiv
+    "AKSTAT<>'X'",               # Auftrag nicht logisch gelöscht
+    "AKKZVA=0"]                  # Auftrag nicht als 'voll ausgeliefert' markiert
+
+    rows = query(['AAP00', 'AAK00'],
+            fields=['APARTN', 'APDTLT', 'SUM(APMNG-APMNGF)', 'COUNT(*)'],
+            condition=' AND '.join(conditions),
+            ordering='APDTLT', grouping=['APARTN', 'APDTLT'],
+            querymappings={'SUM(APMNG-APMNGF)': 'menge_offen', 'APARTN': 'artnr',
+                           'COUNT(*)':  'orderlines', 'APDTLT': 'liefer_date'})
+    ret = {}
+    for row in rows:
+        if row['menge_offen']:
+            ret.setdefault(str(row['artnr']), {})[row['liefer_date']] = (as400_2_int(row['menge_offen']), row['orderlines'])
+    return ret
+
+
 def umlagermenge(artnr, anlager=100):
     """Ermittelt wieviel Umlagerungen für einen Artikel der nach anlager unterwegs sind.
 

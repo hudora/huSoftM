@@ -4,12 +4,12 @@
 bestellungen.py
 
 Created by Maximillian Dornseif on 2009-07-02.
-Copyright (c) 2009 HUDORA. All rights reserved.
+Copyright (c) 2009, 2010 HUDORA. All rights reserved.
 """
 
 import unittest
 from decimal import Decimal
-from husoftm.connection2 import get_connection
+from husoftm2.backend import query, as400_2_int
 from husoftm.tools import sql_escape, sql_quote, date2softm
 
 
@@ -102,14 +102,13 @@ def _get_zugaenge_helper(rows):
     for row in rows:
         lagerbuchungen = []
         if row['lagerbewegung_rechnung']:
-            buchung = get_connection('_get_zugaenge_helper').query('XLB00',
-                    condition="LBSANR=%s" % sql_escape(row['lagerbewegung_rechnung']))
+            buchung = query('XLB00', condition="LBSANR=%s" % sql_escape(row['lagerbewegung_rechnung']))
             if len(buchung) > 1:
                 raise RuntimeError('mehr als einen XLB Satz zu einem EWZ Satz: %r' % buchung)
             buchung = kursfaktorkorrektur(buchung)[0]
             lagerbuchungen.append(buchung)
         if row['lagerbewegung_zugang'] and row['lagerbewegung_zugang'] != row['lagerbewegung_rechnung']:
-            buchung = get_connection('_get_zugaenge_helper').query('XLB00',
+            buchung = query('XLB00',
                     condition="LBSANR=%s" % sql_escape(row['lagerbewegung_zugang']))
             if len(buchung) > 1:
                 raise RuntimeError('mehr als einen XLB Satz zu einem EWZ Satz: %r' % buchung)
@@ -122,8 +121,7 @@ def _get_zugaenge_helper(rows):
 def get_zugaenge_artnr(artnr):
     """Liefert alle Warenzugaenge eines Artikels"""
 
-    rows = get_connection('bestellungen.get_zugaenge_artnr').query('EWZ00', ordering=['WZDTWZ'],
-        condition="WZARTN='%s'" % sql_escape(artnr))
+    rows = query('EWZ00', ordering=['WZDTWZ'], condition="WZSTAT<>'X' AND WZARTN='%s'" % sql_escape(artnr))
     return _get_zugaenge_helper(rows)
 
 
@@ -387,8 +385,12 @@ class MiscTests(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    (get_bestellung(43248))
-    (get_zugaenge_bestellnr(41971))
-    (get_zugaenge_bestellnr(43072))
-    #testbestellung()
-    unittest.main()
+    from pprint import pprint
+    for x in get_zugaenge_artnr('14600/03'):
+        if x['tatsaechlicher_preis'] and x['kurs_zugang']:
+            print x['rechnungs_date'], x['kurs_zugang'], x['tatsaechlicher_preis'], x['tatsaechlicher_preis']/x['kurs_zugang']
+    #(get_bestellung(43248))
+    #(get_zugaenge_bestellnr(41971))
+    #(get_zugaenge_bestellnr(43072))
+    ##testbestellung()
+    #unittest.main()

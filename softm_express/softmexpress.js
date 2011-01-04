@@ -29,7 +29,6 @@ var util = require('util'),
     httpProxy = require('./lib/node-http-proxy');
 
 
-
 var welcome = '\
       __             _         _   _                                          \n\
     /    )         /  `        /  /|                                          \n\
@@ -47,10 +46,39 @@ var destport = args[2] || '8000';
 var listenport = args[3] || '8082';
 
 /**
+ * Very Simple URL mapper
+ */
+var URLMAP = {};
+function getHandler(path, method) {
+	var tmp = URLMAP[method];
+	if(tmp === undefined) {
+		return undefined;
+	}
+	return tmp[path];
+}
+
+function addHandler(path, method, handler) {
+	if(URLMAP[method] === undefined) {
+		URLMAP[method] = {};
+	}
+	URLMAP[method][path] = handler;
+}
+
+/**
+ * Write error message and return
+ */
+function error(req, res, code, msg) {
+    res.writeHead(code, {
+              "Content-Type" : 'text/plain',
+              "Server" : "SoftMexpress/Node.js/" + process.version +  " " + process.platform,
+              "Date" : (new Date()).toUTCString()
+          });
+    res.write(msg);
+    res.end();
+}
+
+/**
  * Überprüfe Credentials
- * @param {Object} req
- * @param {Object} res
- * @param {Object} handler
  */
 function login_required(req, res, handler) {
 	hmac = crypto.createHmac('sha1', password);
@@ -60,23 +88,14 @@ function login_required(req, res, handler) {
 	if(req.headers['x-sig'] == digest) {
 		console.log(request.headers['x-sig']);
         console.log(digest);
-        response.writeHead(401, {
-                        "Content-Type" : 'text/plain',
-                        "Server" : "SoftMexpress/Node.js/" + process.version +  " " + process.platform,
-                        "Date" : (new Date()).toUTCString()
-                    });
-        response.write("Not with me!\n");
-        response.end();
+        error(req, res, 401, "Not with me!\n");
 	} else {
 		handler(req, res);
 	}
 }
 
-
 /**
  * Führe SQL-SELECT aus
- * @param {Object} request
- * @param {Object} response
  */
 function select(request, response) {
     var parsedurl = url.parse(req.url);
@@ -103,26 +122,39 @@ function select(request, response) {
     newurl = '/select?' + querystring.stringify({
         query: querystr,
         tag: query.tag + '+sEx'
-    })
+    });
 	
     req.url = newurl;
     var proxy = new httpProxy.HttpProxy(req, res);
     proxy.proxyRequest(destport, desthost);
 }
 
-
 /**
  * Setze Satzstatus auf 'X'
- * @param {Object} req
- * @param {Object} res
  */
 function x(req, res) {
+    
+    /* Mapping from tablename to status field name
+     * These are the only tables that can be used to 'x' a record
+     */
+    var TABLEMAPPING = {
+        'ISA00': 'IASTAT',
+        'ISB00': 'IBSTAT',
+        'ISK00': 'IKSTAT',
+        'ISR00': 'IRSTAT',
+        'ISZ00': 'IZSTAT'
+    };
+    
     var parsedurl = url.parse(req.url);
 	query = JSON.parse(querystring.parse(parsedurl.query).q);
-	querystr = "UPDATE " + query.tablename + " SET " + query.field + " = 'X'";
-	if(query.condition) {
-		querystr = querystr + ' WHERE ' + query.condition.replace(/';/g, "");
+	
+	var tablename = query.tablename;
+	if(TABLEMAPPING[tablename] === undefined) {
+	    error(req, res, 404, "Unknown tablename!\n");
+	    return;
 	}
+	
+	var querystr = "UPDATE " +  + " SET " + TABLEMAPPING[tablename] + " = 'X' WHERE " + query.condition.replace(/';/g, "");
 	console.log(req.client.remoteAddress + ': ' + querystr);
 	newurl = '/update?' + querystring.stringify({
 		query: querystr,
@@ -133,34 +165,16 @@ function x(req, res) {
     proxy.proxyRequest(destport, desthost);
 }
 
-/**
- * Very Simple URL mapper
- */
-MAPPING = {}
-function getHandler(path, method) {
-	var tmp = MAPPING[method];
-	if(tmp === undefined) {
-		return undefined;
-	}
-	return tmp[path];
-}
-function addHandler(path, method, handler) {
-	if(MAPPING[method] === undefined) {
-		MAPPING[method] = {}
-	}
-	MAPPING[method][path] = handler;
-}
-
+/* Add handlers and start server */
 addHandler('/info', 'GET', function(req, res) {
-	login_required(req, res, info)
+	login_required(req, res, info);
 });
 addHandler('/sql', 'GET', function(req, res) {
 	login_required(req, res, select);
 });
-addHandler('/x', 'GET', function(req, res) {
+addHandler('/x', 'POST', function(req, res) {
 	login_required(req, res, x);
 });
-
 
 httpProxy.createServer(function (req, res) {
   var parsedurl = url.parse(req.url);
@@ -171,16 +185,10 @@ httpProxy.createServer(function (req, res) {
   handler = getHandler(path, req.method);
 
   if(handler === undefined) {
-          res.writeHead(404, {
-                    "Content-Type" : 'text/plain',
-                    "Server" : "SoftMexpress/Node.js/" + process.version +  " " + process.platform,
-                    "Date" : (new Date()).toUTCString()
-                });
-          res.write("Not here!\n");
-          res.end();
-   } else {
-   	handler(req, res);
-   }
+      error(req, res, 404, 'Not here!\n');
+  } else {
+      handler(req, res);
+  }
 }).listen(listenport);
 
 util.puts('proxy server '.blue + 'started '.green.bold + 'on port '.blue + (listenport + '').yellow + ' connecting to '.blue + (desthost + ':' + destport).yellow);

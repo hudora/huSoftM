@@ -186,7 +186,7 @@ def _get_tablename(name):
 
 
 
-def execute(url, args, ua=''):
+def execute(url, args, method='GET', ua=''):
     """Execute SQL statement"""
 
     args_encoded = urllib.urlencode({'q':hujson.dumps(args)})
@@ -334,16 +334,14 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
     return rows
 
 
-def ex(tablename, field, condition=None, ua='', cachingtime=300):
+def ex(tablename, condition, ua='', cachingtime=300):
     """Setze Status in Tabelle auf 'X'"""
     
-    args = dict(field=field,
-                tablename=tablename,
+    args = dict(tablename=tablename,
+                condition=condition,
                 tag=ua)
-    if condition:
-        args['condition'] = condition
 
-    result = execute('x', args, ua=ua)
+    result = execute('x', args, method='POST', ua=ua)
     return result
 
 

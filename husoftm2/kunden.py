@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 """
-kunden.py - High Level Access Kundeninformationen. Teil von huSoftM.
+huSoftM/kunden.py - High Level Access Kundeninformationen. Teil von huSoftM.
 
 Created by Maximillian Dornseif on 2007-04-13.
 Copyright (c) 2007, 2010 HUDORA GmbH. All rights reserved.
@@ -138,7 +138,9 @@ def _softm_to_dict(row):
               )
     ret['betreuer'] = betreuerdict.get(ret['betreuer_handle'], '')
     if not ret['betreuer']:
-        logging.error('Kunde %s (%s) hat keinen gültigen Betreuer' % (ret['name1'], ret['kundennr']))
+        logging.error('Kunde %s (%s) hat mit %r keinen gueltigen Betreuer' % (ret['name1'],
+                                                                              ret['kundennr'],
+                                                                              ret['betreuer_handle']))
     if 'verbandsnr' in row:
         ret['verbandsnr'] = 'SC%s' % row['verbandsnr']
         ret['mitgliednr'] = row.get('mitgliednr', '')

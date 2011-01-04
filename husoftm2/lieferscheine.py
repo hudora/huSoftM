@@ -13,11 +13,11 @@ from husoftm2.texte import texte_trennen, texte_auslesen
 import husoftm2.sachbearbeiter
 
 
-def _lieferscheine(additional_conditions=None, limit=None, header_only=False):
+def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_only=False):
+    """Lieferscheindaten oder Kommsissionierbelegdaten entsprechend dem Lieferungsprotokoll."""
+
     cachingtime = 60 * 60 * 12
-    conditions = ["LKLFSN<>0",
-                  "LKSTAT<>'X'",
-                  ]
+
     if additional_conditions:
         conditions.extend(additional_conditions)
     condition = " AND ".join(conditions)
@@ -78,16 +78,16 @@ def _lieferscheine(additional_conditions=None, limit=None, header_only=False):
         satznr = satznr[50:]
 
         # Abweichende Lieferadressen
-        for row in query(['XAD00'], cachingtime=cachingtime, ua='husoftm2.lieferscheine',
-                         condition="ADAART=1 AND ADRGNR IN (%s)" % ','.join([str(x) for x in batch])):
-            koepfe[str(row['nr'])]['lieferadresse'] = dict(name1=kopf['name1'],
-                                                           name2=kopf['name2'],
-                                                           name3=kopf['name3'],
-                                                           strasse=kopf['strasse'],
-                                                           land=husoftm2.tools.land2iso(kopf['laenderkennzeichen']),
-                                                           plz=kopf['plz'],
-                                                           ort=kopf['ort'],
-                                                           )
+        condition = "ADAART=1 AND ADRGNR IN (%s)" % ','.join([satznr2auftragsnr[str(x)] for x in batch])
+        for row in query(['XAD00'], cachingtime=cachingtime, ua='husoftm2.lieferscheine', condition=condition):
+            aktsatznr = auftragsnr2satznr[row['nr']]
+            koepfe[aktsatznr]['lieferadresse'] = dict(name1=row['name1'],
+                                                      name2=row['name2'],
+                                                      name3=row['name3'],
+                                                      strasse=row['strasse'],
+                                                      land=husoftm2.tools.land2iso(row['laenderkennzeichen']),
+                                                      plz=row['plz'],
+                                                      ort=row['ort'])
 
         # Positionen & Positionstexte zuordnen
         for row in query(['ALN00'], condition="LNSTAT<>'X' AND LNSANK IN (%s)" % ','.join([str(x) for x in batch]),
@@ -126,6 +126,13 @@ def _lieferscheine(additional_conditions=None, limit=None, header_only=False):
                 koepfe[pos_key]['auftrag_guid'] = attrs['guid']
 
     return koepfe.values()
+
+
+def _lieferscheine(additional_conditions=None, limit=None, header_only=False):
+    conditions = ["LKLFSN<>0",
+                  "LKSTAT<>'X'",
+                  ]
+    return get_ls_kb_data(conditions, additional_conditions, limit, header_only)
 
 
 def get_changed_after(date, limit=None):
@@ -180,7 +187,6 @@ def get_lagerabgang(day):
                     'LKAUFS', 'LKDTLT', 'AKAUFN', 'AKAUFA', 'AKDTLT', 'AKDTER', 'LNBELP', 'LNDTLT'])
     ret = []
     for row in rows:
-        from pprint import pprint
         data = dict(auftragsnr="SO%s" % row['auftragsnr'],
                     lieferscheinnr="SL%s" % row['lieferscheinnr'],
                     menge=int(row['menge_fakturierung']),

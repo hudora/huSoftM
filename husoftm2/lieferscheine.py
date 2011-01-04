@@ -34,12 +34,12 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
                  auftragsnr="SO%s" % kopf['auftragsnr'],
                  # auftragsnr_kunde=kopf['auftragsnr_kunde'], aus ALK00
                  erfassung=kopf['ALK_erfassung'],
-                 aenderung=kopf['ALK_aenderung'],
+                 aenderung=kopf.get('ALK_aenderung'),
                  anliefer_date=kopf['anliefer_date'],
                  kundennr="SC%s" % kopf['rechnungsempfaenger'],
                  lieferadresse=dict(kundennr="SC%s" % kopf['warenempfaenger']),
                  lager="LG%03d" % int(kopf['lager']),
-                 kommiauftragnr="KA%s" % kopf['kommibelegnr'],
+                 kommiauftragnr="KB%s" % kopf['kommibelegnr'],
                  kommiauftrag_datum=kopf['kommibeleg_date'],
                  lieferscheinnr="SL%s" % kopf['lieferscheinnr'],
                  datum=kopf.get('lieferschein'),
@@ -96,7 +96,7 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
                          cachingtime=cachingtime, ua='husoftm2.lieferscheine'):
             d = dict(artnr=row['artnr'],
                      menge=int(row['menge']),
-                     kommipos_guid="KA%s-%s" % (row['kommibelegnr'], row['kommibeleg_position']),
+                     kommipos_guid="KB%s-%s" % (row['kommibelegnr'], row['kommibeleg_position']),
                      #'menge_fakturierung': Decimal('24.0'),
                      #'menge_offen': Decimal('24.0'),
                      auftragpos_guid="SO%s-%s" % (row['auftragsnr'], row['auftrags_position']),

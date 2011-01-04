@@ -3260,8 +3260,10 @@ DATETIMEDIR = {'LKDTLF': 'LKZTLF',  # letzter_lieferschein
                'CKENDD': 'CKENDZ',  # XCK00 ende
                'FKDTER': 'FKZTER',  # Rechnungskopf erfassung_date
                'FUDTER': 'FUZTER',  # Rechnungsposition erfassung_date
-               }
-
+               'FUDTER': 'FUZTER',  # Rechnungsposition erfassung_date
+               'LKDTER': 'LKZTER', # Lieferschein Erfassung
+               'LKDTAE': 'LKZTAE', # Lieferschein Änderung
+              }
 # Fields which need padding before beeing used in SQL queries
 PADDINGFIELDS = {
     'AKKDNR': "%8s",

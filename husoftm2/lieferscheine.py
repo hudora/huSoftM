@@ -34,7 +34,7 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
                  auftragsnr="SO%s" % kopf['auftragsnr'],
                  # auftragsnr_kunde=kopf['auftragsnr_kunde'], aus ALK00
                  erfassung=kopf['ALK_erfassung'],
-                 aenderung=kopf['ALK_aenderung'],
+                 aenderung=kopf.get('ALK_aenderung'),
                  kundennr="SC%s" % kopf['rechnungsempfaenger'],
                  lieferadresse=dict(kundennr="SC%s" % kopf['warenempfaenger']),
                  lager="LG%03d" % int(kopf['lager']),

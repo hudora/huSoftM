@@ -15,17 +15,16 @@ import husoftm2.sachbearbeiter
 from husoftm2.lieferscheine import get_ls_kb_data
 
 def _kommibelege(additional_conditions=None, limit=None, header_only=False):
-    conditions = [#"LKLFSN = 0",
-                  "LKSANB = 0",
-                  "LKSTAT<>'X'",
-                  ]
+    conditions = ["LKSANB = 0", "LKSTAT<>'X'"]
     return get_ls_kb_data(conditions, additional_conditions, limit, header_only)
 
 
 def get_kommibeleg(komminr, header_only=False):
     """Gibt einen Kommissionierbeleg zurück"""
 
-    komminr = str(int(komminr.strip('KB')))  # clean up, avoid attacks
+    komminr = str(komminr)
+    if komminr.startswith('KB'):
+        komminr = komminr[2:]
     belege = _kommibelege(["LKKBNR = %s" % sql_quote(komminr)], limit=1, header_only=header_only)
     if belege:
         return belege[0]

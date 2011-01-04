@@ -82,14 +82,18 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
         condition = "ADAART=1 AND ADRGNR IN (%s) AND ADRGNR=AKAUFN" % ','.join([satznr2auftragsnr[str(x)] for x in batch])
         for row in query(['XAD00', 'AAK00'], cachingtime=cachingtime, ua='husoftm2.lieferscheine', condition=condition):
             aktsatznr = auftragsnr2satznr[row['nr']]
-            koepfe[aktsatznr]['lieferadresse'] = dict(name1=row['name1'],
+            koepfe[aktsatznr]['lieferadresse'].update(dict(name1=row['name1'],
                                                       name2=row['name2'],
                                                       name3=row['name3'],
                                                       strasse=row['strasse'],
                                                       land=husoftm2.tools.land2iso(row['laenderkennzeichen']),
                                                       plz=row['plz'],
-                                                      ort=row['ort'],
-                                                      versandadressnr=row['versandadressnr'])
+                                                      ort=row['ort']))
+            versandadressnr = row['versandadressnr']
+            warenempfaenger = koepfe[aktsatznr]['lieferadresse']['kundennr']
+            if versandadressnr:
+                warenempfaenger = "%s.%03d" % (warenempfaenger, versandadressnr)
+            koepfe[aktsatznr]['lieferadresse']['warenempfaenger'] = warenempfaenger
 
         # Positionen & Positionstexte zuordnen
         for row in query(['ALN00'], condition="LNSTAT<>'X' AND LNSANK IN (%s)" % ','.join([str(x) for x in batch]),

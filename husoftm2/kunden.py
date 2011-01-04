@@ -138,9 +138,9 @@ def _softm_to_dict(row):
               )
     ret['betreuer'] = betreuerdict.get(ret['betreuer_handle'], '')
     if not ret['betreuer']:
-        logging.error('Kunde %s (%s) hat mit %r keinen gueltigen Betreuer' % (ret['name1'],
-                                                                              ret['kundennr'],
-                                                                              ret['betreuer_handle']))
+        logging.error('Kunde %s (%s) hat mit "%s" keinen gueltigen Betreuer' % (ret['name1'],
+                                                                                ret['kundennr'],
+                                                                                ret['betreuer_handle']))
     if 'verbandsnr' in row:
         ret['verbandsnr'] = 'SC%s' % row['verbandsnr']
         ret['mitgliednr'] = row.get('mitgliednr', '')

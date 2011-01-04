@@ -299,7 +299,7 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
 
     # logging.debug("Starting SQL query: %s", args)
     start = time.time()
-    args_encoded = urllib.urlencode({'q': hujson.dumps(args)})
+    args_encoded = urllib.urlencode({'q': hujson.dumps(args, indent='')})
     url = "/sql?" + args_encoded
     digest = hmac.new(_find_credentials(), url, hashlib.sha1).hexdigest()
     (status, headers, content) = huTools.http.fetch('http://api.hudora.biz:8082' + url,

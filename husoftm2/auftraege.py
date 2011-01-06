@@ -172,6 +172,20 @@ def get_auftrag(nr, header_only=False):
     return None
 
 
+def get_guid(auftragsnr):
+    """
+    Gibt den GUID zu einer Auftragsnr zurück, sofern vorhanden.
+    """
+    auftragsnr = str(int(auftragsnr.strip('SO')))  # clean up, avoid attacks
+    condition = "ATTX60 LIKE %s AND ATAUFN = %s AND ATAUPO = 0 AND ATTART = 8" % (sql_quote("#:guid:%%"),
+                                                                                  sql_quote(auftragsnr))
+    rows = query('AAT00', fields=['ATTX60'], condition=condition)
+    if rows:
+        return rows[0][0].replace('#:guid:', '')
+    return ''
+
+
+
 def auftraege_kunde(kundennr, limit=None, header_only=False):
     """Alle Aufträge für eine Kundennummer ermitteln.
     Gibt eine Liste von dict()s zurück."""

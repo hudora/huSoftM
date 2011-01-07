@@ -203,7 +203,7 @@ def bestand(artnr, lager=0):
 def bewegungen(artnr, dateformat="%Y-%m-%d", lager=0):
     """Sammeln aller Bewegungen zu einem Artikel - ein Bisschen wie das Artikelkonto.
 
-    Gibt eine Liste von (datum, bewegung) Tuplen zurück, wobei daten nciht eindeutig sein muessen.
+    Gibt eine Liste von (datum, bewegung) Tuplen zurück, wobei Daten nicht eindeutig sein muessen.
 
     >>> bewegungen('76095')
     [('2010-w50', 0)]
@@ -223,13 +223,13 @@ def bewegungen(artnr, dateformat="%Y-%m-%d", lager=0):
     return bewegungen
 
 
-def _bewegungen_to_bestaende(bewegungen):
+def bewegungen_to_bestaende(bewegungen):
     """Bewegungsmengen aufsummieren.
 
-    >>> _bewegungen_to_bestaende({'2009-02-20': 1200,
-                                  '2009-03-02': 100,
-                                  '2009-04-01': -150,
-                                  '2009-04-01': -1000})
+    >>> bewegungen_to_bestaende({'2009-02-20': 1200,
+                                 '2009-03-02': 100,
+                                 '2009-04-01': -150,
+                                 '2009-04-01': -1000})
     {'2009-02-20': 1200,
      '2009-03-02': 1300,
      '2009-04-01': 150}
@@ -264,7 +264,7 @@ def bestandsentwicklung(artnr, dateformat="%Y-%m-%d", lager=0):
     bestentw_all = []  # list of dicts
     for komponente_menge, komponente_artnr in komponenten:
         bewegungen_komponente = bewegungen(komponente_artnr, dateformat, lager)
-        bestaende_komponente = _bewegungen_to_bestaende(bewegungen_komponente)
+        bestaende_komponente = bewegungen_to_bestaende(bewegungen_komponente)
         # Auf "Anteil" am Endprodukt umrechnen
         bestaende_komponente = dict(((datum, mng / komponente_menge) for (datum, mng) in bestaende_komponente.items()))
         bestentw_all.append(bestaende_komponente)
@@ -294,7 +294,7 @@ def bestandsentwicklung(artnr, dateformat="%Y-%m-%d", lager=0):
 
         # Bewegungen mit denen des Setartikels kombinieren und erneut eine Bestandsentwicklung
         # daraus berechnen
-        entwicklung = _bewegungen_to_bestaende(bewegungen_komponenten + bewegungen_set)
+        entwicklung = bewegungen_to_bestaende(bewegungen_komponenten + bewegungen_set)
 
     return entwicklung
 

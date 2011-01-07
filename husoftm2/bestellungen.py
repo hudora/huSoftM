@@ -96,7 +96,7 @@ def get_bestellung(bestellnr):
 
 
 def _get_zugaenge_helper(rows):
-    """Sammelt daten zu einer Bestellung aus verschiedenen Tabellen."""
+    """Sammelt Daten zu einer Bestellung aus verschiedenen Tabellen."""
     rows = kursfaktorkorrektur(rows, 'kurs_zugang', 'kursfaktor_zugang')
     ret = []
     for row in rows:
@@ -105,8 +105,9 @@ def _get_zugaenge_helper(rows):
             buchung = query('XLB00', condition="LBSANR=%s" % sql_escape(row['lagerbewegung_rechnung']))
             if len(buchung) > 1:
                 raise RuntimeError('mehr als einen XLB Satz zu einem EWZ Satz: %r' % buchung)
-            buchung = kursfaktorkorrektur(buchung)[0]
-            lagerbuchungen.append(buchung)
+            if buchung:
+                buchung = kursfaktorkorrektur(buchung)[0]
+                lagerbuchungen.append(buchung)
         if row['lagerbewegung_zugang'] and row['lagerbewegung_zugang'] != row['lagerbewegung_rechnung']:
             buchung = query('XLB00',
                     condition="LBSANR=%s" % sql_escape(row['lagerbewegung_zugang']))
@@ -114,6 +115,7 @@ def _get_zugaenge_helper(rows):
                 raise RuntimeError('mehr als einen XLB Satz zu einem EWZ Satz: %r' % buchung)
             lagerbuchungen.append(kursfaktorkorrektur(buchung)[0])
         row['_lagerbuchungen'] = lagerbuchungen
+        row['tatsaechlicher_preis'] = int(row['tatsaechlicher_preis']*100)
         ret.append(row)
     return ret
 

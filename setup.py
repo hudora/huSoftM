@@ -11,11 +11,7 @@ setup(name='huSoftM',
       maintainer='Maximillian Dornseif',
       maintainer_email='md@hudora.de',
       url='http://github.com/hudora/huSoftM#readme',
-<<<<<<< HEAD
       version='0.71',
-=======
-      version='0.70',
->>>>>>> InternetReady
       description='communication with the SoftM Suite on an AS/400',
       long_description=codecs.open('README.markdown', "r", "utf-8").read(),
       classifiers=['License :: OSI Approved :: BSD License',

@@ -105,9 +105,27 @@ def get_lieferadressen(kundennr):
             if len(xarows) != 1:
                 raise RuntimeError("Kunden-Lieferadresse inkonsistent: %s/%s" % (kundennr, row['satznr']))
             kunde = _softm_to_dict(xarows[0])
-            kunde['kundennr'] = '%s/%03d' % (kunde['kundennr'], int(row['versandadresssnr']))
+            kunde['kundennr'] = '%s.%03d' % (kunde['kundennr'], int(row['versandadresssnr']))
             kunden.append(kunde)
     return kunden
+
+
+def get_lieferadresse(warenempfaenger):
+    """Lieferadresse für Warenempfänger ermitteln"""
+    
+    warenempfaenger = str(warenempfaenger)
+    if warenempfaenger.startswith('SC'):
+        warenempfaenger = warenempfaenger[2:]
+    tmp = warenempfaenger.split('.')
+    if len(tmp) == 1:
+        return get_kunde(warenempfaenger)
+    
+    rows = query(['AVA00'], joins=[('XXA00', 'VASANR', 'XASANR')],
+                 condition="VAKDNR='%8s' AND VAVANR=%03d AND VASTAT <>'X'" % (int(tmp[0]), int(tmp[1])))
+    if len(rows) == 1:
+        return _softm_to_dict(rows[0])
+    elif len(rows) > 1:
+        raise RuntimeError(u"Kunden-Lieferadresse inkonsistent: %s" % warenempfaenger)
 
 
 def _softm_to_dict(row):
@@ -141,7 +159,7 @@ def _softm_to_dict(row):
         logging.error('Kunde %s (%s) hat mit %r keinen gueltigen Betreuer' % (ret['name1'],
                                                                               ret['kundennr'],
                                                                               ret['betreuer_handle']))
-    if 'verbandsnr' in row:
+    if 'verbandsnr' in row and row['verbandsnr']:
         ret['verbandsnr'] = 'SC%s' % row['verbandsnr']
         ret['mitgliednr'] = row.get('mitgliednr', '')
     if 'iln' in row and row['iln']:

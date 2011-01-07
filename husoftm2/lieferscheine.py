@@ -28,16 +28,17 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
     # Lieferscheinkopf JOIN Kundenadresse um die Anzahl der Queries zu minimieren
     # JOIN Lieferadresse geht nicht, weil wir "ADAART=1" mit DB2/400 nicht klappt
     for kopf in query(['ALK00'], ordering=['LKSANK DESC'], condition=condition, limit=limit,
-                      joins=[('XKD00', 'LKKDNR', 'KDKDNR')],
+                      joins=[('XKD00', 'LKKDNR', 'KDKDNR'), ('AAK00', 'LKAUFS', 'AKAUFN')],
                       cachingtime=cachingtime, ua='husoftm2.lieferscheine'):
         d = dict(positionen=[],
                  auftragsnr="SO%s" % kopf['auftragsnr'],
-                 # auftragsnr_kunde=kopf['auftragsnr_kunde'], aus ALK00
+                 auftragsnr_kunde=kopf['auftragsnr_kunde'],
                  erfassung=kopf['ALK_erfassung'],
                  aenderung=kopf.get('ALK_aenderung'),
                  anliefer_date=kopf['anliefer_date'],
                  kundennr="SC%s" % kopf['rechnungsempfaenger'],
                  lieferadresse=dict(kundennr="SC%s" % kopf['warenempfaenger']),
+                 lieferdatum=kopf['anliefer_date'],
                  lager="LG%03d" % int(kopf['lager']),
                  kommiauftragnr="KB%s" % kopf['kommibelegnr'],
                  kommiauftrag_datum=kopf['kommibeleg_date'],

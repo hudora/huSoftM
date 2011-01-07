@@ -13,11 +13,11 @@ from husoftm2.texte import texte_trennen, texte_auslesen
 import husoftm2.sachbearbeiter
 
 
-def _lieferscheine(additional_conditions=None, limit=None, header_only=False):
+def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_only=False):
+    """Lieferscheindaten oder Kommsissionierbelegdaten entsprechend dem Lieferungsprotokoll."""
+
     cachingtime = 60 * 60 * 12
-    conditions = ["LKLFSN<>0",
-                  "LKSTAT<>'X'",
-                  ]
+
     if additional_conditions:
         conditions.extend(additional_conditions)
     condition = " AND ".join(conditions)
@@ -34,11 +34,12 @@ def _lieferscheine(additional_conditions=None, limit=None, header_only=False):
                  auftragsnr="SO%s" % kopf['auftragsnr'],
                  # auftragsnr_kunde=kopf['auftragsnr_kunde'], aus ALK00
                  erfassung=kopf['ALK_erfassung'],
-                 aenderung=kopf['ALK_aenderung'],
+                 aenderung=kopf.get('ALK_aenderung'),
+                 anliefer_date=kopf['anliefer_date'],
                  kundennr="SC%s" % kopf['rechnungsempfaenger'],
                  lieferadresse=dict(kundennr="SC%s" % kopf['warenempfaenger']),
                  lager="LG%03d" % int(kopf['lager']),
-                 kommiauftragnr="KA%s" % kopf['kommibelegnr'],
+                 kommiauftragnr="KB%s" % kopf['kommibelegnr'],
                  kommiauftrag_datum=kopf['kommibeleg_date'],
                  lieferscheinnr="SL%s" % kopf['lieferscheinnr'],
                  datum=kopf.get('lieferschein'),
@@ -78,23 +79,28 @@ def _lieferscheine(additional_conditions=None, limit=None, header_only=False):
         satznr = satznr[50:]
 
         # Abweichende Lieferadressen
-        for row in query(['XAD00'], cachingtime=cachingtime, ua='husoftm2.lieferscheine',
-                         condition="ADAART=1 AND ADRGNR IN (%s)" % ','.join([str(x) for x in batch])):
-            koepfe[str(row['nr'])]['lieferadresse'] = dict(name1=kopf['name1'],
-                                                           name2=kopf['name2'],
-                                                           name3=kopf['name3'],
-                                                           strasse=kopf['strasse'],
-                                                           land=husoftm2.tools.land2iso(kopf['laenderkennzeichen']),
-                                                           plz=kopf['plz'],
-                                                           ort=kopf['ort'],
-                                                           )
+        condition = "ADAART=1 AND ADRGNR IN (%s) AND ADRGNR=AKAUFN" % ','.join([satznr2auftragsnr[str(x)] for x in batch])
+        for row in query(['XAD00', 'AAK00'], cachingtime=cachingtime, ua='husoftm2.lieferscheine', condition=condition):
+            aktsatznr = auftragsnr2satznr[row['nr']]
+            koepfe[aktsatznr]['lieferadresse'].update(dict(name1=row['name1'],
+                                                      name2=row['name2'],
+                                                      name3=row['name3'],
+                                                      strasse=row['strasse'],
+                                                      land=husoftm2.tools.land2iso(row['laenderkennzeichen']),
+                                                      plz=row['plz'],
+                                                      ort=row['ort']))
+            versandadressnr = row['versandadressnr']
+            warenempfaenger = koepfe[aktsatznr]['lieferadresse']['kundennr']
+            if versandadressnr:
+                warenempfaenger = "%s.%03d" % (warenempfaenger, versandadressnr)
+            koepfe[aktsatznr]['lieferadresse']['warenempfaenger'] = warenempfaenger
 
         # Positionen & Positionstexte zuordnen
         for row in query(['ALN00'], condition="LNSTAT<>'X' AND LNSANK IN (%s)" % ','.join([str(x) for x in batch]),
                          cachingtime=cachingtime, ua='husoftm2.lieferscheine'):
             d = dict(artnr=row['artnr'],
                      menge=int(row['menge']),
-                     kommipos_guid="KA%s-%s" % (row['kommibelegnr'], row['kommibeleg_position']),
+                     kommipos_guid="KB%s-%s" % (row['kommibelegnr'], row['kommibeleg_position']),
                      #'menge_fakturierung': Decimal('24.0'),
                      #'menge_offen': Decimal('24.0'),
                      auftragpos_guid="SO%s-%s" % (row['auftragsnr'], row['auftrags_position']),
@@ -126,6 +132,13 @@ def _lieferscheine(additional_conditions=None, limit=None, header_only=False):
                 koepfe[pos_key]['auftrag_guid'] = attrs['guid']
 
     return koepfe.values()
+
+
+def _lieferscheine(additional_conditions=None, limit=None, header_only=False):
+    conditions = ["LKLFSN<>0",
+                  "LKSTAT<>'X'",
+                  ]
+    return get_ls_kb_data(conditions, additional_conditions, limit, header_only)
 
 
 def get_changed_after(date, limit=None):

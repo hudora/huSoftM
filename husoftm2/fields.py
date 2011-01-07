@@ -68,7 +68,7 @@ MAPPINGDIR = {
           # 'AKUSTN': 'USt-Id-nr',
           # EU-einheitliche Steuernummer (USt-IdNr, VAT-Nr). Beim Druck der USt-IdNr ist zus‰tzlich noch
           # der EU-L‰ndercode mitzudrucken.
-          # 'AKVANR': 'Versandadress-Nr.',
+          'AKVANR': 'versandadressnr',
           # Dreistellige Nummer, unter der zus‰tzliche Lieferadressen zum Kunden verwaltet werden. Falls
           # für den Auftrag eine abweichende Lieferadresse verwendet werden soll, die in der
           # Lieferadressdatei gespeichert ist, kann die Nummer der Lieferadresse hier angegeben werden.
@@ -3260,8 +3260,10 @@ DATETIMEDIR = {'LKDTLF': 'LKZTLF',  # letzter_lieferschein
                'CKENDD': 'CKENDZ',  # XCK00 ende
                'FKDTER': 'FKZTER',  # Rechnungskopf erfassung_date
                'FUDTER': 'FUZTER',  # Rechnungsposition erfassung_date
-               }
-
+               'FUDTER': 'FUZTER',  # Rechnungsposition erfassung_date
+               'LKDTER': 'LKZTER', # Lieferschein Erfassung
+               'LKDTAE': 'LKZTAE', # Lieferschein Änderung
+              }
 # Fields which need padding before beeing used in SQL queries
 PADDINGFIELDS = {
     'AKKDNR': "%8s",

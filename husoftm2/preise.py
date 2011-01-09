@@ -104,7 +104,7 @@ def listenpreise(artnrs=None):
 
 def listenpreis(artnr):
     return listenpreise([artnr]).values()[0]
-    
+
 
 def durchschnittlicher_abgabepreis(artnr, kundennr=None, startdatum=None):
     """Gibt eine Liste mit den durchschnittlichen Rechnungspreisen pro Monat zurück.

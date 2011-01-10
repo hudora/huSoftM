@@ -52,7 +52,10 @@ def get_kunde(kundennr):
     <kundennr> must be an Integer in the Range 10000..99999.
     If no data exists for that KdnNr ValueError is raised."""
 
-    kundennr = int(kundennr.strip('SC'))
+    kundennr = str(kundennr)
+    if kundennr.startswith('SC'):
+        kundennr = kundennr[2:]
+    kundennr = int(kundennr)
     rows = query(['XKD00'],
                  condition="KDKDNR='%8d' AND KDSTAT<>'X'" % kundennr,
                  joins=[('XXC00', 'KDKDNR', 'XCADNR'),
@@ -154,6 +157,7 @@ def _softm_to_dict(row):
                interne_firmennr=row.get('interne_firmennr', ''),        # ': u''
                unsere_lieferantennr=row.get('unsere_lieferantennumemr', ''),
               )
+    ret['name'] = ' '.join((ret['name1'], ret['name2'])).strip()
     ret['betreuer'] = betreuerdict.get(ret['betreuer_handle'], '')
     if not ret['betreuer']:
         logging.error('Kunde %s (%s) hat mit %r keinen gueltigen Betreuer' % (ret['name1'],

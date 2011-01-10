@@ -42,6 +42,8 @@ var password = args[0] || 'geheim';
 var desthost = args[1] || 'localhost';
 var destport = args[2] || '8000';
 var listenport = args[3] || '8082';
+var upsert_counter = 0;
+var query_counter = 0;
 
 
 httpProxy.createServer(function (req, res) {
@@ -52,13 +54,23 @@ httpProxy.createServer(function (req, res) {
         proxy.proxyRequest(destport, desthost);
   } else {
       if (parsedurl.pathname != '/sql' || req.method !== 'GET') {
-          res.writeHead(404, {
-                    "Content-Type" : 'text/plain',
-                    "Server" : "SoftMexpress/Node.js/" + process.version +  " " + process.platform,
-                    "Date" : (new Date()).toUTCString()
-                });
-          res.write("Not here!\n");
-          res.end();
+          if (parsedurl.pathname == '/stats' || req.method == 'GET') {
+              res.writeHead(200, {
+                      "Content-Type" : 'text/plain',
+                      "Server" : "SoftMexpress/Node.js/" + process.version +  " " + process.platform,
+                      "Date" : (new Date()).toUTCString()
+                      });
+              res.write("query_counter: " + query_counter + "\n");
+              res.end();                                                                                                                          
+          } else {      
+            res.writeHead(404, {
+                      "Content-Type" : 'text/plain',
+                      "Server" : "SoftMexpress/Node.js/" + process.version +  " " + process.platform,
+                      "Date" : (new Date()).toUTCString()
+                  });
+            res.write("Not here!\n");
+            res.end();
+        };
       } else {
           hmac = crypto.createHmac('sha1', password);
           hmac.update(req.url);
@@ -98,6 +110,7 @@ httpProxy.createServer(function (req, res) {
               req.url = newurl;
               var proxy = new httpProxy.HttpProxy(req, res);
               proxy.proxyRequest(destport, desthost);
+              query_counter = query_counter + 1;
           }
       }
   }

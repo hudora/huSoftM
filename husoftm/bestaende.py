@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
+
 """
 bestaende.py - high level functions to access SoftM on the AS/400.
 
@@ -32,7 +33,6 @@ Siehe auch https://cybernetics.hudora.biz/intern/trac/wiki/HudoraGlossar zu den 
 
 """
 
-__revision__ = "$Revision$"
 
 from husoftm.connection2 import get_connection, as400_2_int
 from husoftm.tools import sql_escape, sql_quote
@@ -252,7 +252,7 @@ def _bewegungen(artnr, dateformat="%Y-%m-%d", lager=0):
     # Bestellmengen positiv
     bewegungen.extend([(x[0].strftime(dateformat), int(x[1])) for x in bestellmengen_future().items()])
     # Auftragsmengen negativ
-    bewegungen.extend([(x[0].strftime(dateformat), -1*x[1]) for x in auftragsmengen_future().items()])
+    bewegungen.extend([(x[0].strftime(dateformat), -1 * x[1]) for x in auftragsmengen_future().items()])
     bewegungen.sort()
     return bewegungen
 
@@ -297,7 +297,7 @@ def bestandsentwicklung(artnr, dateformat="%Y-%m-%d", lager=0):
     components = husoftm.artikel.komponentenaufloesung([(1, artnr)])
     bestentw_all = []
     for mng_set, artnr_set in components:
-        bestentwicklung = dict(((datum, mng/mng_set) for (datum, mng) in
+        bestentwicklung = dict(((datum, mng / mng_set) for (datum, mng) in
                                 _sum_bewegungen(_bewegungen(artnr_set, dateformat, lager)).items()))
         bestentw_all.append(bestentwicklung)
 
@@ -313,7 +313,7 @@ def bestandsentwicklung(artnr, dateformat="%Y-%m-%d", lager=0):
     # Bei Setartikeln werden die Auftragsmengen (evtl. auch die Bestellmengen) mal für den Set,
     # und mal für die Subartikel behandelt.
     # Darum hier noch die Bewegungen des Setartikels überlagern
-    if artnr_set != artnr: # Das darf nur auf Setartikel angewendet werden!
+    if artnr_set != artnr:  # Das darf nur auf Setartikel angewendet werden!
         bewegungen_set = _bewegungen(artnr, dateformat, lager)
 
         # Bewegungsmengen aus der gerade ermittelten Bestandsendwicklung der Unterartikel erzeugen
@@ -332,10 +332,10 @@ def bestandsentwicklung(artnr, dateformat="%Y-%m-%d", lager=0):
 
     if not bestentwicklung:
         # kein Bestand - diese Information 6 Stunden cachen
-        memc.set(memc_key, bestentwicklung, 60*60*6)
+        memc.set(memc_key, bestentwicklung, 60 * 60 * 6)
     else:
         # Bestand - die menge fuer 2 Minuten cachen
-        memc.set(memc_key, bestentwicklung, 60*2)
+        memc.set(memc_key, bestentwicklung, 60 * 2)
 
     return bestentwicklung
 
@@ -406,7 +406,6 @@ def get_offene_auftraege(lager=100):
             'AKAUFA': 'art'}
     fields = mappings.keys()
     condition = "AKAUFN=APAUFN AND APKZVA=0 AND AKKZVA=0 AND AKAUFA<>'U' AND AKSTAT<>'X' AND APSTAT<>'X' AND APLGNR=%s" % lager
-    ordering = 'AKAUFN'
     rows = get_connection().query(['AAP00', 'AAK00'],
             fields=fields,
             condition=condition,
@@ -443,7 +442,7 @@ def auftragsmengen_alle_artikel(lager=0, umlagerungen=False):
     " AND AKSTAT<>'X'"                # Auftrag nicht logisch gelöscht
     " AND AKKZVA=0")                  # Auftrag nicht als 'voll ausgeliefert' markiert
 
-    if not umlagerungen: # kein Umlagerungsauftrag:
+    if not umlagerungen:  # kein Umlagerungsauftrag:
         condition += " AND AKAUFA<>'U'"
 
     if lager:
@@ -479,6 +478,7 @@ def versionsvorschlag(menge, orgartnr, date, dateformat="%Y-%m-%d"):
         if benoetigt <= 0:
             return True, ret
     return False, ret
+
 
 def frei_am(menge, artnr, date, dateformat="%Y-%m-%d"):
     """Ermittelt, ob die Menge für einen Artikel zu dem Datum date frei ist.

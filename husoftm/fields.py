@@ -12,7 +12,7 @@ Copyright (c) 2007, 2008, 2009 HUDORA GmbH. All rights reserved.
 __revision__ = "$Revision$"
 
 MAPPINGDIR = {
-'ABV00': {# Adressdaten zu Aufträgen die in die Stapelschnittstelle geschrieben werden
+'ABV00': {  # Adressdaten zu Aufträgen die in die Stapelschnittstelle geschrieben werden
           'BVVGNR': 'vorgang',
           #'BVLFDS': 'stapelsatznummer',
           'BVAART': 'adressart',
@@ -29,7 +29,7 @@ MAPPINGDIR = {
           'BVKZAD': 'Adressaufbereitung',
         },
 
-'AAK00': {# Auftragsköpfe
+'AAK00': {  # Auftragsköpfe
           # 'AKFNR ': 'Firma',
           'AKAUFN': 'auftragsnr',
           'AKSBNR': 'sachbearbeiter',
@@ -99,7 +99,7 @@ MAPPINGDIR = {
           # 'AKKZWS': 'WZ/RE-Sperre',
           # 'AKKZIN': 'Kennzeichen interner Beleg',
           # 'AKKZBO': 'Steuerung Bonus-Abrechnung',
-          'AKKZTF': 'teillieferung', # bzw. Teilfakturierung
+          'AKKZTF': 'teillieferung',  # bzw. Teilfakturierung
           # 'AKKZSR': 'Kz.Drucken in Sammelrech=1',
           # 'AKKZZF': 'un-/versteuert',
           'AKKZVA': 'voll_ausgeliefert',
@@ -158,7 +158,7 @@ MAPPINGDIR = {
           # 'AKSTAT': 'satzstatus'
          },
 
-'AAP00': { # Auftragspositionen
+'AAP00': {  # Auftragspositionen
           'APMNG-APMNGF-APMNGG': 'menge_offen',
            # 'APFNR ': 'Firma',
            # 'APAUFN': 'Auftrags-nr',
@@ -332,7 +332,7 @@ MAPPINGDIR = {
            # 'APSTAT': 'Satzstatus',
           },
 
-'AAT00': {# Auftrags-Texte
+'AAT00': {  # Auftrags-Texte
           'ATAUFN': 'auftragsnr',
           'ATAUPO': 'auftragsposition',
           'ATTART': 'textart',
@@ -343,8 +343,8 @@ MAPPINGDIR = {
           'ATKZRG': 'andruck_re',
          },
 
-'AKZ00': {# Kundenstamm für Auftragsverwaltung
-          'KZKDNR': 'Kunden-nr',
+'AKZ00': {  # Kundenstamm für Auftragsverwaltung
+          'KZKDNR': 'kundennr',
           #'KZSBNR': 'zuständiger Sachbearbeiter',
           'KZVRT': 'vertreter',
           'KZGEB': 'gebiet',
@@ -377,7 +377,7 @@ MAPPINGDIR = {
           'KZDTAE': 'updated_at',
 },
 
-'ALK00': {# Lieferscheinköpfe
+'ALK00': {  # Lieferscheinköpfe
           'LKSANK': 'satznr',
           'LKSANB': 'bezogener_kopf',
           'LKSBNR': 'sachbearbeiter',
@@ -416,7 +416,7 @@ MAPPINGDIR = {
           'LKSTAT': 'satzstatus',
          },
 
-'ALN00': {# Lieferscheinpositionen
+'ALN00': {  # Lieferscheinpositionen
           'LNSANK': 'satznr_kopf',
           'LNSANP': 'satznr',
           # 'LNKANR': 'Übergeordnete Auftrags-Nr.
@@ -481,8 +481,7 @@ MAPPINGDIR = {
           'LNSBNR': 'sachbearbeiter_bearbeitung',
          },
 
-'AFK00': # Rechnungsköpfe
-     {
+'AFK00': {  # Rechnungsköpfe
      'FKFNR ': 'firma',
      # 'FKABT ': 'Abteilungs-Nummer',
      # 'FKAGRP': 'Abteilungs-Gruppe/Sparte',
@@ -609,8 +608,7 @@ MAPPINGDIR = {
      'FKZTER': 'erfassung_time',
      },
 
-'AFU00': # Rechnungspositionen
-        {
+'AFU00': {  # Rechnungspositionen
         #'FUFNR': 'firma',
         #'FURGNR': 'rechnungsnr',
         # 'FURGNI': 'Intern Rechnungs-Nr.',
@@ -691,7 +689,7 @@ MAPPINGDIR = {
         },
 
 
-'ASK00': {# Set/Komponenten
+'ASK00': {  # Set/Komponenten
            # 'SKFNR':  'firma',
            'SKARTN': 'artnr',
            # 'SKAUFN': 'Auftrags-nr',
@@ -713,12 +711,12 @@ MAPPINGDIR = {
 'AVA00': {
          #'VAFNR':  Firma
          'VAKDNR': 'kundennr',
-         'VAVANR': 'versandadresssnr',
+         'VAVANR': 'versandadressnr',
          #'VAFGRP'  Firmen-Gruppe
          #'VAAGRP'  Abteilungs-Gruppe/Sparte
          #'VAABT'  Abteilungs-nr
-         'VASANR': 'satznr', # gepackt
-         #'VAX3VS'  Versandarten-Schlüssel
+         'VASANR': 'satznr',  # gepackt
+         #'VAX3VS'  'versandart',
          #'VAX3LB'  Lieferbedingungs-Schlüssel
          #'VAINFO'  Interne Information
          #'VAVRT'  Vertreter-nr
@@ -731,7 +729,7 @@ MAPPINGDIR = {
          'VASTAT': 'satzstatus',
        },
 
-'BBU00': { # Buchungspositionen in der Buchhaltung
+'BBU00': {  # Buchungspositionen in der Buchhaltung
     # 'BUFNR':  'Firmennr. Sachbuchung',
     # 'BUBHKZ': 'Buchhaltungskennz. D,K,S',
     'BUPKTO': 'personenkonto',
@@ -748,7 +746,7 @@ MAPPINGDIR = {
     #'BUBUSL': 'externe Belegart',
     #'BUBLRA': 'Anzeigebelegart',
     #'BUBLRE': 'externe Belegart',
-    'BUSOHA': 'soll_oder_haben', # 'S' oder 'H'
+    'BUSOHA': 'soll_oder_haben',  # 'S' oder 'H'
     'BUGKTO': 'gegenkonto_sachbuchhaltung',
     # 'BUGKSH': 'Gegenkonto-Soll/Haben',
     'BUOINF': 'op_info',
@@ -820,7 +818,7 @@ MAPPINGDIR = {
     # 'BUKZSB': 'Kennz. Schattenbuchung',
     # 'BUSPAR': 'Abteilungs-Gruppe/Sparte',
     # 'BUKZNB': 'Kennz. durch Nebenbuchh.',
-    'BUUSR1': 'user_1', # name des Sachbaerbeiters
+    'BUUSR1': 'user_1',  # name des Sachbaerbeiters
     # 'BUUSR2': 'User 2',
     # 'BUMBR':  'Member',
     'BUDTER': 'erfassung_date',
@@ -854,7 +852,7 @@ MAPPINGDIR = {
 },
 
 
-'BED00': { # Datei fuer die Zentrale-Meldung innerg. Warenverk.
+'BED00': {  # Datei fuer die Zentrale-Meldung innerg. Warenverk.
           'EDFNR ': 'firmennr',
           'EDPKTO': 'personenkonto',
           'EDBEKZ': 'berichtigungskennzeichen',
@@ -966,7 +964,7 @@ MAPPINGDIR = {
 #     OPKZPW              BOP00              W{hrungsart
 
 
-'EBL00': { # Bestellköpfe
+'EBL00': {  # Bestellköpfe
      #'BLFNR ': 'firma',
      'BLBSTN': 'bestellnr',
      #'BLFNRH': 'Firma / Herkunft',
@@ -1111,10 +1109,10 @@ MAPPINGDIR = {
 #     AXDFSL              EAX00              Dateif}hrungs-Schl}ssel
 #     AXSTAT              EAX00              Satzstatus
 
-'EBP00': { # Bestellpositions-Datei
+'EBP00': {  # Bestellpositions-Datei
           'BPMNGB-BPMNGL': 'menge_offen',
           # 'BPFNR ': 'Firma',
-          'BPBSTN': 'bestellnr', # bei uns auch als P.O. bekannt
+          'BPBSTN': 'bestellnr',  # bei uns auch als P.O. bekannt
           'BPBSTP': 'bestellpos',
           # 'BPBSAB': 'Nummer des bez. Rahmenvert.',
           # 'BPBSAP': 'Pos-Nr des bez. Rahmenvert.',
@@ -1125,7 +1123,7 @@ MAPPINGDIR = {
           # 'BPAGRP': 'Abteilungs-Gruppe/Sparte',
           # 'BPFGRP': 'Firmen-Gruppe',
           'BPHPOS': 'hauptpositionnr',
-          'BPBDIF': 'beschaffung_deckung', # Tg BeschffgT. - DeckgT.',
+          'BPBDIF': 'beschaffung_deckung',  # Tg BeschffgT. - DeckgT.',
           # 'BPANNR': 'Anfrage',
           # 'BPANPO': 'Anfrageposition            ',
           'BPARTN': 'artnr',
@@ -1350,7 +1348,7 @@ MAPPINGDIR = {
 #     ERSTAT              EER00              Satzstatus
 
 
-'ESL00': { # Stapelschnittstelle LAGER
+'ESL00': {  # Stapelschnittstelle LAGER
     #'SLABT ': 'Abteilungs-Nummer',
     #'SLAGRP': 'Abteilungs-Gruppe/Sparte',
     #'SLFNR ': 'Firma',
@@ -1359,7 +1357,7 @@ MAPPINGDIR = {
     #'SLARTG': 'Artikel-Gruppe',
     #'SLARTH': 'Artikel-Haupt-Gruppe',
     'SLLGNR': 'lager',
-    'SLMNG ': 'menge', # "Einzelmenge"
+    'SLMNG ': 'menge',  # "Einzelmenge"
     # 'SLMESL': 'mengeneinheit', inner 1
     # 'SLFAKT': 'Umrechn.-Faktor  ER-->BE', immer 1
     'SLPREW': 'wert',
@@ -1408,7 +1406,7 @@ MAPPINGDIR = {
     #'SLMNGI': 'Menge als Zusatzinfo', immer 0
     #'SLWRTI': 'Wert als Zusatzinfo', # immer 0
     'SLLBW ': 'lagerbewegungsnr',
-    'SLLWKO': 'lager_korrektur_wert', # 'Korrektur-Wert des Lagers',
+    'SLLWKO': 'lager_korrektur_wert',  # 'Korrektur-Wert des Lagers',
     # 'SLLWFR': 'Korr.Wert Lg. / Frachtantei', immer 0
     # 'SLLWZO': 'Korr.Wert Lg. / Zollanteil', immer 0
     # 'SLSBAE': 'aenderung_sachbearbeiter',
@@ -1587,7 +1585,7 @@ MAPPINGDIR = {
 #     VPSTAT              EVP00              Satzstatus
 
 
-'EWZ00': { # Bestellpositionszusatzinformationen
+'EWZ00': {  # Bestellpositionszusatzinformationen
      # 'WZFGRP': 'Firmen-Gruppe              ',
      # 'WZFNR ': 'Firma                      ',
      # 'WZAGRP': 'Abteilungs-Gruppe/Sparte   ',
@@ -1615,7 +1613,7 @@ MAPPINGDIR = {
      #'WZBNWZ': 'Beleg-Nr./Zugang',
      'WZDTWZ': 'zugang_date',
      # 'WZMJBU': 'Buchungs-Monat             ',
-     'WZLBWZ': 'lagerbewegung_zugang', # referenziert
+     'WZLBWZ': 'lagerbewegung_zugang',  # referenziert
      # 'WZREKL': 'Reklamationsnummer         ',
      # 'WZGBNR': 'Vertriebseinheit           ',
      # 'WZRIMW': 'WZ-RefNr f}r Image         ',
@@ -1701,7 +1699,7 @@ MAPPINGDIR = {
      'WZSANR': 'satznummer_warenzugang',
 },
 
-'ISA00': {# MyPL Schnittstelle: Komissionierbeleg
+'ISA00': {  # MyPL Schnittstelle: Komissionierbeleg
           'IAFNR': 'firma',
           'IALGNR': 'lagernr',
           'IAKBNR': 'kommissionierbelegnr',
@@ -1713,7 +1711,7 @@ MAPPINGDIR = {
           'IASANR': 'satznr',
          },
 
-'ISB00': {# MyPL Schnittstelle: Lagerbuchungsschnittstelle
+'ISB00': {  # MyPL Schnittstelle: Lagerbuchungsschnittstelle
           'IBFNR': 'firma',
           'IBBWSL': 'bewegungsschluessel',
           'IBLGNR': 'lager',
@@ -1725,7 +1723,7 @@ MAPPINGDIR = {
           'IBSTAT': 'status',
          },
 
-'ISK00': {# MyPL Schnittstelle: Warenzugang aus Umlagerung
+'ISK00': {  # MyPL Schnittstelle: Warenzugang aus Umlagerung
           'IKFNR': 'firma',
           'IKKBNR': 'kommissionierbelegnr',
           'IKKPOS': 'kommissionierbelegposition',
@@ -1742,7 +1740,7 @@ MAPPINGDIR = {
           'IKSANR': 'satznr',
          },
 
-'ISR00': {# MyPL Schnittstelle: KB-Rückmeldung
+'ISR00': {  # MyPL Schnittstelle: KB-Rückmeldung
           'IRFNR': 'firma',
           'IRKBNR': 'kommissionierbelegnr',
           'IRKPOS': 'kommissionierbelegposition',
@@ -1756,7 +1754,7 @@ MAPPINGDIR = {
           'IRSTAT': 'status',
          },
 
-'ISZ00': {# MyPL Schnittstelle: Warenzugang aus Auftrag
+'ISZ00': {  # MyPL Schnittstelle: Warenzugang aus Auftrag
           'IZFNR ': 'firma',
           'IZBSTN': 'bestellnr',
           'IZWVNR': 'warenvereinnahmungsnr',
@@ -1806,7 +1804,7 @@ MAPPINGDIR = {
 # SUSTAT   A         1  0  215  215 Satzstatus
 
 
-'XAD00': {# Abweichende Lieferadressen
+'XAD00': {  # Abweichende Lieferadressen
           'ADNAME': 'name1',
           'ADNAM2': 'name2',
           'ADNAM3': 'name3',
@@ -1819,7 +1817,7 @@ MAPPINGDIR = {
           'ADKZAD': 'adressaufbereitung',
          },
 
-'XAR00': {# Artikelstamm
+'XAR00': {  # Artikelstamm
            'ARARTN': 'artnr',
            'ARSTAT': 'status',
            'ARARTH': 'artikelhauptgruppe',
@@ -1884,7 +1882,7 @@ MAPPINGDIR = {
            'ARDTER': 'erfassung_date',
            'ARDTAE': 'aenderung_date', },
 
-'XCK00': { # Ablaufkontrolle
+'XCK00': {  # Ablaufkontrolle
           'CKJNUM': 'jobnr',
           'CKBLNA': 'blockname',
           'CKJNAM': 'jobname',
@@ -1910,7 +1908,7 @@ MAPPINGDIR = {
           'CKSTAT': 'satzstatus',
           },
 
-'XED00': { # Intrastat-Meldungs-Datei
+'XED00': {  # Intrastat-Meldungs-Datei
             'EDINKZ': 'kennziffer',
             'EDFORM': 'anmeldeform',
             'EDSITZ': 'sitz_versender_empfaenger',
@@ -1944,7 +1942,7 @@ MAPPINGDIR = {
             'EDFIL9': 'fueller09',
           },
 
-'XKD00': {# Kundenadressen
+'XKD00': {  # Kundenadressen
           'KDKDNR': 'kundennr',
           'KDNAME': 'name1',
           'KDNAM2': 'name2',
@@ -1957,15 +1955,15 @@ MAPPINGDIR = {
           'KDTELF': 'tel',
           'KDTFAX': 'fax',
           'KDMOBI': 'mobil',
-          'KDPSTF': 'postfach', # gelegentlich genutzt
-          'KDPLZP': 'postfach_plz', # wenig genutzt
+          'KDPSTF': 'postfach',       # gelegentlich genutzt
+          'KDPLZP': 'postfach_plz',   # wenig genutzt
           #'KDORTP': 'Ortsname (Postfach-PLZ)', # gelegentlich genutzt
           #'KDPLZF': 'PLZ Firma', # sehr wenig genutzt
           # 'KDGESF': 'Geschäftsführer', # wenig genutzt
           'KDALSO': 'sortierfeld',
           # 'KDSPSL': 'Sprache', # Werte 1 & 2
           # 'KDWSL ': 'Währungs-Kennzeichen',
-          'KDKGRP': 'kundengruppe', # alphanum
+          'KDKGRP': 'kundengruppe',   # alphanum
           'KDEMAL': 'mail',
           'KDHOME': 'url',
           'KDSANR': 'adressdatei_id',
@@ -1974,7 +1972,7 @@ MAPPINGDIR = {
           #'KDSTAT': 'satzstatus',
           },
 
-'XKS00': { # Kundenzusatzdaten
+'XKS00': {  # Kundenzusatzdaten
           'KSKDNR': 'kundennr',
           'KSLISP': 'liefersperre',
           'KSAWRT': 'offener_aftragswert',
@@ -2007,7 +2005,7 @@ MAPPINGDIR = {
           'KCE2IL': 'iln',
           },
 
-'XPN00': { # Konditionen / Preise
+'XPN00': {  # Konditionen / Preise
     # 'PNFNR ': 'Firma',
     # 'PNANW ': 'Anwendung',
     'PNSANR': 'satznummer',
@@ -2031,9 +2029,9 @@ MAPPINGDIR = {
 
 },
 
-'XPR00': { # Koditionen / Preise
+'XPR00': {  # Koditionen / Preise
     'PRFNR': 'firma',
-    'PRANW': 'anwendung', # 'E' == Einkauf
+    'PRANW': 'anwendung',  # 'E' == Einkauf
     # 'PRIB': 'Datenart',
     # 'PRANW1': 'Preismodul',
     'PRSANR': 'satznr_xpn00',
@@ -2108,7 +2106,7 @@ MAPPINGDIR = {
     #'PRDFSL': 'Dateif}hrungs-Schl}ssel',
 },
 
-'XXA00': { # Adressen von Kunden und Lieferanten
+'XXA00': {  # Adressen von Kunden und Lieferanten
         # 'XAFNR ': Firma
         'XAKDNR': 'kundennr',
         # 'XAKZKD': Kz Kunde
@@ -2141,7 +2139,7 @@ MAPPINGDIR = {
         # 'XASPSL': Sprache
         # 'XAWSL ': W{hrungs-Kennzeichen
         # 'XAFGRP': Firmen-Gruppe
-        'XAKGRP': 'kunden_gruppe', # Preisliste
+        'XAKGRP': 'kunden_gruppe',  # Preisliste
         # 'XALGRP': Lieferanten-Gruppe
         # 'XAISIC': ISIC-Schl}ssel
         # 'XARPMK': RPM-Kreis
@@ -2174,7 +2172,7 @@ MAPPINGDIR = {
         'XASTAT': 'satzstatus',
        },
 
-'XLB00': { # Lagerbewegungen
+'XLB00': {  # Lagerbewegungen
         #'LBFGRP': 'Firmen-Gruppe',
         #'LBFNR ': 'Firma',
         #'LBAGRP': 'Abteilungs-Gruppe/Sparte',
@@ -2186,10 +2184,10 @@ MAPPINGDIR = {
         # 'LBSBNR': 'sachbearbeiter_erfassung',
         # 'LDWSID': 'herkunft', # z.B. 'EINKAUF'
         # 'LBSAKZ': 'SA',
-        'LBBWSL': 'bewegungsschluessel', # 22 = Warenzugang
-        'LBBELN': 'belegnummer', # == Nummer in der Fibu
+        'LBBWSL': 'bewegungsschluessel',  # 22 = Warenzugang
+        'LBBELN': 'belegnummer',          # == Nummer in der Fibu
         'LBDTBL': 'beleg_date',
-        'LBBUMO': 'buchungsmonat', # format: CJJMM
+        'LBBUMO': 'buchungsmonat',        # format: CJJMM
         #'LBLKTR': 'Kostentr{ger',
         #'LBKST ': 'Kostenstelle',
         #'LBPROJ': 'Projekt',
@@ -2216,17 +2214,17 @@ MAPPINGDIR = {
         'LBLWAK': 'wert_aktuell',
         # 'LBLWKO': 'lagerwert_korrektur', # scheinbar immer identisch mit LBLWAK
         'LBLWRT': 'lagerwert_vor_buchung',
-        'LBMNGE': 'bewegungsmenge', # 'Bewegungs-Menge lt. Eingabe',
+        'LBMNGE': 'bewegungsmenge',        # 'Bewegungs-Menge lt. Eingabe',
         # 'LBMEER': 'Mengeneinheit/Erfassung', # immer 1
         # 'LBFAKT': 'Umrechn.-Faktor  ER-->BE', # immer 1
         'LBMNGB': 'menge',
-        'LBMNGZ': 'zugangsmenge', # Zugangsmenge nach Umlagerung',
+        'LBMNGZ': 'zugangsmenge',          # Zugangsmenge nach Umlagerung',
         # 'LBMNGL': 'Menge noch am Lager', # FIFO - Menge? - scheinbar immer 0
         # 'LBMNGO': 'Menge Vorab-Bewertet', # scheinbar immer 0
         # 'LBMNGS': 'Abgangsmenge mit Statistik', - scheinbar immer 0
         # 'LBMGOP': 'Menge als offener Posten', - scheinbar immer 0
         'LBMGLP': 'bestand_vor_buchung',
-        'LBMGKO': 'bestandsaenderung', # Bestandsänderung am Lager',
+        'LBMGKO': 'bestandsaenderung',      # Bestandsänderung am Lager',
         #'LBBSTN': 'bestellnr',
         #'LBBSTP': 'bestellpos',
         # 'LBFNRK': 'Firmen-Nr./Lieferant',
@@ -2246,12 +2244,12 @@ MAPPINGDIR = {
         'LBSANR': 'satznummer',
     },
 
-'XSB00': { # Sachbearbeiter
+'XSB00': {  # Sachbearbeiter
         'SBSBNR': 'id',
         'SBNAME': 'name',
     },
 
-'XTY00': { # Versandarten
+'XTY00': {  # Versandarten
           'TYFNR': 'firma',
           'TYANW': 'anwendung',
           'TYVSAR': 'versandart',
@@ -2418,21 +2416,21 @@ DECIMALIZE2 = set(['BUR1', 'BUBUBT', 'BUNEBT', 'BUNEWB', 'BUABZU', 'BUWBBT',
                    'FUPORB', 'FUPREV'])
 
 # maps datefield to related timefield for generating datetime objects
-DATETIMEDIR = {'LKDTLF': 'LKZTLF', # letzter_lieferschein
-               'LKDTKB': 'LKZTKB', # letzter_kommissionierbeleg
-               'LKDTER': 'LKZTER', # erfassung
-               'LKDTAE': 'LKZTAE', # aenderung
-               'LNDTLF': 'LNZTLF', # lieferschein
-               'LNDTER': 'LNZTER', # erfassung
-               'LNDTAE': 'LNZTAE', # aenderung
+DATETIMEDIR = {'LKDTLF': 'LKZTLF',  # letzter_lieferschein
+               'LKDTKB': 'LKZTKB',  # letzter_kommissionierbeleg
+               'LKDTER': 'LKZTER',  # erfassung
+               'LKDTAE': 'LKZTAE',  # aenderung
+               'LNDTLF': 'LNZTLF',  # lieferschein
+               'LNDTER': 'LNZTER',  # erfassung
+               'LNDTAE': 'LNZTAE',  # aenderung
                'IKDATE': 'IKTIME',
                'LNDTKB': 'LNZTKB',
                'IZDTWZ': 'IZTIME',
-               'SKDTAE': 'SKZTAE', # komponenten
-               'CKANFD': 'CKANFZ', # XCK00 start
-               'CKENDD': 'CKENDZ', # XCK00 ende
-               'FKDTER': 'FKZTER', # Rechnungskopf erfassung_date
-               'FUDTER': 'FUZTER', # Rechnungsposition erfassung_date
+               'SKDTAE': 'SKZTAE',  # komponenten
+               'CKANFD': 'CKANFZ',  # XCK00 start
+               'CKENDD': 'CKENDZ',  # XCK00 ende
+               'FKDTER': 'FKZTER',  # Rechnungskopf erfassung_date
+               'FUDTER': 'FUZTER',  # Rechnungsposition erfassung_date
                }
 
 # Fields which need padding before beeing used in SQL queries

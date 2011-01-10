@@ -177,7 +177,7 @@ def str2softmdate(value, fmt='%Y-%m-%d'):
     '1060225'
     """
     date = datetime.datetime.strptime(value, fmt)
-    return date2softm(value)
+    return date2softm(date)
 
 
 def sql_escape(data):

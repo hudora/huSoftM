@@ -68,7 +68,7 @@ MAPPINGDIR = {
           # 'AKUSTN': 'USt-Id-nr',
           # EU-einheitliche Steuernummer (USt-IdNr, VAT-Nr). Beim Druck der USt-IdNr ist zus‰tzlich noch
           # der EU-L‰ndercode mitzudrucken.
-          # 'AKVANR': 'Versandadress-Nr.',
+          'AKVANR': 'versandadressnr',
           # Dreistellige Nummer, unter der zus‰tzliche Lieferadressen zum Kunden verwaltet werden. Falls
           # für den Auftrag eine abweichende Lieferadresse verwendet werden soll, die in der
           # Lieferadressdatei gespeichert ist, kann die Nummer der Lieferadresse hier angegeben werden.
@@ -749,7 +749,7 @@ MAPPINGDIR = {
           'KZDTAE': 'updated_at',
 },
 
-'ALK00': {  # Lieferscheinköpfe
+'ALK00': { # Lieferscheinköpfe
           'LKSANK': 'satznr',
           'LKSANB': 'bezogener_kopf',
           # Die Angabe ist nur gefüllt, falls mit der Variante 'Kommissionierbeleg vor Lieferschein'
@@ -763,7 +763,7 @@ MAPPINGDIR = {
           'LKKDRG': 'rechnungsempfaenger',
           'LKKDNR': 'warenempfaenger',
           'LKLFSN': 'lieferscheinnr',
-          'LKDTLF': 'lieferschein_date',
+          'LKDTLF': 'ALK_lieferschein_date',
           'LKZTLF': 'lieferschein_time',
           # Wird für automatisch erstellte Lieferscheine bei der Lieferscheinschreibung (AFA37) mit dem
           # Tagesdatum, und für manuell erstellte Lieferscheine bei der Erfassung Versand-/Speditionsdaten
@@ -852,7 +852,7 @@ MAPPINGDIR = {
           #'LNLGPL': 'lagerplatz', # ist immer leer
           #'LNKZBE': 'Kz:keine Bestandsführung =1
           'LNMNGO': 'menge_offen',
-          'LNDTLT': 'liefertermin_date',
+          'LNDTLT': 'ALN_anliefer_date',
           # Bei der Stapelfreigabe werden nur Lieferscheine freigegeben, deren Liefertermin nicht nach
           # dem Freigabedatum liegt.
           #'LNJWLT': 'liefertermin_woche',  # Liefertermin im Format HJJWW (Jahrhundert/Jahr/Woche)
@@ -867,7 +867,7 @@ MAPPINGDIR = {
           'LNKZZU': 'bevorzugte_zuteilung',
           'LNKDRG': 'rechnungsempfaenger',
           'LNKDNR': 'kundennr',
-          'LNLFSN': 'lieferscheinnr',
+          'LNLFSN': 'ALN_lieferscheinnr',
           'LNMNGL': 'menge',  # Menge lt. Lieferschein
           'LNDTLF': 'lieferschein_date',
           'LNZTLF': 'lieferschein_time',
@@ -924,6 +924,7 @@ MAPPINGDIR = {
           # *BLANK Satz ist aktiv
           # X Satz steht zum Lôschen an (auf Satz kann in den Anwendungsprogr. nicht mehr zugegriffen werden)
           'LNSBNR': 'sachbearbeiter_bearbeitung',
+          'LNLWA2': 'wert',
          },
 
 'AFK00':  # Rechnungsköpfe
@@ -2461,7 +2462,7 @@ MAPPINGDIR = {
           # 'KDALSO': 'sortierfeld',
           # 'KDSPSL': 'Sprache', # Werte 1 & 2
           # 'KDWSL ': 'Währungs-Kennzeichen',
-          # 'KDKGRP': 'kundengruppe',  # alphanum
+          'KDKGRP': 'kunden_gruppe',  # für Preislisten
           # 'KDEMAL': 'mail',
           # 'KDHOME': 'url',
           # 'KDSANR': 'adressdatei_id',
@@ -2474,21 +2475,21 @@ MAPPINGDIR = {
           'KSKDNR': 'kundennr',
           'KSLISP': 'liefersperre',
           'KSAWRT': 'offener_aftragswert',
-          'KSAKWR': 'kreditlimit',
-          'KSCOMP': 'company',
-          'KSIAKZ': 'inland_ausland',
-          'KSFNRK': 'interne_firmennr',
+          # 'KSAKWR': 'kreditlimit',
+          # 'KSCOMP': 'company',
+          # 'KSIAKZ': 'inland_ausland',
+          # 'KSFNRK': 'interne_firmennr',
           'KSINFL': 'unsere_lieferantennumemr',
           'KCUSTN': 'ustid',
-          'KSLIMI': 'kreditlimit2',
-          'KSSKSL': 'skontoschluessel',
-          'KSDKSL': 'delcredereschlüssel',
-          'KSMASP': 'mahnsperre',
-          'KSKDZA': 'lastschrift',
-          'KSBOKZ': 'bonnitaet',
+          # 'KSLIMI': 'kreditlimit2',
+          # 'KSSKSL': 'skontoschluessel',
+          # 'KSDKSL': 'delcredereschlüssel',
+          # 'KSMASP': 'mahnsperre',
+          # 'KSKDZA': 'lastschrift',
+          # 'KSBOKZ': 'bonnitaet',
           # 'KSKLTA': 'Kd/Li-Texte anzeigen',
           # 'KSINF1': 'Inf. 1',
-          'KCVERB': 'verband',
+          'KCVERB': 'verbandsnr',
           #'KSKRED': 'Verbands-/Mischkto-Satz',
           'KCMGVB': 'mitgliednr',
           #'KCBBN':  'Bundeseinheitl.Betriebsnr.',
@@ -2637,7 +2638,7 @@ MAPPINGDIR = {
         # 'XASPSL': Sprache
         # 'XAWSL ': W{hrungs-Kennzeichen
         # 'XAFGRP': Firmen-Gruppe
-        'XAKGRP': 'kunden_gruppe',  # Preisliste
+        'XAKGRP': 'kunden_gruppe',  # für Preisliste
         # 'XALGRP': Lieferanten-Gruppe
         # 'XAISIC': ISIC-Schl}ssel
         # 'XARPMK': RPM-Kreis
@@ -2672,7 +2673,6 @@ MAPPINGDIR = {
 
 'XXC00': {
           # Kunden-/Lieferantenzusatz
-          #
           # Hier werden zus{tzliche Daten f}r den Kunden oder Lieferanten
           # hinterlegt. Diese Datei wird sowohl von der Warenwirtschaft als
           # auch vom Rechnungswesen ben¦tigt  und enth{lt wichtige Daten,
@@ -2740,7 +2740,7 @@ MAPPINGDIR = {
           # Falls bekannt, kann hier die Lieferantennummer eingetragen werden, die uns der Kunde zugewiesen
           # hat.
           #  XCEGCD   EU-L{ndercode                                   A    2     48   49
-          'XCUSTN': 'xxc_ustid', # USt-IdNr
+          'XCUSTN': 'xxc_ustid',  # USt-IdNr
           # EU-einheitliche Steuernummer (USt-IdNr, VAT-Nr).
           # Beim Druck der USt-IdNr ist zus{tzlich noch der EU-L{ndercode
           # mitzudrucken.
@@ -3260,8 +3260,10 @@ DATETIMEDIR = {'LKDTLF': 'LKZTLF',  # letzter_lieferschein
                'CKENDD': 'CKENDZ',  # XCK00 ende
                'FKDTER': 'FKZTER',  # Rechnungskopf erfassung_date
                'FUDTER': 'FUZTER',  # Rechnungsposition erfassung_date
-               }
-
+               'FUDTER': 'FUZTER',  # Rechnungsposition erfassung_date
+               'LKDTER': 'LKZTER', # Lieferschein Erfassung
+               'LKDTAE': 'LKZTAE', # Lieferschein Änderung
+              }
 # Fields which need padding before beeing used in SQL queries
 PADDINGFIELDS = {
     'AKKDNR': "%8s",

@@ -165,7 +165,7 @@ def _softm_to_dict(row):
                                                                                 ret['betreuer_handle']))
     if 'verbandsnr' in row and row['verbandsnr']:
         ret['verbandsnr'] = 'SC%s' % row['verbandsnr']
-        ret['mitgliednr'] = row.get('mitgliednr', '')
+        ret['mitgliedsnr'] = row.get('mitgliedsnr', '')
     if 'iln' in row and row['iln']:
         ret['iln'] = unicode(int(row['iln'])).strip()
     if row['erfassung_date']:

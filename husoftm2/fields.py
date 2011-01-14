@@ -2491,7 +2491,7 @@ MAPPINGDIR = {
           # 'KSINF1': 'Inf. 1',
           'KCVERB': 'verbandsnr',
           #'KSKRED': 'Verbands-/Mischkto-Satz',
-          'KCMGVB': 'mitgliednr',
+          'KCMGVB': 'mitgliedsnr',
           #'KCBBN':  'Bundeseinheitl.Betriebsnr.',
           #'KCBBS':  'Bundeseinh.Betriebsstell.Nr',
           #'KCVRKZ': 'Kz. "Rechnungsliste erst."',

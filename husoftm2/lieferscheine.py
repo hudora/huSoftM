@@ -100,20 +100,8 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
         for row in query(['ALN00'], condition="LNSTAT<>'X' AND LNSANK IN (%s)" % ','.join([str(x) for x in batch]),
                          cachingtime=cachingtime, ua='husoftm2.lieferscheine'):
             d = dict(artnr=row['artnr'],
-                     menge=int(row['menge']),
-                     kommipos_guid="KB%s-%s" % (row['kommibelegnr'], row['kommibeleg_position']),
-                     #'menge_fakturierung': Decimal('24.0'),
-                     #'menge_offen': Decimal('24.0'),
-                     auftragpos_guid="SO%s-%s" % (row['auftragsnr'], row['auftrags_position']),
-                     # 'lieferscheinstorno': u'',
-                     # 'rueckstand_erlaubt': 1,
-                     # 'menge_komissionierbeleg': Decimal('24.0'),
-                     # 'setartikel': 0,
-                     # 'rechnungsstatus': 3,
-                     # 'voll_ausgeliefert': 0,
-                     # 'storno_date': None,
-                     # 'gutschrift': 1,
-                     )
+                     guid='%s-%03d-%03d' % (row['kommibelegnr'], row['auftrags_position'], row['kommibeleg_position']),
+                     menge=int(row['menge']))
             texte = postexte.get(row['auftragsnr'], {}).get(row['auftrags_position'], [])
             texte, attrs = texte_trennen(texte)
             d['infotext_kunde'] = texte

@@ -58,11 +58,8 @@ def get_kunde(kundennr):
     kundennr = int(kundennr)
     rows = query(['XKD00'],
                  condition="KDKDNR='%8d' AND KDSTAT<>'X'" % kundennr,
-                 joins=[('XXC00', 'KDKDNR', 'XCADNR'),
-                        ('XKS00', 'KDKDNR', 'KSKDNR'),
+                 joins=[('XKS00', 'KDKDNR', 'KSKDNR'),
                         ('AKZ00', 'KDKDNR', 'KZKDNR')])
-    # Kreditoren aus XXC00 entfernen - im JOIN geht das nicht
-    rows = [x for x in rows if x.get('art') != 'K']
     if len(rows) > 1:
         raise RuntimeError("Mehr als einen Kunden gefunden: %r" % kundennr)
     if not rows:
@@ -155,7 +152,7 @@ def _softm_to_dict(row):
                # kundengruppe=row.get('kundengruppe', ''),
                betreuer_handle=row.get('betreuer', ''),                        # ': u'Birgit Bonrath'
                interne_firmennr=row.get('interne_firmennr', ''),        # ': u''
-               unsere_lieferantennr=row.get('unsere_lieferantennumemr', ''),
+               lieferantennr=row.get('lieferantennumemr', ''),
               )
     ret['name'] = ' '.join((ret['name1'], ret['name2'])).strip()
     ret['betreuer'] = betreuerdict.get(ret['betreuer_handle'], '')

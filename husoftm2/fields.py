@@ -2479,7 +2479,7 @@ MAPPINGDIR = {
           # 'KSCOMP': 'company',
           # 'KSIAKZ': 'inland_ausland',
           # 'KSFNRK': 'interne_firmennr',
-          'KSINFL': 'unsere_lieferantennumemr',
+          'KSINFL': 'lieferantennumemr',
           'KCUSTN': 'ustid',
           # 'KSLIMI': 'kreditlimit2',
           # 'KSSKSL': 'skontoschluessel',

@@ -2683,11 +2683,11 @@ MAPPINGDIR = {
           # D           Kunde/Debitor
           # K           Lieferant/Kreditor
           'XCADNR': 'XXC_nr',  # Kunde/Lieferant
-          # XCLISP   Liefersperre                                    S    1 0   12   12
+          'XCLISP': 'liefersperre',
           #          *ZERO       keine Liefersperre
           #          1           Liefersperre
           # XCFGRP   Firmengruppe                                    A    2     13   14
-          # XCAWRT   Offener Auftragswert                            P   15 2   15   22
+          'XCAWRT': 'offener_auftragswert',
           #          In diesem Feld sind die offenen Positionswerte aus der
           #          Auftragspositionsdatei aufsummiert. Allerdings k¦nnen aufgrund
           #          der Parameterisierung bestimmte Auftragsarten und Positionen
@@ -2740,7 +2740,7 @@ MAPPINGDIR = {
           # Falls bekannt, kann hier die Lieferantennummer eingetragen werden, die uns der Kunde zugewiesen
           # hat.
           #  XCEGCD   EU-L{ndercode                                   A    2     48   49
-          'XCUSTN': 'xxc_ustid',  # USt-IdNr
+          'XCUSTN': 'ustid',
           # EU-einheitliche Steuernummer (USt-IdNr, VAT-Nr).
           # Beim Druck der USt-IdNr ist zus{tzlich noch der EU-L{ndercode
           # mitzudrucken.
@@ -2998,7 +2998,7 @@ MAPPINGDIR = {
           #  XCWSLN   W{hrung                                         A    3    249  251
           #  XCDTWN   W{hrung neu g}ltig ab                           P    7 0  252  255
           #  XCE2RP   Schl}ssel                                       A    4    259  262
-          'XCE2IL': 'XXC_iln',
+          'XCE2IL': 'iln',
           },
 
 'XLB00': {  # Lagerbewegungen

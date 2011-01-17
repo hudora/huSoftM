@@ -23,7 +23,7 @@ def get_kommibeleg(komminr, header_only=False):
     """Gibt einen Kommissionierbeleg zurück"""
 
     komminr = str(komminr)
-    if komminr.startswith('KB'):
+    if komminr.startswith('KA'):
         komminr = komminr[2:]
     belege = _kommibelege(["LKKBNR = %s" % sql_quote(komminr)], limit=1, header_only=header_only)
     if belege:

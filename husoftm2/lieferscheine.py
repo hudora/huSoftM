@@ -38,7 +38,8 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
                  anliefer_date=kopf['anliefer_date'],
                  kundennr="SC%s" % kopf['rechnungsempfaenger'],
                  lieferadresse=dict(kundennr="SC%s" % kopf['warenempfaenger']),
-                 lieferdatum=kopf['anliefer_date'],
+                 lieferdatum=kopf['anliefer_date'],  # XXX: Remove!
+                 anlieferdatum=kopf['anliefer_date'],
                  lager="LG%03d" % int(kopf['lager']),
                  kommiauftragnr="KB%s" % kopf['kommibelegnr'],
                  kommiauftrag_datum=kopf['kommibeleg_date'],

@@ -9,6 +9,7 @@ Copyright (c) 2010 HUDORA GmbH. All rights reserved.
 
 from husoftm.connection2 import get_connection
 from husoftm.tools import sql_escape, sql_quote, date2softm, pad
+import warnings
 
 AUFTRAGSARTEN = {
     "": "Normalauftrag",
@@ -33,6 +34,10 @@ AUFTRAGSARTEN = {
     "WA": "Werbeauftrag",
     "Z2": "Zuteilungsvorlauf 2 Wochen",
 }
+
+
+warnings.warn("husoftm.auftraege is deprecated, use husoftm2.auftraege instead",
+              DeprecationWarning, stacklevel=2)
 
 
 def auftragsart(art):

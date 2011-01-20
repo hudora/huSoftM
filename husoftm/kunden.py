@@ -11,6 +11,11 @@ import datetime
 import husoftm.connection2
 import cs.caching as caching
 import husoftm.tools
+import warnings
+
+
+warnings.warn("husoftm.kunden is deprecated, use husoftm2.kunden instead",
+              DeprecationWarning, stacklevel=2)
 
 
 class Kunde(object):

@@ -13,9 +13,13 @@ from husoftm.connection2 import get_connection
 from husoftm.tools import sql_quote, land2iso, set_attributes
 import cs.caching
 import logging
+import warnings
 
 logging.basicConfig(level=logging.WARN)
 log = logging.getLogger('husoftm.lieferschein')
+
+warnings.warn("husoftm.lieferscheine is deprecated, use husoftm2.lieferscheine instead",
+              DeprecationWarning, stacklevel=2)
 
 
 def get_lieferscheinnrs_for_lager(lager):

@@ -7,11 +7,8 @@ Created by Christian Klein on 2011-01-03.
 Copyright (c) 2011 HUDORA. All rights reserved.
 """
 
-from husoftm2.backend import query
 from husoftm2.lieferscheine import get_ls_kb_data
-from husoftm2.tools import sql_quote, land2iso
-from husoftm2.texte import texte_trennen, texte_auslesen
-import husoftm2.sachbearbeiter
+from husoftm2.tools import sql_quote
 
 
 def _kommibelege(additional_conditions=None, limit=None, header_only=False):

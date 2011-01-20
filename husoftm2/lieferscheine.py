@@ -17,7 +17,7 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
     """Lieferscheindaten oder Kommsissionierbelegdaten entsprechend dem Lieferungsprotokoll.
 
     Wenn is_lieferschein = False, dann werden Kommiauftragsdaten zurückgebeben (Kommimengen)
-    
+
     """
 
     cachingtime = 60 * 60 * 12

@@ -105,9 +105,9 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
         for row in query(['ALN00'], condition="LNSTAT<>'X' AND LNSANK IN (%s)" % ','.join([str(x) for x in batch]),
                          cachingtime=cachingtime, ua='husoftm2.lieferscheine'):
             if is_lieferschein == True:
-                lsmenge = row['menge']
+                lsmenge = int(row['menge'])
             else:
-                lsmenge = row['menge_komissionierbeleg']
+                lsmenge = int(row['menge_komissionierbeleg'])
             d = dict(artnr=row['artnr'],
                      guid='%s-%03d-%03d' % (row['kommibelegnr'], row['auftrags_position'], row['kommibeleg_position']),
                      menge=lsmenge)

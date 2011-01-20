@@ -156,7 +156,7 @@ def auftragsmengen_alle_artikel():
             condition=' AND '.join(conditions),
             ordering='APDTLT', grouping=['APARTN', 'APDTLT'],
             querymappings={'SUM(APMNG-APMNGF)': 'menge_offen', 'APARTN': 'artnr',
-                           'COUNT(*)':  'orderlines', 'APDTLT': 'liefer_date'})
+                           'COUNT(*)': 'orderlines', 'APDTLT': 'liefer_date'})
     ret = {}
     for row in rows:
         if row['menge_offen']:

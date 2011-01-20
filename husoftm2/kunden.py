@@ -112,14 +112,14 @@ def get_lieferadressen(kundennr):
 
 def get_lieferadresse(warenempfaenger):
     """Lieferadresse für Warenempfänger ermitteln"""
-    
+
     warenempfaenger = str(warenempfaenger)
     if warenempfaenger.startswith('SC'):
         warenempfaenger = warenempfaenger[2:]
     tmp = warenempfaenger.split('.')
     if len(tmp) == 1:
         return get_kunde(warenempfaenger)
-    
+
     rows = query(['AVA00'], joins=[('XXA00', 'VASANR', 'XASANR')],
                  condition="VAKDNR='%8s' AND VAVANR=%03d AND VASTAT <>'X'" % (int(tmp[0]), int(tmp[1])))
     if len(rows) == 1:

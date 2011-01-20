@@ -174,7 +174,7 @@ def get_lieferschein(lieferscheinnr, header_only=False):
 
 def _timedelta_to_hours(td):
     hours = td.days * 24
-    hours += int(td.seconds/3600)
+    hours += int(td.seconds / 3600)
     return hours
 
 
@@ -186,7 +186,7 @@ def get_lagerabgang(day):
                   "LKSTAT<>'X'",
                   "LNDTLF=%s" % (sql_quote(day.strftime('1%y%m%d')))]
 
-    # SoftM Freuden! Das Feld LKSANKB kann ausser zwischen Oktober 2005 und November 2007 
+    # SoftM Freuden! Das Feld LKSANKB kann ausser zwischen Oktober 2005 und November 2007
     # für den join genommen werden, ansonsten kann man LKSANK nehmen.
 
     rows = query(['ALN00'], condition=" AND ".join(conditions),
@@ -205,7 +205,7 @@ def get_lagerabgang(day):
                     warenempfaenger="SC%s" % row['warenempfaenger'],
                     kundennr="SC%s" % row['rechnungsempfaenger'],
                     setartikel=(int(row['setartikel']) == 1),
-                    wert=int(row['wert']*100),
+                    wert=int(row['wert'] * 100),
                     auftrag_positionsnr=row['auftrags_position'],
                     positionsnr=row['kommibeleg_position'],
                     vorlauf_h=None, durchlauf_h=None, termintreue_h=None,
@@ -222,13 +222,13 @@ def get_lagerabgang(day):
         ret.append(data)
     return ret
 
+
 def _selftest():
     """Test basic functionality"""
     from pprint import pprint
     import datetime
     header = False
-    print len(get_lagerabgang(datetime.date(2010,12,21)))
-    return
+    print len(get_lagerabgang(datetime.date(2010, 12, 21)))
     pprint(lieferscheine_auftrag('SO1163764', header_only=header))
     print get_changed_after(datetime.date(2010, 12, 1))
     pprint(get_lieferschein('SL4173969'))

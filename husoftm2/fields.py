@@ -749,7 +749,7 @@ MAPPINGDIR = {
           'KZDTAE': 'updated_at',
 },
 
-'ALK00': { # Lieferscheinköpfe
+'ALK00': {  # Lieferscheinköpfe
           'LKSANK': 'satznr',
           'LKSANB': 'bezogener_kopf',
           # Die Angabe ist nur gefüllt, falls mit der Variante 'Kommissionierbeleg vor Lieferschein'
@@ -3261,8 +3261,8 @@ DATETIMEDIR = {'LKDTLF': 'LKZTLF',  # letzter_lieferschein
                'FKDTER': 'FKZTER',  # Rechnungskopf erfassung_date
                'FUDTER': 'FUZTER',  # Rechnungsposition erfassung_date
                'FUDTER': 'FUZTER',  # Rechnungsposition erfassung_date
-               'LKDTER': 'LKZTER', # Lieferschein Erfassung
-               'LKDTAE': 'LKZTAE', # Lieferschein Änderung
+               'LKDTER': 'LKZTER',  # Lieferschein Erfassung
+               'LKDTAE': 'LKZTAE',  # Lieferschein Änderung
               }
 # Fields which need padding before beeing used in SQL queries
 PADDINGFIELDS = {

@@ -186,7 +186,6 @@ def get_guid(auftragsnr):
     return ''
 
 
-
 def auftraege_kunde(kundennr, limit=None, header_only=False):
     """Alle Aufträge für eine Kundennummer ermitteln.
     Gibt eine Liste von dict()s zurück."""

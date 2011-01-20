@@ -1,6 +1,3 @@
-# setting the PATH seems only to work in GNUmake not in BSDmake
-PATH:=pythonenv/bin:$(PATH)
-
 default: dependencies check test
 
 check:
@@ -19,11 +16,11 @@ test: dependencies
 	#PYTHONPATH=. python husoftm/preise_ek.py
 	#PYTHONPATH=. ./pythonenv/bin/python husoftm/stapelschnittstelle.py
 	# dependencies on CentralServices
-	PYTHONPATH=. python husoftm2/artikel.py
-	PYTHONPATH=. python husoftm2/bestaende.py
-	PYTHONPATH=. python husoftm2/kunden.py
+	PYTHONPATH=. ./pythonenv/bin/python husoftm2/artikel.py
+	PYTHONPATH=. ./pythonenv/bin/python husoftm2/bestaende.py
+	PYTHONPATH=. ./pythonenv/bin/python husoftm2/kunden.py
 	#PYTHONPATH=. python husoftm/lagerschnittstelle.py
-	PYTHONPATH=. python husoftm2/lieferscheine.py
+	PYTHONPATH=. ./pythonenv/bin/python husoftm2/lieferscheine.py
 	#PYTHONPATH=. python husoftm/softmtables.py
 
 coverage: dependencies
@@ -48,7 +45,7 @@ coverage: dependencies
 	printf 'YVALUE=' > .coverage.score
 	grep -A3 ">totals:<" coverage/index.html|tail -n1|cut -c 9-12 >> .coverage.score
 
-dependencies: pythonenv/bin/python
+kudependencies: pythonenv/bin/python
 
 pythonenv/bin/python:
 	virtualenv pythonenv

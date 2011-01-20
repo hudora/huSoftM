@@ -13,7 +13,7 @@ from husoftm2.tools import sql_quote
 
 def _kommibelege(additional_conditions=None, limit=None, header_only=False):
     conditions = ["LKSANB = 0", "LKSTAT<>'X'"]
-    return get_ls_kb_data(conditions, additional_conditions, limit, header_only)
+    return get_ls_kb_data(conditions, additional_conditions, limit, header_only, is_lieferschein=False)
 
 
 def get_kommibeleg(komminr, header_only=False):

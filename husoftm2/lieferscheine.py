@@ -13,8 +13,12 @@ from husoftm2.texte import texte_trennen, texte_auslesen
 import husoftm2.sachbearbeiter
 
 
-def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_only=False):
-    """Lieferscheindaten oder Kommsissionierbelegdaten entsprechend dem Lieferungsprotokoll."""
+def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_only=False, is_lieferschein=True):
+    """Lieferscheindaten oder Kommsissionierbelegdaten entsprechend dem Lieferungsprotokoll.
+
+    Wenn is_lieferschein = False, dann werden Kommiauftragsdaten zurückgebeben (Kommimengen)
+    
+    """
 
     cachingtime = 60 * 60 * 12
 
@@ -100,9 +104,13 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
         # Positionen & Positionstexte zuordnen
         for row in query(['ALN00'], condition="LNSTAT<>'X' AND LNSANK IN (%s)" % ','.join([str(x) for x in batch]),
                          cachingtime=cachingtime, ua='husoftm2.lieferscheine'):
+            if is_lieferschein == True:
+                lsmenge = int(row['menge'])
+            else:
+                lsmenge = int(row['menge_komissionierbeleg'])
             d = dict(artnr=row['artnr'],
                      guid='%s-%03d-%03d' % (row['kommibelegnr'], row['auftrags_position'], row['kommibeleg_position']),
-                     menge=int(row['menge']))
+                     menge=lsmenge)
             texte = postexte.get(row['auftragsnr'], {}).get(row['auftrags_position'], [])
             texte, attrs = texte_trennen(texte)
             d['infotext_kunde'] = texte

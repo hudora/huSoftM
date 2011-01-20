@@ -45,7 +45,7 @@ coverage: dependencies
 	printf 'YVALUE=' > .coverage.score
 	grep -A3 ">totals:<" coverage/index.html|tail -n1|cut -c 9-12 >> .coverage.score
 
-kudependencies: pythonenv/bin/python
+dependencies: pythonenv/bin/python
 
 pythonenv/bin/python:
 	virtualenv pythonenv

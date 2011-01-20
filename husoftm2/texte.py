@@ -39,9 +39,9 @@ def texte_auslesen(auftragsnrs, postexte=None, kopftexte=None):
         batch = allauftrnr[:50]
         allauftrnr = allauftrnr[50:]
         # Texte einlesen
-        for row in query(['AAT00'], ordering=['ATTART', 'ATLFNR'],
-                         condition="ATAUFN IN (%s)" % ','.join((str(x) for x in batch)),
-                         ua='husoftm2.texte'):
+        condition = '(ATKZLF <> 0 OR ATKZRG <> 0) AND ATAUFN IN (%s)'
+        condition %= ','.join((str(x) for x in batch))
+        for row in query(['AAT00'], ordering=['ATTART', 'ATLFNR'], condition=condition, ua='husoftm2.texte'):
             row['textart'] = int(row['textart'])
             if row['textart'] == 5:
                 postexte.setdefault(row['auftragsnr'], {}

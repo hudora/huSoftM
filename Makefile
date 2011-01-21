@@ -82,7 +82,7 @@ install: build
 	python setup.py install
 
 clean:
-	rm -Rf testenv build dist html test.db huSoftM.egg-info svn-commit.tmp pylint.out .coverage.score sloccount.sc pip-log.txt as400-sqlite-test.db
+	rm -Rf pythonenv build dist html test.db huSoftM.egg-info svn-commit.tmp pylint.out .coverage.score sloccount.sc pip-log.txt as400-sqlite-test.db
 	find . -name '*.pyc' -or -name '*.pyo' -or -name 'biketextmate.log' -delete
 
 .PHONY: build test

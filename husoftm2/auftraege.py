@@ -10,6 +10,7 @@ Copyright (c) 2010 HUDORA GmbH. All rights reserved.
 from husoftm2.tools import sql_escape, sql_quote, date2softm, pad
 from husoftm2.texte import texte_trennen, texte_auslesen
 from husoftm2.backend import query
+import datetime
 import husoftm2.sachbearbeiter
 
 
@@ -160,7 +161,7 @@ def get_auftrag_by_guid(guid, header_only=False):
 
 
 def get_auftrag(nr, header_only=False):
-    "Findet einen Auftrag anhand des bezeichners. Akzeptiert GUID oder AuftragsNr"
+    "Findet einen Auftrag anhand des Bezeichners. Akzeptiert GUID oder AuftragsNr"
     if len(nr) > 9:
         tasks = [get_auftrag_by_guid, get_auftrag_by_auftragsnr]
     else:
@@ -172,12 +173,49 @@ def get_auftrag(nr, header_only=False):
     return None
 
 
+def get_guid(auftragsnr):
+    """
+    Gibt den GUID zu einer Auftragsnr zurück, sofern vorhanden.
+    """
+    auftragsnr = str(int(auftragsnr.strip('SO')))  # clean up, avoid attacks
+    condition = "ATTX60 LIKE %s AND ATAUFN = %s AND ATAUPO = 0 AND ATTART = 8" % (sql_quote("#:guid:%%"),
+                                                                                  sql_quote(auftragsnr))
+    rows = query('AAT00', fields=['ATTX60'], condition=condition)
+    if rows:
+        return rows[0][0].replace('#:guid:', '')
+    return ''
+
+
 def auftraege_kunde(kundennr, limit=None, header_only=False):
     """Alle Aufträge für eine Kundennummer ermitteln.
     Gibt eine Liste von dict()s zurück."""
     kundennr = str(int(kundennr.strip('SC')))  # clean up, avoid attacks
     auftraege = _auftraege(["AKKDNR=%s" % pad('AKKDNR', kundennr)], limit=limit, header_only=header_only)
     return auftraege
+
+
+def verspaetete_auftraege(datum=None):
+    """Gibt eine Liste von Auftragsnummern zurück, die vor <datum> ausgeliefert hätten werden müssen,
+    aber noch nicht ausgeliefert sind.
+    """
+
+    if not datum:
+        datum = datetime.date.today()
+
+    conditions = ["AKKZVA=0",     # Auftrag nicht voll ausgeliefert
+                  "APKZVA=0",     # Position nicht voll ausgeliefert
+                  "AKAUFN>0",     # Auftragsnummer wurde vergeben
+                  "AKSTAT<>'X'",  # Auftrag nicht glöscht
+                  "APSTAT<>'X'",  # Position nicht gelöscht
+                  'APDTLT < %s' % date2softm(datum),
+                  ]
+    rows = query(['AAK00'],
+                     condition=' AND '.join(conditions),
+                     grouping=['AKAUFN'], fields=['AKAUFN'], ordering=['AKAUFN DESC'],
+                     joins=[('AAP00', 'AKAUFN', 'APAUFN')],
+                     ua='husoftm2.auftraege.verspaetete_auftraege')
+    return ["SO%s" % row[0] for row in rows]
+    return _auftraege(conditions, addtables=['AAT00'], header_only=False)
 
 
 def _selftest():

@@ -68,7 +68,7 @@ MAPPINGDIR = {
           # 'AKUSTN': 'USt-Id-nr',
           # EU-einheitliche Steuernummer (USt-IdNr, VAT-Nr). Beim Druck der USt-IdNr ist zus‰tzlich noch
           # der EU-L‰ndercode mitzudrucken.
-          # 'AKVANR': 'Versandadress-Nr.',
+          'AKVANR': 'versandadressnr',
           # Dreistellige Nummer, unter der zus‰tzliche Lieferadressen zum Kunden verwaltet werden. Falls
           # für den Auftrag eine abweichende Lieferadresse verwendet werden soll, die in der
           # Lieferadressdatei gespeichert ist, kann die Nummer der Lieferadresse hier angegeben werden.
@@ -749,7 +749,7 @@ MAPPINGDIR = {
           'KZDTAE': 'updated_at',
 },
 
-'ALK00': { # Lieferscheinköpfe
+'ALK00': {  # Lieferscheinköpfe
           'LKSANK': 'satznr',
           'LKSANB': 'bezogener_kopf',
           # Die Angabe ist nur gefüllt, falls mit der Variante 'Kommissionierbeleg vor Lieferschein'
@@ -2479,7 +2479,7 @@ MAPPINGDIR = {
           # 'KSCOMP': 'company',
           # 'KSIAKZ': 'inland_ausland',
           # 'KSFNRK': 'interne_firmennr',
-          'KSINFL': 'unsere_lieferantennumemr',
+          'KSINFL': 'lieferantennumemr',
           'KCUSTN': 'ustid',
           # 'KSLIMI': 'kreditlimit2',
           # 'KSSKSL': 'skontoschluessel',
@@ -2491,7 +2491,7 @@ MAPPINGDIR = {
           # 'KSINF1': 'Inf. 1',
           'KCVERB': 'verbandsnr',
           #'KSKRED': 'Verbands-/Mischkto-Satz',
-          'KCMGVB': 'mitgliednr',
+          'KCMGVB': 'mitgliedsnr',
           #'KCBBN':  'Bundeseinheitl.Betriebsnr.',
           #'KCBBS':  'Bundeseinh.Betriebsstell.Nr',
           #'KCVRKZ': 'Kz. "Rechnungsliste erst."',
@@ -2683,11 +2683,11 @@ MAPPINGDIR = {
           # D           Kunde/Debitor
           # K           Lieferant/Kreditor
           'XCADNR': 'XXC_nr',  # Kunde/Lieferant
-          # XCLISP   Liefersperre                                    S    1 0   12   12
+          'XCLISP': 'liefersperre',
           #          *ZERO       keine Liefersperre
           #          1           Liefersperre
           # XCFGRP   Firmengruppe                                    A    2     13   14
-          # XCAWRT   Offener Auftragswert                            P   15 2   15   22
+          'XCAWRT': 'offener_auftragswert',
           #          In diesem Feld sind die offenen Positionswerte aus der
           #          Auftragspositionsdatei aufsummiert. Allerdings k¦nnen aufgrund
           #          der Parameterisierung bestimmte Auftragsarten und Positionen
@@ -2740,7 +2740,7 @@ MAPPINGDIR = {
           # Falls bekannt, kann hier die Lieferantennummer eingetragen werden, die uns der Kunde zugewiesen
           # hat.
           #  XCEGCD   EU-L{ndercode                                   A    2     48   49
-          'XCUSTN': 'xxc_ustid',  # USt-IdNr
+          'XCUSTN': 'ustid',
           # EU-einheitliche Steuernummer (USt-IdNr, VAT-Nr).
           # Beim Druck der USt-IdNr ist zus{tzlich noch der EU-L{ndercode
           # mitzudrucken.
@@ -2998,7 +2998,7 @@ MAPPINGDIR = {
           #  XCWSLN   W{hrung                                         A    3    249  251
           #  XCDTWN   W{hrung neu g}ltig ab                           P    7 0  252  255
           #  XCE2RP   Schl}ssel                                       A    4    259  262
-          'XCE2IL': 'XXC_iln',
+          'XCE2IL': 'iln',
           },
 
 'XLB00': {  # Lagerbewegungen
@@ -3260,8 +3260,10 @@ DATETIMEDIR = {'LKDTLF': 'LKZTLF',  # letzter_lieferschein
                'CKENDD': 'CKENDZ',  # XCK00 ende
                'FKDTER': 'FKZTER',  # Rechnungskopf erfassung_date
                'FUDTER': 'FUZTER',  # Rechnungsposition erfassung_date
-               }
-
+               'FUDTER': 'FUZTER',  # Rechnungsposition erfassung_date
+               'LKDTER': 'LKZTER',  # Lieferschein Erfassung
+               'LKDTAE': 'LKZTAE',  # Lieferschein Änderung
+              }
 # Fields which need padding before beeing used in SQL queries
 PADDINGFIELDS = {
     'AKKDNR': "%8s",

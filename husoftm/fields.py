@@ -344,7 +344,7 @@ MAPPINGDIR = {
          },
 
 'AKZ00': {  # Kundenstamm für Auftragsverwaltung
-          'KZKDNR': 'Kunden-nr',
+          'KZKDNR': 'kundennr',
           #'KZSBNR': 'zuständiger Sachbearbeiter',
           'KZVRT': 'vertreter',
           'KZGEB': 'gebiet',
@@ -711,12 +711,12 @@ MAPPINGDIR = {
 'AVA00': {
          #'VAFNR':  Firma
          'VAKDNR': 'kundennr',
-         'VAVANR': 'versandadresssnr',
+         'VAVANR': 'versandadressnr',
          #'VAFGRP'  Firmen-Gruppe
          #'VAAGRP'  Abteilungs-Gruppe/Sparte
          #'VAABT'  Abteilungs-nr
          'VASANR': 'satznr',  # gepackt
-         #'VAX3VS'  Versandarten-Schlüssel
+         #'VAX3VS'  'versandart',
          #'VAX3LB'  Lieferbedingungs-Schlüssel
          #'VAINFO'  Interne Information
          #'VAVRT'  Vertreter-nr
@@ -1992,7 +1992,7 @@ MAPPINGDIR = {
           # 'KSINF1': 'Inf. 1',
           'KCVERB': 'verband',
           #'KSKRED': 'Verbands-/Mischkto-Satz',
-          'KCMGVB': 'mitgliednr',
+          'KCMGVB': 'mitgliedsnr',
           #'KCBBN':  'Bundeseinheitl.Betriebsnr.',
           #'KCBBS':  'Bundeseinh.Betriebsstell.Nr',
           #'KCVRKZ': 'Kz. "Rechnungsliste erst."',

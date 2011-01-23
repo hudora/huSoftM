@@ -48,6 +48,10 @@ import warnings
 import itertools
 
 
+warnings.warn("husoftm.bestaende is deprecated, use husoftm2.bestaende instead",
+              DeprecationWarning, stacklevel=2)
+
+
 COUCHSERVER = "http://couchdb.local.hudora.biz:5984"
 
 

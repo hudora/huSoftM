@@ -11,6 +11,11 @@ import datetime
 import husoftm.connection2
 import cs.caching as caching
 import husoftm.tools
+import warnings
+
+
+warnings.warn("husoftm.kunden is deprecated, use husoftm2.kunden instead",
+              DeprecationWarning, stacklevel=2)
 
 
 class Kunde(object):
@@ -54,7 +59,7 @@ class Kunde(object):
         #self.postfach_plz = row.get('postfach_plz', '')
         #self.created_at = row.get('erfassung_date', '') # 2004-12-01
         #self.updated_at = row.get('aendertung_date', '') # 2007-04-11
-        #self.mitgliednr = row.get('mitgliednr', '')
+        #self.mitgliedsnr = row.get('mitgliedsnr', '')
         #self.ustid = row.get('ustid', '') # '132838685'
         self.adressdatei_id = row.get('adressdatei_id', '')  # 123656179
         #self.company = row.get('company', '') # '06'
@@ -80,7 +85,7 @@ class Kunde(object):
         #self.interne_firmennr = row.get('interne_firmennr', '') # ': u''
         self.unsere_lieferantennr = row.get('unsere_lieferantennumemr', '')
         self.verband = row.get('verband', '')
-        self.mitgliednr = row.get('mitgliednr', '')
+        self.mitgliedsnr = row.get('mitgliedsnr', '')
         self.ustid = row.get('ustid', '')
         self.kundengruppe = row.get('kundengruppe', '')
         self.vertreter = row.get('vertreter', '')
@@ -192,13 +197,13 @@ def get_lieferadressen(kdnr):
       'distrikt': '', 'fax': '', 'ort': 'Bottrop', 'plz': '46238', 'vertreter': '', 'sachbearbeiter': '',
       'name4': '', 'name2': 'Schuhe GmbH & Co. KG', 'name3': 'Distributionszentrum West',
       'name1': 'Heinrich Deichmann', 'kundengruppe': '', 'land': 'DE', 'verband': '', 'iln': u'',
-      'unsere_lieferantennr': '', 'mitgliednr': '', 'branche': ''},
+      'unsere_lieferantennr': '', 'mitgliedsnr': '', 'branche': ''},
      {'sortierfeld': '', 'tel': '+ 49 9852 9060', 'erfassung': datetime.date(2004, 12, 16), 'strasse': 'Deichmann-Str. 1',
       'kundennr': '13041/002', 'mobil': '', 'gebiet': '', 'aenderung': datetime.date(2004, 12, 16), 'mail': '',
       'adressdatei_id': '', 'ustid': '', 'distrikt': '', 'fax': '', 'ort': 'Feuchtwangen', 'plz': '91555', 'vertreter': '',
       'sachbearbeiter': '', 'name4': '', 'name2': 'Schuhe GmbH & Co. KG', 'name3': u'Distributionszentrum S\xfcd',
       'name1': 'Heinrich Deichmann', 'kundengruppe': '', 'land': 'DE', 'verband': '', 'iln': u'',
-      'unsere_lieferantennr': '', 'mitgliednr': '', 'branche': ''},
+      'unsere_lieferantennr': '', 'mitgliedsnr': '', 'branche': ''},
      ...]
     """
     avrows = husoftm.connection2.get_connection().query(['AVA00'], condition="VAKDNR='%8s' AND VASTAT <>'X'" % int(kdnr))

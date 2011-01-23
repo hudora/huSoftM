@@ -59,4 +59,5 @@ def preisentwicklung(artnrs):
 
 if __name__ == '__main__':
     failure_count, test_count = doctest.testmod()
+    pprint([failure_count, test_count])
     sys.exit(failure_count)

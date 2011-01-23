@@ -9,7 +9,7 @@ Copyright (c) 2009, 2010 HUDORA. All rights reserved.
 
 import unittest
 from decimal import Decimal
-from husoftm2.backend import query, as400_2_int
+from husoftm2.backend import query
 from husoftm.tools import sql_escape, sql_quote, date2softm
 
 
@@ -72,19 +72,19 @@ def get_bestellung(bestellnr):
 
     """
 
-    kopf = get_connection('bestellungen.get_bestellung').query('EBL00', ordering=['BLBSTN DESC'],
+    kopf = query('EBL00', ordering=['BLBSTN DESC'],
         condition="BLSTAT<>'X' AND BLBSTN=%s" % sql_escape(bestellnr))
     if len(kopf) != 1:
         raise RuntimeError('inkonsistente Kopfdaten in EBL00')
     kopf = kursfaktorkorrektur(kopf)[0]
 
     # leer? WTF?
-    # print get_connection().query('ESL00', condition="SLBSTN=%s" % sql_escape(ponr))
+    # print query('ESL00', condition="SLBSTN=%s" % sql_escape(ponr))
 
     # BZT00 - zusatztexte
-    # positionen = get_connection().query(['EBP00', 'EWZ00'], ordering=['BPBSTN DESC', 'BPDTLT'],
+    # positionen = query(['EBP00', 'EWZ00'], ordering=['BPBSTN DESC', 'BPDTLT'],
     #     condition="WZBSTN=BPBSTN AND WZBSTP=BPBSTP AND BPSTAT<>'X' AND BPBSTN=%s" % sql_escape(ponr))
-    positionen = get_connection().query(['EBP00'], ordering=['BPBSTN DESC', 'BPDTLT'],
+    positionen = query(['EBP00'], ordering=['BPBSTN DESC', 'BPDTLT'],
         condition="BPSTAT<>'X' AND BPBSTN=%s" % sql_escape(bestellnr))
     # detailierte Informationen über den Zugang gibts in EWZ00
 
@@ -96,7 +96,7 @@ def get_bestellung(bestellnr):
 
 
 def _get_zugaenge_helper(rows):
-    """Sammelt daten zu einer Bestellung aus verschiedenen Tabellen."""
+    """Sammelt Daten zu einer Bestellung aus verschiedenen Tabellen."""
     rows = kursfaktorkorrektur(rows, 'kurs_zugang', 'kursfaktor_zugang')
     ret = []
     for row in rows:
@@ -105,8 +105,9 @@ def _get_zugaenge_helper(rows):
             buchung = query('XLB00', condition="LBSANR=%s" % sql_escape(row['lagerbewegung_rechnung']))
             if len(buchung) > 1:
                 raise RuntimeError('mehr als einen XLB Satz zu einem EWZ Satz: %r' % buchung)
-            buchung = kursfaktorkorrektur(buchung)[0]
-            lagerbuchungen.append(buchung)
+            if buchung:
+                buchung = kursfaktorkorrektur(buchung)[0]
+                lagerbuchungen.append(buchung)
         if row['lagerbewegung_zugang'] and row['lagerbewegung_zugang'] != row['lagerbewegung_rechnung']:
             buchung = query('XLB00',
                     condition="LBSANR=%s" % sql_escape(row['lagerbewegung_zugang']))
@@ -114,6 +115,7 @@ def _get_zugaenge_helper(rows):
                 raise RuntimeError('mehr als einen XLB Satz zu einem EWZ Satz: %r' % buchung)
             lagerbuchungen.append(kursfaktorkorrektur(buchung)[0])
         row['_lagerbuchungen'] = lagerbuchungen
+        row['tatsaechlicher_preis'] = int(row['tatsaechlicher_preis'] * 100)
         ret.append(row)
     return ret
 
@@ -128,7 +130,7 @@ def get_zugaenge_artnr(artnr):
 def get_zugaenge_bestellnr(bestellnr):
     """Liefert alle Warenzugaenge einer Bestellnummer"""
 
-    rows = get_connection('bestellungen.get_zugaenge_bestellnr').query('EWZ00',  # ordering=['WZDTWZ'],
+    rows = query('EWZ00',  # ordering=['WZDTWZ'],
         condition="WZBSTN=%s" % sql_escape(bestellnr))
     return _get_zugaenge_helper(rows)
 
@@ -138,7 +140,7 @@ def get_zugaenge_warenvereinnahmungsnr_simple(bestellnr, warenvereinnahmungsnr):
 
     Sammelt *nicht* alle Daten zu einer Bestellung, sondern nur die jeweils gelieferten Positionen.
     """
-    rows = get_connection().query('EWZ00', condition="WZBSTN=%s and WZWVNR=%s" %
+    rows = query('EWZ00', condition="WZBSTN=%s and WZWVNR=%s" %
                                   (sql_quote(bestellnr), sql_quote(warenvereinnahmungsnr)))
     return rows
 
@@ -147,18 +149,17 @@ def get_bestellungen_artnr(artnr):
     """Liefert alle Warenzugaenge einer Artikelnummer."""
 
     # BZT00 - zusatztexte
-    positionen = get_connection('bestellungen.get_bestellungen_artnr').query(['EBP00', 'EBL00'], ordering=['BPDTLT'],
+    positionen = query(['EBP00', 'EBL00'], ordering=['BPDTLT'],
         condition="BLBSTN=BPBSTN AND BLSTAT<>'X' AND BPSTAT<>'X' AND BPARTN=%s" % sql_quote(artnr))
     ret = []
     for position in positionen:
         position['_zugaenge'] = [x for x in get_zugaenge_bestellnr(position['bestellnr'])
                                      if x['artnr'] == artnr]
-        for zugang in position['_zugaenge']:
-            # Buchungsdaten
-            buchungen = get_connection().query('BBU00',
+        for zugang in position['_zugaenge']:  # Buchungsdaten
+            buchungen = query('BBU00',
                 condition='BUBELN=%s' % sql_escape(zugang['rechnungsnr']))
             zugang['_fibubuchungen'] = kursfaktorkorrektur(buchungen, umdrehen=False)
-        position['_lager_stapelschnittstelle'] = get_connection().query(
+        position['_lager_stapelschnittstelle'] = query(
             'ESL00', condition="SLBSTN=%s AND SLBSTP=%s AND SLARTN=%s"
             % (sql_escape(position['bestellnr']), sql_escape(position['bestellpos']), sql_escape(artnr)))
         ret.append(position)
@@ -181,7 +182,7 @@ def bestellungskoepfe(mindate=None, maxdate=None, additional_conditions=None, li
         conditions.extend(additional_conditions)
 
     condition = " AND ".join(conditions)
-    rows = get_connection('bestellungen.bestellungskoepfe').query('EBL00', ordering=['BLBSTN DESC', 'BLDTBE'], condition=condition, limit=limit)
+    rows = query('EBL00', ordering=['BLBSTN DESC', 'BLDTBE'], condition=condition, limit=limit)
     return rows
 
 
@@ -228,7 +229,7 @@ def bestellungen(mindate=None, maxdate=None, additional_conditions=None, limit=N
 
     condition = " AND ".join(conditions)
 
-    rows = get_connection().query('EBP00', ordering=['BPBSTN DESC', 'BPDTLT'], condition=condition, limit=limit)
+    rows = query('EBP00', ordering=['BPBSTN DESC', 'BPDTLT'], condition=condition, limit=limit)
     # AND BPKZAK=0 to get only the open ones
     return rows
 
@@ -385,10 +386,10 @@ class MiscTests(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    from pprint import pprint
     for x in get_zugaenge_artnr('14600/03'):
         if x['tatsaechlicher_preis'] and x['kurs_zugang']:
-            print x['rechnungs_date'], x['kurs_zugang'], x['tatsaechlicher_preis'], x['tatsaechlicher_preis']/x['kurs_zugang']
+            print (x['rechnungs_date'], x['kurs_zugang'], x['tatsaechlicher_preis'],
+                   x['tatsaechlicher_preis'] / x['kurs_zugang'])
     #(get_bestellung(43248))
     #(get_zugaenge_bestellnr(41971))
     #(get_zugaenge_bestellnr(43072))

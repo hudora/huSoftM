@@ -1,42 +1,31 @@
-# setting the PATH seems only to work in GNUmake not in BSDmake
-PATH:=testenv/bin:$(PATH)
-
 default: dependencies check test
-
-hudson: dependencies test statistics coverage
-	find husoftm -name '*.py' | xargs /usr/local/hudorakit/bin/hd_pep8
-	/usr/local/hudorakit/bin/hd_pylint husoftm
-	# we can't use tee because it eats the error code from hd_pylint
-	/usr/local/hudorakit/bin/hd_pylint -f parseable husoftm > .pylint.out
-	printf 'YVALUE=' > .pylint.score
-	grep "our code has been rated at" < .pylint.out | cut -d '/' -f 1 | cut -d ' ' -f 7 >> .pylint.score
 
 check:
 	pep8 -r --ignore=E501 husoftm2/ husoftm/
-	sh -c 'PYTHONPATH=. pyflakes *.py husoftm2/ husoftm/'
+	sh -c 'PYTHONPATH=. pyflakes husoftm2/ husoftm/'
 	-sh -c 'PYTHONPATH=. pylint -iy --max-line-length=110 husoftm2/ husoftm/' # -rn
 
 build:
 	python setup.py build sdist
 
-test:
-	PYTHONPATH=. python husoftm/tools.py
-	PYTHONPATH=. python husoftm/connection2.py
-	PYTHONPATH=. python husoftm/lieferanten.py
-	PYTHONPATH=. python husoftm/misc.py
-	PYTHONPATH=. python husoftm/preise_ek.py
-	PYTHONPATH=. ./testenv/bin/python husoftm/stapelschnittstelle.py
+test: dependencies
+	PYTHONPATH=. python husoftm2/tools.py
+	#PYTHONPATH=. python husoftm/connection2.py
+	#PYTHONPATH=. python husoftm/lieferanten.py
+	#PYTHONPATH=. python husoftm/misc.py
+	#PYTHONPATH=. python husoftm/preise_ek.py
+	#PYTHONPATH=. ./pythonenv/bin/python husoftm/stapelschnittstelle.py
 	# dependencies on CentralServices
-	PYTHONPATH=. python husoftm/artikel.py
-	PYTHONPATH=. python husoftm/bestaende.py
-	PYTHONPATH=. python husoftm/kunden.py
-	PYTHONPATH=. python husoftm/lagerschnittstelle.py
-	PYTHONPATH=. python husoftm/lieferscheine.py
-	PYTHONPATH=. python husoftm/softmtables.py
+	PYTHONPATH=. ./pythonenv/bin/python husoftm2/artikel.py
+	PYTHONPATH=. ./pythonenv/bin/python husoftm2/bestaende.py
+	PYTHONPATH=. ./pythonenv/bin/python husoftm2/kunden.py
+	#PYTHONPATH=. python husoftm/lagerschnittstelle.py
+	PYTHONPATH=. ./pythonenv/bin/python husoftm2/lieferscheine.py
+	#PYTHONPATH=. python husoftm/softmtables.py
 
 coverage: dependencies
 	printf '.*/tests/.*\n.*test.py\n' > .figleaf-exclude.txt
-	printf '/usr/local/lib/.*\n/opt/.*\ntestenv/.*\n' >> .figleaf-exclude.txt
+	printf '/usr/local/lib/.*\n/opt/.*\npythonenv/.*\n' >> .figleaf-exclude.txt
 	printf '.*manage.py\n.*settings.py\n.*setup.py\n.*urls.py\n' >> .figleaf-exclude.txt
 	PYTHONPATH=. python /usr/local/hudorakit/bin/hd_figleaf --ignore-pylibs husoftm/artikel.py
 	PYTHONPATH=. python /usr/local/hudorakit/bin/hd_figleaf --ignore-pylibs husoftm/connection2.py
@@ -56,9 +45,12 @@ coverage: dependencies
 	printf 'YVALUE=' > .coverage.score
 	grep -A3 ">totals:<" coverage/index.html|tail -n1|cut -c 9-12 >> .coverage.score
 
-dependencies:
-	virtualenv testenv
-	pip -q install -E testenv -r requirements.txt
+dependencies: pythonenv/bin/python
+
+pythonenv/bin/python:
+	virtualenv pythonenv
+	pip -q install -E pythonenv -r requirements.txt
+
 
 statistics:
 	sloccount --wide --details . | grep -v -E '(testenv|build|.svn)/' > sloccount.sc
@@ -90,7 +82,7 @@ install: build
 	python setup.py install
 
 clean:
-	rm -Rf testenv build dist html test.db huSoftM.egg-info svn-commit.tmp pylint.out .coverage.score sloccount.sc pip-log.txt as400-sqlite-test.db
+	rm -Rf pythonenv build dist html test.db huSoftM.egg-info svn-commit.tmp pylint.out .coverage.score sloccount.sc pip-log.txt as400-sqlite-test.db
 	find . -name '*.pyc' -or -name '*.pyo' -or -name 'biketextmate.log' -delete
 
 .PHONY: build test

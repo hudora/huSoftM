@@ -8,7 +8,7 @@ Copyright (c) 2007, 2010 HUDORA GmbH. All rights reserved.
 """
 
 from husoftm2.backend import query
-from husoftm2.tools import sql_quote
+from husoftm2.tools import sql_quote, remove_prefix
 from husoftm2.texte import texte_trennen, texte_auslesen
 import husoftm2.sachbearbeiter
 
@@ -156,13 +156,13 @@ def get_changed_after(date, limit=None):
 
 def lieferscheine_auftrag(auftragsnr, header_only=False):
     """Gibt eine Liste mit Lieferscheindicts für einen Auftrag zurück"""
-    auftragsnr = str(int(auftragsnr.strip('SO')))  # clean up, avoid attacks
+    auftragsnr = remove_prefix(auftragsnr, 'SO')
     return _lieferscheine(["LKAUFS = %s" % sql_quote(auftragsnr)], header_only=header_only)
 
 
 def get_lieferschein(lieferscheinnr, header_only=False):
     """Gibt ein Lieferscheindict für eine Lieferscheinnummer zurück"""
-    lieferscheinnr = str(int(lieferscheinnr.strip('SL')))  # clean up, avoid attacks
+    lieferscheinnr = remove_prefix(lieferscheinnr, 'SL')
     lscheine = _lieferscheine(["LKLFSN = %s" % sql_quote(lieferscheinnr)], limit=1, header_only=header_only)
     if lscheine:
         return lscheine[0]

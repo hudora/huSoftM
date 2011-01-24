@@ -9,7 +9,6 @@ Created by Maximillian Dornseif on 2007-03-18. Based on code named "MoftS" from 
 Copyright (c) 2007, 2008, 2009 HUDORA GmbH. All rights reserved.
 """
 
-__revision__ = "$Revision$"
 
 MAPPINGDIR = {
 'ABV00': {  # Adressdaten zu Aufträgen die in die Stapelschnittstelle geschrieben werden

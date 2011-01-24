@@ -207,7 +207,7 @@ def pad(field, value):
 
 def remove_prefix(identifier, prefix=''):
     """Remove prefix from identifier and return it as int
-    
+
     >>> remove_prefix('SO1174711', 'SO')
     1174711
     >>> remove_prefix(1172317, 'CK')

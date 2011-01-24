@@ -96,7 +96,7 @@ def get_lieferadressen(kundennr):
     Gibt eine Liste aller möglichen Lieferadressen in Form von Kunden-Dicts zurück.
     """
 
-    kundennr = kundennr.strip('SC')
+    kundennr = husoftm2.tools.remove_prefix(kundennr, 'SC')
     avrows = query(['AVA00'], condition="VAKDNR='%8s' AND VASTAT <>'X'" % int(kundennr))
     kunden = []
     for row in avrows:
@@ -135,7 +135,7 @@ def _softm_to_dict(row):
                name2=row.get('name2', ''),
                name3=row.get('name3', ''),
                strasse=row.get('strasse', ''),                          # Marktplatz 5
-               land=husoftm2.tools.land2iso(row['laenderkennzeichen']),  # D
+               land=husoftm2.tools.land2iso(row['laenderkennzeichen']),
                plz=row.get('plz', ''),                                  # 42477
                ort=row.get('ort', ''),                                  # Neurade
                tel=row.get('tel', ''),
@@ -150,7 +150,7 @@ def _softm_to_dict(row):
                # vertreter=row.get('vertreter', ''),                    # ': u'201'
                # branche=row.get('branche', ''),                        # ': u'13'
                # kundengruppe=row.get('kundengruppe', ''),
-               betreuer_handle=row.get('betreuer', ''),                        # ': u'Birgit Bonrath'
+               betreuer_handle=row.get('betreuer', ''),                 # ': u'Birgit Bonrath'
                interne_firmennr=row.get('interne_firmennr', ''),        # ': u''
                lieferantennr=row.get('lieferantennumemr', ''),
               )

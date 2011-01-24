@@ -8,7 +8,7 @@ Copyright (c) 2007, 2009, 2010 HUDORA GmbH. All rights reserved.
 """
 
 from husoftm2.backend import query
-from husoftm.tools import sql_quote, date2softm
+from husoftm.tools import sql_quote, date2softm, remove_prefix
 import datetime
 import husoftm2.kunden
 
@@ -38,7 +38,7 @@ def abgabepreis_kunde(artnr, kundennr, auftragsdatum=None):
         auftragsdatum = datetime.date.today()
 
     # Kundennr als Zeichenkette
-    kundennr = int(kundennr.strip('SC'))
+    kundennr = remove_prefix(kundennr, 'SC')
     date_str = sql_quote(date2softm(auftragsdatum))
 
     # 1. Preis für Kunde hinterlegt?
@@ -135,7 +135,7 @@ def durchschnittlicher_abgabepreis(artnr, kundennr=None, startdatum=None):
         ]
 
     if kundennr:
-        kundennr = int(kundennr.strip('SC'))
+        kundennr = remove_prefix(kundennr, 'SC')
         conditions = ["(FKKDNR=%s OR FKKDRG=%s)" % (sql_quote('%8s' % kundennr),
                                                     sql_quote('%8s' % kundennr))] + conditions
     if not startdatum:

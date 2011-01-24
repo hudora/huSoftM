@@ -7,7 +7,7 @@ Created by Christian Klein on 2010-03-15.
 Copyright (c) 2010 HUDORA GmbH. All rights reserved.
 """
 
-from husoftm2.tools import sql_escape, sql_quote, date2softm, pad
+from husoftm2.tools import sql_escape, sql_quote, date2softm, pad, remove_prefix
 from husoftm2.texte import texte_trennen, texte_auslesen
 from husoftm2.backend import query
 import datetime
@@ -139,7 +139,7 @@ def _auftraege(additional_conditions=None, addtables=[], mindate=None, maxdate=N
 def get_auftrag_by_auftragsnr(auftragsnr, header_only=False):
     """Auftrag mit Auftragsnummer auftragsnr zurueckgeben"""
 
-    auftragsnr = str(int(auftragsnr.strip('SO')))  # clean up, avoid attacks
+    auftragsnr = remove_prefix(auftragsnr, 'SO')
     auftraege = _auftraege(["AKAUFN=%s" % sql_escape(auftragsnr)], header_only=header_only)
     if len(auftraege) > 1:
         raise RuntimeError("Mehr als ein Auftrag mit auftragsnr %s vorhanden" % auftragsnr)
@@ -177,7 +177,7 @@ def get_guid(auftragsnr):
     """
     Gibt den GUID zu einer Auftragsnr zurück, sofern vorhanden.
     """
-    auftragsnr = str(int(auftragsnr.strip('SO')))  # clean up, avoid attacks
+    auftragsnr = remove_prefix(auftragsnr, 'SO')
     condition = "ATTX60 LIKE %s AND ATAUFN = %s AND ATAUPO = 0 AND ATTART = 8" % (sql_quote("#:guid:%%"),
                                                                                   sql_quote(auftragsnr))
     rows = query('AAT00', fields=['ATTX60'], condition=condition)
@@ -189,7 +189,7 @@ def get_guid(auftragsnr):
 def auftraege_kunde(kundennr, limit=None, header_only=False):
     """Alle Aufträge für eine Kundennummer ermitteln.
     Gibt eine Liste von dict()s zurück."""
-    kundennr = str(int(kundennr.strip('SC')))  # clean up, avoid attacks
+    kundennr = remove_prefix(kundennr, 'SC')
     auftraege = _auftraege(["AKKDNR=%s" % pad('AKKDNR', kundennr)], limit=limit, header_only=header_only)
     return auftraege
 

@@ -205,6 +205,23 @@ def pad(field, value):
     return sql_quote(value)
 
 
+def remove_prefix(identifier, prefix=''):
+    """Remove prefix from identifier and return it as int
+    
+    >>> remove_prefix('SO1174711', 'SO')
+    1174711
+    >>> remove_prefix(1172317, 'CK')
+    1172317
+    """
+    identifier = str(identifier)
+    if identifier.startswith(prefix):
+        identifier = identifier[len(prefix):]
+    try:
+        return int(identifier)
+    except ValueError:
+        return ''
+
+
 class _GenericTests(unittest.TestCase):
     """Vermischte Tests."""
 

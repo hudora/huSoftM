@@ -20,8 +20,12 @@ def get_kommibeleg(komminr, header_only=False):
     komminr = remove_prefix(komminr, prefix)
 
     conditions = ["LKLFSN <> 0", "LKKBNR = %s" % sql_quote(komminr), "LKSTAT<>'X'"]
-    belege = get_ls_kb_data(conditions, additional_conditions=conditions, header_only=header_only,
-                            is_lieferschein=False)
+    try:
+        belege = get_ls_kb_data(conditions, additional_conditions=conditions, header_only=header_only,
+                                is_lieferschein=False)
+    except RuntimeError:
+        return {}
+
     if belege:
         return belege[0]
     return {}

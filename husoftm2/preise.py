@@ -8,7 +8,7 @@ Copyright (c) 2007, 2009, 2010 HUDORA GmbH. All rights reserved.
 """
 
 from husoftm2.backend import query
-from husoftm.tools import sql_quote, date2softm, remove_prefix
+from husoftm2.tools import sql_quote, date2softm, remove_prefix
 import datetime
 import husoftm2.kunden
 

@@ -292,7 +292,7 @@ def _auftrag2records(vorgangsnummer, auftrag):
     """Convert an Auftrag into records objects representing AS/400 SQL statements."""
     kopf = Kopf()
     kopf.vorgang = vorgangsnummer
-    kundennummern = auftrag.kundennr.split('/')
+    kundennummern = auftrag.kundennr.replace('/', '.').split('.')
     kopf.kundennr = '%8s' % kundennummern[0]
     if len(kundennummern) > 1:
         # abweichende Lieferadresse in Adress-Zusatzdatei
@@ -436,7 +436,10 @@ def _order2records(vorgangsnummer, order, auftragsart=None, abgangslager=None):
     # kundennr Interne Kundennummer. Kann das AddressProtocol erweitern. Wenn eine kundennr angegeben ist
     # und die per AddressProtocol angegebene Lieferadresse nicht zu der kundennr passt, handelt es sich
     # um eine abweichende Lieferadresse.
-    kopf.kundennr = '%8s' % _get_attr(order, 'kundennr').split('/')[0]
+    kundennr = _get_attr(order, 'kundennr').replace('/', '.').split('.')
+    kopf.kundennr = '%8s' % kundennr[0]
+    if len(kundennr) > 1:
+        kopf.lieferadresse = int(kundennummern[1])
     # kundenauftragsnr - Freitext, den der Kunde bei der Bestellung mit angegeben hat, max. 20 Zeichen.
     kopf.kundenauftragsnr = deUmlaut(_get_attr(order, 'kundenauftragsnr'))[:20]
     # Ohne bestelldatum holpert es in SoftM
@@ -489,7 +492,8 @@ def _order2records(vorgangsnummer, order, auftragsart=None, abgangslager=None):
         # Adresse mit unserer Kundendatenbank vergleichen.
         # Weichen sie voneinander ab, dann wird die Auftragsadresse mit in die Stapelschnittstelle übertragen.
         # Ansonsten ermittelt SoftM die Adresse anhand der Kundennr und wir übertragen gar keine Adresse.
-        addr = get_address("SC%s" % kopf.kundennr.strip().replace('SC', ''))
+        kundennr = _get_attr(order, 'kundennr').replace('/', '.').split('.')
+        addr = get_address("SC%s" % kundennr.strip().replace('SC', ''))
         if (addresshash(addr) != addresshash(order)):
             land = _create_addressentry(adressen, vorgangsnummer, order, 'lieferadresse')
             if land != 'DE' and huTools.world.in_european_union(land):

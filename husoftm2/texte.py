@@ -71,16 +71,14 @@ def txt_auslesen(auftragsnrs, postexte=None, kopftexte=None, kopfdaten=None, pos
     while allauftrnr:
         # In 50er Schritten Texte lesen, 'SO'-Kürzel entfernen.
         # Wir erwarten auf jeden Fall String-Parameter.
-        batch = [str(int(x.strip('SO'))) for x in allauftrnr[:50]]
+        batch = [remove_prefix(x, 'SO') for x in allauftrnr[:50]]
         allauftrnr = allauftrnr[50:]
         # Texte aus SoftM einlesen
-        condition = 'ATAUFN IN (%s)'
-        condition %= ','.join((str(x) for x in batch))
+        condition = 'ATAUFN IN (%s)' % ','.join((str(x) for x in batch))
         for row in query(['AAT00'], ordering=['ATTART', 'ATLFNR'], condition=condition, ua='husoftm2.texte'):
-            print row
             # Jeden der eingelesenen Texte nach Textart klassifizieren.
             row['textart'] = int(row['textart'])
-            auftragsnr = "SO%s" % remove_prefix(row['auftragsnr'])
+            auftragsnr = "SO%s" % remove_prefix(row['auftragsnr'], 'SO')
             # Textzeilen die leer sind oder nur Trennzeichen enthalten, ignorieren wir.
             if not row['text'].strip('=*_- '):
                 continue
@@ -160,6 +158,7 @@ def texte_auslesen(auftragsnrs, postexte=None, kopftexte=None):
 
 def auftragstextdaten(auftragsnr):
     """Auftrags- und Positionstexte und -daten für einen Auftrag zurückliefern."""
+    auftragsnr = "SO%s" % remove_prefix(auftragsnr, 'SO')
     postexte, kopftexte, posdaten, kopfdaten = txt_auslesen([auftragsnr])
     return (postexte.get(auftragsnr, {}),
             kopftexte.get(auftragsnr, []),
@@ -170,9 +169,12 @@ def auftragstextdaten(auftragsnr):
 def _test():
     from pprint import pprint
     # Ein Auftrag mit Daten, die eigentlich intern bleiben sollten:
-    #pprint(auftragstextdaten('SO1161229'))
+    pprint(auftragstextdaten('SO1161229'))
     # SO1166946 ist ein Auftrag, der *alle* Arten von Texten gesetzt hat.
     pprint(auftragstextdaten('SO1166946'))
+    # Prüfe, ob auch integer Auftragsnummern verarneitet werden können
+    assert auftragstextdaten('SO1166946') == auftragstextdaten(1166946)
+    assert auftragstextdaten('SO1166946') == auftragstextdaten('1166946')
     # Auftrag mit Kundenartikelnummer
     pprint(auftragstextdaten('SO1160677'))
     # Auftrag mit Abschlägen
@@ -185,8 +187,8 @@ def _test():
     # Droppshipping-Test
     pprint(txt_auslesen(['SO1161418']))
     # Massentest:
-    for i in range(10000):
-        pprint(txt_auslesen(['SO%s' % (1160000 + i)]))
+    #for i in range(10000):
+    #    pprint(txt_auslesen(['SO%s' % (1160000 + i)]))
 
 
 if __name__ == '__main__':

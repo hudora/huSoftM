@@ -129,9 +129,9 @@ def _auftraege(additional_conditions=None, addtables=[], mindate=None, maxdate=N
         # Kopftexte zuordnen
         for auftragsnr, texte in kopftexte.items():
             texte, attrs = texte_trennen(texte)
-            koepfe[auftragsnr]['infotext_kunde'] = texte
+            koepfe[remove_prefix(auftragsnr, 'SO')]['infotext_kunde'] = texte
             if 'guid' in attrs:
-                koepfe[auftragsnr]['guid'] = attrs['guid']
+                koepfe[remove_prefix(auftragsnr, 'SO')]['guid'] = attrs['guid']
 
     return koepfe.values()
 

@@ -39,10 +39,12 @@ AUFTRAGSARTEN = {
 }
 
 
-def _auftraege(additional_conditions=None, addtables=[], mindate=None, maxdate=None, limit=None, header_only=False):
+def _auftraege(additional_conditions=None, addtables=[], mindate=None, maxdate=None, limit=None,
+               header_only=False):
     """
     Alle Aufträge ermitteln
-    `additional_conditions` kann eine Liste von SQL-Bedingungen enthalten, die die Auftragssuche einschränken.
+    `additional_conditions` kann eine Liste von SQL-Bedingungen enthalten, die die Auftragssuche
+    einschränken.
     `mindate` & `maxdate` können den Anliefertermin einschränken.
     `limit` kann die Zahl der zurückgelieferten Aufträge einschraenken. Dabei werden groessere
     Auftragsnummern zuerst zurueck gegeben.
@@ -99,16 +101,17 @@ def _auftraege(additional_conditions=None, addtables=[], mindate=None, maxdate=N
         for row in query(['XAD00'], ua='husoftm2.lieferscheine',
                          condition="ADAART=1 AND ADRGNR IN (%s)" % ','.join([str(x) for x in batch])):
             koepfe[row['nr']]['lieferadresse'] = dict(name1=kopf['name1'],
-                                                      name2=kopf['name2'],
-                                                      name3=kopf['name3'],
-                                                      strasse=kopf['strasse'],
-                                                      land=husoftm2.tools.land2iso(kopf['laenderkennzeichen']),
-                                                      plz=kopf['plz'],
-                                                      ort=kopf['ort'],
-                                                      )
+                                    name2=kopf['name2'],
+                                    name3=kopf['name3'],
+                                    strasse=kopf['strasse'],
+                                    land=husoftm2.tools.land2iso(kopf['laenderkennzeichen']),
+                                    plz=kopf['plz'],
+                                    ort=kopf['ort'],
+                                    )
 
         # Positionen einlesen
-        for row in query(['AAP00'], condition="APSTAT<>'X' AND APAUFN IN (%s)" % ','.join((str(x) for x in batch)),
+        for row in query(['AAP00'], condition="APSTAT<>'X' AND APAUFN IN (%s)" % ','.join([str(x)
+                                                                                           for x in batch]),
                          ua='husoftm2.auftraege'):
             d = dict(menge=int(row['bestellmenge']),
                      artnr=row['artnr'],

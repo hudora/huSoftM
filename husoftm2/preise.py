@@ -103,6 +103,7 @@ def listenpreise(artnrs=None):
 
 
 def listenpreis(artnr):
+    """Listenpreis für einene einzelenen Artikel."""
     return listenpreise([artnr]).values()[0]
 
 

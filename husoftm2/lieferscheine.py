@@ -13,7 +13,8 @@ from husoftm2.texte import texte_trennen, texte_auslesen
 import husoftm2.sachbearbeiter
 
 
-def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_only=False, is_lieferschein=True):
+def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_only=False,
+                   is_lieferschein=True):
     """Lieferscheindaten oder Kommsissionierbelegdaten entsprechend dem Lieferungsprotokoll.
 
     Wenn is_lieferschein = False, dann werden Kommiauftragsdaten zurückgebeben (Kommimengen)
@@ -85,16 +86,18 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
         satznr = satznr[50:]
 
         # Abweichende Lieferadressen
-        condition = "ADAART=1 AND ADRGNR IN (%s) AND ADRGNR=AKAUFN" % ','.join([str(satznr2auftragsnr[x]) for x in batch])
-        for row in query(['XAD00', 'AAK00'], cachingtime=cachingtime, ua='husoftm2.lieferscheine', condition=condition):
+        condition = "ADAART=1 AND ADRGNR IN (%s) AND ADRGNR=AKAUFN" % ','.join([str(satznr2auftragsnr[x])
+                                                                                for x in batch])
+        for row in query(['XAD00', 'AAK00'], cachingtime=cachingtime, ua='husoftm2.lieferscheine',
+                         condition=condition):
             aktsatznr = auftragsnr2satznr[row['nr']]
             koepfe[aktsatznr]['lieferadresse'].update(dict(name1=row['name1'],
-                                                      name2=row['name2'],
-                                                      name3=row['name3'],
-                                                      strasse=row['strasse'],
-                                                      land=husoftm2.tools.land2iso(row['laenderkennzeichen']),
-                                                      plz=row['plz'],
-                                                      ort=row['ort']))
+                            name2=row['name2'],
+                            name3=row['name3'],
+                            strasse=row['strasse'],
+                            land=husoftm2.tools.land2iso(row['laenderkennzeichen']),
+                            plz=row['plz'],
+                            ort=row['ort']))
             versandadressnr = row['versandadressnr']
             warenempfaenger = koepfe[aktsatznr]['lieferadresse']['kundennr']
             if versandadressnr:
@@ -102,16 +105,19 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
             koepfe[aktsatznr]['lieferadresse']['warenempfaenger'] = warenempfaenger
 
         # Positionen & Positionstexte zuordnen
-        for row in query(['ALN00'], condition="LNSTAT<>'X' AND LNSANK IN (%s)" % ','.join([str(x) for x in batch]),
+        for row in query(['ALN00'], condition="LNSTAT<>'X' AND LNSANK IN (%s)" % ','.join([str(x)
+                                                                                           for x in batch]),
                          cachingtime=cachingtime, ua='husoftm2.lieferscheine'):
             if is_lieferschein == True:
                 lsmenge = int(row['menge'])
             else:
                 lsmenge = int(row['menge_komissionierbeleg'])
             d = dict(artnr=row['artnr'],
-                     guid='%s-%03d-%03d' % (row['kommibelegnr'], row['auftrags_position'], row['kommibeleg_position']),
+                     guid='%s-%03d-%03d' % (row['kommibelegnr'], row['auftrags_position'],
+                                            row['kommibeleg_position']),
                      menge=lsmenge)
-            texte = postexte.get(remove_prefix(row['auftragsnr'], 'SO'), {}).get(row['auftrags_position'], [])
+            texte = postexte.get(remove_prefix(row['auftragsnr'], 'SO'),
+                                               {}).get(row['auftrags_position'], [])
             texte, attrs = texte_trennen(texte)
             d['infotext_kunde'] = texte
             if 'guid' in attrs:
@@ -170,6 +176,7 @@ def get_lieferschein(lieferscheinnr, header_only=False):
 
 
 def _timedelta_to_hours(td):
+    """Verwandelt ein timedeltaobjekt in Stungen (Integer)"""
     hours = td.days * 24
     hours += int(td.seconds / 3600)
     return hours

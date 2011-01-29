@@ -133,10 +133,10 @@ def txt_auslesen(auftragsnrs, postexte=None, kopftexte=None, kopfdaten=None, pos
             # bei der Auftragserfassung, oder ein Verschlüsseltes Datenfeld.
             else:
                 if int(row['auftragsposition'] == 0):
-                    # Erfassungstexte sind Texte, die bei der Auftragserfassung angeziegt werden, aber auf keinem
-                    # Beleg erscheinen (kein druckkennzeichen) - die ignorieren wir hier.
+                    # Erfassungstexte sind Texte, die bei der Auftragserfassung angeziegt werden, aber auf
+                    # keinem Beleg erscheinen (kein druckkennzeichen) - die ignorieren wir hier.
                     # Die gesonderten Datenfelder, die mit #:VARNAME: beginnen, verwenden wir aber weiter
-                    erfassungstexte, daten = texte_trennen([row['text']])
+                    _erfassungstexte, daten = texte_trennen([row['text']])
                     if daten:
                         kopfdaten.setdefault(auftragsnr, {}).update(daten)
                 else:  # row['auftragsposition'] > 0:
@@ -152,7 +152,7 @@ def texte_auslesen(auftragsnrs, postexte=None, kopftexte=None):
     """Kompatibilitätslayer zu txt_auslesen()."""
     warnings.warn("use txt_auslesen() instead of texte_auslesen()",
                   DeprecationWarning, stacklevel=2)
-    postexte, kopftexte, posdaten, kopfdaten = txt_auslesen(auftragsnrs, postexte, kopftexte)
+    postexte, kopftexte, _posdaten, _kopfdaten = txt_auslesen(auftragsnrs, postexte, kopftexte)
     return postexte, kopftexte
 
 
@@ -167,6 +167,7 @@ def auftragstextdaten(auftragsnr):
 
 
 def _test():
+    """Einfache Selbsttests."""
     from pprint import pprint
     # Ein Auftrag mit Daten, die eigentlich intern bleiben sollten:
     pprint(auftragstextdaten('SO1161229'))

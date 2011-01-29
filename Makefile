@@ -1,9 +1,9 @@
 default: dependencies check test
 
 check:
-	pep8 -r --ignore=E501 husoftm2/ husoftm/
-	sh -c 'PYTHONPATH=. pyflakes husoftm2/ husoftm/'
-	-sh -c 'PYTHONPATH=. pylint -iy --max-line-length=110 husoftm2/ husoftm/' # -rn
+	pep8 -r --ignore=E501 husoftm2/
+	sh -c 'PYTHONPATH=. pyflakes husoftm2/'
+	-sh -c 'PYTHONPATH=. pylint -iy --max-line-length=110 husoftm2/' # -rn
 
 build:
 	python setup.py build sdist

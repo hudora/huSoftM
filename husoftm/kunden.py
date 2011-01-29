@@ -14,15 +14,13 @@ import husoftm.tools
 import warnings
 
 
-warnings.warn("husoftm.kunden is deprecated, use husoftm2.kunden instead",
-              DeprecationWarning, stacklevel=2)
-
-
 class Kunde(object):
     """Representation of SoftM "Kunden" data objects."""
 
     def __init__(self, kundennr='', name1='', name2='', name3='', name4='',
                  strasse='', plz='', ort='', land=''):
+        warnings.warn("husoftm.kunden is deprecated, use husoftm2.kunden instead",
+                      DeprecationWarning, stacklevel=2)
         self.kundennr = kundennr
         self.name1 = name1
         self.name2 = name2
@@ -110,6 +108,8 @@ class Kunde(object):
 def get_kundennummern():
     """Returns a list of all 'Kundennummern'."""
 
+    warnings.warn("husoftm.kunden is deprecated, use husoftm2.kunden instead",
+                  DeprecationWarning, stacklevel=2)
     rows = husoftm.connection2.get_connection().query('XKD00', fields=['KDKDNR'])
     return [int(x[0]) for x in rows]
 
@@ -117,6 +117,8 @@ def get_kundennummern():
 def get_changed_after(date):
     """Returns a list of all Kundennummern where the underlaying Data has changed since <date>."""
 
+    warnings.warn("husoftm.kunden is deprecated, use husoftm2.kunden instead",
+                  DeprecationWarning, stacklevel=2)
     date = int(date.strftime('1%y%m%d'))
     rows = husoftm.connection2.get_connection().query('XKD00', fields=['KDKDNR'],
                                           condition="KDDTER>%d OR KDDTAE>=%d" % (date, date))
@@ -135,6 +137,8 @@ def get_kunde(kdnnr):
     <kdnnr> must be an Integer in the Range 10000..99999.
     If no data exists for that KdnNr ValueError is raised."""
 
+    warnings.warn("husoftm.kunden is deprecated, use husoftm2.kunden instead",
+                  DeprecationWarning, stacklevel=2)
     rows = husoftm.connection2.get_connection().query(['XKD00', 'XKS00', 'AKZ00'],
            condition="KDKDNR='%8d' AND KSKDNR='%8d' AND KZKDNR LIKE '%s'" % (int(kdnnr), int(kdnnr),
                      '%' + str(kdnnr)))
@@ -169,6 +173,8 @@ def get_kunde_by_iln(iln):
     If no data exists for that GLN/ILN ValueError is raised.
     """
 
+    warnings.warn("husoftm.kunden is deprecated, use husoftm2.kunden instead",
+                  DeprecationWarning, stacklevel=2)
     rows = husoftm.connection2.get_connection().query(['XKS00'], condition="KCE2IL='%s'" % (int(iln), ))
     if rows:
         # stammadresse
@@ -206,6 +212,8 @@ def get_lieferadressen(kdnr):
       'unsere_lieferantennr': '', 'mitgliedsnr': '', 'branche': ''},
      ...]
     """
+    warnings.warn("husoftm.kunden is deprecated, use husoftm2.kunden instead",
+                  DeprecationWarning, stacklevel=2)
     avrows = husoftm.connection2.get_connection().query(['AVA00'], condition="VAKDNR='%8s' AND VASTAT <>'X'" % int(kdnr))
     kunden = []
     for row in avrows:
@@ -226,6 +234,8 @@ def get_lieferadressen_all():
     Value ist ein dict entsprechend dem AdressProtocol.
 
     """
+    warnings.warn("husoftm.kunden is deprecated, use husoftm2.kunden instead",
+                  DeprecationWarning, stacklevel=2)
     rows = husoftm.connection2.get_connection().query(['AVA00', 'XXA00'], condition="XAKZRS = 7 AND XASANR=VASANR")
     return dict(("%s/%03d" % (row['kundennr'], int(row['versandadresssnr'])), row) for row in rows)
 

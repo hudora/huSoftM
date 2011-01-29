@@ -153,7 +153,7 @@ def _softm_to_dict(row):
                # kundengruppe=row.get('kundengruppe', ''),
                betreuer_handle=row.get('betreuer', ''),                 # ': u'Birgit Bonrath'
                interne_firmennr=row.get('interne_firmennr', ''),        # ': u''
-               lieferantennr=row.get('lieferantennumemr', ''),
+               unsere_lieferantennr=row.get('unsere_lieferantennr', ''),
               )
     ret['name'] = ' '.join((ret['name1'], ret['name2'])).strip()
     ret['betreuer'] = betreuerdict.get(ret['betreuer_handle'], '')

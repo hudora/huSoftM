@@ -688,7 +688,6 @@ MAPPINGDIR = {
 'AAT00': {  # Auftrags-Texte
           'ATAUFN': 'auftragsnr',
           'ATAUPO': 'auftragsposition',
-          'ATTART': 'textart',
           # 1           Benutzer aus B2B Shop
           # 2           Abweichende Artikelbezeichnung
           #             Pos: ATTX60 Stelle  1-60:  abweichende Artikelbezeichn
@@ -707,10 +706,20 @@ MAPPINGDIR = {
           # 8           Auftragsanfangstexte (Position = 0)
           # 8           Auftragstexte nach Position
           # 9           Auftragsendetexte
+          'ATTART': 'textart',
           'ATLFNR': 'nr',
           'ATTX60': 'text',
+          # 0 nicht in AB drucken
+          # 1 in AB drucken
+          # 2 undokumentiert
           'ATKZAB': 'andruck_ab',
+          # 0 nicht auf KB/LS drucken
+          # 1 auf KB/LS drucken
+          # 2 nur auf KB drucken
+          # 3 nur auf LS drucken
           'ATKZLF': 'andruck_ls',
+          # 0 nicht auf RG drucken
+          # 1 auf RG drucken
           'ATKZRG': 'andruck_re',
          },
 

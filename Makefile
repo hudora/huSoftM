@@ -1,9 +1,9 @@
 default: dependencies check test
 
 check:
-	pep8 -r --ignore=E501 husoftm2/ husoftm/
-	sh -c 'PYTHONPATH=. pyflakes husoftm2/ husoftm/'
-	-sh -c 'PYTHONPATH=. pylint -iy --max-line-length=110 husoftm2/ husoftm/' # -rn
+	pep8 -r --ignore=E501 husoftm2/
+	sh -c 'PYTHONPATH=. pyflakes husoftm2/'
+	-sh -c 'PYTHONPATH=. pylint -iy --max-line-length=110 husoftm2/' # -rn
 
 build:
 	python setup.py build sdist
@@ -15,13 +15,16 @@ test: dependencies
 	#PYTHONPATH=. python husoftm/misc.py
 	#PYTHONPATH=. python husoftm/preise_ek.py
 	#PYTHONPATH=. ./pythonenv/bin/python husoftm/stapelschnittstelle.py
+	#PYTHONPATH=. python husoftm/lagerschnittstelle.py
 	# dependencies on CentralServices
 	PYTHONPATH=. ./pythonenv/bin/python husoftm2/artikel.py
+	PYTHONPATH=. ./pythonenv/bin/python husoftm2/auftraege.py
 	PYTHONPATH=. ./pythonenv/bin/python husoftm2/bestaende.py
 	PYTHONPATH=. ./pythonenv/bin/python husoftm2/kunden.py
-	#PYTHONPATH=. python husoftm/lagerschnittstelle.py
 	PYTHONPATH=. ./pythonenv/bin/python husoftm2/lieferscheine.py
-	#PYTHONPATH=. python husoftm/softmtables.py
+	PYTHONPATH=. ./pythonenv/bin/python husoftm2/preise.py
+	PYTHONPATH=. ./pythonenv/bin/python husoftm2/texte.py
+	PYTHONPATH=. ./pythonenv/bin/python husoftm2/tools.py
 
 coverage: dependencies
 	printf '.*/tests/.*\n.*test.py\n' > .figleaf-exclude.txt

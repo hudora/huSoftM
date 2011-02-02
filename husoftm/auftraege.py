@@ -41,6 +41,8 @@ warnings.warn("husoftm.auftraege is deprecated, use husoftm2.auftraege instead",
 
 
 def auftragsart(art):
+    warnings.warn("husoftm.auftraege is deprecated, use husoftm2.auftraege instead",
+                  DeprecationWarning, stacklevel=2)
     return AUFTRAGSARTEN.get(art, 'Unbekannt')
 
 
@@ -54,6 +56,8 @@ def auftraege(mindate=None, maxdate=None, additional_conditions=None, limit=None
     TODO: Wenn Datum in additional_conditions, dann Datumsfelder überprüfen und ggf. konvertieren
     """
 
+    warnings.warn("husoftm.auftraege is deprecated, use husoftm2.auftraege instead",
+                  DeprecationWarning, stacklevel=2)
     conditions = ["AKSTAT<>'X'"]
 
     if mindate and maxdate:
@@ -85,6 +89,8 @@ def auftraege(mindate=None, maxdate=None, additional_conditions=None, limit=None
 def get_auftrag(auftragsnr):
     """Auftrag mit Auftragsnummer auftragsnr ermitteln"""
 
+    warnings.warn("husoftm.auftraege is deprecated, use husoftm2.auftraege instead",
+                  DeprecationWarning, stacklevel=2)
     rows = get_connection().query('AAK00',
         condition="AKSTAT<>'X' AND AKAUFN=%s" % sql_escape(auftragsnr))
     if len(rows) != 1:
@@ -99,6 +105,8 @@ def get_auftrag(auftragsnr):
 def auftraege_for_kunde(kundennr, limit=None):
     """Alle Aufträge für eine Kundennummer ermitteln"""
 
+    warnings.warn("husoftm.auftraege is deprecated, use husoftm2.auftraege instead",
+                  DeprecationWarning, stacklevel=2)
     condition = "AKKDNR = %s" % sql_quote(pad('AKKDNR', kundennr))
     rows = get_connection().query('AAK00', ordering=['AKAUFN DESC', 'AKDTLT'],
                                   condition=condition, limit=limit)
@@ -107,6 +115,8 @@ def auftraege_for_kunde(kundennr, limit=None):
 
 def auftraege_for_artnr(artnr, additional_conditions=None, limit=None):
     """Alle Aufträge zu einer Artikelnummer"""
+    warnings.warn("husoftm.auftraege is deprecated, use husoftm2.auftraege instead",
+                  DeprecationWarning, stacklevel=2)
     conditions = ['AAK00.AKAUFN = ALN00.LNAUFN', 'ALN00.LNARTN=%s' % sql_quote(artnr)]
     if additional_conditions:
         conditions.extend(additional_conditions)
@@ -119,6 +129,8 @@ def auftraege_for_artnr(artnr, additional_conditions=None, limit=None):
 def lieferadresse(auftragsnr):
     """Lieferadresse für Auftrag ermitteln"""
 
+    warnings.warn("husoftm.auftraege is deprecated, use husoftm2.auftraege instead",
+                  DeprecationWarning, stacklevel=2)
     conn = get_connection()
     # Gibt es eine abweichende Lieferadresse?
     condition = "ADAART = 1 AND ADRGNR=%s " % sql_quote(auftragsnr)
@@ -151,6 +163,8 @@ def find_text(text):
     [{'auftragsnr': 1130969, 'text': 'Referenz: 0EUDA4BGYJCLT4VSNI2CP5XCPDQ'},
      {'auftragsnr': 1130970, 'text': 'Referenz: 1EUDA4BGYJCLT4VSNI2CP5XCPDQ'}]
     """
+    warnings.warn("husoftm.auftraege is deprecated, use husoftm2.auftraege instead",
+                  DeprecationWarning, stacklevel=2)
     rows = get_connection().query('AAT00', fields=['ATTX60', 'ATAUFN'], condition="ATTX60 LIKE %s" % sql_quote("%%%s%%" % text))
     return rows
 
@@ -159,6 +173,8 @@ def get_guid(auftragsnr):
     """
     Gibt den GUID zu einer Auftragsnr zurück, sofern vorhanden.
     """
+    warnings.warn("husoftm.auftraege is deprecated, use husoftm2.auftraege instead",
+                  DeprecationWarning, stacklevel=2)
     condition = "ATTX60 LIKE %s AND ATAUFN = %s AND ATAUPO = 0 AND ATTART = 8" % (sql_quote("#:guid:%%"),
                                                                                   sql_quote(auftragsnr))
     rows = get_connection().query('AAT00', fields=['ATTX60'], condition=condition)
@@ -172,6 +188,8 @@ def get_auftragnr(guid):
     Gibt die Auftragsnr zu einem GUID zurück, sofern vorhanden.
     """
 
+    warnings.warn("husoftm.auftraege is deprecated, use husoftm2.auftraege instead",
+                  DeprecationWarning, stacklevel=2)
     condition = "ATTX60 = %s AND ATAUPO = 0 AND ATTART = 8" % sql_quote("#:guid:" + guid)
     rows = get_connection().query('AAT00', fields=['ATAUFN'], condition=condition)
     if rows:

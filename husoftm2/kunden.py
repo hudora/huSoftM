@@ -129,6 +129,7 @@ def get_lieferadresse(warenempfaenger):
 
 
 def _softm_to_dict(row):
+    """Daten aus SoftM in ein dict umwandeln."""
     row = dict((k, v) for (k, v) in row.items() if v is not None)
     ret = dict(kundennr="SC%s" % row.get('kundennr', ''),               # 10003
                name1=row.get('name1', ''),                              # Sport A
@@ -152,7 +153,7 @@ def _softm_to_dict(row):
                # kundengruppe=row.get('kundengruppe', ''),
                betreuer_handle=row.get('betreuer', ''),                 # ': u'Birgit Bonrath'
                interne_firmennr=row.get('interne_firmennr', ''),        # ': u''
-               lieferantennr=row.get('lieferantennumemr', ''),
+               unsere_lieferantennr=row.get('unsere_lieferantennr', ''),
               )
     ret['name'] = ' '.join((ret['name1'], ret['name2'])).strip()
     ret['betreuer'] = betreuerdict.get(ret['betreuer_handle'], '')
@@ -172,6 +173,11 @@ def _softm_to_dict(row):
     else:
         ret['aenderung'] = ret['erfassung']
     return ret
+
+# Still missing:
+# def get_kundenbetreuer(kundennr):
+# def offene_posten(kundennr):
+# def kredit_limit(kundennr):
 
 
 def _selftest():

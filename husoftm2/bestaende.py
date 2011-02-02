@@ -160,7 +160,8 @@ def auftragsmengen_alle_artikel():
     ret = {}
     for row in rows:
         if row['menge_offen']:
-            ret.setdefault(str(row['artnr']), {})[row['liefer_date']] = (as400_2_int(row['menge_offen']), row['orderlines'])
+            ret.setdefault(str(row['artnr']), {})[row['liefer_date']] = (as400_2_int(row['menge_offen']),
+                                                                         row['orderlines'])
     return ret
 
 
@@ -266,7 +267,8 @@ def bestandsentwicklung(artnr, dateformat="%Y-%m-%d", lager=0):
         bewegungen_komponente = bewegungen(komponente_artnr, dateformat, lager)
         bestaende_komponente = bewegungen_to_bestaende(bewegungen_komponente)
         # Auf "Anteil" am Endprodukt umrechnen
-        bestaende_komponente = dict(((datum, mng / komponente_menge) for (datum, mng) in bestaende_komponente.items()))
+        bestaende_komponente = dict([(datum, mng / komponente_menge)
+                                     for (datum, mng) in bestaende_komponente.items()])
         bestentw_all.append(bestaende_komponente)
 
     # Die kleinste Menge eines Sub-Artikels ist die an diesem Datum verfügbare Menge

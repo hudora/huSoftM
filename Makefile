@@ -92,4 +92,4 @@ clean:
 	rm -Rf pythonenv build dist html test.db huSoftM.egg-info svn-commit.tmp pylint.out .coverage.score sloccount.sc pip-log.txt as400-sqlite-test.db
 	find . -name '*.pyc' -or -name '*.pyo' -or -name 'biketextmate.log' -delete
 
-.PHONY: build test
+.PHONY: build test code

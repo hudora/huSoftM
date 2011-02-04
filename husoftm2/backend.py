@@ -194,7 +194,8 @@ def execute(url, args, method='GET', ua=''):
     args_encoded = urllib.urlencode({'q': hujson.dumps(args)})
     url = ("/%s?" % url) + args_encoded
     digest = hmac.new(_find_credentials(), url, hashlib.sha1).hexdigest()
-    status, headers, content = huTools.http.fetch('http://api.hudora.biz:8082' + url,
+    softmexpresshost = os.environ.get('SOFTMEXPRESSHOST', 'api.hudora.biz:8082')
+    status, headers, content = huTools.http.fetch('http://' + softmexpresshost + url,
                                                   method='GET',
                                                   headers={'X-sig': digest},
                                                   ua='%s/husoftm2.backend' % ua)
@@ -299,9 +300,7 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
     if not fields:  # still nothing found
         raise RuntimeError("can't deduce field names, check fields.py")
 
-    args = dict(fields=fields,
-                tablenames=tablenames,
-                tag=ua)
+    args = dict(fields=fields, tablenames=tablenames, tag=ua)
     if condition:
         args['condition'] = condition
     if grouping:

@@ -1,5 +1,5 @@
 (function() {
-  var args, colors, crypto, desthost, destport, http, httpProxy, listenport, login_required, password, querystring, select, sendReply, server, startswith, url, util, welcome, x_en;
+  var args, colors, crypto, desthost, destport, http, httpProxy, listenport, login_required, password, query_counter, querystring, select, sendReply, server, startswith, url, util, welcome, x_en;
   colors = require('./lib/colors');
   crypto = require('crypto');
   http = require('http');
@@ -14,6 +14,7 @@
   desthost = args[1] || 'localhost';
   destport = args[2] || '8000';
   listenport = args[3] || '8082';
+  query_counter = 0;
   sendReply = function(response, code, message) {
     response.writeHead(code, {
       "Content-Type": 'text/plain',
@@ -26,12 +27,13 @@
   };
   login_required = function(request, response, handler) {
     var digest, encoding, hmac;
+    console.log(request.url);
+    console.log(url.parse(request.url));
     hmac = crypto.createHmac('sha1', password);
     hmac.update(request.url);
     digest = hmac.digest(encoding = 'hex');
     if (request.headers['x-sig'] !== digest) {
       console.log(request.headers['x-sig']);
-      console.log(digest);
       return sendReply(response, 401, "Not with me!");
     } else {
       return handler(request, response);
@@ -70,7 +72,8 @@
     });
     request.url = newurl;
     proxy = new httpProxy.HttpProxy(request, response);
-    return proxy.proxyRequest(destport, desthost);
+    proxy.proxyRequest(destport, desthost);
+    return query_counter += 1;
   };
   x_en = function(request, response) {
     var newurl, parsedurl, proxy, query, querystr, table, tablemapping, value;
@@ -106,11 +109,11 @@
   server = httpProxy.createServer(function(request, response) {
     var parsedurl, proxy;
     parsedurl = url.parse(request.url);
-    if (parsedurl.pathname === '/info' || request.method !== 'GET') {
+    if (parsedurl.pathname === '/info' && request.method !== 'GET') {
       request.url = '/info';
       proxy = new httpProxy.HttpProxy(request, response);
       return proxy.proxyRequest(destport, desthost);
-    } else if (parsedurl.pathname === '/stats' || request.method === 'GET') {
+    } else if (parsedurl.pathname === '/stats' && request.method === 'GET') {
       return sendReply(response, 200, "query_counter: " + query_counter);
     } else if (startswith(parsedurl.pathname, '/sql')) {
       if (request.method !== 'GET') {

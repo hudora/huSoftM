@@ -45,7 +45,7 @@ password = args[0] || 'geheim'
 desthost = args[1] || 'localhost'
 destport = args[2] || '8000'
 listenport = args[3] || '8082'
-
+query_counter = 0
 
 # Send a Message to the client
 sendReply = (response, code, message) ->
@@ -61,6 +61,8 @@ sendReply = (response, code, message) ->
 # Überprüfe Credentials und wenn die stimmen, rufe `handler` auf.
 login_required = (request, response, handler) ->
     # HMAC der URL berechnen
+    console.log(request.url)
+    console.log(url.parse(request.url))
     hmac = crypto.createHmac('sha1', password)
     hmac.update(request.url)
     digest = hmac.digest(encoding='hex')
@@ -68,7 +70,6 @@ login_required = (request, response, handler) ->
     if request.headers['x-sig'] != digest
         # Nein. Daten loggen und Fehlermeldung zum Client zurück senden
         console.log(request.headers['x-sig'])
-        console.log(digest)
         sendReply(response, 401, "Not with me!")
     else
         # User authentifiziert. Handler aufrufen.
@@ -110,6 +111,7 @@ select = (request, response) ->
     # Proxy Objekt für diesen REquest erstellen und ausführen.
     proxy = new httpProxy.HttpProxy(request, response)
     proxy.proxyRequest(destport, desthost)
+    query_counter += 1
 
 
 # Datensatz auf erledigt setzen
@@ -146,17 +148,17 @@ startswith = (s1, s2) ->
     return s1.substr(0, s2.length) == s2
 
 
-# Mein Server Code
+# Main Server Code
 server = httpProxy.createServer (request, response) ->
     parsedurl = url.parse(request.url)
-    if parsedurl.pathname == '/info' || request.method != 'GET'
+    if parsedurl.pathname == '/info' && request.method != 'GET'
         # Info Requests are just proxied as is.
         request.url = '/info'
         proxy = new httpProxy.HttpProxy(request, response)
         proxy.proxyRequest(destport, desthost)
-    else if  parsedurl.pathname == '/stats' || request.method == 'GET'
-        # return statuistics information
-            sendReply(response, 200, "query_counter: " + query_counter)
+    else if parsedurl.pathname == '/stats' && request.method == 'GET'
+        # return statistics information
+        sendReply(response, 200, "query_counter: " + query_counter)
     else if startswith(parsedurl.pathname, '/sql')
         if request.method != 'GET'
             sendReply(response, 405, "Method not allowed")

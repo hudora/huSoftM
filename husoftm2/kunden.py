@@ -52,14 +52,14 @@ def get_kunde(kundennr):
     <kundennr> must be an Integer in the Range 10000..99999.
     If no data exists for that KdnNr ValueError is raised."""
 
-    kundennr = int(kundennr.strip('SC'))
+    kundennr = str(kundennr)
+    if kundennr.startswith('SC'):
+        kundennr = kundennr[2:]
+    kundennr = int(kundennr)
     rows = query(['XKD00'],
                  condition="KDKDNR='%8d' AND KDSTAT<>'X'" % kundennr,
-                 joins=[('XXC00', 'KDKDNR', 'XCADNR'),
-                        ('XKS00', 'KDKDNR', 'KSKDNR'),
+                 joins=[('XKS00', 'KDKDNR', 'KSKDNR'),
                         ('AKZ00', 'KDKDNR', 'KZKDNR')])
-    # Kreditoren aus XXC00 entfernen - im JOIN geht das nicht
-    rows = [x for x in rows if x.get('art') != 'K']
     if len(rows) > 1:
         raise RuntimeError("Mehr als einen Kunden gefunden: %r" % kundennr)
     if not rows:
@@ -96,7 +96,7 @@ def get_lieferadressen(kundennr):
     Gibt eine Liste aller möglichen Lieferadressen in Form von Kunden-Dicts zurück.
     """
 
-    kundennr = kundennr.strip('SC')
+    kundennr = husoftm2.tools.remove_prefix(kundennr, 'SC')
     avrows = query(['AVA00'], condition="VAKDNR='%8s' AND VASTAT <>'X'" % int(kundennr))
     kunden = []
     for row in avrows:
@@ -112,14 +112,14 @@ def get_lieferadressen(kundennr):
 
 def get_lieferadresse(warenempfaenger):
     """Lieferadresse für Warenempfänger ermitteln"""
-    
+
     warenempfaenger = str(warenempfaenger)
     if warenempfaenger.startswith('SC'):
         warenempfaenger = warenempfaenger[2:]
     tmp = warenempfaenger.split('.')
     if len(tmp) == 1:
         return get_kunde(warenempfaenger)
-    
+
     rows = query(['AVA00'], joins=[('XXA00', 'VASANR', 'XASANR')],
                  condition="VAKDNR='%8s' AND VAVANR=%03d AND VASTAT <>'X'" % (int(tmp[0]), int(tmp[1])))
     if len(rows) == 1:
@@ -129,13 +129,14 @@ def get_lieferadresse(warenempfaenger):
 
 
 def _softm_to_dict(row):
+    """Daten aus SoftM in ein dict umwandeln."""
     row = dict((k, v) for (k, v) in row.items() if v is not None)
     ret = dict(kundennr="SC%s" % row.get('kundennr', ''),               # 10003
                name1=row.get('name1', ''),                              # Sport A
                name2=row.get('name2', ''),
                name3=row.get('name3', ''),
                strasse=row.get('strasse', ''),                          # Marktplatz 5
-               land=husoftm2.tools.land2iso(row['laenderkennzeichen']),  # D
+               land=husoftm2.tools.land2iso(row['laenderkennzeichen']),
                plz=row.get('plz', ''),                                  # 42477
                ort=row.get('ort', ''),                                  # Neurade
                tel=row.get('tel', ''),
@@ -150,10 +151,11 @@ def _softm_to_dict(row):
                # vertreter=row.get('vertreter', ''),                    # ': u'201'
                # branche=row.get('branche', ''),                        # ': u'13'
                # kundengruppe=row.get('kundengruppe', ''),
-               betreuer_handle=row.get('betreuer', ''),                        # ': u'Birgit Bonrath'
+               betreuer_handle=row.get('betreuer', ''),                 # ': u'Birgit Bonrath'
                interne_firmennr=row.get('interne_firmennr', ''),        # ': u''
-               unsere_lieferantennr=row.get('unsere_lieferantennumemr', ''),
+               lieferantennr=row.get('lieferantennumemr', ''),
               )
+    ret['name'] = ' '.join((ret['name1'], ret['name2'])).strip()
     ret['betreuer'] = betreuerdict.get(ret['betreuer_handle'], '')
     if not ret['betreuer']:
         logging.error('Kunde %s (%s) hat mit "%s" keinen gueltigen Betreuer' % (ret['name1'],
@@ -161,7 +163,7 @@ def _softm_to_dict(row):
                                                                                 ret['betreuer_handle']))
     if 'verbandsnr' in row and row['verbandsnr']:
         ret['verbandsnr'] = 'SC%s' % row['verbandsnr']
-        ret['mitgliednr'] = row.get('mitgliednr', '')
+        ret['mitgliedsnr'] = row.get('mitgliedsnr', '')
     if 'iln' in row and row['iln']:
         ret['iln'] = unicode(int(row['iln'])).strip()
     if row['erfassung_date']:
@@ -171,6 +173,11 @@ def _softm_to_dict(row):
     else:
         ret['aenderung'] = ret['erfassung']
     return ret
+
+# Still missing:
+# def get_kundenbetreuer(kundennr):
+# def offene_posten(kundennr):
+# def kredit_limit(kundennr):
 
 
 def _selftest():

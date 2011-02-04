@@ -7,7 +7,7 @@ Created by Christian Klein on 2010-03-15.
 Copyright (c) 2010 HUDORA GmbH. All rights reserved.
 """
 
-from husoftm2.tools import sql_escape, sql_quote, date2softm, pad
+from husoftm2.tools import sql_escape, sql_quote, date2softm, pad, remove_prefix
 from husoftm2.texte import texte_trennen, texte_auslesen
 from husoftm2.backend import query
 import datetime
@@ -39,10 +39,12 @@ AUFTRAGSARTEN = {
 }
 
 
-def _auftraege(additional_conditions=None, addtables=[], mindate=None, maxdate=None, limit=None, header_only=False):
+def _auftraege(additional_conditions=None, addtables=[], mindate=None, maxdate=None, limit=None,
+               header_only=False):
     """
     Alle Aufträge ermitteln
-    `additional_conditions` kann eine Liste von SQL-Bedingungen enthalten, die die Auftragssuche einschränken.
+    `additional_conditions` kann eine Liste von SQL-Bedingungen enthalten, die die Auftragssuche
+    einschränken.
     `mindate` & `maxdate` können den Anliefertermin einschränken.
     `limit` kann die Zahl der zurückgelieferten Aufträge einschraenken. Dabei werden groessere
     Auftragsnummern zuerst zurueck gegeben.
@@ -99,16 +101,17 @@ def _auftraege(additional_conditions=None, addtables=[], mindate=None, maxdate=N
         for row in query(['XAD00'], ua='husoftm2.lieferscheine',
                          condition="ADAART=1 AND ADRGNR IN (%s)" % ','.join([str(x) for x in batch])):
             koepfe[row['nr']]['lieferadresse'] = dict(name1=kopf['name1'],
-                                                      name2=kopf['name2'],
-                                                      name3=kopf['name3'],
-                                                      strasse=kopf['strasse'],
-                                                      land=husoftm2.tools.land2iso(kopf['laenderkennzeichen']),
-                                                      plz=kopf['plz'],
-                                                      ort=kopf['ort'],
-                                                      )
+                                    name2=kopf['name2'],
+                                    name3=kopf['name3'],
+                                    strasse=kopf['strasse'],
+                                    land=husoftm2.tools.land2iso(kopf['laenderkennzeichen']),
+                                    plz=kopf['plz'],
+                                    ort=kopf['ort'],
+                                    )
 
         # Positionen einlesen
-        for row in query(['AAP00'], condition="APSTAT<>'X' AND APAUFN IN (%s)" % ','.join((str(x) for x in batch)),
+        for row in query(['AAP00'], condition="APSTAT<>'X' AND APAUFN IN (%s)" % ','.join([str(x)
+                                                                                           for x in batch]),
                          ua='husoftm2.auftraege'):
             d = dict(menge=int(row['bestellmenge']),
                      artnr=row['artnr'],
@@ -129,9 +132,9 @@ def _auftraege(additional_conditions=None, addtables=[], mindate=None, maxdate=N
         # Kopftexte zuordnen
         for auftragsnr, texte in kopftexte.items():
             texte, attrs = texte_trennen(texte)
-            koepfe[auftragsnr]['infotext_kunde'] = texte
+            koepfe[remove_prefix(auftragsnr, 'SO')]['infotext_kunde'] = texte
             if 'guid' in attrs:
-                koepfe[auftragsnr]['guid'] = attrs['guid']
+                koepfe[remove_prefix(auftragsnr, 'SO')]['guid'] = attrs['guid']
 
     return koepfe.values()
 
@@ -139,7 +142,7 @@ def _auftraege(additional_conditions=None, addtables=[], mindate=None, maxdate=N
 def get_auftrag_by_auftragsnr(auftragsnr, header_only=False):
     """Auftrag mit Auftragsnummer auftragsnr zurueckgeben"""
 
-    auftragsnr = str(int(auftragsnr.strip('SO')))  # clean up, avoid attacks
+    auftragsnr = remove_prefix(auftragsnr, 'SO')
     auftraege = _auftraege(["AKAUFN=%s" % sql_escape(auftragsnr)], header_only=header_only)
     if len(auftraege) > 1:
         raise RuntimeError("Mehr als ein Auftrag mit auftragsnr %s vorhanden" % auftragsnr)
@@ -177,7 +180,7 @@ def get_guid(auftragsnr):
     """
     Gibt den GUID zu einer Auftragsnr zurück, sofern vorhanden.
     """
-    auftragsnr = str(int(auftragsnr.strip('SO')))  # clean up, avoid attacks
+    auftragsnr = remove_prefix(auftragsnr, 'SO')
     condition = "ATTX60 LIKE %s AND ATAUFN = %s AND ATAUPO = 0 AND ATTART = 8" % (sql_quote("#:guid:%%"),
                                                                                   sql_quote(auftragsnr))
     rows = query('AAT00', fields=['ATTX60'], condition=condition)
@@ -186,11 +189,10 @@ def get_guid(auftragsnr):
     return ''
 
 
-
 def auftraege_kunde(kundennr, limit=None, header_only=False):
     """Alle Aufträge für eine Kundennummer ermitteln.
     Gibt eine Liste von dict()s zurück."""
-    kundennr = str(int(kundennr.strip('SC')))  # clean up, avoid attacks
+    kundennr = remove_prefix(kundennr, 'SC')
     auftraege = _auftraege(["AKKDNR=%s" % pad('AKKDNR', kundennr)], limit=limit, header_only=header_only)
     return auftraege
 

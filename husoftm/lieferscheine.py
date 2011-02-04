@@ -13,13 +13,19 @@ from husoftm.connection2 import get_connection
 from husoftm.tools import sql_quote, land2iso, set_attributes
 import cs.caching
 import logging
+import warnings
 
 logging.basicConfig(level=logging.WARN)
 log = logging.getLogger('husoftm.lieferschein')
 
+warnings.warn("husoftm.lieferscheine is deprecated, use husoftm2.lieferscheine instead",
+              DeprecationWarning, stacklevel=2)
+
 
 def get_lieferscheinnrs_for_lager(lager):
     "Liefert eine Liste mit allen nicht voll ausgelieferten Lieferscheinnummern für ein Lager."""
+    warnings.warn("husoftm.lieferscheine is deprecated, use husoftm2.lieferscheine instead",
+                  DeprecationWarning, stacklevel=2)
     rows = get_connection().query("ALK00", fields=["LKLFSN"],
                                   condition="LKLGNR=%r AND LKLFSN>0 AND LKKZVA=0 AND LKSTAT <> 'X'" % lager)
     return sorted(set((int(row[0]) for row in rows)))
@@ -33,6 +39,8 @@ def get_lieferscheine_rechnungsstatus(lieferscheinnrs):
     Returns a list containing tuples w/ lieferscheinnr and its rechnungsstatus
     """
 
+    warnings.warn("husoftm.lieferscheine is deprecated, use husoftm2.lieferscheine instead",
+                  DeprecationWarning, stacklevel=2)
     mappings = {'LKLFSN': 'lieferscheinnummer',
                 'MIN(LNRGST)': 'rechnungsstatus'}
 
@@ -49,6 +57,8 @@ def get_lieferscheine_rechnungsstatus(lieferscheinnrs):
 def lieferscheine_for_auftrag(auftragsnr):
     """Return all Lieferschein objects for a given auftragsnr"""
 
+    warnings.warn("husoftm.lieferscheine is deprecated, use husoftm2.lieferscheine instead",
+                  DeprecationWarning, stacklevel=2)
     conditions = ["LKAUFS = %s" % sql_quote(auftragsnr), "LKLFSN <> 0"]
     condition = " AND ".join(conditions)
     rows = get_connection().query(["ALK00"], condition=condition)
@@ -58,6 +68,8 @@ def lieferscheine_for_auftrag(auftragsnr):
 def kommibelege_for_auftrag(auftragsnr):
     """Return all Kommibeleg objects for a given auftragsnr"""
 
+    warnings.warn("husoftm.lieferscheine is deprecated, use husoftm2.lieferscheine instead",
+                  DeprecationWarning, stacklevel=2)
     conditions = ["LKAUFS = %s" % sql_quote(auftragsnr), "LKLFSN = 0"]
     condition = " AND ".join(conditions)
     rows = get_connection().query(["ALK00"], condition=condition)
@@ -67,6 +79,8 @@ def kommibelege_for_auftrag(auftragsnr):
 @cs.caching.cache_function(60 * 60 * 72)  # 3 days
 def kbpos2artnr(komminr, posnr):
     """Gibt die Artikelnummer zu einer bestimmten Position eines Kommissionierbelegs zurück."""
+    warnings.warn("husoftm.lieferscheine is deprecated, use husoftm2.lieferscheine instead",
+                  DeprecationWarning, stacklevel=2)
     rows = get_connection().query('ALN00', fields=['LNARTN'],
                condition="LNKBNR=%d AND LNBELP=%d" % (int(komminr), int(posnr)))
     return rows[0][0]
@@ -75,6 +89,8 @@ def kbpos2artnr(komminr, posnr):
 #@cs.caching.cache_function(60*60*24) # 1 day
 def kbpos2artnr_lager(komminr, posnr):
     """Gibt die Artikelnummer und das Abgangs-Lager zu einer bestimmten Position eines Kommissionierbelegs zurück."""
+    warnings.warn("husoftm.lieferscheine is deprecated, use husoftm2.lieferscheine instead",
+                  DeprecationWarning, stacklevel=2)
     rows = get_connection().query('ALN00', fields=['LNARTN', 'LNLGNR'],
                condition="LNKBNR=%d AND LNBELP=%d" % (int(komminr), int(posnr)))
     return rows[0]['artnr'], rows[0]['lager']
@@ -83,6 +99,8 @@ def kbpos2artnr_lager(komminr, posnr):
 #@cs.caching.cache_function(60*60*24) # 1 day
 def kbpos2artnr_zugangslager(komminr, posnr):
     """Gibt die Artikelnummer und das ZUGANGS-Lager zu einer bestimmten Position eines Kommissionierbelegs zurück."""
+    warnings.warn("husoftm.lieferscheine is deprecated, use husoftm2.lieferscheine instead",
+                  DeprecationWarning, stacklevel=2)
     # Read auftragsnr_kunde
     rows = get_connection().query('ALN00', fields=['LNARTN', 'LNAUFN'],
                condition="LNKBNR=%d AND LNBELP=%d" % (int(komminr), int(posnr)))
@@ -94,6 +112,8 @@ def kbpos2artnr_zugangslager(komminr, posnr):
 class Adresse(object):
     """Repräsentiert eine Kundenadresse"""
     # Sollte dem Adressprotokoll folgen - muss aber noch überprüft werden.
+    warnings.warn("husoftm.lieferscheine is deprecated, use husoftm2.lieferscheine instead",
+                  DeprecationWarning, stacklevel=2)
     def __repr__(self):
         return repr(vars(self))
 
@@ -110,6 +130,8 @@ class Lieferschein(object):
     condition = "LKLFSN = %d"
 
     def __init__(self, lsnr=None):
+        warnings.warn("husoftm.lieferscheine is deprecated, use husoftm2.lieferscheine instead",
+                      DeprecationWarning, stacklevel=2)
         self._read_from_softm(int(lsnr))
 
     def _read_from_softm(self, lsnr):
@@ -203,6 +225,8 @@ class Lieferscheinposition(object):
     """Bildet eine 'Orderline' in einem Lieferschein ab."""
 
     def __init__(self):
+        warnings.warn("husoftm.lieferscheine is deprecated, use husoftm2.lieferscheine instead",
+                      DeprecationWarning, stacklevel=2)
         self._anfangstext = None
         self._endetext = None
 
@@ -235,6 +259,8 @@ class Kommibeleg(Lieferschein):
 
 def _get_pos_texte(auftragsposnr, auftragsnr):
     """Positionsanfangs- und Endetexte als string zurückgeben."""
+    warnings.warn("husoftm.lieferscheine is deprecated, use husoftm2.lieferscheine instead",
+                  DeprecationWarning, stacklevel=2)
     anfangstext = []
     endetext = []
     rows = get_connection().query('AAT00', ordering='ATLFNR',

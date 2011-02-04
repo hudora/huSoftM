@@ -10,6 +10,11 @@ Copyright (c) 2009, 2010 HUDORA. All rights reserved.
 
 from husoftm.connection2 import get_connection
 from husoftm.tools import sql_quote, sql_escape, pad, date2softm
+import warnings
+
+
+warnings.warn("husoftm.rechnungen is deprecated, use husoftm2.rechnungen instead",
+              DeprecationWarning, stacklevel=2)
 
 
 def kundenauftragsnr_to_rechnungsnr(kundenauftragsnr):

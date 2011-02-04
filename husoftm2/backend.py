@@ -36,15 +36,17 @@ try:
 except (ImportError, EnvironmentError):
     settings = object()
 
+config = object()
 try:
     import config
 except:
-    config = object()
+    pass
 
+keychain = object()
 try:
     import cs.keychain as keychain
 except:
-    keychain = object()
+    pass
 
 
 class DummyCache(object):
@@ -58,10 +60,11 @@ class DummyCache(object):
         return default
 
 
+memcache = DummyCache()
 try:
     from google.appengine.api import memcache
 except ImportError:
-    memcache = DummyCache()
+    pass
 
 
 def _find_credentials(credentials=None):
@@ -328,9 +331,12 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
 
     delta = time.time() - start
     if delta > 5:
-        logging.warning("Slow (%.3fs) SQL query in %s", delta, args)
-    memcache.add(key='husoftm_query_%r_%r' % (querymappings, args),
-                 value=rows, time=cachingtime)
+        logging.warning("Slow (%.3fs) SQL query in  %s", delta, args)
+    try:
+        memcache.add(key='husoftm_query_%r_%r' % (querymappings, args),
+                     value=rows, time=cachingtime)
+    except:
+        pass  # value 'rows' was probably to big for memcache or memcache was offline
     return rows
 
 

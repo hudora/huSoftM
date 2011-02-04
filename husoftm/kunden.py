@@ -11,6 +11,7 @@ import datetime
 import husoftm.connection2
 import cs.caching as caching
 import husoftm.tools
+import warnings
 
 
 class Kunde(object):
@@ -18,6 +19,8 @@ class Kunde(object):
 
     def __init__(self, kundennr='', name1='', name2='', name3='', name4='',
                  strasse='', plz='', ort='', land=''):
+        warnings.warn("husoftm.kunden is deprecated, use husoftm2.kunden instead",
+                      DeprecationWarning, stacklevel=2)
         self.kundennr = kundennr
         self.name1 = name1
         self.name2 = name2
@@ -54,7 +57,7 @@ class Kunde(object):
         #self.postfach_plz = row.get('postfach_plz', '')
         #self.created_at = row.get('erfassung_date', '') # 2004-12-01
         #self.updated_at = row.get('aendertung_date', '') # 2007-04-11
-        #self.mitgliednr = row.get('mitgliednr', '')
+        #self.mitgliedsnr = row.get('mitgliedsnr', '')
         #self.ustid = row.get('ustid', '') # '132838685'
         self.adressdatei_id = row.get('adressdatei_id', '')  # 123656179
         #self.company = row.get('company', '') # '06'
@@ -80,7 +83,7 @@ class Kunde(object):
         #self.interne_firmennr = row.get('interne_firmennr', '') # ': u''
         self.unsere_lieferantennr = row.get('unsere_lieferantennumemr', '')
         self.verband = row.get('verband', '')
-        self.mitgliednr = row.get('mitgliednr', '')
+        self.mitgliedsnr = row.get('mitgliedsnr', '')
         self.ustid = row.get('ustid', '')
         self.kundengruppe = row.get('kundengruppe', '')
         self.vertreter = row.get('vertreter', '')
@@ -105,6 +108,8 @@ class Kunde(object):
 def get_kundennummern():
     """Returns a list of all 'Kundennummern'."""
 
+    warnings.warn("husoftm.kunden is deprecated, use husoftm2.kunden instead",
+                  DeprecationWarning, stacklevel=2)
     rows = husoftm.connection2.get_connection().query('XKD00', fields=['KDKDNR'])
     return [int(x[0]) for x in rows]
 
@@ -112,6 +117,8 @@ def get_kundennummern():
 def get_changed_after(date):
     """Returns a list of all Kundennummern where the underlaying Data has changed since <date>."""
 
+    warnings.warn("husoftm.kunden is deprecated, use husoftm2.kunden instead",
+                  DeprecationWarning, stacklevel=2)
     date = int(date.strftime('1%y%m%d'))
     rows = husoftm.connection2.get_connection().query('XKD00', fields=['KDKDNR'],
                                           condition="KDDTER>%d OR KDDTAE>=%d" % (date, date))
@@ -130,6 +137,8 @@ def get_kunde(kdnnr):
     <kdnnr> must be an Integer in the Range 10000..99999.
     If no data exists for that KdnNr ValueError is raised."""
 
+    warnings.warn("husoftm.kunden is deprecated, use husoftm2.kunden instead",
+                  DeprecationWarning, stacklevel=2)
     rows = husoftm.connection2.get_connection().query(['XKD00', 'XKS00', 'AKZ00'],
            condition="KDKDNR='%8d' AND KSKDNR='%8d' AND KZKDNR LIKE '%s'" % (int(kdnnr), int(kdnnr),
                      '%' + str(kdnnr)))
@@ -164,6 +173,8 @@ def get_kunde_by_iln(iln):
     If no data exists for that GLN/ILN ValueError is raised.
     """
 
+    warnings.warn("husoftm.kunden is deprecated, use husoftm2.kunden instead",
+                  DeprecationWarning, stacklevel=2)
     rows = husoftm.connection2.get_connection().query(['XKS00'], condition="KCE2IL='%s'" % (int(iln), ))
     if rows:
         # stammadresse
@@ -192,15 +203,17 @@ def get_lieferadressen(kdnr):
       'distrikt': '', 'fax': '', 'ort': 'Bottrop', 'plz': '46238', 'vertreter': '', 'sachbearbeiter': '',
       'name4': '', 'name2': 'Schuhe GmbH & Co. KG', 'name3': 'Distributionszentrum West',
       'name1': 'Heinrich Deichmann', 'kundengruppe': '', 'land': 'DE', 'verband': '', 'iln': u'',
-      'unsere_lieferantennr': '', 'mitgliednr': '', 'branche': ''},
+      'unsere_lieferantennr': '', 'mitgliedsnr': '', 'branche': ''},
      {'sortierfeld': '', 'tel': '+ 49 9852 9060', 'erfassung': datetime.date(2004, 12, 16), 'strasse': 'Deichmann-Str. 1',
       'kundennr': '13041/002', 'mobil': '', 'gebiet': '', 'aenderung': datetime.date(2004, 12, 16), 'mail': '',
       'adressdatei_id': '', 'ustid': '', 'distrikt': '', 'fax': '', 'ort': 'Feuchtwangen', 'plz': '91555', 'vertreter': '',
       'sachbearbeiter': '', 'name4': '', 'name2': 'Schuhe GmbH & Co. KG', 'name3': u'Distributionszentrum S\xfcd',
       'name1': 'Heinrich Deichmann', 'kundengruppe': '', 'land': 'DE', 'verband': '', 'iln': u'',
-      'unsere_lieferantennr': '', 'mitgliednr': '', 'branche': ''},
+      'unsere_lieferantennr': '', 'mitgliedsnr': '', 'branche': ''},
      ...]
     """
+    warnings.warn("husoftm.kunden is deprecated, use husoftm2.kunden instead",
+                  DeprecationWarning, stacklevel=2)
     avrows = husoftm.connection2.get_connection().query(['AVA00'], condition="VAKDNR='%8s' AND VASTAT <>'X'" % int(kdnr))
     kunden = []
     for row in avrows:
@@ -221,6 +234,8 @@ def get_lieferadressen_all():
     Value ist ein dict entsprechend dem AdressProtocol.
 
     """
+    warnings.warn("husoftm.kunden is deprecated, use husoftm2.kunden instead",
+                  DeprecationWarning, stacklevel=2)
     rows = husoftm.connection2.get_connection().query(['AVA00', 'XXA00'], condition="XAKZRS = 7 AND XASANR=VASANR")
     return dict(("%s/%03d" % (row['kundennr'], int(row['versandadresssnr'])), row) for row in rows)
 

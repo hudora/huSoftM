@@ -8,7 +8,7 @@ Copyright (c) 2007, 2009, 2010 HUDORA GmbH. All rights reserved.
 """
 
 from husoftm2.backend import query
-from husoftm.tools import sql_quote, date2softm
+from husoftm2.tools import sql_quote, date2softm, remove_prefix
 import datetime
 import husoftm2.kunden
 
@@ -38,7 +38,7 @@ def abgabepreis_kunde(artnr, kundennr, auftragsdatum=None):
         auftragsdatum = datetime.date.today()
 
     # Kundennr als Zeichenkette
-    kundennr = int(kundennr.strip('SC'))
+    kundennr = remove_prefix(kundennr, 'SC')
     date_str = sql_quote(date2softm(auftragsdatum))
 
     # 1. Preis für Kunde hinterlegt?
@@ -103,8 +103,9 @@ def listenpreise(artnrs=None):
 
 
 def listenpreis(artnr):
+    """Listenpreis für einene einzelenen Artikel."""
     return listenpreise([artnr]).values()[0]
-    
+
 
 def durchschnittlicher_abgabepreis(artnr, kundennr=None, startdatum=None):
     """Gibt eine Liste mit den durchschnittlichen Rechnungspreisen pro Monat zurück.
@@ -135,13 +136,13 @@ def durchschnittlicher_abgabepreis(artnr, kundennr=None, startdatum=None):
         ]
 
     if kundennr:
-        kundennr = int(kundennr.strip('SC'))
-        conditions = ["(FKKDNR=%s OR FKKDRG=%s)" % (sql_quote('%8s' % kundennr), 
+        kundennr = remove_prefix(kundennr, 'SC')
+        conditions = ["(FKKDNR=%s OR FKKDRG=%s)" % (sql_quote('%8s' % kundennr),
                                                     sql_quote('%8s' % kundennr))] + conditions
     if not startdatum:
         conditions = ["FKDTFA>'10501'"] + conditions  # keine legacy Daten
     else:
-        conditions = ["FKDTFA>%s" % sql_quote(date2softm(auftragsdatum))[:5]] + conditions
+        conditions = ["FKDTFA>%s" % sql_quote(date2softm(startdatum))[:5]] + conditions
 
     rows = query(['AFU00', 'AFK00'], fields=["FKDTFA", 'SUM(FUMNG)', 'SUM(FUPNET)', 'COUNT(FKRGNR)'],
                  condition=' AND '.join(conditions),

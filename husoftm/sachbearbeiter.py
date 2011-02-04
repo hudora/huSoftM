@@ -9,6 +9,11 @@ Copyright (c) 2007 HUDORA GmbH. All rights reserved.
 
 from husoftm.connection2 import get_connection
 from husoftm.tools import sql_quote
+import warnings
+
+
+warnings.warn("husoftm.sachbearbeiter is deprecated, use husoftm2.sachbearbeiter instead",
+              DeprecationWarning, stacklevel=2)
 
 
 def name(sachbearbeiternr):

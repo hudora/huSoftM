@@ -6,10 +6,9 @@ fields.py - describes the SoftM table structure. Part of huSoftM.
 See also http://cybernetics.hudora.biz/projects/wiki/SoftMtabellen
 
 Created by Maximillian Dornseif on 2007-03-18. Based on code named "MoftS" from Summer 2005.
-Copyright (c) 2007, 2008, 2009 HUDORA GmbH. All rights reserved.
+Copyright (c) 2007, 2008, 2009, 2011 HUDORA GmbH. All rights reserved.
 """
 
-__revision__ = "$Revision$"
 
 MAPPINGDIR = {
 'ABV00': {  # Adressdaten zu Aufträgen die in die Stapelschnittstelle geschrieben werden
@@ -156,7 +155,8 @@ MAPPINGDIR = {
           # 'AKKURS': 'Wechsel-Kurs',
           # Mit diesem Umrechnungsfaktor können die Angaben in Auftragswährung (Preise, Rabatte und
           # Nebenkosten) in die Hauptwährung der Firma umgerechnet werden:
-          # Wert (Hauptwährung) := Wert (Vorgangswährung) * Umrechnungsfaktor ggf. modifiziert um den Währungsfaktor
+          # Wert (Hauptwährung) := Wert (Vorgangswährung) * Umrechnungsfaktor ggf. modifiziert um den
+          # Währungsfaktor
           # Wenn die Bezugswährung für Wechselkurse (im Regelfall "EUR") mit der Hauptwährung der Firma
           # übereinstimmt, dann ist dieser Umrechnungsfaktor identisch mit dem Wechselkurs.
           # 'AKKUFA': 'Kursfaktor',
@@ -258,7 +258,8 @@ MAPPINGDIR = {
           # Angabe in Hauptwährung. Summe der offenen Positionswerte dieses Auftrags.
           # 'AKSTOR': 'Kennzeichen Stornierung',
           # Vorgangsart - Festlegung, ob es sich bei der Rechnungsschreibung um eine Gutschrift oder
-          # Stornierung handelt. Der Eintrag wird aus der Auftragsart übernommen. *ZERO Gutschrift,  1 Rechnung
+          # Stornierung handelt. Der Eintrag wird aus der Auftragsart übernommen.
+          #  *ZERO Gutschrift, 1 Rechnung
           # 'AKFORM': 'Rechnungsart',
           # 'AKMJBU': 'Buchungsmonat',
           # 'AKKZWR': 'Kz wertmäßig',
@@ -457,7 +458,8 @@ MAPPINGDIR = {
            #             Folgerabatte (falls in Prozent) werden immer vom Brutt
            #             gerechnet
            #             Beispiel: 100 EUR - 10% - 10% = 80 EUR
-           # 'APKZRB': 'Kz: kein Auftragsrabatt = 1', Festlegung, ob ein Auftragsrabatt f}r die Position g}ltig ist.
+           # 'APKZRB': 'Kz: kein Auftragsrabatt = 1', Festlegung, ob ein
+           #            Auftragsrabatt f}r die Position g}ltig ist.
            # 'APKZET': 'Steuerung Sortiments-Rabatt',
            # 'APKZSR': 'Sortiments-Rabatt gewährt',
            # 'APMWAR': 'Steuerart / Artikel',
@@ -689,7 +691,6 @@ MAPPINGDIR = {
 'AAT00': {  # Auftrags-Texte
           'ATAUFN': 'auftragsnr',
           'ATAUPO': 'auftragsposition',
-          'ATTART': 'textart',
           # 1           Benutzer aus B2B Shop
           # 2           Abweichende Artikelbezeichnung
           #             Pos: ATTX60 Stelle  1-60:  abweichende Artikelbezeichn
@@ -708,10 +709,20 @@ MAPPINGDIR = {
           # 8           Auftragsanfangstexte (Position = 0)
           # 8           Auftragstexte nach Position
           # 9           Auftragsendetexte
+          'ATTART': 'textart',
           'ATLFNR': 'nr',
           'ATTX60': 'text',
+          # 0 nicht in AB drucken
+          # 1 in AB drucken
+          # 2 undokumentiert
           'ATKZAB': 'andruck_ab',
+          # 0 nicht auf KB/LS drucken
+          # 1 auf KB/LS drucken
+          # 2 nur auf KB drucken
+          # 3 nur auf LS drucken
           'ATKZLF': 'andruck_ls',
+          # 0 nicht auf RG drucken
+          # 1 auf RG drucken
           'ATKZRG': 'andruck_re',
          },
 
@@ -749,7 +760,7 @@ MAPPINGDIR = {
           'KZDTAE': 'updated_at',
 },
 
-'ALK00': { # Lieferscheinköpfe
+'ALK00': {  # Lieferscheinköpfe
           'LKSANK': 'satznr',
           'LKSANB': 'bezogener_kopf',
           # Die Angabe ist nur gefüllt, falls mit der Variante 'Kommissionierbeleg vor Lieferschein'
@@ -2329,7 +2340,7 @@ MAPPINGDIR = {
            'AREAN': 'ean',
            'ARMEBE': 'mengeneinheit',
            'ARZOGR': 'zollgruppe',
-           'ARZTNR': 'statistischewarennr',
+           'ARZTNR': 'statistischewarennr',  # 'zolltarifnr',
            'ARPREV': 'listenpreis',
            'ARMALG': 'laenge',
            'ARMABR': 'breite',
@@ -2345,7 +2356,6 @@ MAPPINGDIR = {
            'ARABC2': 'abc2',
            'ARABC3': 'abc3',
            #'ARZOGR': 'Zoll-Grupppe-nr',
-           'ARZTNR': 'zolltarifnr',
            'ARURLD': 'ursprungsland',
            #'ARPREV': 'Verkaufspreis',
            #'ARPRE2': 'Verkaufspreis 2',
@@ -2479,7 +2489,7 @@ MAPPINGDIR = {
           # 'KSCOMP': 'company',
           # 'KSIAKZ': 'inland_ausland',
           # 'KSFNRK': 'interne_firmennr',
-          'KSINFL': 'unsere_lieferantennumemr',
+          'KSINFL': 'lieferantennumemr',
           'KCUSTN': 'ustid',
           # 'KSLIMI': 'kreditlimit2',
           # 'KSSKSL': 'skontoschluessel',
@@ -2491,7 +2501,7 @@ MAPPINGDIR = {
           # 'KSINF1': 'Inf. 1',
           'KCVERB': 'verbandsnr',
           #'KSKRED': 'Verbands-/Mischkto-Satz',
-          'KCMGVB': 'mitgliednr',
+          'KCMGVB': 'mitgliedsnr',
           #'KCBBN':  'Bundeseinheitl.Betriebsnr.',
           #'KCBBS':  'Bundeseinh.Betriebsstell.Nr',
           #'KCVRKZ': 'Kz. "Rechnungsliste erst."',
@@ -2683,11 +2693,11 @@ MAPPINGDIR = {
           # D           Kunde/Debitor
           # K           Lieferant/Kreditor
           'XCADNR': 'XXC_nr',  # Kunde/Lieferant
-          # XCLISP   Liefersperre                                    S    1 0   12   12
+          'XCLISP': 'liefersperre',
           #          *ZERO       keine Liefersperre
           #          1           Liefersperre
           # XCFGRP   Firmengruppe                                    A    2     13   14
-          # XCAWRT   Offener Auftragswert                            P   15 2   15   22
+          'XCAWRT': 'offener_auftragswert',
           #          In diesem Feld sind die offenen Positionswerte aus der
           #          Auftragspositionsdatei aufsummiert. Allerdings k¦nnen aufgrund
           #          der Parameterisierung bestimmte Auftragsarten und Positionen
@@ -2740,7 +2750,7 @@ MAPPINGDIR = {
           # Falls bekannt, kann hier die Lieferantennummer eingetragen werden, die uns der Kunde zugewiesen
           # hat.
           #  XCEGCD   EU-L{ndercode                                   A    2     48   49
-          'XCUSTN': 'xxc_ustid',  # USt-IdNr
+          'XCUSTN': 'ustid',
           # EU-einheitliche Steuernummer (USt-IdNr, VAT-Nr).
           # Beim Druck der USt-IdNr ist zus{tzlich noch der EU-L{ndercode
           # mitzudrucken.
@@ -2998,7 +3008,7 @@ MAPPINGDIR = {
           #  XCWSLN   W{hrung                                         A    3    249  251
           #  XCDTWN   W{hrung neu g}ltig ab                           P    7 0  252  255
           #  XCE2RP   Schl}ssel                                       A    4    259  262
-          'XCE2IL': 'XXC_iln',
+          'XCE2IL': 'iln',
           },
 
 'XLB00': {  # Lagerbewegungen
@@ -3247,8 +3257,6 @@ DECIMALIZE2 = set(['BUR1', 'BUBUBT', 'BUNEBT', 'BUNEWB', 'BUABZU', 'BUWBBT',
 # maps datefield to related timefield for generating datetime objects
 DATETIMEDIR = {'LKDTLF': 'LKZTLF',  # letzter_lieferschein
                'LKDTKB': 'LKZTKB',  # letzter_kommibeleg
-               'LKDTER': 'LKZTER',  # erfassung
-               'LKDTAE': 'LKZTAE',  # aenderung
                'LNDTLF': 'LNZTLF',  # lieferschein
                'LNDTER': 'LNZTER',  # erfassung
                'LNDTAE': 'LNZTAE',  # aenderung
@@ -3260,9 +3268,8 @@ DATETIMEDIR = {'LKDTLF': 'LKZTLF',  # letzter_lieferschein
                'CKENDD': 'CKENDZ',  # XCK00 ende
                'FKDTER': 'FKZTER',  # Rechnungskopf erfassung_date
                'FUDTER': 'FUZTER',  # Rechnungsposition erfassung_date
-               'FUDTER': 'FUZTER',  # Rechnungsposition erfassung_date
-               'LKDTER': 'LKZTER', # Lieferschein Erfassung
-               'LKDTAE': 'LKZTAE', # Lieferschein Änderung
+               'LKDTER': 'LKZTER',  # Lieferschein Erfassung
+               'LKDTAE': 'LKZTAE',  # Lieferschein Änderung
               }
 # Fields which need padding before beeing used in SQL queries
 PADDINGFIELDS = {

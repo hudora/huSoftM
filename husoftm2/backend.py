@@ -340,9 +340,9 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
 
 def x_en(tablename, condition, ua=''):
     """Setze Status in Tabelle auf 'X'
-    
+
     Kann auch andere Tabellenzustände setzen, wenn SoftMexpress dies vorsieht.
-    
+
     >>> x_en('ISR00', 'IRKBNR=930429 AND IRAUPO=13')
     '1'
     """
@@ -354,8 +354,8 @@ def x_en(tablename, condition, ua=''):
     result = execute('x_en', args, ua=ua)
     if result != '1\n':
         if result == '0\n':
-            raise RuntimeError("No columens updated: %s %s %r" % (tablename, conditions, result))
-        raise RuntimeError("UPDATE Problem: %s %s %r" % (tablename, conditions, result))
+            raise RuntimeError("No columens updated: %s %s %r" % (tablename, condition, result))
+        raise RuntimeError("UPDATE Problem: %s %s %r" % (tablename, condition, result))
     return result.rstrip('\n')
 
 

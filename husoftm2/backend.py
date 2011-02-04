@@ -188,16 +188,15 @@ def _get_tablename(name):
     return "SMKDIFP.%s" % name
 
 
-
 def execute(url, args, method='GET', ua=''):
     """Execute SQL statement"""
 
-    args_encoded = urllib.urlencode({'q':hujson.dumps(args)})
+    args_encoded = urllib.urlencode({'q': hujson.dumps(args)})
     url = ("/%s?" % url) + args_encoded
     digest = hmac.new(_find_credentials(), url, hashlib.sha1).hexdigest()
-    status, headers, content = huTools.http.fetch('http://localhost:8082' + url, # api.hudora.biz
-                                                  method='GET', 
-                                                  headers={'X-sig':digest}, 
+    status, headers, content = huTools.http.fetch('http://api.hudora.biz:8082' + url,
+                                                  method='GET',
+                                                  headers={'X-sig': digest},
                                                   ua='%s/husoftm2.backend' % ua)
     if status != 200:
         # TODO: this looks extremely fragile. Must have be drunk while coding this.
@@ -342,7 +341,7 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
 
 def ex(tablename, condition, ua='', cachingtime=300):
     """Setze Status in Tabelle auf 'X'"""
-    
+
     args = dict(tablename=tablename,
                 condition=condition,
                 tag=ua)

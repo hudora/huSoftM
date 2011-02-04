@@ -61,10 +61,6 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
                  fax=kopf.get('fax', ''),
                  art=kopf.get('art', ''),
                  )
-                 # 'art': u'',
-                 # 'teillieferung_erlaubt': 1,
-                 # 'voll_ausgeliefert': 1,
-                 # 'anliefer_date': datetime.date(2010, 12, 2)}
 
         pos_key = str(kopf['satznr'])
         if kopf.get('bezogener_kopf'):
@@ -123,9 +119,9 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
             if 'guid' in attrs:
                 d['auftragpos_guid'] = attrs['guid']
 
-            koepfe[row['satznr_kopf']]['positionen'].append(d)
-            koepfe[row['satznr_kopf']]['sachbearbeiter'] \
-                = husoftm2.sachbearbeiter.resolve(row['sachbearbeiter_bearbeitung'])
+            lieferung = koepfe[str(row['satznr_kopf'])]
+            lieferung['positionen'].append(d)
+            lieferung['sachbearbeiter'] = husoftm2.sachbearbeiter.resolve(row['sachbearbeiter_bearbeitung'])
 
         # Kopftexte zuordnen
         for auftragsnr, texte in kopftexte.items():

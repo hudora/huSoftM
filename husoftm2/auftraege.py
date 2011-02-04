@@ -103,11 +103,10 @@ def _auftraege(additional_conditions=None, addtables=[], mindate=None, maxdate=N
             koepfe[row['nr']]['lieferadresse'] = dict(name1=kopf['name1'],
                                     name2=kopf['name2'],
                                     name3=kopf['name3'],
-                                    strasse=kopf['strasse'],
-                                    land=husoftm2.tools.land2iso(kopf['laenderkennzeichen']),
-                                    plz=kopf['plz'],
-                                    ort=kopf['ort'],
-                                    )
+                                    strasse=row['strasse'],
+                                    land=husoftm2.tools.land2iso(row['laenderkennzeichen']),
+                                    plz=row['plz'],
+                                    ort=row['ort'])
 
         # Positionen einlesen
         for row in query(['AAP00'], condition="APSTAT<>'X' AND APAUFN IN (%s)" % ','.join([str(x)

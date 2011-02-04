@@ -2489,7 +2489,7 @@ MAPPINGDIR = {
           # 'KSCOMP': 'company',
           # 'KSIAKZ': 'inland_ausland',
           # 'KSFNRK': 'interne_firmennr',
-          'KSINFL': 'lieferantennumemr',
+          'KSINFL': 'unsere_lieferantennr',
           'KCUSTN': 'ustid',
           # 'KSLIMI': 'kreditlimit2',
           # 'KSSKSL': 'skontoschluessel',
@@ -2746,7 +2746,7 @@ MAPPINGDIR = {
           #  XCKZAD   Adresse {nderbar                                S    1 0   35   35
           #           *ZERO       Adresse ist nicht {nderbar
           #           1           Adresse ist {nderbar
-          'XCINFL': 'lieferantennummer',
+          'XCINFL': 'unsere_lieferantennr',
           # Falls bekannt, kann hier die Lieferantennummer eingetragen werden, die uns der Kunde zugewiesen
           # hat.
           #  XCEGCD   EU-L{ndercode                                   A    2     48   49

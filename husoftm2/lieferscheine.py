@@ -119,7 +119,7 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
             if 'guid' in attrs:
                 d['auftragpos_guid'] = attrs['guid']
 
-            lieferung = koepfe[str(row['satznr_kopf'])]
+            lieferung = koepfe[remove_prefix(row['satznr_kopf'], 'SO')]
             lieferung['positionen'].append(d)
             lieferung['sachbearbeiter'] = husoftm2.sachbearbeiter.resolve(row['sachbearbeiter_bearbeitung'])
 
@@ -229,6 +229,8 @@ def _selftest():
     import datetime
     header = False
     print len(get_lagerabgang(datetime.date(2010, 12, 21)))
+    pprint(lieferscheine_auftrag(1163764, header_only=header))
+    pprint(lieferscheine_auftrag('1163764', header_only=header))
     pprint(lieferscheine_auftrag('SO1163764', header_only=header))
     print get_changed_after(datetime.date(2010, 12, 1))
     pprint(get_lieferschein('SL4173969'))

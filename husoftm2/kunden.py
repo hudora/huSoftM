@@ -17,7 +17,7 @@ betreuerdict = {
             'verkauf': 'Verkaufsinnendienst',
             'bbonrath': 'Birgit Bonrath',
             'cgiermann': 'Carsten Giermann',
-            'ngerloff': 'Nadiene Gerloff',
+            'ngerloff': 'Nadine Gerloff',
             'ajames': 'Andrea James',
             'alangen': 'Anja Langen',
             'cblumberg': 'Claudia Blumberg',

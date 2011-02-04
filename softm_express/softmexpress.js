@@ -1,5 +1,5 @@
 (function() {
-  var args, colors, crypto, desthost, destport, http, httpProxy, listenport, login_required, password, querystring, select, sendReply, server, startswith, url, util, welcome;
+  var args, colors, crypto, desthost, destport, http, httpProxy, listenport, login_required, password, querystring, select, sendReply, server, startswith, url, util, welcome, x_en;
   colors = require('./lib/colors');
   crypto = require('crypto');
   http = require('http');
@@ -38,7 +38,8 @@
     }
   };
   select = function(request, response) {
-    var newurl, proxy, query, querystr;
+    var newurl, parsedurl, proxy, query, querystr;
+    parsedurl = url.parse(request.url);
     query = JSON.parse(querystring.parse(parsedurl.query).q);
     querystr = "SELECT " + query.fields.join(',') + " FROM " + query.tablenames.join(',');
     if (query.joins) {
@@ -71,6 +72,34 @@
     proxy = new httpProxy.HttpProxy(request, response);
     return proxy.proxyRequest(destport, desthost);
   };
+  x_en = function(request, response) {
+    var newurl, parsedurl, proxy, query, querystr, table, tablemapping, value;
+    tablemapping = {
+      ISA00: ['IASTAT', 'X'],
+      ISB00: ['IBSTAT', 'X'],
+      ISK00: ['IKSTAT', 'X'],
+      ISR00: ['IRSTAT', 'X'],
+      ISZ00: ['IZSTAT', 'X'],
+      ALK00: ['LKKZ02', 1]
+    };
+    parsedurl = url.parse(request.url);
+    query = JSON.parse(querystring.parse(parsedurl.query).q);
+    if (TABLEMAPPING[query.tablename] === void 0) {
+      sendReply(response, 404, "Unknown tablename!");
+    } else {
+      table = TABLEMAPPING[query.tablename][0];
+      value = TABLEMAPPING[query.tablename][1];
+      querystr = "UPDATE " + +" SET " + table + " = '" + value + "' WHERE " + query.condition.replace(/';/g, "");
+    }
+    console.log(req.client.remoteAddress + ': ' + querystr);
+    newurl = '/update?' + querystring.stringify({
+      query: querystr,
+      tag: query.tag + '+sEx'
+    });
+    req.url = newurl;
+    proxy = new httpProxy.HttpProxy(request, response);
+    return proxy.proxyRequest(destport, desthost);
+  };
   startswith = function(s1, s2) {
     return s1.substr(0, s2.length) === s2;
   };
@@ -88,6 +117,12 @@
         return sendReply(response, 405, "Method not allowed");
       } else {
         return login_required(request, response, select);
+      }
+    } else if (startswith(parsedurl.pathname, '/x_en')) {
+      if (request.method !== 'GET') {
+        return sendReply(response, 405, "Method not allowed");
+      } else {
+        return login_required(request, response, x_en);
       }
     } else {
       return sendReply(response, 404, "Not here!");

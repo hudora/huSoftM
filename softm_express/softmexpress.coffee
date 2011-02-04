@@ -79,6 +79,7 @@ login_required = (request, response, handler) ->
 select = (request, response) ->
     # Die Query als JSON sollte URL-encoded im parameter q in der URL stecken
     # (d.h. queries sind automatisch längenbegrenzt)
+    parsedurl = url.parse(request.url)
     query = JSON.parse(querystring.parse(parsedurl.query).q)
     # Aus den verschiedenen JSON feldern bauen wir nun die eigentliche SQL query zusammen.
     querystr = "SELECT " + query.fields.join(',') + " FROM " + query.tablenames.join(',')
@@ -111,6 +112,35 @@ select = (request, response) ->
     proxy.proxyRequest(destport, desthost)
 
 
+# Datensatz auf erledigt setzen
+x_en = (request, response) ->
+    # Mapping from tablename to status field name and value to write
+    # These are the only tables that can be used to 'x' a record
+    tablemapping = 
+        ISA00: ['IASTAT', 'X']
+        ISB00: ['IBSTAT', 'X']
+        ISK00: ['IKSTAT', 'X']
+        ISR00: ['IRSTAT', 'X']
+        ISZ00: ['IZSTAT', 'X']
+        ALK00: ['LKKZ02', 1]
+
+    # Die Query als JSON sollte URL-encoded im parameter q in der URL stecken
+    # (d.h. queries sind automatisch längenbegrenzt)
+    parsedurl = url.parse(request.url)
+    query = JSON.parse(querystring.parse(parsedurl.query).q)
+    if TABLEMAPPING[query.tablename] == undefined
+        sendReply(response, 404, "Unknown tablename!")
+    else
+        table = TABLEMAPPING[query.tablename][0]
+        value = TABLEMAPPING[query.tablename][1]
+        querystr = "UPDATE " +  + " SET " + table + " = '" + value + "' WHERE " + query.condition.replace(/';/g, "")
+    console.log(req.client.remoteAddress + ': ' + querystr)
+    newurl = '/update?' + querystring.stringify({query: querystr, tag: query.tag + '+sEx'})
+    req.url = newurl
+    proxy = new httpProxy.HttpProxy(request, response)
+    proxy.proxyRequest(destport, desthost)
+
+
 # Implementierung von Pythons `string.startswith()`
 startswith = (s1, s2) ->
     return s1.substr(0, s2.length) == s2
@@ -132,6 +162,11 @@ server = httpProxy.createServer (request, response) ->
             sendReply(response, 405, "Method not allowed")
         else
             login_required(request, response, select)
+    else if startswith(parsedurl.pathname, '/x_en')
+        if request.method != 'GET'
+            sendReply(response, 405, "Method not allowed")
+        else
+            login_required(request, response, x_en)
     else
         sendReply(response, 404, "Not here!")
 

@@ -6,3 +6,4 @@ huSoftM.egg-info
 build/
 pip-log.txt
 testenv/
+pythonenv/

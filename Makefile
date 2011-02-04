@@ -56,9 +56,11 @@ coverage: dependencies
 	printf 'YVALUE=' > .coverage.score
 	grep -A3 ">totals:<" coverage/index.html|tail -n1|cut -c 9-12 >> .coverage.score
 
-dependencies:
-	virtualenv testenv
-	pip -q install -E testenv -r requirements.txt
+dependencies: pythonenv/bin/python
+
+pythonenv/bin/python:
+	virtualenv pythonenv
+	pip -q install -E pythonenv -r requirements.txt
 
 statistics:
 	sloccount --wide --details . | grep -v -E '(testenv|build|.svn)/' > sloccount.sc
@@ -85,6 +87,11 @@ doc: build testenv_pydoc
 	rm -Rf html
 	mkdir -p html
 	sh -c '(export PYTHONPATH=$(PWD); cd html; pydoc.x -w ../husoftm/*.py)'
+
+code: softm_express/softmexpress.js
+
+softm_express/softmexpress.js:
+	coffee -c softm_express/softmexpress.coffee
 
 install: build
 	python setup.py install

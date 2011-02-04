@@ -66,7 +66,8 @@ Um SoftM Express laufen zu lassen, wird node.js > 0.3 benötigt.
 
 Der Software muss ein Passwort übergeben werden, Hostname und Port, auf dem die ODBC-Bridge läuft und port auf dem softmexpress die anfragen beantworten soll. softmexpress geht nicht in den Hintergrund und sollte deswegen unter einem Tool, wie supervise/svscan gestartet werden.
 
-
+Der Softmexpress Proxy ist in [Coffee Script](http://jashkenas.github.com/coffee-script/) entwickelt und
+wurde zu JAvaScript compiliert. Um den Server zu verändern muss der Coffee Script Compiler installiert sein.
 
 
 # Downloads

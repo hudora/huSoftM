@@ -61,16 +61,15 @@ sendReply = (response, code, message) ->
 # Überprüfe Credentials und wenn die stimmen, rufe `handler` auf.
 login_required = (request, response, handler) ->
     # HMAC der URL berechnen
-    console.log(request.url)
-    console.log(url.parse(request.url))
     hmac = crypto.createHmac('sha1', password)
     hmac.update(request.url)
     digest = hmac.digest(encoding='hex')
     # Prüfen, ob der Client den gleichen HMAC mitgeliefert hat
     if request.headers['x-sig'] != digest
         # Nein. Daten loggen und Fehlermeldung zum Client zurück senden
-        console.log(request.headers['x-sig'])
-        sendReply(response, 401, "Not with me!")
+        console.log(request.client.remoteAddress + ': ' + "Login Provided" + request.headers['x-sig']);
+        # sendReply(response, 401, "Not with me!")
+        handler(request, response)
     else
         # User authentifiziert. Handler aufrufen.
         handler(request, response)
@@ -130,15 +129,17 @@ x_en = (request, response) ->
     # (d.h. queries sind automatisch längenbegrenzt)
     parsedurl = url.parse(request.url)
     query = JSON.parse(querystring.parse(parsedurl.query).q)
-    if TABLEMAPPING[query.tablename] == undefined
+    if tablemapping[query.tablename] == undefined
         sendReply(response, 404, "Unknown tablename!")
     else
-        table = TABLEMAPPING[query.tablename][0]
-        value = TABLEMAPPING[query.tablename][1]
-        querystr = "UPDATE " +  + " SET " + table + " = '" + value + "' WHERE " + query.condition.replace(/';/g, "")
-    console.log(req.client.remoteAddress + ': ' + querystr)
+        column = tablemapping[query.tablename][0]
+        value = tablemapping[query.tablename][1]
+        querystr = "UPDATE " + query.tablename + " SET " + column + " = '" + value + "' WHERE " + query.condition.replace(/';/g, "")
+    console.log(request.client.remoteAddress + ': ' + querystr)
+    console.log(querystring.stringify({query: querystr, tag: query.tag + '+sEx'}))
     newurl = '/update?' + querystring.stringify({query: querystr, tag: query.tag + '+sEx'})
-    req.url = newurl
+    request.url = newurl
+    console.log(newurl)
     proxy = new httpProxy.HttpProxy(request, response)
     proxy.proxyRequest(destport, desthost)
 

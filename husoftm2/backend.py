@@ -196,7 +196,7 @@ def execute(url, args, method='GET', ua=''):
     digest = hmac.new(_find_credentials(), url, hashlib.sha1).hexdigest()
     softmexpresshost = os.environ.get('SOFTMEXPRESSHOST', 'api.hudora.biz:8082')
     status, headers, content = huTools.http.fetch('http://' + softmexpresshost + url,
-                                                  method='GET',
+                                                  method=method,
                                                   headers={'X-sig': digest},
                                                   ua='%s/husoftm2.backend' % ua)
     if status != 200:
@@ -218,7 +218,7 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
     fields.MAPPINGDIR.
 
     >>> query('ALK00', condition="LKLFSN=4034544") #doctest: +ELLIPSIS
-    [{'lager': 100, 'versandart': '013', ...}]
+    [{'lager': 100, ...}]
 
     To suppress mapping provide querymappings={} and fields=[].
     >>> query(tables=['XPN00'], condition="PNSANR=2255")
@@ -239,20 +239,20 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
     Aggregate functions can be created by using the "grouping" keyword:
     >>> sorted(query('XLF00', fields=['LFARTN', 'SUM(LFMGLP)'], grouping=['LFARTN'],
     ... condition="LFLGNR=3"))
-    [('65166/01', '0'), ('65198', '0'), ('76095', '0'), ('76102', '0'), ('ED76095', '0')]
+    [(u'65166/01', u'0'), (u'65198', u'0'), (u'76095', u'0'), (u'76102', u'0'), (u'ED76095', u'0')]
 
     If desired "querymappings" can be used to return a list of dicts:
     >>> sorted(query('XLF00', fields=['LFARTN', 'SUM(LFMGLP)'], grouping=['LFARTN'],
     ... condition="LFLGNR=3", querymappings={'LFARTN': 'artnr',
     ... 'SUM(LFMGLP)': 'menge'})) #doctest: +ELLIPSIS
-    [{'menge': '0', 'artnr': '65166/01'}, {'menge': '0', 'artnr': '65198'}, ...]
+    [{'menge': u'0', 'artnr': u'65166/01'}, {'menge': u'0', 'artnr': u'65198'}, ...]
 
     You can use 'joins' to define LEFT OUTER JOINs. E.g.:
-    >>>  rows = query(['XKD00'],
-                 condition="KDKDNR='%8d'" % int(kundennr),
-                 joins=[('XXC00', 'KDKDNR', 'XCADNR'),
-                        ('XKS00', 'KDKDNR', 'KSKDNR'),
-                        ('AKZ00', 'KDKDNR', 'KZKDNR')])
+    >>> rows = query(['XKD00'],
+    ...              condition="KDKDNR='%8d'" % int(66669),
+    ...              joins=[('XXC00', 'KDKDNR', 'XCADNR'),
+    ...                     ('XKS00', 'KDKDNR', 'KSKDNR'),
+    ...                     ('AKZ00', 'KDKDNR', 'KZKDNR')])
 
     Will result in "SELECT * FROM XKD00 LEFT OUTER JOIN XXC00 ON KDKDNR=XCADNR LEFT OUTER
     JOIN XKS00 ON KDKDNR=KSKDNR LEFT OUTER JOIN AKZ00 ON KDKDNR=KZKDNR WHERE KDKDNR='   10001'".
@@ -338,15 +338,25 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
     return rows
 
 
-def ex(tablename, condition, ua='', cachingtime=300):
-    """Setze Status in Tabelle auf 'X'"""
+def x_en(tablename, condition, ua=''):
+    """Setze Status in Tabelle auf 'X'
+    
+    Kann auch andere Tabellenzustände setzen, wenn SoftMexpress dies vorsieht.
+    
+    >>> x_en('ISR00', 'IRKBNR=930429 AND IRAUPO=13')
+    '1'
+    """
 
     args = dict(tablename=tablename,
                 condition=condition,
                 tag=ua)
 
-    result = execute('x', args, method='POST', ua=ua)
-    return result
+    result = execute('x_en', args, ua=ua)
+    if result != '1\n':
+        if result == '0\n':
+            raise RuntimeError("No columens updated: %s %s %r" % (tablename, conditions, result))
+        raise RuntimeError("UPDATE Problem: %s %s %r" % (tablename, conditions, result))
+    return result.rstrip('\n')
 
 
 if __name__ == '__main__':

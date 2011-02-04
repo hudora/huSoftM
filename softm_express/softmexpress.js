@@ -27,14 +27,12 @@
   };
   login_required = function(request, response, handler) {
     var digest, encoding, hmac;
-    console.log(request.url);
-    console.log(url.parse(request.url));
     hmac = crypto.createHmac('sha1', password);
     hmac.update(request.url);
     digest = hmac.digest(encoding = 'hex');
     if (request.headers['x-sig'] !== digest) {
-      console.log(request.headers['x-sig']);
-      return sendReply(response, 401, "Not with me!");
+      console.log(request.client.remoteAddress + ': ' + "Login Provided" + request.headers['x-sig']);
+      return handler(request, response);
     } else {
       return handler(request, response);
     }
@@ -76,7 +74,7 @@
     return query_counter += 1;
   };
   x_en = function(request, response) {
-    var newurl, parsedurl, proxy, query, querystr, table, tablemapping, value;
+    var column, newurl, parsedurl, proxy, query, querystr, tablemapping, value;
     tablemapping = {
       ISA00: ['IASTAT', 'X'],
       ISB00: ['IBSTAT', 'X'],
@@ -87,19 +85,24 @@
     };
     parsedurl = url.parse(request.url);
     query = JSON.parse(querystring.parse(parsedurl.query).q);
-    if (TABLEMAPPING[query.tablename] === void 0) {
+    if (tablemapping[query.tablename] === void 0) {
       sendReply(response, 404, "Unknown tablename!");
     } else {
-      table = TABLEMAPPING[query.tablename][0];
-      value = TABLEMAPPING[query.tablename][1];
-      querystr = "UPDATE " + +" SET " + table + " = '" + value + "' WHERE " + query.condition.replace(/';/g, "");
+      column = tablemapping[query.tablename][0];
+      value = tablemapping[query.tablename][1];
+      querystr = "UPDATE " + query.tablename + " SET " + column + " = '" + value + "' WHERE " + query.condition.replace(/';/g, "");
     }
-    console.log(req.client.remoteAddress + ': ' + querystr);
+    console.log(request.client.remoteAddress + ': ' + querystr);
+    console.log(querystring.stringify({
+      query: querystr,
+      tag: query.tag + '+sEx'
+    }));
     newurl = '/update?' + querystring.stringify({
       query: querystr,
       tag: query.tag + '+sEx'
     });
-    req.url = newurl;
+    request.url = newurl;
+    console.log(newurl);
     proxy = new httpProxy.HttpProxy(request, response);
     return proxy.proxyRequest(destport, desthost);
   };

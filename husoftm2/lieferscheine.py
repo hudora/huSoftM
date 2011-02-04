@@ -4,13 +4,15 @@
 lieferscheine.py - Zugriff auf Lieferscheine. Teil von huSoftM.
 
 Created by Maximillian Dornseif on 2007-03-17.
-Copyright (c) 2007, 2010 HUDORA GmbH. All rights reserved.
+Copyright (c) 2007, 2010, 2011 HUDORA GmbH. All rights reserved.
 """
 
+import datetime
+
+import husoftm2.sachbearbeiter
 from husoftm2.backend import query
 from husoftm2.tools import sql_quote, remove_prefix
 from husoftm2.texte import texte_trennen, texte_auslesen
-import husoftm2.sachbearbeiter
 
 
 def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_only=False,
@@ -156,6 +158,29 @@ def get_changed_after(date, limit=None):
     return ret
 
 
+# Wir arbeiten im Zusammenhang mit Liefershceinen mit dem Kundenspezifischen Feld LKKZ02.
+# Dies ist standartmässig mit 0 vorbelegt. Wir setzen den Wert nach Verarbeitung auf 0.
+def get_new(limit=20, unbound=False):
+    """Liefert unverarbeitete Lieferscheine zurück."""
+    date = int(datetime.date.today().strftime('1%y%m%d'))
+    conditions = ["LKLFSN<>0",
+                  "LKSTAT<>'X'",
+                  "LKKZ02=0",
+                  ]
+    if not unbound:
+        conditions.append("(LKDTER>=%d OR LKDTAE>=%d)" % (date, date))
+    ret = []
+    for kopf in query(['ALK00'], ordering=['LKSANK DESC'], fields=['LKLFSN'],
+                      condition=' AND '.join(conditions), limit=limit, ua='husoftm2.lieferscheine'):
+        ret.append("SL%s" % kopf[0])
+    return ret
+
+
+def mark_processed(lieferscheinnr):
+    # Not implemented
+    pass
+
+
 def lieferscheine_auftrag(auftragsnr, header_only=False):
     """Gibt eine Liste mit Lieferscheindicts für einen Auftrag zurück"""
     auftragsnr = remove_prefix(auftragsnr, 'SO')
@@ -235,6 +260,7 @@ def _selftest():
     print get_changed_after(datetime.date(2010, 12, 1))
     pprint(get_lieferschein('SL4173969'))
     pprint(get_lieferschein('SL4176141'))
+    print get_new()
 
 
 if __name__ == '__main__':

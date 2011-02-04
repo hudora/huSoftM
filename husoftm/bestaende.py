@@ -39,7 +39,7 @@ from husoftm.tools import sql_escape, sql_quote
 import husoftm.artikel
 import couchdb.client
 import cs.caching as caching
-import cs.masterdata.article
+import cs.masterdata.eaplight
 import datetime
 import huTools.async
 import time
@@ -474,7 +474,7 @@ def versionsvorschlag(menge, orgartnr, date, dateformat="%Y-%m-%d"):
     """
     ret = []
     benoetigt = menge
-    for artnr in cs.masterdata.article.alternatives(orgartnr):
+    for artnr in cs.masterdata.eaplight.get_alternatives(orgartnr):
         dummy, untermenge = frei_am(benoetigt, artnr, date, dateformat)
         if untermenge > 0:
             ret.append((min(benoetigt, untermenge), artnr))

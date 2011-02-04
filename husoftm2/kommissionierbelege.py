@@ -19,6 +19,9 @@ def get_kommibeleg(komminr, header_only=False):
         prefix = 'KB'
     komminr = remove_prefix(komminr, prefix)
 
+    # In der Tabelle ALK00 stehen Kommissionierbelege und Lieferscheine.
+    # Die Kommissionierbelege haben '0' als Lieferscheinnr.
+    # Zusätzlich werden die (logisch) gelöschten Lieferscheine rausgefiltert.
     conditions = ["LKLFSN = 0", "LKKBNR = %s" % sql_quote(komminr), "LKSTAT<>'X'"]
     try:
         belege = get_ls_kb_data(conditions, header_only=header_only,

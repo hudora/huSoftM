@@ -187,7 +187,7 @@ def get_kunde_by_iln(iln):
                 condition="XASANR='%s'" % (int(rows[0]['satznr']), ))
             if rows2:
                 kunde = Kunde().fill_from_softm(rows2[0])
-                kunde.kundennr = kunde.kundennr + ('/%03d' % int(rows[0]['versandadresssnr']))
+                kunde.kundennr = kunde.kundennr + ('.%03d' % int(rows[0]['versandadressnr']))
                 return kunde
     raise ValueError("Keine Daten für GLN/ILN %r gefunden" % iln)
 
@@ -198,14 +198,14 @@ def get_lieferadressen(kdnr):
     Gibt eine Liste aller möglichen Lieferadressen in Form von Kunden-Objekten zurück.
     >>>get_lieferadressen(13041)
     [{'sortierfeld': '', 'tel': '+49 2041 690000', 'erfassung': datetime.date(2004, 12, 16),
-      'strasse': 'An der Knippenburg 4', 'kundennr': '13041/001', 'mobil': '', 'gebiet': '',
+      'strasse': 'An der Knippenburg 4', 'kundennr': '13041.001', 'mobil': '', 'gebiet': '',
       'aenderung': datetime.date(2004, 12, 16), 'mail': '', 'adressdatei_id': '', 'ustid': '',
       'distrikt': '', 'fax': '', 'ort': 'Bottrop', 'plz': '46238', 'vertreter': '', 'sachbearbeiter': '',
       'name4': '', 'name2': 'Schuhe GmbH & Co. KG', 'name3': 'Distributionszentrum West',
       'name1': 'Heinrich Deichmann', 'kundengruppe': '', 'land': 'DE', 'verband': '', 'iln': u'',
       'unsere_lieferantennr': '', 'mitgliedsnr': '', 'branche': ''},
      {'sortierfeld': '', 'tel': '+ 49 9852 9060', 'erfassung': datetime.date(2004, 12, 16), 'strasse': 'Deichmann-Str. 1',
-      'kundennr': '13041/002', 'mobil': '', 'gebiet': '', 'aenderung': datetime.date(2004, 12, 16), 'mail': '',
+      'kundennr': '13041.002', 'mobil': '', 'gebiet': '', 'aenderung': datetime.date(2004, 12, 16), 'mail': '',
       'adressdatei_id': '', 'ustid': '', 'distrikt': '', 'fax': '', 'ort': 'Feuchtwangen', 'plz': '91555', 'vertreter': '',
       'sachbearbeiter': '', 'name4': '', 'name2': 'Schuhe GmbH & Co. KG', 'name3': u'Distributionszentrum S\xfcd',
       'name1': 'Heinrich Deichmann', 'kundengruppe': '', 'land': 'DE', 'verband': '', 'iln': u'',
@@ -222,7 +222,7 @@ def get_lieferadressen(kdnr):
         if xarows:
             assert(len(xarows) == 1)
             kunde = Kunde().fill_from_softm(xarows[0])
-            kunde.kundennr = kunde.kundennr + ('/%03d' % int(row['versandadresssnr']))
+            kunde.kundennr = kunde.kundennr + ('.%03d' % int(row['versandadressnr']))
             kunden.append(kunde)
     return kunden
 
@@ -230,14 +230,14 @@ def get_lieferadressen(kdnr):
 def get_lieferadressen_all():
     """Gibt ein dict mit allen vorhandenen zusätzlichen Lieferadressen zurück.
 
-    Key dieses dicts ist die erweiterte Kundennummer (zB. '17200/001' == kundennr/versandadressnr).
+    Key dieses dicts ist die erweiterte Kundennummer (zB. '17200.001' == kundennr.versandadressnr).
     Value ist ein dict entsprechend dem AdressProtocol.
 
     """
     warnings.warn("husoftm.kunden is deprecated, use husoftm2.kunden instead",
                   DeprecationWarning, stacklevel=2)
     rows = husoftm.connection2.get_connection().query(['AVA00', 'XXA00'], condition="XAKZRS = 7 AND XASANR=VASANR")
-    return dict(("%s/%03d" % (row['kundennr'], int(row['versandadresssnr'])), row) for row in rows)
+    return dict(("%s.%03d" % (row['kundennr'], int(row['versandadressnr'])), row) for row in rows)
 
 
 @caching.cache_function(60 * 60 * 2)

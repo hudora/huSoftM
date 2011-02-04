@@ -292,7 +292,7 @@ def _auftrag2records(vorgangsnummer, auftrag):
     """Convert an Auftrag into records objects representing AS/400 SQL statements."""
     kopf = Kopf()
     kopf.vorgang = vorgangsnummer
-    kundennummern = auftrag.kundennr.split('/')
+    kundennummern = auftrag.kundennr.replace('/', '.').split('.')
     kopf.kundennr = '%8s' % kundennummern[0]
     if len(kundennummern) > 1:
         # abweichende Lieferadresse in Adress-Zusatzdatei
@@ -436,7 +436,10 @@ def _order2records(vorgangsnummer, order, auftragsart=None, abgangslager=None):
     # kundennr Interne Kundennummer. Kann das AddressProtocol erweitern. Wenn eine kundennr angegeben ist
     # und die per AddressProtocol angegebene Lieferadresse nicht zu der kundennr passt, handelt es sich
     # um eine abweichende Lieferadresse.
-    kopf.kundennr = '%8s' % _get_attr(order, 'kundennr').split('/')[0]
+    kundennr = _get_attr(order, 'kundennr').replace('/', '.').split('.')
+    kopf.kundennr = '%8s' % kundennr[0]
+    if len(kundennr) > 1:
+        kopf.lieferadresse = int(kundennr[1])
     # kundenauftragsnr - Freitext, den der Kunde bei der Bestellung mit angegeben hat, max. 20 Zeichen.
     kopf.kundenauftragsnr = deUmlaut(_get_attr(order, 'kundenauftragsnr'))[:20]
     # Ohne bestelldatum holpert es in SoftM
@@ -488,8 +491,10 @@ def _order2records(vorgangsnummer, order, auftragsart=None, abgangslager=None):
     if addresshash(order):
         # Adresse mit unserer Kundendatenbank vergleichen.
         # Weichen sie voneinander ab, dann wird die Auftragsadresse mit in die Stapelschnittstelle übertragen.
-        # Ansonsten ermittelt SoftM die Adresse anhand der Kundennr und wir übertragen gar keine Adresse.
-        addr = get_address("SC%s" % kopf.kundennr.strip().replace('SC', ''))
+        # Ansonsten ermittelt SoftM die Adresse anhand der Kundennr und Versandadressnr
+        # und wir übertragen gar keine Adresse.
+        kundennr = _get_attr(order, 'kundennr').replace('/', '.')
+        addr = get_address("SC%s" % kundennr.strip().replace('SC', ''))
         if (addresshash(addr) != addresshash(order)):
             land = _create_addressentry(adressen, vorgangsnummer, order, 'lieferadresse')
             if land != 'DE' and huTools.world.in_european_union(land):
@@ -1258,6 +1263,45 @@ class _OrderTests(unittest.TestCase):
         heute = date2softm(datetime.date.today())
         kpf_sql = ("INSERT INTO ABK00 (BKLGNR, BKABT, BKDTER, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKVGNR, BKVGPO, BKFNR, BKKDNR, BKDTKD, BKAUFA) "
                    "VALUES('26','1','%s','1100303','1100303','1','1','123','2','01','   17200','%s','ME')") % (heute, heute)
+        self.assertEqual(kopf.to_sql(), kpf_sql)
+        adressen_sql = ("INSERT INTO ABV00 (BVNAM2, BVSTR, BVKZAD, BVVGNR, BVLKZ, BVNAME, BVPLZ, BVORT, BVAART) "
+                        "VALUES('Anlieferung Modul','Jaegerwald 15','1','123','D','HUDORA GmbH','42897','Remscheid','1')")
+        self.assertEqual(adressen[0].to_sql(), adressen_sql)
+
+    def test_abweichende_lieferadresse(self):
+        """Test if addresses can be converted to SQL."""
+        vorgangsnummer = 123
+        order = {'_id': '17200',
+                 '_rev': '4-4bba80636c015f98e908c79c521e5124',
+                 'sachbearbeiter': 'verkauf',
+                 'iln': '4.00599800001e+12',
+                 'anlieferdatum_von': u'2010-03-03',
+                 'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A',
+                 'infotext_kunde': u'',
+                 'kundenauftragsnr': u'',
+                 'kundennr': u'17200/444',
+                 'land': 'DE',
+                 'name1': 'HUDORA GmbH',
+                 'name2': 'Anlieferung Modul',
+                 'name3': '',
+                 'ort': 'Remscheid',
+                 'plz': '42897',
+                 'softmstatus': '',
+                 'strasse': u'J\xe4gerwald 15',
+                 'orderlines': [{u'artnr': u'14600/03',
+                                 'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A-0',
+                                 u'menge': 1,
+                                 'name': 'HUDORA Big Wheel silber, 125 mm Rolle'},
+                                {u'artnr': u'65240',
+                                 'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A-24',
+                                 u'menge': 1,
+                                 'name': 'Test'}],
+                 'tel': '+49 2191 60912 10'}
+        kopf, positionen, texte, adressen = _order2records(vorgangsnummer, order, auftragsart='ME', abgangslager=26)
+
+        heute = date2softm(datetime.date.today())
+        kpf_sql = ("INSERT INTO ABK00 (BKLGNR, BKABT, BKDTER, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKVGNR, BKVGPO, BKFNR, BKKDNR, BKDTKD, BKVANR, BKAUFA) "
+                   "VALUES('26','1','%s','1100303','1100303','1','1','123','2','01','   17200','%s','444','ME')") % (heute, heute)
         self.assertEqual(kopf.to_sql(), kpf_sql)
         adressen_sql = ("INSERT INTO ABV00 (BVNAM2, BVSTR, BVKZAD, BVVGNR, BVLKZ, BVNAME, BVPLZ, BVORT, BVAART) "
                         "VALUES('Anlieferung Modul','Jaegerwald 15','1','123','D','HUDORA GmbH','42897','Remscheid','1')")

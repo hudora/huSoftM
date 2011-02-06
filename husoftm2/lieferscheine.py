@@ -7,10 +7,8 @@ Created by Maximillian Dornseif on 2007-03-17.
 Copyright (c) 2007, 2010, 2011 HUDORA GmbH. All rights reserved.
 """
 
-import datetime
-
 import husoftm2.sachbearbeiter
-from husoftm2.backend import query
+from husoftm2.backend import query, x_en
 from husoftm2.tools import sql_quote, remove_prefix
 from husoftm2.texte import texte_trennen, texte_auslesen
 
@@ -160,15 +158,20 @@ def get_changed_after(date, limit=None):
 
 # Wir arbeiten im Zusammenhang mit Liefershceinen mit dem Kundenspezifischen Feld LKKZ02.
 # Dies ist standartmässig mit 0 vorbelegt. Wir setzen den Wert nach Verarbeitung auf 0.
-def get_new(limit=20, unbound=False):
+def get_new(limit=20):
     """Liefert unverarbeitete Lieferscheine zurück."""
-    date = int(datetime.date.today().strftime('1%y%m%d'))
-    conditions = ["LKLFSN<>0",
-                  "LKSTAT<>'X'",
+    # Abfragen waren einige Zeit VIEL schneller, wenn wir Sie nur auf ein paar Tage einschränken,
+    # deswegen hatten wir folgende Zusatzbedingung:
+    # date = int((datetime.date.today()-datetime.timedelta(days=daydelta)).strftime('1%y%m%d'))
+    #     "(LKDTER>=%d OR LKDTAE>=%d)" % (date, date),
+
+    # Ein neuer Index auf der AS/400 hat dannaber die Verhältnisse umgedreht, dewegen nun ohne Datum.
+    #     CREATE INDEX ALKIDX06 ON ALK00(LKSTAT, LKKZ02, LKLFSN)
+
+    conditions = ["LKSTAT<>'X'",
                   "LKKZ02=0",
+                  "LKLFSN<>0",
                   ]
-    if not unbound:
-        conditions.append("(LKDTER>=%d OR LKDTAE>=%d)" % (date, date))
     ret = []
     for kopf in query(['ALK00'], ordering=['LKSANK DESC'], fields=['LKLFSN'],
                       condition=' AND '.join(conditions), limit=limit, ua='husoftm2.lieferscheine'):
@@ -177,8 +180,11 @@ def get_new(limit=20, unbound=False):
 
 
 def mark_processed(lieferscheinnr):
-    # Not implemented
-    pass
+    conditions = ["LKLFSN=%s" % sql_quote(remove_prefix(lieferscheinnr, 'SL')),
+                  "LKSTAT<>'X'",
+                  "LKKZ02=0",
+                  ]
+    return x_en('ALK00', condition=' AND '.join(conditions), ua='husoftm2.lieferscheine')
 
 
 def lieferscheine_auftrag(auftragsnr, header_only=False):

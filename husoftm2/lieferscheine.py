@@ -10,7 +10,7 @@ Copyright (c) 2007, 2010, 2011 HUDORA GmbH. All rights reserved.
 import husoftm2.sachbearbeiter
 from husoftm2.backend import query, x_en
 from husoftm2.tools import sql_quote, remove_prefix
-from husoftm2.texte import texte_trennen, texte_auslesen
+from husoftm2.texte import txt_auslesen
 
 
 def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_only=False,
@@ -74,8 +74,8 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
 
     satznr = koepfe.keys()
     allauftrnr = koepfe.keys()
-    # Texte einlesen
-    postexte, kopftexte = texte_auslesen([satznr2auftragsnr[x] for x in allauftrnr])
+    # Alle texte einlesen
+    postexte, kopftexte, posdaten, kopfdaten = txt_auslesen([satznr2auftragsnr[x] for x in allauftrnr])
     while satznr:
         # In 50er Schritten Auftragspositionen & Texte lesen und den 50 Aufträgen zuordnen
         batch = satznr[:50]
@@ -114,22 +114,24 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
                      menge=lsmenge)
             texte = postexte.get(remove_prefix(row['auftragsnr'], 'SO'),
                                                {}).get(row['auftrags_position'], [])
-            texte, attrs = texte_trennen(texte)
             d['infotext_kunde'] = texte
-            if 'guid' in attrs:
-                d['auftragpos_guid'] = attrs['guid']
+            if 'guid' in posdaten.get(remove_prefix(row['auftragsnr'], 'SO'), {}):
+                d['guid_auftrag'] = posdaten.get(remove_prefix(row['auftragsnr'], 'SO'), {})['guid']
 
             lieferung = koepfe[remove_prefix(row['satznr_kopf'], 'SO')]
             lieferung['positionen'].append(d)
+            # *Sachbearbeiter* ist der, der den Vorgang tatsächlich bearbeitet hat. *Betreuer* ist
+            # die (oder der), die für den Kunden zusändig ist.
             lieferung['sachbearbeiter'] = husoftm2.sachbearbeiter.resolve(row['sachbearbeiter_bearbeitung'])
 
         # Kopftexte zuordnen
         for auftragsnr, texte in kopftexte.items():
-            texte, attrs = texte_trennen(texte)
             pos_key = auftragsnr2satznr[remove_prefix(auftragsnr, 'SO')]
             koepfe[pos_key]['infotext_kunde'] = texte
-            if 'guid' in attrs:
-                koepfe[pos_key]['auftrag_guid'] = attrs['guid']
+        for auftragsnr, werte in kopfdaten.items():
+            if 'guid' in werte:
+                pos_key = auftragsnr2satznr[remove_prefix(auftragsnr, 'SO')]
+                koepfe[pos_key]['guid_auftrag'] = werte['guid']
 
     return koepfe.values()
 

@@ -361,7 +361,7 @@ def x_en(tablename, condition, ua=''):
     result = execute('x_en', args, ua=ua)
     if result != '1\n':
         if result == '0\n':
-            raise RuntimeError("No columns updated: %s %s %r" % (tablename, condition, result))
+            logging.info("No columns updated: %s %s %r", tablename, condition, result)
         raise RuntimeError("UPDATE Problem: %s %s %r" % (tablename, condition, result))
     return result.rstrip('\n')
 

@@ -62,7 +62,7 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
                  art=kopf.get('art', ''),
                  )
 
-        pos_key = str(kopf['satznr'])
+        pos_key = remove_prefix((kopf['satznr']), 'SO')
         if kopf.get('bezogener_kopf'):
             pos_key = remove_prefix(kopf['bezogener_kopf'], 'SO')
         auftragsnr2satznr[remove_prefix(kopf['auftragsnr'], 'SO')] = pos_key

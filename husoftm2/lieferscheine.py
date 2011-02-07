@@ -115,7 +115,7 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
                                                {}).get(row['auftrags_position'], [])
             d['infotext_kunde'] = texte
             if 'guid' in posdaten.get(remove_prefix(row['auftragsnr'], 'SO'), {}):
-                d['guid_auftrag'] = posdaten.get(remove_prefix(row['auftragsnr'], 'SO'), {})['guid']
+                d['auftragpos_guid'] = posdaten.get(remove_prefix(row['auftragsnr'], 'SO'), {}).get('guid')
 
             lieferung = koepfe[remove_prefix(row['satznr_kopf'], 'SO')]
             lieferung['positionen'].append(d)

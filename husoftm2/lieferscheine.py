@@ -174,7 +174,8 @@ def get_new(limit=20):
                   ]
     ret = []
     for kopf in query(['ALK00'], ordering=['LKSANK DESC'], fields=['LKLFSN'],
-                      condition=' AND '.join(conditions), limit=limit, ua='husoftm2.lieferscheine'):
+                      condition=' AND '.join(conditions), limit=limit, ua='husoftm2.lieferscheine',
+                      cachingtime=0):
         ret.append("SL%s" % kopf[0])
     return ret
 

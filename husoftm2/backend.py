@@ -188,16 +188,20 @@ def _get_tablename(name):
     return "SMKDIFP.%s" % name
 
 
-def execute(url, args, method='GET', ua=''):
+def execute(url, args, method='GET', ua='', bust_cache=False):
     """Execute SQL statement"""
 
     args_encoded = urllib.urlencode({'q': hujson.dumps(args)})
     url = ("/%s?" % url) + args_encoded
     digest = hmac.new(_find_credentials(), url, hashlib.sha1).hexdigest()
     softmexpresshost = os.environ.get('SOFTMEXPRESSHOST', 'api.hudora.biz:8082')
+    headers = {'X-sig': digest}
+    # See http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9.4 for the reasoning here
+    if bust_cache:
+        headers['Cache-Control'] = "no-cache"
     status, headers, content = huTools.http.fetch('http://' + softmexpresshost + url,
                                                   method=method,
-                                                  headers={'X-sig': digest},
+                                                  headers=headers,
                                                   ua='%s/husoftm2.backend' % ua)
     if status != 200:
         # TODO: this looks extremely fragile. Must have be drunk while coding this.
@@ -314,12 +318,15 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
         joins = [(_get_tablename(a), b, c) for (a, b, c) in joins]
         args['joins'] = joins
 
-    rows = memcache.get('husoftm_query_%r_%r' % (querymappings, args))
-    if rows:
-        return rows
+    bust_cache = True
+    if cachingtime > 0:
+        bust_cache = False
+        rows = memcache.get('husoftm_query_%r_%r' % (querymappings, args))
+        if rows:
+            return rows
 
     start = time.time()
-    result = execute('sql', args, ua=ua)
+    result = execute('sql', args, ua=ua, bust_cache=bust_cache)
     rows = hujson.loads(result)
 
     if querymappings:
@@ -354,7 +361,7 @@ def x_en(tablename, condition, ua=''):
     result = execute('x_en', args, ua=ua)
     if result != '1\n':
         if result == '0\n':
-            raise RuntimeError("No columens updated: %s %s %r" % (tablename, condition, result))
+            raise RuntimeError("No columns updated: %s %s %r" % (tablename, condition, result))
         raise RuntimeError("UPDATE Problem: %s %s %r" % (tablename, condition, result))
     return result.rstrip('\n')
 

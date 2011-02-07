@@ -43,13 +43,12 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
                  anliefer_date=kopf['anliefer_date'],
                  kundennr="SC%s" % kopf['rechnungsempfaenger'],
                  lieferadresse=dict(kundennr="SC%s" % kopf['warenempfaenger']),
-                 lieferdatum=kopf['anliefer_date'],  # XXX: Remove!
                  anlieferdatum=kopf['anliefer_date'],
                  lager="LG%03d" % int(kopf['lager']),
                  kommiauftragnr="KA%s" % kopf['kommibelegnr'],
                  kommiauftrag_datum=kopf['kommibeleg_date'],
                  lieferscheinnr="SL%s" % kopf['lieferscheinnr'],
-                 datum=kopf.get('lieferschein'),
+                 datum=kopf.get('ALK_lieferschein_date'),
                  name1=kopf.get('name1', ''),
                  name2=kopf.get('name2', ''),
                  name3=kopf.get('name3', ''),
@@ -60,8 +59,8 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
                  tel=kopf.get('tel', ''),
                  fax=kopf.get('fax', ''),
                  art=kopf.get('art', ''),
+                 softm_created_at=kopf.get('ALK_lieferschein'),
                  )
-
         pos_key = remove_prefix((kopf['satznr']), 'SO')
         if kopf.get('bezogener_kopf'):
             pos_key = remove_prefix(kopf['bezogener_kopf'], 'SO')
@@ -132,6 +131,16 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
             if 'guid' in werte:
                 pos_key = auftragsnr2satznr[remove_prefix(auftragsnr, 'SO')]
                 koepfe[pos_key]['guid_auftrag'] = werte['guid']
+
+        for aktsatznr in koepfe.keys():
+            # Entfernt Konstrukte wie das:
+            #     "kundennr": "SC19971",
+            #      "lieferadresse": {
+            #       "kundennr": "SC19971"
+            #      }
+            if len(koepfe[aktsatznr]['lieferadresse']) == 1:
+                if koepfe[aktsatznr]['lieferadresse']['kundennr'] == koepfe[aktsatznr]['kundennr']:
+                    del(koepfe[aktsatznr]['lieferadresse'])
 
     return koepfe.values()
 
@@ -268,10 +277,18 @@ def _selftest():
     pprint(lieferscheine_auftrag('SO1163764', header_only=header))
     print get_changed_after(datetime.date(2010, 12, 1))
     pprint(get_lieferschein('SL4173969'))
-    pprint(get_lieferschein('SL4176141'))
+    ls = get_lieferschein('SL4176141')
+    pprint(ls)
+    assert ls['datum']
     # Bei dem lieferschein trat ein int/str dict key mixup auf. Sollte in 7777df6 gefixed sein.
-    pprint(get_lieferschein('SL300300'))
+    pprint(get_lieferschein('300300'))
     print get_new()
+    # [LH #687] Lieferscheine sollten kein Lieferadressfeld haben, wenn es keine gesonderte
+    # Lieferadresse gibt.
+    # https://hudora.lighthouseapp.com/projects/42977/tickets/687
+    ls = get_lieferschein('SL4181680')
+    pprint(ls)
+    assert 'lieferadresse' not in ls
 
 
 if __name__ == '__main__':

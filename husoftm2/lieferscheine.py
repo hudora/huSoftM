@@ -46,7 +46,7 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
                  lieferdatum=kopf['anliefer_date'],  # XXX: Remove!
                  anlieferdatum=kopf['anliefer_date'],
                  lager="LG%03d" % int(kopf['lager']),
-                 kommiauftragnr="KB%s" % kopf['kommibelegnr'],
+                 kommiauftragnr="KA%s" % kopf['kommibelegnr'],
                  kommiauftrag_datum=kopf['kommibeleg_date'],
                  lieferscheinnr="SL%s" % kopf['lieferscheinnr'],
                  datum=kopf.get('lieferschein'),
@@ -267,6 +267,8 @@ def _selftest():
     print get_changed_after(datetime.date(2010, 12, 1))
     pprint(get_lieferschein('SL4173969'))
     pprint(get_lieferschein('SL4176141'))
+    # Bei dem lieferschein trat ein int/str dict key mixup auf. Sollte in 7777df6 gefixed sein.
+    pprint(get_lieferschein('SL300300'))
     print get_new()
 
 

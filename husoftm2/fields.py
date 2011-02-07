@@ -788,8 +788,9 @@ MAPPINGDIR = {
           #'LKKZLF': 'druckkennzeichen',
           'LKKBNR': 'kommibelegnr',
           'LKDTKB': 'kommibeleg_date',
-          'LKZTKB': 'kommibeleg_time',
+          # 'LKZTKB': 'kommibeleg_time',  # ist bei uns fast immer 999999
           # 999999: Rechnungsfreigabe im Stapel erfolgt 888888: Belegfreigabe im Stapel erfolgt
+
           #'LKLFDN': 'laufendenr',
           # Die lfd. Nummer wird pro Kunde vergeben. Sie wird die Kommissionierbelegdaten für
           # unterschiedliche Lieferadressen des gleichen Kunden zu trennen. Die Vergabe der lfd. Nummer

@@ -152,7 +152,7 @@ startswith = (s1, s2) ->
 # Main Server Code
 server = httpProxy.createServer (request, response) ->
     parsedurl = url.parse(request.url)
-    if parsedurl.pathname == '/info' && request.method != 'GET'
+    if parsedurl.pathname == '/info' && request.method == 'GET'
         # Info Requests are just proxied as is.
         request.url = '/info'
         proxy = new httpProxy.HttpProxy(request, response)

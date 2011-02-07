@@ -112,7 +112,7 @@
   server = httpProxy.createServer(function(request, response) {
     var parsedurl, proxy;
     parsedurl = url.parse(request.url);
-    if (parsedurl.pathname === '/info' && request.method !== 'GET') {
+    if (parsedurl.pathname === '/info' && request.method === 'GET') {
       request.url = '/info';
       proxy = new httpProxy.HttpProxy(request, response);
       return proxy.proxyRequest(destport, desthost);

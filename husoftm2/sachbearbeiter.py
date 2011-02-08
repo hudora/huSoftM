@@ -3,6 +3,9 @@
 """
 sachbearbeiter.py - Teil von huSoftM.
 
+Sachbearbeiter ist die Person, die einen datensatz in SoftM geändert hat.
+Berater/Betreuer ist der Ansprechpartner des Kunden im Haus udn steht in KDINFO.
+
 Created by Christian Klein on 2010-03-25.
 Copyright (c) 2010 HUDORA GmbH. All rights reserved.
 """

@@ -190,6 +190,12 @@ def _test():
     # Massentest:
     #for i in range(10000):
     #    pprint(txt_auslesen(['SO%s' % (1160000 + i)]))
+    # Kopfdaten: SO1170482
+    # Kopftexte: SO1114412 SO1161417 SO1169563 SO1169567 SO1170199 SO1168384 SO1170387 SO1170395
+    #            SO1165116 SO1170604 SO1170308 SO1170500 SO1170410
+    # Posdaten: SO1170526 SO1170482 SO1170396
+    # Postexte: SO1118711 SO1160988 SO1170432 SO1161304 SO1170604 SO1170606
+
 
 
 if __name__ == '__main__':

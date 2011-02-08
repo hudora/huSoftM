@@ -197,6 +197,5 @@ def _test():
     # Postexte: SO1118711 SO1160988 SO1170432 SO1161304 SO1170604 SO1170606
 
 
-
 if __name__ == '__main__':
     _test()

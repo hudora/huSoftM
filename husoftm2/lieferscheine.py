@@ -266,6 +266,18 @@ def get_lagerabgang(day):
     return ret
 
 
+def get_lieferschein_statistics():
+    """ gibt ein tuple (anzahl_nicht_uebernommene_lieferscheine, uebernommene_lieferscheine) zurueck
+    """
+    rows = query(fields=['LKKZ02', 'COUNT(*)'],
+                 tables=['ALK00'],
+                 condition="LKLFSN<>0 AND LKSTAT<>'x'",
+                 grouping=['LKKZ02'])
+
+    amounts = dict((row['LKKZ02'], row['COUNT(*)']) for row in rows)
+    return amounts[0], amounts[1]
+
+
 def _selftest():
     """Test basic functionality"""
     from pprint import pprint

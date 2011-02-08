@@ -360,9 +360,10 @@ def x_en(tablename, condition, ua=''):
 
     result = execute('x_en', args, ua=ua)
     if result != '1\n':
-        if result == '0\n':
+        if result.strip() == '0':
             logging.info("No columns updated: %s %s %r", tablename, condition, result)
-        raise RuntimeError("UPDATE Problem: %s %s %r" % (tablename, condition, result))
+        else:
+            raise RuntimeError("UPDATE Problem: %s %s %r" % (tablename, condition, result))
     return result.rstrip('\n')
 
 

@@ -212,7 +212,11 @@ def get_lieferschein(lieferscheinnr, header_only=False):
     lieferscheinnr = remove_prefix(lieferscheinnr, 'SL')
     lscheine = _lieferscheine(["LKLFSN = %s" % sql_quote(lieferscheinnr)], limit=1, header_only=header_only)
     if lscheine:
-        return lscheine[0]
+        lschein = lscheine[0]
+        infotext = lschein.get('infotext_kunde')
+        if infotext and isinstance(infotext, list):
+            lschein['infotext_kunde'] = ', '.join(infotext)
+        return lschein
     return {}
 
 

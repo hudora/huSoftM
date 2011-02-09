@@ -1,3 +1,4 @@
+0.73:   Retrieve Lieferschein for Komminr (lieferschein_for_kommiauftrag)
 0.72:   support for UPDATEing Tables in SoftMexpress
 0.71:   support for LEFT OUTER JOIN  
 0.70:   softmexpress - nodejs based proxy

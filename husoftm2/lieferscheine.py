@@ -207,6 +207,17 @@ def lieferscheine_auftrag(auftragsnr, header_only=False):
     return _lieferscheine(["LKAUFS = %s" % sql_quote(auftragsnr)], header_only=header_only)
 
 
+def lieferschein_for_kommiauftrag(komminr, header_only=False):
+    """Gibt den zu dem Kommiauftrag passenden Lieferschein zurück
+
+    Falls der Lieferschein (noch) nicht existiert, wird None zurückgegeben
+    """
+    komminr = remove_prefix(komminr, 'KA')
+    lieferscheine = _lieferscheine(["LKKBNR = %s" % sql_quote(komminr)], limit=1, header_only=header_only)
+    if lieferscheine:
+        return lieferscheine[0]
+
+
 def get_lieferschein(lieferscheinnr, header_only=False):
     """Gibt ein Lieferscheindict für eine Lieferscheinnummer zurück"""
     lieferscheinnr = remove_prefix(lieferscheinnr, 'SL')

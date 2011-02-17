@@ -105,6 +105,17 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
                          cachingtime=cachingtime, ua='husoftm2.lieferscheine'):
             if is_lieferschein == True:
                 lsmenge = int(row['menge'])
+                if not row['ALN_lieferscheinnr']:
+                    # Basis dieses Codes:
+                    # [LH #721] LS mit 0-mengen vermeiden
+                    # Wir sehen im Produktiv-Betrieb immer wieder Lieferscheine mit der Menge "0"
+                    # erzeugt werden. Wir vermuten hier eine race Condition, bei der die
+                    # ALK00 schon mit der Lieferscheinnummer geupdated ist, die ALN00 aber noch
+                    # nicht mit der Lieferscheinmenge.
+                    # Eine weitere Vermutung ist, dass wenn in der ALN00 die Menge noch cniht eingetragen
+                    # ist, dort auch noch die Lieferscheinnummer fehlt. Das versuchen wir hier abzufangen.
+                    # Lieber ein Crash, als ein Lieferschein mit (unbegründerter) 0-menge.
+                    raise RuntimeError("Unvollständiger Sat in ALN00: %r" % row)
             else:
                 lsmenge = int(row['menge_komissionierbeleg'])
             d = dict(artnr=row['artnr'],

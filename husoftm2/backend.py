@@ -166,18 +166,22 @@ def _fix_field(data, feldname):
 def _combine_date_and_time(mappings, fieldname, data, fields, row):
     """If there is also a time field in addition to a date field combine them."""
 
+    # Basename is the resulting field name for the combined datetime value
     basename = '_'.join(mappings[fieldname].split('_')[:-1])
+
+    # Find the position of the according time field in the result row
+    # Return an empty dict if the field is not found
     timefield = DATETIMEDIR[fieldname]
     try:
         timepos = fields.index(timefield)
     except ValueError:
         return {}
-    if (timepos and row[timepos] and
-        not str(row[timepos]).startswith('9999')):  # Zeit = 9999: Unbestimmt
+
+    # Try to combine date and time if both values seem to be sane
+    if row[timepos] and not str(row[timepos]).startswith('9999'):  # Zeit = 9999: Unbestimmt
         if len(str(int(data))) == 7:
-            return {basename: datetime.datetime(*(
-                time.strptime(str(int(data)), '1%y%m%d')[:3]
-                + time.strptime(str(int(row[timepos])), '%H%M%S')[3:6]))}
+            date = datetime.datetime.strptime("%sT%s" % (int(data), int(row[timepos])), '1%y%m%dT%H%M%S')
+            return {basename: date}
         else:
             raise ValueError
     return {}

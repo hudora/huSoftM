@@ -4,8 +4,10 @@
 """Handling of communication with the SoftM Suite on an AS/400."""
 
 from setuptools import setup, find_packages
-import codecs
 
+fh = open('README.markdown', 'r')
+long_desc = fh.read()
+fh.close()
 
 setup(name='huSoftM',
       maintainer='Maximillian Dornseif',
@@ -13,7 +15,7 @@ setup(name='huSoftM',
       url='http://github.com/hudora/huSoftM#readme',
       version='0.73',
       description='communication with the SoftM Suite on an AS/400',
-      long_description=codecs.open('README.markdown', "r", "utf-8").read(),
+      long_description=long_desc,
       classifiers=['License :: OSI Approved :: BSD License',
                    'Intended Audience :: Developers',
                    'Programming Language :: Python'],

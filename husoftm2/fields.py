@@ -774,11 +774,11 @@ MAPPINGDIR = {
           'LKKDRG': 'rechnungsempfaenger',
           'LKKDNR': 'warenempfaenger',
           'LKLFSN': 'lieferscheinnr',
-          'LKDTLF': 'ALK_lieferschein_date',
-          'LKZTLF': 'lieferschein_time',
           # Wird für automatisch erstellte Lieferscheine bei der Lieferscheinschreibung (AFA37) mit dem
           # Tagesdatum, und für manuell erstellte Lieferscheine bei der Erfassung Versand-/Speditionsdaten
-          # (AVS10) mit Datum 0 gefüllt.
+          # (AVS10) mit Datum 0 gefüllt:
+          'LKDTLF': 'ALK_lieferschein_date',
+          'LKZTLF': 'ALK_lieferschein_time',
           #'LKDTST': 'lieferschein_storno_date',
           # Das Datum des letzten Belegstornos wird erst eingetragen, wenn alle Positionen des Belegs
           # storniert worden sind. Es kann nur der Beleg storniert werden, der in der Belegfreigabe
@@ -820,7 +820,7 @@ MAPPINGDIR = {
           'LKZTER': 'ALK_erfassung_time',
           'LKDTAE': 'ALK_aenderung_date',
           'LKZTAE': 'ALK_aenderung_time',
-          #'LKDFSL': 'dateifuehrungsschluessel',
+          'LKDFSL': 'ALK00_dfsl',
           #'LKSTAT': 'satzstatus',
          },
 
@@ -857,8 +857,9 @@ MAPPINGDIR = {
           'LNAUPO': 'auftrags_position',
           'LNARTN': 'artnr',
           'LNKZKO': 'setartikel',  # *ZERO Normalartikel, 1 Setartikel
-          'LNBSTN': 'bestellnr',
-          'LNBSTP': 'bestellposition',
+          # Die folgenden zwei Felder sind nie befüllt
+          #'LNBSTN': 'bestellnr',
+          #'LNBSTP': 'bestellposition',
           # 'LNVKE':  'verkaufseinheit', # ist immer leer
           'LNLGNR': 'lager',
           #'LNLGPL': 'lagerplatz', # ist immer leer
@@ -881,8 +882,9 @@ MAPPINGDIR = {
           'LNKDNR': 'kundennr',
           'LNLFSN': 'ALN_lieferscheinnr',
           'LNMNGL': 'menge',  # Menge lt. Lieferschein
-          'LNDTLF': 'lieferschein_date',
-          'LNZTLF': 'lieferschein_time',
+          # Die folgenden zwei Felder sind nie befüllt
+          #'LNDTLF': 'lieferschein_date',
+          #'LNZTLF': 'lieferschein_time',
           #'LNKZVL': 'KZ. Vorab-Lieferschein
           #'LNKZLD': 'Kz: Im LF. andrucken
           #'LNKZL2': 'Kz: Im LF. andrucken
@@ -929,9 +931,9 @@ MAPPINGDIR = {
           'LNZTER': 'erfassung_time',
           'LNDTAE': 'aenderung_date',
           'LNZTAE': 'aenderung_time',
-          'LNDFSL': 'dateiführungsschluessel',
           # Dieses Feld wird von dem Programm, das eine Änderung an Daten dieses Satzes vornimmt,
-          # während des Änderungsvorgangs mit der Bildschirmidentifikation des ‰ndernden Bildschirms belegt.
+          # während des Änderungsvorgangs mit der Bildschirmidentifikation des ‰ndernden Bildschirms belegt:
+          'LNDFSL': 'ALN00_dfsl',
           'LNSTAT': 'satzstatus',
           # *BLANK Satz ist aktiv
           # X Satz steht zum Lôschen an (auf Satz kann in den Anwendungsprogr. nicht mehr zugegriffen werden)

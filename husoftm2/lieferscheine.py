@@ -32,41 +32,61 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
 
     # Lieferscheinkopf JOIN Kundenadresse um die Anzahl der Queries zu minimieren
     # JOIN Lieferadresse geht nicht, weil wir "ADAART=1" mit DB2/400 nicht klappt
-    for kopf in query(['ALK00'], ordering=['LKSANK DESC'], condition=condition, limit=limit,
+    for row in query(['ALK00'], ordering=['LKSANK DESC'], condition=condition, limit=limit,
                       joins=[('XKD00', 'LKKDNR', 'KDKDNR'), ('AAK00', 'LKAUFS', 'AKAUFN')],
                       cachingtime=cachingtime, ua='husoftm2.lieferscheine'):
-        d = dict(positionen=[],
-                 auftragsnr="SO%s" % kopf['auftragsnr'],
-                 auftragsnr_kunde=kopf['auftragsnr_kunde'],
-                 erfassung=kopf['ALK_erfassung'],
-                 aenderung=kopf.get('ALK_aenderung'),
-                 anliefer_date=kopf['anliefer_date'],
-                 kundennr="SC%s" % kopf['rechnungsempfaenger'],
-                 lieferadresse=dict(kundennr="SC%s" % kopf['warenempfaenger']),
-                 anlieferdatum=kopf['anliefer_date'],
-                 lager="LG%03d" % int(kopf['lager']),
-                 kommiauftragnr="KA%s" % kopf['kommibelegnr'],
-                 kommiauftrag_datum=kopf['kommibeleg_date'],
-                 lieferscheinnr="SL%s" % kopf['lieferscheinnr'],
-                 datum=kopf.get('ALK_lieferschein_date'),
-                 name1=kopf.get('name1', ''),
-                 name2=kopf.get('name2', ''),
-                 name3=kopf.get('name3', ''),
-                 strasse=kopf.get('strasse', ''),
-                 land=husoftm2.tools.land2iso(kopf['laenderkennzeichen']),
-                 plz=kopf.get('plz', ''),
-                 ort=kopf.get('ort', ''),
-                 tel=kopf.get('tel', ''),
-                 fax=kopf.get('fax', ''),
-                 art=kopf.get('art', ''),
-                 softm_created_at=kopf.get('ALK_lieferschein'),
-                 )
-        pos_key = remove_prefix((kopf['satznr']), 'SO')
-        if kopf.get('bezogener_kopf'):
-            pos_key = remove_prefix(kopf['bezogener_kopf'], 'SO')
-        auftragsnr2satznr[remove_prefix(kopf['auftragsnr'], 'SO')] = pos_key
-        satznr2auftragsnr[pos_key] = remove_prefix(kopf['auftragsnr'], 'SO')
-        koepfe[pos_key] = d
+        kopf = dict(positionen=[],
+                    auftragsnr="SO%s" % row['auftragsnr'],
+                    auftragsnr_kunde=row['auftragsnr_kunde'],
+                    erfassung=row['ALK_erfassung'],
+                    aenderung=row.get('ALK_aenderung'),
+                    anliefer_date=row['anliefer_date'],
+                    kundennr="SC%s" % row['rechnungsempfaenger'],
+                    lieferadresse=dict(kundennr="SC%s" % row['warenempfaenger']),
+                    anlieferdatum=row['anliefer_date'],
+                    lager="LG%03d" % int(row['lager']),
+                    kommiauftragnr="KA%s" % row['kommibelegnr'],
+                    kommiauftrag_datum=row['kommibeleg_date'],
+                    lieferscheinnr="SL%s" % row['lieferscheinnr'],
+                    name1=row.get('name1', ''),
+                    name2=row.get('name2', ''),
+                    name3=row.get('name3', ''),
+                    strasse=row.get('strasse', ''),
+                    land=husoftm2.tools.land2iso(row['laenderkennzeichen']),
+                    plz=row.get('plz', ''),
+                    ort=row.get('ort', ''),
+                    tel=row.get('tel', ''),
+                    fax=row.get('fax', ''),
+                    art=row.get('art', ''),
+                    softm_created_at=row.get('ALK_lieferschein'),
+                    )
+        # Wir hatten erhebliche Probleme, weil datumsfelder mal befüllt waren
+        # und mal nicht (race condition) - wir gehen deswegen recht großzügig
+        # bei der suceh nach einem geeigenten feld vor.
+        for fieldname in ['ALK_lieferschein', 'ALK_aenderung']:
+            if row.get(fieldname):
+                kopf['datum'] = row.get(fieldname)
+                break
+        if not kopf.get('datum'):
+            raise RuntimeError("Konnte kein Datum ermitteln %r", row)
+
+        pos_key = remove_prefix((row['satznr']), 'SO')
+        if row.get('bezogener_kopf'):
+            pos_key = remove_prefix(row['bezogener_kopf'], 'SO')
+        auftragsnr2satznr[remove_prefix(row['auftragsnr'], 'SO')] = pos_key
+        satznr2auftragsnr[pos_key] = remove_prefix(row['auftragsnr'], 'SO')
+        if row['ALK00_dfsl']:
+            # Basis dieses Codes:
+            # [LH #721] LS mit 0-mengen vermeiden
+            # Wir sehen im Produktiv-Betrieb immer wieder Lieferscheine mit der Menge "0"
+            # erzeugt werden. Wir vermuten hier eine race Condition, bei der die
+            # ALK00 schon mit der Lieferscheinnummer geupdated ist, die ALN00 aber noch
+            # nicht mit der Lieferscheinmenge.
+            # Eine weitere Vermutung ist, dass wenn in der ALN00 die Menge noch cniht eingetragen
+            # ist, dort auch noch die Lieferscheinnummer fehlt. Das versuchen wir hier abzufangen.
+            # Lieber ein Crash, als ein Lieferschein mit (unbegründerter) 0-menge.
+            raise RuntimeError("Dateiführungsschlüssel in ALK00: %r" % kopf)
+        koepfe[pos_key] = kopf
 
     if header_only:
         return koepfe.values()
@@ -105,7 +125,7 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
                          cachingtime=cachingtime, ua='husoftm2.lieferscheine'):
             if is_lieferschein == True:
                 lsmenge = int(row['menge'])
-                if not row['ALN_lieferscheinnr']:
+                if row['ALN00_dfsl']:
                     # Basis dieses Codes:
                     # [LH #721] LS mit 0-mengen vermeiden
                     # Wir sehen im Produktiv-Betrieb immer wieder Lieferscheine mit der Menge "0"
@@ -115,23 +135,23 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
                     # Eine weitere Vermutung ist, dass wenn in der ALN00 die Menge noch cniht eingetragen
                     # ist, dort auch noch die Lieferscheinnummer fehlt. Das versuchen wir hier abzufangen.
                     # Lieber ein Crash, als ein Lieferschein mit (unbegründerter) 0-menge.
-                    raise RuntimeError("Unvollständiger Sat in ALN00: %r" % row)
+                    raise RuntimeError("Dateiführungsschlüssel in ALN00: %r" % row)
             else:
                 lsmenge = int(row['menge_komissionierbeleg'])
-            d = dict(artnr=row['artnr'],
-                     guid='%s-%03d-%03d' % (row['kommibelegnr'], row['auftrags_position'],
-                                            row['kommibeleg_position']),
-                     menge=lsmenge)
+            pos = dict(artnr=row['artnr'],
+                       guid='%s-%03d-%03d' % (row['kommibelegnr'], row['auftrags_position'],
+                                              row['kommibeleg_position']),
+                       menge=lsmenge)
             texte = postexte.get(remove_prefix(row['auftragsnr'], 'SO'),
                                                {}).get(row['auftrags_position'], [])
-            d['infotext_kunde'] = texte
+            pos['infotext_kunde'] = texte
             if 'guid' in posdaten.get(remove_prefix(row['auftragsnr'], 'SO'), {}):
-                d['auftragpos_guid'] = posdaten.get(remove_prefix(row['auftragsnr'], 'SO'), {}).get('guid')
+                pos['auftragpos_guid'] = posdaten.get(remove_prefix(row['auftragsnr'], 'SO'), {}).get('guid')
             else:
-                d['auftragpos_guid'] = "%s-%03d" % (row['auftragsnr'], row['auftrags_position'])
+                pos['auftragpos_guid'] = "%s-%03d" % (row['auftragsnr'], row['auftrags_position'])
 
             lieferung = koepfe[remove_prefix(row['satznr_kopf'], 'SO')]
-            lieferung['positionen'].append(d)
+            lieferung['positionen'].append(pos)
             # *Sachbearbeiter* ist der, der den Vorgang tatsächlich bearbeitet hat. *Betreuer* ist
             # die (oder der), die für den Kunden zusändig ist.
             lieferung['sachbearbeiter'] = husoftm2.sachbearbeiter.resolve(row['sachbearbeiter_bearbeitung'])
@@ -159,6 +179,7 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
 
 
 def _lieferscheine(additional_conditions=None, limit=None, header_only=False):
+    """Hilfsfunktion um Leiferscheine mit beliebigen Bedingungen einzulesen."""
     conditions = ["LKLFSN<>0",
                   "LKSTAT<>'X'",
                   ]
@@ -205,6 +226,7 @@ def get_new(limit=20):
 
 
 def mark_processed(lieferscheinnr):
+    """Markiert einen Lieferschein, so dass er von get_new() nicht mehr zurücuk gegeben wird."""
     conditions = ["LKLFSN=%s" % sql_quote(remove_prefix(lieferscheinnr, 'SL')),
                   "LKSTAT<>'X'",
                   "LKKZ02=0",
@@ -234,18 +256,23 @@ def get_lieferschein(lieferscheinnr, header_only=False):
     lieferscheinnr = remove_prefix(lieferscheinnr, 'SL')
     lscheine = _lieferscheine(["LKLFSN = %s" % sql_quote(lieferscheinnr)], limit=1, header_only=header_only)
     if lscheine:
+        if len(lscheine) > 1:
+            raise RuntimeError('Suche nach %s hat mehr als einen Lieferschein ergeben: %r'
+                               % (lieferscheinnr, lscheine))
         lschein = lscheine[0]
         infotext = lschein.get('infotext_kunde')
         if infotext and isinstance(infotext, list):
             lschein['infotext_kunde'] = ', '.join(infotext)
+        if not lschein.get('datum'):
+            raise RuntimeError('LS %s hat kein Datum: %r' % (lieferscheinnr, lschein))
         return lschein
     return {}
 
 
-def _timedelta_to_hours(td):
+def _timedelta_to_hours(tdelta):
     """Verwandelt ein timedeltaobjekt in Stungen (Integer)"""
-    hours = td.days * 24
-    hours += int(td.seconds / 3600)
+    hours = tdelta.days * 24
+    hours += int(tdelta.seconds / 3600)
     return hours
 
 
@@ -259,7 +286,6 @@ def get_lagerabgang(day):
 
     # SoftM Freuden! Das Feld LKSANKB kann ausser zwischen Oktober 2005 und November 2007
     # für den join genommen werden, ansonsten kann man LKSANK nehmen.
-
     rows = query(['ALN00'], condition=" AND ".join(conditions),
             fields=['LNAUFN', 'LNAUPO', 'LNARTN', 'LNKZKO', 'LNKDRG', 'LNKDNR', 'LNLFSN', 'LNMNGL', 'LNDTLF',
                     'LNDTVS', 'LNMNGF', 'LNDTER', 'LNLWA2', 'LKKDRG', 'LKKDNR', 'LKLFSN', 'LKDTLF', 'LKDTKB',
@@ -280,7 +306,7 @@ def get_lagerabgang(day):
                     auftrag_positionsnr=row['auftrags_position'],
                     positionsnr=row['kommibeleg_position'],
                     vorlauf_h=None, durchlauf_h=None, termintreue_h=None,
-                    datum=row['lieferschein_date'],
+                    datum=row['ALK_lieferschein_date'],
                    )
         anliefer_date = row['ALN_anliefer_date'] or row['anliefer_date']
         versand_date = row['versand_date'] or row['lieferschein_date']
@@ -299,7 +325,7 @@ def get_lieferschein_statistics():
     """
     rows = query(fields=['LKKZ02', 'COUNT(*)'],
                  tables=['ALK00'],
-                 condition="LKLFSN<>0 AND LKSTAT<>'x'",
+                 condition="LKLFSN<>0 AND LKSTAT<>'X'",
                  grouping=['LKKZ02'])
 
     amounts = dict((row['LKKZ02'], row['COUNT(*)']) for row in rows)
@@ -324,18 +350,18 @@ def _selftest():
     pprint(lieferscheine_auftrag('SO1163764', header_only=header))
     print get_changed_after(datetime.date(2010, 12, 1))
     pprint(get_lieferschein('SL4173969'))
-    ls = get_lieferschein('SL4176141')
-    pprint(ls)
-    assert ls['datum']
+    lschein = get_lieferschein('SL4176141')
+    pprint(lschein)
+    assert lschein['datum']
     # Bei dem lieferschein trat ein int/str dict key mixup auf. Sollte in 7777df6 gefixed sein.
     pprint(get_lieferschein('300300'))
     print get_new()
     # [LH #687] Lieferscheine sollten kein Lieferadressfeld haben, wenn es keine gesonderte
     # Lieferadresse gibt.
     # https://hudora.lighthouseapp.com/projects/42977/tickets/687
-    ls = get_lieferschein('SL4181680')
-    pprint(ls)
-    assert 'lieferadresse' not in ls
+    lschein = get_lieferschein('SL4181680')
+    pprint(lschein)
+    assert 'lieferadresse' not in lschein
 
 
 if __name__ == '__main__':

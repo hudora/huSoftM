@@ -33,7 +33,7 @@ betreuerdict = {
 
 def get_kundennummern():
     """Returns a list of all 'Kundennummern'"""
-    rows = query('XKD00', fields=['KDKDNR'])
+    rows = query('XKD00', fields=['KDKDNR'], condition="KDSTAT <> 'X'")
     return ["SC%s" % int(x[0]) for x in rows]
 
 

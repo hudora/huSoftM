@@ -4,7 +4,7 @@
 huSoftM/kunden.py - High Level Access Kundeninformationen. Teil von huSoftM.
 
 Created by Maximillian Dornseif on 2007-04-13.
-Copyright (c) 2007, 2010 HUDORA GmbH. All rights reserved.
+Copyright (c) 2007, 2010, 2011 HUDORA GmbH. All rights reserved.
 """
 
 from husoftm2.backend import query
@@ -14,20 +14,19 @@ import logging
 
 
 betreuerdict = {
-            'verkauf': 'Verkaufsinnendienst',
-            'bbonrath': 'Birgit Bonrath',
-            'cgiermann': 'Carsten Giermann',
-            'ngerloff': 'Nadine Gerloff',
             'ajames': 'Andrea James',
             'alangen': 'Anja Langen',
+            'bbonrath': 'Birgit Bonrath',
             'cblumberg': 'Claudia Blumberg',
             'cgerlach': 'Christoph Gerlach',
+            'cgiermann': 'Carsten Giermann',
             'dgrossmann': u'Dirk Grossmann',
             'export': u'Export',
             'falin': u'Fuesun Alin',
-            'jtiszekker': u'Juergen Tiszekker',
-            'jwestpahl': u'Jutta Westphal',
             'kschulze': u'Katrin Schulze',
+            'mfischer': u'Melanie Fischer',
+            'ngerloff': 'Nadine Gerloff',
+            'verkauf': 'Verkaufsinnendienst',
 }
 
 

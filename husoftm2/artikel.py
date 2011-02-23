@@ -27,10 +27,10 @@ def komponentenaufloesung(mengenliste):
     [(2, '00001')]
     """
 
-    # TODO: Wie ist das verhältnis zu cs.masterdata.article.komponentenaufloesung()?
     ret = []
     for menge, artnr in mengenliste:
-        rows = query(['ASK00'], fields=['SKLFNR', 'SKKART', 'SKMENG'], condition="SKARTN='%s'" % artnr)
+        rows = query(['ASK00'], fields=['SKLFNR', 'SKKART', 'SKMENG'], condition="SKARTN='%s'" % artnr,
+                     cachingtime=24 * 60 * 60)
         if not rows:
             # kein Setartikel
             ret.append((int(menge), artnr))

@@ -776,7 +776,8 @@ MAPPINGDIR = {
           'LKLFSN': 'lieferscheinnr',
           # Wird für automatisch erstellte Lieferscheine bei der Lieferscheinschreibung (AFA37) mit dem
           # Tagesdatum, und für manuell erstellte Lieferscheine bei der Erfassung Versand-/Speditionsdaten
-          # (AVS10) mit Datum 0 gefüllt:
+          # (AVS10) mit Datum 0 gefüllt.
+          # Ist bei uns in der Praxis gerne mal 0
           'LKDTLF': 'ALK_lieferschein_date',
           'LKZTLF': 'ALK_lieferschein_time',
           #'LKDTST': 'lieferschein_storno_date',

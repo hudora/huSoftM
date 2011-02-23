@@ -288,8 +288,10 @@ def get_lagerabgang(day):
     # für den join genommen werden, ansonsten kann man LKSANK nehmen.
     rows = query(['ALN00'], condition=" AND ".join(conditions),
             fields=['LNAUFN', 'LNAUPO', 'LNARTN', 'LNKZKO', 'LNKDRG', 'LNKDNR', 'LNLFSN', 'LNMNGL', 'LNDTLF',
-                    'LNDTVS', 'LNMNGF', 'LNDTER', 'LNLWA2', 'LKKDRG', 'LKKDNR', 'LKLFSN', 'LKDTLF', 'LKDTKB',
-                    'LKAUFS', 'LKDTLT', 'AKAUFN', 'AKAUFA', 'AKDTLT', 'AKDTER', 'LNBELP', 'LNDTLT'],
+                    'LNDTVS', 'LNMNGF', 'LNDTER', 'LNLWA2', 'LNBELP', 'LNDTLT', 'LNLGNR',
+                    'LKKDRG', 'LKKDNR', 'LKLFSN', 'LKDTKB', 'LKAUFS', 'LKDTLT', 'LKDTLF', 'LKZTLF',
+                    'AKAUFN', 'AKAUFA', 'AKDTLT', 'AKDTER',
+                    ],
           joins=[('ALK00', 'LNSANK', 'LKSANK'),
                  ('AAK00', 'LNAUFN', 'AKAUFN')])
     ret = []
@@ -306,10 +308,12 @@ def get_lagerabgang(day):
                     auftrag_positionsnr=row['auftrags_position'],
                     positionsnr=row['kommibeleg_position'],
                     vorlauf_h=None, durchlauf_h=None, termintreue_h=None,
-                    datum=row['ALK_lieferschein_date'],
+                    lager=row['lager'],
+                    # Das Lieferscheindatum ist für manche Lieferscheine in SoftM leer ...
+                    datum=row.get('ALK_lieferschein', row.get('AAK_erfassung_date')),
                    )
         anliefer_date = row['ALN_anliefer_date'] or row['anliefer_date']
-        versand_date = row['versand_date'] or row['lieferschein_date']
+        versand_date = row['versand_date'] or row.get('ALK_lieferschein', row.get('AAK_erfassung_date'))
         if anliefer_date and row['AAK_erfassung_date']:
             row['vorlauf_h'] = _timedelta_to_hours(anliefer_date - row['AAK_erfassung_date']),
         if versand_date and anliefer_date:

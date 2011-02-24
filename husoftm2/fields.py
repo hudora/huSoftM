@@ -1232,7 +1232,7 @@ MAPPINGDIR = {
     #'BUSTRT': 'Steuer-Art',
     #'BUEGCD': 'L{ndercode / EG',
     #'BUSTSL': 'Steuer-Schl}ssel',
-    #'BUSTKT': 'Steuerkonto Sachbuchhaltung',
+    'BUSTKT': 'steuerkonto_sachbuchhaltung',
     #'BUSTKZ': 'Steuerkennzeichen',
     #'BUSTBT': 'Steuer-Betrag',
     #'BUSTWB': 'Steuer in W{hrung',

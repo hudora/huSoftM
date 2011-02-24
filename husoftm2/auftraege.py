@@ -8,7 +8,7 @@ Copyright (c) 2010 HUDORA GmbH. All rights reserved.
 """
 
 from husoftm2.tools import sql_escape, sql_quote, date2softm, pad, remove_prefix
-from husoftm2.texte import texte_trennen, texte_auslesen
+from husoftm2.texte import texte_trennen, txt_auslesen
 from husoftm2.backend import query
 import datetime
 import husoftm2.sachbearbeiter
@@ -39,7 +39,7 @@ AUFTRAGSARTEN = {
 }
 
 
-def _auftraege(additional_conditions=None, addtables=[], mindate=None, maxdate=None, limit=None,
+def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate=None, limit=None,
                header_only=False):
     """
     Alle Aufträge ermitteln
@@ -67,6 +67,9 @@ def _auftraege(additional_conditions=None, addtables=[], mindate=None, maxdate=N
     koepfe = {}
     kopftexte = {}
 
+    if addtables is None:
+        addtables = []
+
     # Köpfe und Adressen einlesen
     for kopf in query(['AAK00'] + addtables, ordering=['AKAUFN DESC'], condition=condition,
                       joins=[('XKD00', 'AKKDNR', 'KDKDNR')],
@@ -90,8 +93,11 @@ def _auftraege(additional_conditions=None, addtables=[], mindate=None, maxdate=N
         return koepfe.values()
 
     allauftrnr = koepfe.keys()
-    # Texte einlesen
-    postexte, kopftexte = texte_auslesen(allauftrnr)
+    # Texte auslesen
+    # Die dritte und vierte Position des Werts von txt_auslesen sind posdaten und kopfdaten.
+    # Es handelt sich dabei wohl um Texte, die nicht angedruckt werden sollen.
+    # Bis auf weiteres werden diese hier ignoriert.
+    postexte, kopftexte, _, _ = txt_auslesen(allauftrnr)
     while allauftrnr:
         # In 50er Schritten Auftragspositionen lesen und den 50 Aufträgen zuordnen
         batch = allauftrnr[:50]

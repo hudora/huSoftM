@@ -58,7 +58,22 @@ def texte_trennen(texte):
 
 
 def txt_auslesen(auftragsnrs, postexte=None, kopftexte=None, kopfdaten=None, posdaten=None):
-    """Gibt Positions und Kopftexte für eine Liste von Auftragsnummern zurück."""
+    """Gibt Positions und Kopftexte und Zusatzdaten für eine Liste von Auftragsnummern zurück.
+
+    (# Positionstexte
+     {'SO1163161': {1: [u'Karton:          Palette:'],
+                    2: [u'Karton:          Palette:']},
+     # Kopftexte
+     {'SO1163161': [u'Menge an VE angepasst! 14765 VE 2, da ungerade Bestand,',
+                    u'einmalig abweichend!']}
+     # Positionsdaten
+     {'SO1163161': {1: {'guid': u'47WTWJUTDTT7FHKUHZP6FU23UI-0'},
+                    2: {'guid': u'47WTWJUTDTT7FHKUHZP6FU23UI-1'},
+                    3: {'guid': u'47WTWJUTDTT7FHKUHZP6FU23UI-2'}}},
+     # Kopfdaten
+     {'SO1163161': {'guid': u'047WTWJUTDTT7FHKUHZP6FU23UI'}}
+    )
+    """
 
     # Die Clients können dicts mit vorbelegten Daten mitgeben. Das ist vor allem da nützlich, wo
     # Jobs relativ viele Auftruage in Batches abarbeiten.

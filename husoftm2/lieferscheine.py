@@ -258,20 +258,13 @@ def get_lieferschein(lieferscheinnr, header_only=False):
     lieferscheinnr = remove_prefix(lieferscheinnr, 'SL')
     lscheine = _lieferscheine(["LKLFSN = %s" % sql_quote(lieferscheinnr)], limit=1, header_only=header_only)
     if lscheine:
-<<<<<<< HEAD
         if len(lscheine) > 1:
             raise RuntimeError('Suche nach %s hat mehr als einen Lieferschein ergeben: %r'
                                % (lieferscheinnr, lscheine))
         lschein = lscheine[0]
-        infotext = lschein.get('infotext_kunde')
-        if infotext and isinstance(infotext, list):
-            lschein['infotext_kunde'] = ', '.join(infotext)
         if not lschein.get('datum'):
             raise RuntimeError('LS %s hat kein Datum: %r' % (lieferscheinnr, lschein))
         return lschein
-=======
-        return lscheine[0]
->>>>>>> [LH#710] - Kundentexte als Liste
     return {}
 
 

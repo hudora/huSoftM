@@ -883,9 +883,9 @@ MAPPINGDIR = {
           'LNKDNR': 'kundennr',
           'LNLFSN': 'ALN_lieferscheinnr',
           'LNMNGL': 'menge',  # Menge lt. Lieferschein
-          # Die folgenden zwei Felder sind nie befüllt
-          #'LNDTLF': 'lieferschein_date',
-          #'LNZTLF': 'lieferschein_time',
+          # Die folgenden zwei Felder sind nicht immer befüllt
+          'LNDTLF': 'ALN_lieferschein_date',
+          'LNZTLF': 'ALN_lieferschein_time',
           #'LNKZVL': 'KZ. Vorab-Lieferschein
           #'LNKZLD': 'Kz: Im LF. andrucken
           #'LNKZL2': 'Kz: Im LF. andrucken
@@ -898,16 +898,18 @@ MAPPINGDIR = {
           'LNMNGK': 'menge_komissionierbeleg',
           'LNDTKB': 'komissionierbeleg_date',
           'LNZTKB': 'komissionierbeleg_time',
-          'LNKZKB': 'komissionierbeleg_drucken',
           # Kommissionierbeleg drucken
           # *ZERO Kommissionierbeleg nicht drucken
           # 1 Kommissionierbeleg vorbereitet
           # 2 Kommissionierbeleg gedruckt
-          'LNRGST': 'rechnungsstatus',
+          'LNKZKB': 'komissionierbeleg_drucken',
           # *ZERO Rechnung noch nicht bearbeitet
           # 1 Lieferung freigegeben
           # 2 Lieferschein gedruckt
           # 3 Rechnung gedruckt
+          'LNRGST': 'rechnungsstatus',
+          # Ist wohl das tatsächliche Versand-/Rückmelde-Datum bei Kommibelegen, entspricht
+          # daher dem Leiferschein-Datum.
           'LNDTVS': 'versand_date',
           'LNSTOR': 'gutschrift',  # Rechnung/Gutschrift
           # *ZERO Lieferscheinkopf für Normalauftrag
@@ -1227,7 +1229,7 @@ MAPPINGDIR = {
     'BUGKTO': 'gegenkonto_sachbuchhaltung',
     # 'BUGKSH': 'Gegenkonto-Soll/Haben',
     'BUOINF': 'op_info',
-    'BUBTXT': 'Buchungstext',
+    'BUBTXT': 'buchungstext',
     # 'BUOPSN': 'OP-Nr. f}r OP-f}hrendes Sac',
     'BUSTOR': 'S = Stornobuchung',
     #'BUSTRT': 'Steuer-Art',

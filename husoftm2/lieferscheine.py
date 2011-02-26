@@ -60,13 +60,10 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
                     art=row.get('art', ''),
                     softm_created_at=row.get('ALK_lieferschein'),
                     )
-        # Wir hatten erhebliche Probleme, weil datumsfelder mal befüllt waren
+        # Wir hatten erhebliche Probleme, weil Datumsfelder mal befüllt waren
         # und mal nicht (race condition) - wir gehen deswegen recht großzügig
-        # bei der suceh nach einem geeigenten feld vor.
-        for fieldname in ['ALK_lieferschein', 'ALK_aenderung']:
-            if row.get(fieldname):
-                kopf['datum'] = row.get(fieldname)
-                break
+        # bei der Suche nach einem geeigenten Feld vor.
+        kopf['datum'] = row.get('ALK_lieferschein', row.get('ALK_aenderung', None))
         if not kopf.get('datum'):
             raise RuntimeError("Konnte kein Datum ermitteln %r", row)
 
@@ -277,11 +274,17 @@ def _timedelta_to_hours(tdelta):
 
 def get_lagerabgang(day):
     """Liefert im Grunde einen ALN00 Auszug für einen Tag - dient statistischen Zwecken."""
+
+    # Der Abruf basiert auf Komissionierbelegen, nicht auf Lieferscheinen! - Beide befinden sich in der
+    # ALN00 und sind an (LKLFSN<>0 OR LNLFSN<>0) zu unterscheiden.
+    # Wir gehen aber vom Rückmeldedatum des Lieferscheins aus, nicht vom ERstellungsdatum des Lieferscheins.
+
+    sqlday = husoftm2.tools.date2softm(day)
     conditions = ["(LKLFSN<>0 OR LNLFSN<>0)",  # durch Umparametrisierung ist mal das und mal das leer ...
                   "AKLGN2='0'",
                   "LNSTAT<>'X'",
                   "LKSTAT<>'X'",
-                  "LNDTLF=%s" % (sql_quote(day.strftime('1%y%m%d')))]
+                  "LNDTVS=%s" % sqlday]
 
     # SoftM Freuden! Das Feld LKSANKB kann ausser zwischen Oktober 2005 und November 2007
     # für den join genommen werden, ansonsten kann man LKSANK nehmen.
@@ -308,9 +311,11 @@ def get_lagerabgang(day):
                     positionsnr=row['kommibeleg_position'],
                     vorlauf_h=None, durchlauf_h=None, termintreue_h=None,
                     lager=row['lager'],
-                    # Das Lieferscheindatum ist für manche Lieferscheine in SoftM leer ...
-                    datum=row.get('ALK_lieferschein', row.get('AAK_erfassung_date')),
                    )
+        data['datum'] = row.get('versand_date', None)
+        if not data.get('datum'):
+            raise RuntimeError("Konnte kein Datum ermitteln %r", row)
+
         anliefer_date = row['ALN_anliefer_date'] or row['anliefer_date']
         versand_date = row['versand_date'] or row.get('ALK_lieferschein', row.get('AAK_erfassung_date'))
         if anliefer_date and row['AAK_erfassung_date']:

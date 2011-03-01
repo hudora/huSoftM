@@ -64,7 +64,7 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
         # und mal nicht (race condition) - wir gehen deswegen recht großzügig
         # bei der Suche nach einem geeigenten Feld vor.
         kopf['datum'] = row.get('ALK_lieferschein', row.get('ALK_aenderung', None))
-        if not kopf.get('datum'):
+        if is_lieferschein and not kopf.get('datum'):
             raise RuntimeError("Konnte kein Datum ermitteln %r", row)
 
         pos_key = remove_prefix((row['satznr']), 'SO')

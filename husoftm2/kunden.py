@@ -165,12 +165,11 @@ def _softm_to_dict(row):
         ret['mitgliedsnr'] = row.get('mitgliedsnr', '')
     if 'iln' in row and row['iln']:
         ret['iln'] = unicode(int(row['iln'])).strip()
-    if row['erfassung_date']:
-        ret['erfassung'] = row['erfassung_date']
-    if 'aenderung_date' in row and row['aenderung_date']:
-        ret['aenderung'] = row['aenderung_date']
-    else:
+    if row.get('XKD_erfassung_date'):
+        ret['erfassung'] = row['XKD_erfassung_date']
         ret['aenderung'] = ret['erfassung']
+    if row.get('XKD_aenderung_date'):
+        ret['aenderung'] = row['XKD_aenderung_date']
     return ret
 
 # Still missing:

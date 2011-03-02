@@ -223,9 +223,9 @@ MAPPINGDIR = {
           # 'AKKZAR': 'Kz.Leihart',
           # 'AKABTP': 'Abt. für Prüfung KD-Zusatz',
           'AKDTER': 'AAK_erfassung_date',
-          # 'AKZTER': 'Uhrzeit der Erfassung',
-          # 'AKDTAE': 'Datum l. Änderung CJJMMTT',
-          'AKZTAE': 'AAK_aenderung_date',
+          'AKZTER': 'AAK_erfassung_time',
+          'AKDTAE': 'AAK_aenderung_date',
+          'AKZTAE': 'AAK_aenderung_time',
           # 'AKDTAB': 'Datum letzte Auftragsbestät',
           # 'AKDTLF': 'lieferschein_date'  # 'Datum letzter Lieferschein',
           # 'AKDTKB': # 'Datum ltzt. Kommissionierbel',
@@ -820,8 +820,8 @@ MAPPINGDIR = {
           'LKDTER': 'ALK_erfassung_date',
           'LKZTER': 'ALK_erfassung_time',
           'LKDTAE': 'ALK_aenderung_date',
-          'LKZTAE': 'ALK_aenderung_time',
-          'LKDFSL': 'ALK00_dfsl',
+          'LKZTAE': 'ALK_aenderung_time',   # scheinbar immer null
+          'LKDFSL': 'ALK_dfsl',
           #'LKSTAT': 'satzstatus',
          },
 
@@ -930,13 +930,13 @@ MAPPINGDIR = {
           #'LNAUPS': 'bezogene Position
           #'LNKZ03': 'hrl_status',
           #'LNRSN1': 'Druck-Kz für KB
-          'LNDTER': 'erfassung_date',
-          'LNZTER': 'erfassung_time',
-          'LNDTAE': 'aenderung_date',
-          'LNZTAE': 'aenderung_time',
+          'LNDTER': 'ALN_erfassung_date',
+          'LNZTER': 'ALN_erfassung_time',
+          'LNDTAE': 'ALN_aenderung_date',
+          'LNZTAE': 'ALN_aenderung_time',
           # Dieses Feld wird von dem Programm, das eine Änderung an Daten dieses Satzes vornimmt,
           # während des Änderungsvorgangs mit der Bildschirmidentifikation des ‰ndernden Bildschirms belegt:
-          'LNDFSL': 'ALN00_dfsl',
+          'LNDFSL': 'ALN_dfsl',
           'LNSTAT': 'satzstatus',
           # *BLANK Satz ist aktiv
           # X Satz steht zum Lôschen an (auf Satz kann in den Anwendungsprogr. nicht mehr zugegriffen werden)
@@ -1515,7 +1515,7 @@ MAPPINGDIR = {
      #'BLDTWU': 'Wunschtermin',
      'BLDTBE': 'termin',
      'BLDTER': 'erfassung_date',
-     'BLDTAE': 'aenderung_date',
+     'BLDTAE': 'EBL_aenderung_date',
      #'BLDTMA': 'Datum letzte Mahnung',
      'BLDTBD': 'druck_date',
      'BLDTFA': 'rechnungs_date',
@@ -2482,8 +2482,8 @@ MAPPINGDIR = {
           # 'KDEMAL': 'mail',
           # 'KDHOME': 'url',
           # 'KDSANR': 'adressdatei_id',
-          'KDDTER': 'erfassung_date',
-          'KDDTAE': 'aenderung_date',
+          'KDDTER': 'XKD_erfassung_date',
+          'KDDTAE': 'XKD_aenderung_date',
           #'KDSTAT': 'satzstatus',
           },
 
@@ -2682,7 +2682,7 @@ MAPPINGDIR = {
         'XADTER': 'erfassung_date',
         # 'XASBAE': Sachb.letzte ¢nderung
         # 'XABPAE': BenutzerPr.letzte ¢nderung
-        'XADTAE': 'aenderung_date',
+        'XADTAE': 'XXA_aenderung_date',
         # 'XADFSL': Dateif}hrungs-Schl}ssel
         'XASTAT': 'satzstatus',
        },
@@ -3261,22 +3261,27 @@ DECIMALIZE2 = set(['BUR1', 'BUBUBT', 'BUNEBT', 'BUNEWB', 'BUABZU', 'BUWBBT',
                    'FUPORB', 'FUPREV'])
 
 # maps datefield to related timefield for generating datetime objects
-DATETIMEDIR = {'LKDTLF': 'LKZTLF',  # letzter_lieferschein
-               'LKDTKB': 'LKZTKB',  # letzter_kommibeleg
-               'LNDTLF': 'LNZTLF',  # lieferschein
-               'LNDTER': 'LNZTER',  # erfassung
-               'LNDTAE': 'LNZTAE',  # aenderung
-               'IKDATE': 'IKTIME',
-               'LNDTKB': 'LNZTKB',
-               'IZDTWZ': 'IZTIME',
-               'SKDTAE': 'SKZTAE',  # komponenten
+DATETIMEDIR = {
+               'AKDTAE': 'AKZTAE',
+               'AKDTER': 'AKZTER',
                'CKANFD': 'CKANFZ',  # XCK00 start
                'CKENDD': 'CKENDZ',  # XCK00 ende
                'FKDTER': 'FKZTER',  # Rechnungskopf erfassung_date
                'FUDTER': 'FUZTER',  # Rechnungsposition erfassung_date
-               'LKDTER': 'LKZTER',  # Lieferschein Erfassung
+               'IKDATE': 'IKTIME',
+               'IZDTWZ': 'IZTIME',
                'LKDTAE': 'LKZTAE',  # Lieferschein Änderung
+               'LKDTER': 'LKZTER',  # Lieferschein Erfassung
+               'LKDTKB': 'LKZTKB',  # letzter_kommibeleg
+               'LKDTLF': 'LKZTLF',  # letzter_lieferschein
+               'LNDTAE': 'LNZTAE',  # aenderung
+               'LNDTER': 'LNZTER',  # erfassung
+               'LNDTKB': 'LNZTKB',
+               'LNDTLF': 'LNZTLF',  # lieferschein
+               'SKDTAE': 'SKZTAE',  # komponenten
               }
+
+
 # Fields which need padding before beeing used in SQL queries
 PADDINGFIELDS = {
     'AKKDNR': "%8s",

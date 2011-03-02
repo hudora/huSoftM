@@ -206,7 +206,8 @@ def execute(url, args, method='GET', ua='', bust_cache=False):
     status, headers, content = huTools.http.fetch('http://' + softmexpresshost + url,
                                                   method=method,
                                                   headers=headers,
-                                                  ua='%s/husoftm2.backend' % ua)
+                                                  ua='%s/husoftm2.backend' % ua,
+                                                  timeout=21)
     if status != 200:
         # TODO: this looks extremely fragile. Must have be drunk while coding this.
         # needs a better implementation

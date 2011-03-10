@@ -222,6 +222,23 @@ def remove_prefix(identifier, prefix=''):
         return ''
 
 
+def add_prefix(identifier, prefix=''):
+    """Add prefix to identifier
+    >>> add_prefix(1174711, 'SO')
+    'SO1174711'
+    >>> add_prefix('CK040580', 'CK')
+    'CK040580'
+    >>> add_prefix('3182317', 'KA')
+    'KA3182317'
+    >>> add_prefix('   120678', 'ALEX')
+    'ALEX120678'
+    """
+    identifier = str(identifier).strip()
+    if not identifier.startswith(prefix):
+        identifier = prefix + identifier
+    return identifier
+
+
 class _GenericTests(unittest.TestCase):
     """Vermischte Tests."""
 

@@ -203,6 +203,40 @@ def sql_quote(data):
     return "'%s'" % sql_escape(data)
 
 
+def remove_prefix(identifier, prefix=''):
+    """Remove prefix from identifier and return it as int
+
+    >>> remove_prefix('SO1174711', 'SO')
+    1174711
+    >>> remove_prefix(1172317, 'CK')
+    1172317
+    """
+    identifier = str(identifier)
+    if identifier.startswith(prefix):
+        identifier = identifier[len(prefix):]
+    try:
+        return int(identifier)
+    except ValueError:
+        return ''
+
+
+def add_prefix(identifier, prefix=''):
+    """Add prefix to identifier
+    >>> add_prefix(1174711, 'SO')
+    'SO1174711'
+    >>> add_prefix('CK040580', 'CK')
+    'CK040580'
+    >>> add_prefix('3182317', 'KA')
+    'KA3182317'
+    >>> add_prefix('   120678', 'ALEX')
+    'ALEX120678'
+    """
+    identifier = str(identifier).strip()
+    if not identifier.startswith(prefix):
+        identifier = prefix + identifier
+    return identifier
+
+
 def pad(field, value):
     """Pad field to fixed length"""
     if field in PADDINGFIELDS:

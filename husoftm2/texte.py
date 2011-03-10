@@ -183,28 +183,28 @@ def auftragstextdaten(auftragsnr):
 
 def _test():
     """Einfache Selbsttests."""
-    from pprint import pprint
+    import pprint
     # Ein Auftrag mit Daten, die eigentlich intern bleiben sollten:
-    pprint(auftragstextdaten('SO1161229'))
+    pprint.pprint(auftragstextdaten('SO1161229'))
     # SO1166946 ist ein Auftrag, der *alle* Arten von Texten gesetzt hat.
-    pprint(auftragstextdaten('SO1166946'))
+    pprint.pprint(auftragstextdaten('SO1166946'))
     # Prüfe, ob auch integer Auftragsnummern verarneitet werden können
     assert auftragstextdaten('SO1166946') == auftragstextdaten(1166946)
     assert auftragstextdaten('SO1166946') == auftragstextdaten('1166946')
     # Auftrag mit Kundenartikelnummer
-    pprint(auftragstextdaten('SO1160677'))
+    pprint.pprint(auftragstextdaten('SO1160677'))
     # Auftrag mit Abschlägen
-    pprint(texte_auslesen(['SO1163272']))
+    pprint.pprint(texte_auslesen(['SO1163272']))
     # Mehrere Aufträge gleichzeitig testen. Die Beispielaufträge sind jeweils Aufträge mit recht
     # umfangreichen Daten
-    pprint(txt_auslesen(['SO1163025', 'SO1163161', 'SO1163272']))
+    pprint.pprint(txt_auslesen(['SO1163025', 'SO1163161', 'SO1163272']))
     # Ein Auftrag ohne jede Texte
-    pprint(txt_auslesen(['SO1163180']))
+    pprint.pprint(txt_auslesen(['SO1163180']))
     # Droppshipping-Test
-    pprint(txt_auslesen(['SO1161418']))
+    pprint.pprint(txt_auslesen(['SO1161418']))
     # Massentest:
     #for i in range(10000):
-    #    pprint(txt_auslesen(['SO%s' % (1160000 + i)]))
+    #    pprint.pprint(txt_auslesen(['SO%s' % (1160000 + i)]))
     # Kopfdaten: SO1170482
     # Kopftexte: SO1114412 SO1161417 SO1169563 SO1169567 SO1170199 SO1168384 SO1170387 SO1170395
     #            SO1165116 SO1170604 SO1170308 SO1170500 SO1170410

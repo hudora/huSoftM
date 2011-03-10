@@ -19,7 +19,6 @@ Copyright (c) 2007, 2008, 2010 HUDORA GmbH. All rights reserved.
 
 from cs.masterdata.address import addresshash, get_address
 import datetime
-import decimal
 import huTools.world
 import itertools
 import os
@@ -29,10 +28,12 @@ import thread
 import time
 import unittest
 import warnings
+from huTools.monetary import cent_to_euro
+from huTools.structured import make_struct
 from huTools.unicode import deUmlaut
 from husoftm.connection import get_connection
 from husoftm.stapelschnittstelle_const import ABK00, ABA00, ABT00, ABV00
-from husoftm.tools import date2softm, sql_quote, iso2land
+from husoftm.tools import date2softm, sql_quote, iso2land, pad, add_prefix, remove_prefix
 
 
 class StapelSerializer(object):
@@ -64,9 +65,9 @@ class StapelSerializer(object):
 
             # format
             if rowid in felddict and hasattr(felddict[rowid], 'format'):
-                frmt = rowconf['format']
-                if frmt.upper().startswith('A'):
-                    fieldlength = int(frmt[1:])
+                fmt = rowconf['format']
+                if fmt.upper().startswith('A'):
+                    fieldlength = int(fmt[1:])
                     felddict[rowid] = felddict[rowid][:fieldlength]
 
             # remove empty fields
@@ -113,6 +114,7 @@ def getnextvorgang():
 
 
 def loesche_dfsl(vorgangsnr):
+    """Lösche alle Dateiführungsschlüssel für eine Vorgangsnr in der Tabelle der Auftragsköpfe"""
     get_connection().update_raw("UPDATE ABK00 SET BKDFSL='' WHERE BKVGNR=%s" % vorgangsnr)
 
 
@@ -253,36 +255,47 @@ def _create_positionssatz(positionen, vorgangsnummer, aobj_position, texte):
                 vorgangsnummer=vorgangsnummer, text=text, auftragsbestaetigung=0, lieferschein=1, rechnung=1)
 
 
-def _create_addressentries(adressen, vorgangsnummer, aobj):
-    """Adds entries for invoice and deliveryaddress, if given for this order.
+def _create_addressentries(adressen, vorgangsnummer, auftrag):
+    """Adds entries for invoice and delivery address, if given for this order.
 
     adressen is expected to be a list type where the created addressentries are appended.
     Returns the country code of the invoice address w/ a fallback to country of delivery address.
     """
+
     land = 'DE'
-    for addresstype in ['lieferadresse', 'rechnungsadresse']:
-        aobj_adresse = _get_attr(aobj, addresstype, None)
-        if not aobj_adresse:
+    auftrag = make_struct(auftrag)
+
+    for adresstyp in ['lieferadresse', 'rechnungsadresse']:
+        if not adresstyp in auftrag:
             continue
-        land = _create_addressentry(adressen, vorgangsnummer, aobj_adresse, addresstype)
+        adresse = getattr(auftrag, adresstyp)
+        land = _create_addressentry(adressen, vorgangsnummer, adresse, adresstyp)
     return land
 
 
-def _create_addressentry(adressen, vorgangsnummer, addresscontainer, addresstype):
-    if not all(_get_attr(addresscontainer, field) for field in ['name1', 'ort', 'land']):
-        raise RuntimeError('Adresse unvollstaendig.')
+def _create_addressentry(adressen, vorgangsnummer, adresscontainer, adresstyp):
+
+    adresscontainer = make_struct(adresscontainer, default='')
+
+    if not (adresscontainer.name1 and adresscontainer.land and adresscontainer.ort):
+        raise ValueError(u'Adresse unvollständig: %s' % adresscontainer)
+
     adresse = Adresse()
-    if addresstype == 'lieferadresse':
+    if adresstyp == 'lieferadresse':
         adresse.adressart = 1
+
+    # Kopiere Adresse
     adresse.vorgang = vorgangsnummer
-    adresse.name1 = deUmlaut(_get_attr(addresscontainer, 'name1', ''))
-    adresse.name2 = deUmlaut(_get_attr(addresscontainer, 'name2', ''))
-    adresse.name3 = deUmlaut(_get_attr(addresscontainer, 'name3', ''))
-    adresse.avisieren = _get_attr(addresscontainer, 'avisieren', '')
-    adresse.strasse = deUmlaut(_get_attr(addresscontainer, 'strasse', ''))
-    adresse.plz = _get_attr(addresscontainer, 'plz', '')
-    adresse.ort = deUmlaut(_get_attr(addresscontainer, 'ort', ''))
-    land = _get_attr(addresscontainer, 'land', 'DE')
+    adresse.name1 = deUmlaut(adresscontainer.name1)
+    adresse.name2 = deUmlaut(adresscontainer.name2)
+    adresse.name3 = deUmlaut(adresscontainer.name3)
+    adresse.avisieren = adresscontainer.avisieren
+    adresse.strasse = deUmlaut(adresscontainer.strasse)
+    adresse.plz = adresscontainer.plz
+    adresse.ort = deUmlaut(adresscontainer.ort)
+    land = adresscontainer.land
+
+    # Füge SoftM-Länderkennzeichen ein
     adresse.laenderkennzeichen = iso2land(land)
     adressen.append(adresse)
     return land
@@ -290,38 +303,52 @@ def _create_addressentry(adressen, vorgangsnummer, addresscontainer, addresstype
 
 def _auftrag2records(vorgangsnummer, auftrag):
     """Convert an Auftrag into records objects representing AS/400 SQL statements."""
+
+    auftrag = make_struct(auftrag, default='')
+
     kopf = Kopf()
     kopf.vorgang = vorgangsnummer
-    kundennummern = auftrag.kundennr.replace('/', '.').split('.')
-    kopf.kundennr = '%8s' % kundennummern[0]
-    if len(kundennummern) > 1:
-        # abweichende Lieferadresse in Adress-Zusatzdatei
-        kopf.lieferadresse = int(kundennummern[1])
 
-    if hasattr(auftrag, 'herkunft'):
+    # Trage ggf. eine abweichende Lieferadresse (Index in Adress-Zusatzdatei) in Auftragskopf ein
+    kundennr = auftrag.kundennr
+    if '.' in kundennr:
+        kundennr, lieferadresse = kundennr.split('.')
+        kopf.lieferadresse = int(lieferadresse)
+
+    # Entferne Präfix vor Kundennr
+    if not kundennr.startswith('SC'):
+        warnings.warn(u"Kundennr %s ohne Prefix (SC)" % auftrag.kundennr, DeprecationWarning)
+    kundennr = remove_prefix(kundennr, 'SC')
+
+    # Füge Auftragsnr im SoftM-Format ein (Padding mit Leerzeichen)
+    kopf.kundennr = pad('BKKDNR', kundennr)
+
+    if 'herkunft' in auftrag:
         kopf.herkunft = auftrag.herkunft
 
-    if hasattr(auftrag, 'teillieferung_zulaessig'):
+    if 'teillieferung_zulaessig' in auftrag:
         kopf.teillieferung_zulaessig = str(int(auftrag.teillieferung_zulaessig))
     else:
-        # für lagacy code, den default wert auf false setzen
-        kopf.teillieferung_zulaessig = ""
+        # für legacy code, den Standardwert auf 'keine Teillieferung' setzen
+        kopf.teillieferung_zulaessig = ''
 
-    if hasattr(auftrag, 'abgangslager'):
+    if 'abgangslager' in auftrag:
         kopf.abgangslager = auftrag.abgangslager
 
-    if hasattr(auftrag, 'kundenauftragsnr'):
+    if 'kundenauftragsnr' in auftrag:
         kopf.kundenauftragsnr = auftrag.kundenauftragsnr
 
-    if hasattr(auftrag, 'bestelldatum') and auftrag.bestelldatum:
+    if 'bestelldatum' in auftrag:
         kopf.bestelldatum = date2softm(auftrag.bestelldatum)
     else:
         kopf.bestelldatum = date2softm(datetime.date.today())
 
+    # XXX: Mögliche Werte?
     kopf.auftragsart = ''
     if hasattr(auftrag, 'auftragsart') and auftrag.auftragsart:
         kopf.auftragsart = auftrag.auftragsart
 
+    # XXX: Nicht auch über auftrag steuerbar?
     kopf.sachbearbeiter = 1
 
     if auftrag.anlieferdatum_max:
@@ -329,24 +356,24 @@ def _auftrag2records(vorgangsnummer, auftrag):
     else:
         kopf.kundenwunschtermin = ''
 
-    if hasattr(auftrag, 'anlieferdatum_min') and auftrag.anlieferdatum_min:
+    if 'anlieferdatum_min' in auftrag:
         kopf.anliefertermin = date2softm(auftrag.anlieferdatum_min)
     else:
-        kopf.anliefertermin = date2softm(datetime.date.today())  # FIXME +7 days eventually?
+        kopf.anliefertermin = date2softm(datetime.date.today())
 
     positionen = []
     texte = []
 
-    if hasattr(auftrag, 'infotext_kunde'):
-        _create_kopftext(texte, vorgangsnummer, deUmlaut(auftrag.infotext_kunde), auftragsbestaetigung=1,
-                         lieferschein=1, rechnung=1)
+    if 'infotext_kunde' in auftrag:
+        _create_kopftext(texte, vorgangsnummer, deUmlaut(auftrag.infotext_kunde),
+                         auftragsbestaetigung=1, lieferschein=1, rechnung=1)
     if hasattr(auftrag, 'bestelltext'):
-        _create_kopftext(texte, vorgangsnummer, deUmlaut(auftrag.bestelltext), auftragsbestaetigung=1,
-                         lieferschein=0, rechnung=0)
+        _create_kopftext(texte, vorgangsnummer, deUmlaut(auftrag.bestelltext),
+                         auftragsbestaetigung=1, lieferschein=0, rechnung=0)
 
     # Für Fixtermine die Uhrzeit (oder was immer im Fixterminfeld steht) als Kopftext übertragen und das
     # Fixtermin Flag setzen
-    if hasattr(auftrag, 'fixtermin') and auftrag.fixtermin:
+    if auftrag.fixtermin:
         txt_fixtermin = "FIX: %s"
         if isinstance(auftrag.fixtermin, (datetime.date, datetime.datetime)):
             txt_fixtermin %= auftrag.fixtermin.strftime('%d-%m-%y %H:%M')
@@ -360,7 +387,7 @@ def _auftrag2records(vorgangsnummer, auftrag):
 
     adressen = []
 
-    # add Lieferadresse and Rechnungsadresse and create eu country code if neccessary
+    # add Lieferadresse and Rechnungsadresse and create EU country code if neccessary
     land = _create_addressentries(adressen, vorgangsnummer, auftrag)
     if land != 'DE' and huTools.world.in_european_union(land):
         kopf.eu_laendercode = land
@@ -411,59 +438,57 @@ def auftrag2softm(auftrag, belegtexte=None):
     return vorgangsnummer
 
 
-def _get_attr(obj, key, default=''):
-    """Get an object attribute or an dict key"""
-    ret = getattr(obj, key, None)
-    if (not ret) and hasattr(obj, 'get'):
-        ret = obj.get(key, None)
-    if not ret:
-        ret = default
-    return ret
-
-
-def _cent_to_euro(cent):
-    """Erwartet einen String oder Integer in Cent und gibt einen String zur<C3><BC>ck"""
-    kosten = decimal.Decimal(cent) / 100
-    return str(kosten.quantize(decimal.Decimal('0.01')))
-
-
 def _order2records(vorgangsnummer, order, auftragsart=None, abgangslager=None):
-    """Convert a auftrag into records objects representing AS/400 SQL statements."""
+    """Erzeuge SQL statements fuur ein Objekt nach ExtendedOrderProtocol"""
     # see https://github.com/hudora/CentralServices/blob/master/doc/ExtendedOrderProtocol.markdown
+
+    order = make_struct(order, default='')
 
     kopf = Kopf()
     kopf.vorgang = vorgangsnummer
-    # kundennr Interne Kundennummer. Kann das AddressProtocol erweitern. Wenn eine kundennr angegeben ist
-    # und die per AddressProtocol angegebene Lieferadresse nicht zu der kundennr passt, handelt es sich
-    # um eine abweichende Lieferadresse.
-    kundennr = _get_attr(order, 'kundennr').replace('/', '.').split('.')
-    kopf.kundennr = '%8s' % kundennr[0]
-    if len(kundennr) > 1:
-        kopf.lieferadresse = int(kundennr[1])
+
+    # kundennr ist die interne Kundennr. Kann das AddressProtocol erweitern.
+    # Wenn eine Kundennr angegeben ist und die per AddressProtocol angegebene Lieferadresse nicht zu
+    # der Kundennr passt, handelt es sich um eine abweichende Lieferadresse.
+    kundennr = order.kundennr
+    if '.' in kundennr:
+        kundennr, lieferadresse = kundennr.split('.')
+        kopf.lieferadresse = int(lieferadresse)
+
+    # Entferne Präfix vor Kundennr
+    if not kundennr.startswith('SC'):
+        warnings.warn(u"Kundennr %s ohne Prefix (SC)" % order.kundennr, DeprecationWarning)
+    kundennr = remove_prefix(kundennr, 'SC')
+
+    # Füge Auftragsnr im SoftM-Format ein (Padding mit Leerzeichen)
+    kopf.kundennr = pad('BKKDNR', kundennr)
+
     # kundenauftragsnr - Freitext, den der Kunde bei der Bestellung mit angegeben hat, max. 20 Zeichen.
-    kopf.kundenauftragsnr = deUmlaut(_get_attr(order, 'kundenauftragsnr'))[:20]
+    kopf.kundenauftragsnr = deUmlaut(order.kundenauftragsnr)[:20]
+
     # Ohne bestelldatum holpert es in SoftM
     kopf.erfassungsdatum = kopf.bestelldatum = date2softm(datetime.date.today())
 
     # wunschdatum_von und wunschdatum_bis - bilden wir NICHT ab.
     # anlieferdatum_von und anlieferdatum_bis Wenn das System keine Zeitfenster unterstützt, wird nur
     # anlieferdatum_von verwendet..
-    if _get_attr(order, 'anlieferdatum_von'):
-        kopf.anliefertermin = date2softm(_get_attr(order, 'anlieferdatum_von'))
+    if order.anlieferdatum_von:
+        kopf.anliefertermin = date2softm(order.anlieferdatum_von)
     else:
-        kopf.anliefertermin = date2softm(datetime.date.today())  # FIXME +7 days eventually?
-    if _get_attr(order, 'anlieferdatum_bis'):
-        kopf.kundenwunschtermin = date2softm(_get_attr(order, 'anlieferdatum_bis'))
+        kopf.anliefertermin = date2softm(datetime.date.today())
+
+    if order.anlieferdatum_bis:
+        kopf.kundenwunschtermin = date2softm(order.anlieferdatum_bis)
     else:
         kopf.kundenwunschtermin = kopf.anliefertermin
 
-    # versandkosten - Versandkosten kommen in Cent -> umwandeln in Euro
-    if _get_attr(order, 'versandkosten'):
-        kopf.versandkosten = _cent_to_euro(_get_attr(order, 'versandkosten'))
+    # versandkosten - Versandkosten kommen in Cent, für SoftM werden sie in Euro umgewandelt
+    if order.versandkosten:
+        kopf.versandkosten = cent_to_euro(order.versandkosten)
         if float(kopf.versandkosten):
-            kopf.lieferbedingung = ' 18'
+            kopf.lieferbedingung = ' 18'  # XXX: Was bedeutet das?
 
-    # absenderadresse - (mehrzeiliger) String, der die Absenderadresse auf Versandpapieren codiert.
+    # absenderadresse - (mehrzeiliger) String, der die Absenderadresse auf Versandpapieren kodiert.
 
     if abgangslager:
         kopf.abgangslager = abgangslager
@@ -474,34 +499,34 @@ def _order2records(vorgangsnummer, order, auftragsart=None, abgangslager=None):
     texte = []
     adressen = []
     # guid - Eindeutiger ID des Vorgangs, darf niemals doppelt verwendet werden
-    _create_kopftext(texte, vorgangsnummer, "#:guid:%s" % _get_attr(order, 'guid', '**nicht gesetzt**'),
+    _create_kopftext(texte, vorgangsnummer, "#:guid:%s" % order.guid,
                      auftragsbestaetigung=0, lieferschein=0, rechnung=0)
-    if _get_attr(order, 'erfasst_von'):
-        _create_kopftext(texte, vorgangsnummer, "erfasst von: %s" % _get_attr(order, 'erfasst_von'),
+    if 'erfasst_von' in order:
+        _create_kopftext(texte, vorgangsnummer, "erfasst von: %s" % order.erfasst_von,
                          auftragsbestaetigung=0, lieferschein=0, rechnung=0)
 
     # infotext_kunde - Freitext, der sich an den Warenempfänger richtet. Kann z.B. auf einem Lieferschein
     #  angedruckt werden. Der Umbruch des Textes kann durch das Backendsystem beliebig erfolgen, deshalb
     # sollte der Text keine Zeilenumbrüche beinhalten.
-    if _get_attr(order, 'infotext_kunde'):
-        _create_kopftext(texte, vorgangsnummer, _get_attr(order, 'infotext_kunde'),
+    if 'infotext_kunde' in order:
+        _create_kopftext(texte, vorgangsnummer, order.infotext_kunde,
                          auftragsbestaetigung=1, lieferschein=1, rechnung=1)
 
-    ## add Lieferadresse and Rechnungsadresse and create eu country code if neccessary
+    ## add Lieferadresse and Rechnungsadresse and create EU country code if necessary
     if addresshash(order):
         # Adresse mit unserer Kundendatenbank vergleichen.
         # Weichen sie voneinander ab, dann wird die Auftragsadresse mit in die Stapelschnittstelle übertragen.
         # Ansonsten ermittelt SoftM die Adresse anhand der Kundennr und Versandadressnr
         # und wir übertragen gar keine Adresse.
-        kundennr = _get_attr(order, 'kundennr').replace('/', '.')
-        addr = get_address("SC%s" % kundennr.strip().replace('SC', ''))
-        if (addresshash(addr) != addresshash(order)):
+        kundenadresse = get_address(add_prefix(order.kundennr, 'SC'))
+        if addresshash(kundenadresse) != addresshash(order):
             land = _create_addressentry(adressen, vorgangsnummer, order, 'lieferadresse')
             if land != 'DE' and huTools.world.in_european_union(land):
                 kopf.eu_laendercode = land
 
-    for order_position in _get_attr(order, 'orderlines', None):
+    for order_position in order.orderlines:
         #_create_positionssatz(positionen, vorgangsnummer, aobj_position, texte)
+        order_position = make_struct(order_position, default='')
         position = Position()
         position.erfassungsdatum = date2softm(datetime.date.today())
         positionen.append(position)
@@ -509,22 +534,24 @@ def _order2records(vorgangsnummer, order, auftragsart=None, abgangslager=None):
         position.vorgang = vorgangsnummer
         position.vorgangsposition = len(positionen)
         _create_positionstext(textart=8, vorgangsposition=position.vorgangsposition, texte=texte,
-                              vorgangsnummer=vorgangsnummer, text='#:guid:%s' % _get_attr(order_position, 'guid'),
+                              vorgangsnummer=vorgangsnummer, text='#:guid:%s' % order_position.guid,
                               auftragsbestaetigung=0, lieferschein=0, rechnung=0)
-        position.artikel = _get_attr(order_position, 'artnr')
-        position.ean = _get_attr(order_position, 'ean')
-        position.bestellmenge = _get_attr(order_position, 'menge')
+        position.artikel = order_position.artnr
+        position.ean = order_position.ean
+        position.bestellmenge = order_position.menge
         if not position.bestellmenge:
             raise RuntimeError("Menge nicht gegeben bei %s/%s" % (position.artikel, position.ean))
         if (not position.artikel) and (not position.ean):
-            raise RuntimeError("Artnr und EAN nicht gegeben bei %r" % order_position)
+            raise RuntimeError("Weder Artnr noch EAN gegeben bei %r" % order_position)
+
         # orderline/preis - Rechnungs-Preis der Orderline in Cent ohne Mehrwertsteuer.
-        if _get_attr(order_position, 'preis'):
-            position.verkaufspreis = _cent_to_euro(_get_attr(order_position, 'preis'))
-        if _get_attr(order_position, 'infotext_kunde'):
+        if order_position.preis:
+            position.verkaufspreis = cent_to_euro(order_position.preis)
+
+        if order_position.infotext_kunde:
             _create_positionstext(textart=8, vorgangsposition=position.vorgangsposition, texte=texte,
-                vorgangsnummer=vorgangsnummer, text=_get_attr(order_position, 'infotext_kunde'),
-                auftragsbestaetigung=1, lieferschein=1, rechnung=1)
+                                  vorgangsnummer=vorgangsnummer, text=order_position.infotext_kunde,
+                                  auftragsbestaetigung=1, lieferschein=1, rechnung=1)
     kopf.vorgangspositionszahl = len(positionen)
     return kopf, positionen, texte, adressen
 
@@ -601,31 +628,15 @@ def extended_order_protocol2softm(order, auftragsart=None, abgangslager=None):
     return vorgangsnummer
 
 
-class _MockAuftrag(object):
-    """Represents an Auftrag."""
-    pass
-
-
-class _MockAddress(object):
-    """Represents an Address."""
-    pass
-
-
-class _MockPosition(object):
-    """Represents an orderline."""
-    pass
-
-
 class _AuftragTests(unittest.TestCase):
     """Vermischte Tests für das Auftragsformat."""
 
     def test_minimal_auftrag(self):
         """Test if the minimal possible Auftrag can be converted to SQL."""
         vorgangsnummer = 123
-        auftrag = _MockAuftrag()
-        auftrag.kundennr = '17200'
-        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
-        auftrag.positionen = []
+        auftrag = dict(kundennr='SC17200',
+                       anlieferdatum_max=datetime.date(2008, 12, 30),
+                       positionen=[])
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
 
         kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKDTKD, BKKDNR)"
@@ -641,16 +652,15 @@ class _AuftragTests(unittest.TestCase):
     def test_simple_auftrag(self):
         """Test if a Auftrag with all headerfields but without extradata can be converted to SQL."""
         vorgangsnummer = 123
-        auftrag = _MockAuftrag()
-        auftrag.kundennr = '17200'
-        auftrag.anlieferdatum_min = datetime.date(2008, 12, 30)
-        auftrag.anlieferdatum_max = datetime.date(2008, 12, 31)
-        auftrag.bestelldatum = datetime.date(2008, 12, 29)
-        auftrag.kundenauftragsnr = '0012345'
-        auftrag.infotext_kunde = 'infotext_kunde'
-        auftrag.bestelltext = 'bestelltext'
-        auftrag.positionen = []
-        auftrag.fixtermin = datetime.datetime.now().time()
+        auftrag = dict(kundennr='SC17200',
+                       anlieferdatum_min=datetime.date(2008, 12, 30),
+                       anlieferdatum_max=datetime.date(2008, 12, 31),
+                       bestelldatum=datetime.date(2008, 12, 29),
+                       kundenauftragsnr='0012345',
+                       infotext_kunde='infotext_kunde',
+                       bestelltext='bestelltext',
+                       positionen=[],
+                       fixtermin=datetime.datetime.now().time())
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
         kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKNRKD, BKLTFX, BKDTKD,"
             " BKKDNR) VALUES('1','123','1081230','1081231','1','01','0012345','1','1081229','   17200')")
@@ -663,10 +673,10 @@ class _AuftragTests(unittest.TestCase):
             " BTVGNR) VALUES('1','8','01','bestelltext','2','123')")
         self.assertEqual(texte[2].to_sql(),
                 "INSERT INTO ABT00 (BTKZAB, BTTART, BTFNR, BTTX60, BTLFNR, BTVGNR) VALUES('1','8','01',"
-                    "'FIX: %s','3','123')" % auftrag.fixtermin.strftime('%H:%M'))
+                    "'FIX: %s','3','123')" % auftrag['fixtermin'].strftime('%H:%M'))
         self.assertEqual(adressen, [])
 
-        auftrag.fixtermin = ''
+        auftrag['fixtermin'] = ''
         vorgangsnummer = 124
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
         kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKNRKD, BKDTKD, BKKDNR)"
@@ -684,18 +694,18 @@ class _AuftragTests(unittest.TestCase):
         Checks also for field truncation.
         """
         vorgangsnummer = 123
-        auftrag = _MockAuftrag()
-        auftrag.kundennr = '17200'
-        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
-        auftrag.positionen = []
-        auftrag.lieferadresse = _MockAddress()
-        auftrag.lieferadresse.name1 = 'Hier werden nur 40 Zeichen stehen: --->|<--- Weg'
-        auftrag.lieferadresse.name2 = 'name2'
-        auftrag.lieferadresse.name3 = 'name3'
-        auftrag.lieferadresse.avisieren = '+49 21 91 / 6 09 12-0'
-        auftrag.lieferadresse.strasse = 'Nicht Vergessen Weg 1'
-        auftrag.lieferadresse.ort = 'Rade'
-        auftrag.lieferadresse.land = 'DE'
+        lieferadresse = dict(name1='Hier werden nur 40 Zeichen stehen: --->|<--- Weg',
+                             name2='name2',
+                             name3='name3',
+                             avisieren='+49 21 91 / 6 09 12-0',
+                             strasse='Nicht Vergessen Weg 1',
+                             ort='Rade',
+                             land='DE')
+        auftrag = dict(kundennr='SC17200',
+                       anlieferdatum_max=datetime.date(2008, 12, 30),
+                       positionen=[],
+                       lieferadresse=lieferadresse
+        )
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
         kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKDTKD, BKKDNR)"
                    " VALUES('1','123','xtodayx','1081230','1','01','xtodayx','   17200')")
@@ -713,18 +723,17 @@ class _AuftragTests(unittest.TestCase):
     def test_rechnungsadresse(self):
         """Tests if a Rechnungsadresse is successfully converted to SQL."""
         vorgangsnummer = 123
-        auftrag = _MockAuftrag()
-        auftrag.kundennr = '17200'
-        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
-        auftrag.positionen = []
-        auftrag.rechnungsadresse = _MockAddress()
-        auftrag.rechnungsadresse.name1 = 'name1'
-        auftrag.rechnungsadresse.name2 = 'name2'
-        auftrag.rechnungsadresse.name3 = 'name3'
-        auftrag.rechnungsadresse.avisieren = '+49 21 91 / 6 09 12-0'
-        auftrag.rechnungsadresse.strasse = 'Nicht Vergessen Weg 1'
-        auftrag.rechnungsadresse.ort = 'Rade'
-        auftrag.rechnungsadresse.land = 'DE'
+        rechnungsadresse = dict(name1='name1',
+                                name2='name2',
+                                name3='name3',
+                                avisieren='+49 21 91 / 6 09 12-0',
+                                strasse='Nicht Vergessen Weg 1',
+                                ort='Rade',
+                                land='DE')
+        auftrag = dict(kundennr='SC17200',
+                       anlieferdatum_max=datetime.date(2008, 12, 30),
+                       rechnungsadresse=rechnungsadresse,
+                       positionen=[])
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
         kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKDTKD, BKKDNR)"
             " VALUES('1','123','xtodayx','1081230','1','01','xtodayx','   17200')")
@@ -742,18 +751,18 @@ class _AuftragTests(unittest.TestCase):
     def test_rechnungsadresse_eu(self):
         """Tests if a Rechnungsadresse from an european country is successfully converted to SQL."""
         vorgangsnummer = 123
-        auftrag = _MockAuftrag()
-        auftrag.kundennr = '17200'
-        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
-        auftrag.positionen = []
-        auftrag.rechnungsadresse = _MockAddress()
-        auftrag.rechnungsadresse.name1 = 'name1'
-        auftrag.rechnungsadresse.name2 = 'name2'
-        auftrag.rechnungsadresse.name3 = 'name3'
-        auftrag.rechnungsadresse.avisieren = '+49 21 91 / 6 09 12-0'
-        auftrag.rechnungsadresse.strasse = 'Nicht Vergessen Weg 1'
-        auftrag.rechnungsadresse.ort = 'Rade'
-        auftrag.rechnungsadresse.land = 'SI'
+        rechnungsadresse = dict(name1='name1',
+                                name2='name2',
+                                name3='name3',
+                                avisieren='+49 21 91 / 6 09 12-0',
+                                strasse='Nicht Vergessen Weg 1',
+                                ort='Rade',
+                                land='SI')
+        auftrag = dict(kundennr='SC17200',
+                       anlieferdatum_max=datetime.date(2008, 12, 30),
+                       positionen=[],
+                       rechnungsadresse=rechnungsadresse)
+
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
         kpf_sql = ("INSERT INTO ABK00 (BKABT, BKEGCD, BKDTLT, BKDTKW, BKSBNR, BKVGNR, BKFNR, BKDTKD, BKKDNR)"
                    " VALUES('1','SI','xtodayx','1081230','1','123','01','xtodayx','   17200')")
@@ -771,18 +780,17 @@ class _AuftragTests(unittest.TestCase):
     def test_rechnungsadresse_non_eu(self):
         """Tests if a Rechnungsadresse from an outer-european country is successfully converted to SQL."""
         vorgangsnummer = 123
-        auftrag = _MockAuftrag()
-        auftrag.kundennr = '17200'
-        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
-        auftrag.positionen = []
-        auftrag.rechnungsadresse = _MockAddress()
-        auftrag.rechnungsadresse.name1 = 'name1'
-        auftrag.rechnungsadresse.name2 = 'name2'
-        auftrag.rechnungsadresse.name3 = 'name3'
-        auftrag.rechnungsadresse.avisieren = '+49 21 91 / 6 09 12-0'
-        auftrag.rechnungsadresse.strasse = 'Nicht Vergessen Weg 1'
-        auftrag.rechnungsadresse.ort = 'Rade'
-        auftrag.rechnungsadresse.land = 'CH'
+        rechnungsadresse = dict(name1='name1',
+                                name2='name2',
+                                name3='name3',
+                                avisieren='+49 21 91 / 6 09 12-0',
+                                strasse='Nicht Vergessen Weg 1',
+                                ort='Rade',
+                                land='CH')
+        auftrag = dict(kundennr='SC17200',
+                       anlieferdatum_max=datetime.date(2008, 12, 30),
+                       positionen=[],
+                       rechnungsadresse=rechnungsadresse)
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
         kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKDTKD, BKKDNR)"
             " VALUES('1','123','xtodayx','1081230','1','01','xtodayx','   17200')")
@@ -800,18 +808,11 @@ class _AuftragTests(unittest.TestCase):
     def test_positionen_text(self):
         """Tests if text of positions can be converted to SQL."""
         vorgangsnummer = 123
-        auftrag = _MockAuftrag()
-        auftrag.kundennr = '17200'
-        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
-        pos1 = _MockPosition()
-        pos1.menge = 10
-        pos1.artnr = '11111'
-        pos1.text_vor_position = ['text for pos1', 'more text for pos1']
-        pos2 = _MockPosition()
-        pos2.menge = 20
-        pos2.text_vor_position = ['text for pos2', 'more text for pos2']
-        pos2.artnr = '22222/09'
-        auftrag.positionen = [pos1, pos2]
+        pos1 = dict(menge=10, artnr='11111', text_vor_position=['text for pos1', 'more text for pos1'])
+        pos2 = dict(menge=20, artnr='22222/09', text_vor_position=['text for pos2', 'more text for pos2'])
+        auftrag = dict(kundennr='SC17200',
+                       anlieferdatum_max=datetime.date(2008, 12, 30),
+                       positionen=[pos1, pos2])
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
         # kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKVGPO, BKFNR, BKDTKD, BKKDNR)"
         #     " VALUES('1','123','xtodayx','1081230','1','2','01','xtodayx','   17200')")
@@ -839,16 +840,9 @@ class _AuftragTests(unittest.TestCase):
     def test_positionen_artnr(self):
         """Tests if orderlines containing artnr can be converted to SQL."""
         vorgangsnummer = 123
-        auftrag = _MockAuftrag()
-        auftrag.kundennr = '17200'
-        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
-        pos1 = _MockPosition()
-        pos1.menge = 10
-        pos1.artnr = '11111'
-        pos2 = _MockPosition()
-        pos2.menge = 20
-        pos2.artnr = '22222/09'
-        auftrag.positionen = [pos1, pos2]
+        auftrag = dict(kundennr='SC17200',
+                       anlieferdatum_max=datetime.date(2008, 12, 30),
+                       positionen=[dict(menge=10, artnr='11111'), dict(menge=20, artnr='22222/09')])
         kopf, positionen, dummy, dummy = _auftrag2records(vorgangsnummer, auftrag)
         kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKVGPO, BKFNR, BKDTKD, BKKDNR)"
             " VALUES('1','123','xtodayx','1081230','1','2','01','xtodayx','   17200')")
@@ -865,18 +859,13 @@ class _AuftragTests(unittest.TestCase):
              date2softm(datetime.date.today())))
 
     def test_positionen_ean(self):
-        """Tests if orderlines containing ean can be converted to SQL."""
+        """Tests if orderlines containing an EAN can be converted to SQL."""
         vorgangsnummer = 123
-        auftrag = _MockAuftrag()
-        auftrag.kundennr = '17200'
-        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
-        pos1 = _MockPosition()
-        pos1.menge = 10
-        pos1.ean = '11111'
-        pos2 = _MockPosition()
-        pos2.menge = 20
-        pos2.ean = '22222'
-        auftrag.positionen = [pos1, pos2]
+        pos1 = dict(menge=10, ean='11111')
+        pos2 = dict(menge=20, ean='22222')
+        auftrag = dict(kundennr='SC17200',
+                       anlieferdatum_max=datetime.date(2008, 12, 30),
+                       positionen=[pos1, pos2])
         kopf, positionen, dummy, dummy = _auftrag2records(vorgangsnummer, auftrag)
         kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKVGPO, BKFNR, BKDTKD, BKKDNR)"
             " VALUES('1','123','xtodayx','1081230','1','2','01','xtodayx','   17200')")
@@ -897,16 +886,11 @@ class _AuftragTests(unittest.TestCase):
     def test_zusatz_lieferadresse(self):
         """Tests that 'zusatzliche lieferadresse' (BKVANR) can be converted to sql"""
         vorgangsnummer = 123
-        auftrag = _MockAuftrag()
-        auftrag.kundennr = '17200/444'  # <-- 004 ist die zusätzliche lieferadresse
-        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
-        pos1 = _MockPosition()
-        pos1.menge = 10
-        pos1.artnr = '11111'
-        pos2 = _MockPosition()
-        pos2.menge = 20
-        pos2.artnr = '22222/09'
-        auftrag.positionen = [pos1, pos2]
+        pos1 = dict(menge=10, artnr='11111')
+        pos2 = dict(menge=20, artnr='22222/09')
+        auftrag = dict(kundennr='SC17200.444',
+                       anlieferdatum_max=datetime.date(2008, 12, 30),
+                       positionen=[pos1, pos2])
         kopf, positionen, dummy, dummy = _auftrag2records(vorgangsnummer, auftrag)
         kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKVGPO, BKFNR, BKDTKD, BKVANR,"
             " BKKDNR) VALUES('1','123','xtodayx','1081230','1','2','01','xtodayx','444','   17200')")
@@ -918,11 +902,10 @@ class _AuftragTests(unittest.TestCase):
     def test_abgangslager(self):
         """Test if the 'abgangslager' can be converted to SQL."""
         vorgangsnummer = 123
-        auftrag = _MockAuftrag()
-        auftrag.kundennr = '17200'
-        auftrag.abgangslager = '26'
-        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
-        auftrag.positionen = []
+        auftrag = dict(kundennr='SC17200',
+                       abgangslager='26',
+                       anlieferdatum_max=datetime.date(2008, 12, 30),
+                       positionen=[])
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
 
         kpf_sql = ("INSERT INTO ABK00 (BKLGNR, BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKDTKD, BKKDNR)"
@@ -938,11 +921,10 @@ class _AuftragTests(unittest.TestCase):
     def test_herkunft(self):
         """Test if 'herkunft' can be converted to SQL."""
         vorgangsnummer = 123
-        auftrag = _MockAuftrag()
-        auftrag.kundennr = '17200'
-        auftrag.herkunft = 'E'  # EDI
-        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
-        auftrag.positionen = []
+        auftrag = dict(kundennr='SC17200',
+                       herkunft='E',  # EDI
+                       anlieferdatum_max=datetime.date(2008, 12, 30),
+                       positionen=[])
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
 
         kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKHERK, BKDTKD, BKKDNR)"
@@ -957,11 +939,10 @@ class _AuftragTests(unittest.TestCase):
     def test_teillieferung(self):
         """Test if 'teillieferung_zulaessig' can be converted to SQL."""
         vorgangsnummer = 123
-        auftrag = _MockAuftrag()
-        auftrag.kundennr = '17200'
-        auftrag.teillieferung_zulaessig = True
-        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
-        auftrag.positionen = []
+        auftrag = {'kundennr': 'SC17200',
+                   'teillieferung_zulaessig': True,
+                   'anlieferdatum_max': datetime.date(2008, 12, 30),
+                   'positionen': []}
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
 
         kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKFNR, BKDTKD, BKKDNR)"
@@ -972,7 +953,7 @@ class _AuftragTests(unittest.TestCase):
         self.assertEqual(kopf.to_sql(), kpf_sql)
 
         vorgangsnummer = 124
-        auftrag.teillieferung_zulaessig = False
+        auftrag['teillieferung_zulaessig'] = False
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
         kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKKZTF, BKFNR, BKDTKD, BKKDNR)"
             " VALUES('1','124','xtodayx','1081230','1','0','01','xtodayx','   17200')")
@@ -986,13 +967,11 @@ class _AuftragTests(unittest.TestCase):
     def test_auftragsart(self):
         """Test if 'auftragsart' can be converted to SQL."""
         vorgangsnummer = 123
-        auftrag = _MockAuftrag()
-        auftrag.kundennr = '17200'
-        auftrag.auftragsart = "WA"
-        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
-        auftrag.positionen = []
+        auftrag = dict(kundennr='SC17200',
+                       auftragsart='WA',
+                       anlieferdatum_max=datetime.date(2008, 12, 30),
+                       positionen=[])
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
-
         kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKKDNR, BKDTKD, BKAUFA)"
             " VALUES('1','123','xtodayx','1081230','1','01','   17200','xtodayx','WA')")
         # insert date of today since this will be automatically done by _auftrag2records()
@@ -1001,7 +980,7 @@ class _AuftragTests(unittest.TestCase):
         self.assertEqual(kopf.to_sql(), kpf_sql)
 
         vorgangsnummer = 124
-        auftrag.auftragsart = 'Z2'
+        auftrag['auftragsart'] = 'Z2'
         kopf, positionen, texte, adressen = _auftrag2records(vorgangsnummer, auftrag)
         kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKFNR, BKKDNR, BKDTKD, BKAUFA)"
             " VALUES('1','124','xtodayx','1081230','1','01','   17200','xtodayx','Z2')")
@@ -1015,18 +994,12 @@ class _AuftragTests(unittest.TestCase):
     def test_positionen_verkaufspreis(self):
         """Tests if orderlines containing prices can be converted to SQL."""
         vorgangsnummer = 123
-        auftrag = _MockAuftrag()
-        auftrag.kundennr = '17200'
-        auftrag.anlieferdatum_max = datetime.date(2008, 12, 30)
-        pos1 = _MockPosition()
-        pos1.menge = 10
-        pos1.ean = '11111'
-        pos1.verkaufspreis = 10000.123
-        pos2 = _MockPosition()
-        pos2.menge = 20
-        pos2.ean = '22222'
-        pos2.verkaufspreis = 0.123
-        auftrag.positionen = [pos1, pos2]
+        pos1 = dict(menge=10, ean='11111', verkaufspreis=10000.123)
+        pos2 = dict(menge=20, ean='22222', verkaufspreis=0.123)
+        auftrag = dict(kundennr='SC17200',
+                       anlieferdatum_max=datetime.date(2008, 12, 30),
+                       positionen=[pos1, pos2])
+
         kopf, positionen, dummy, dummy = _auftrag2records(vorgangsnummer, auftrag)
         kpf_sql = ("INSERT INTO ABK00 (BKABT, BKVGNR, BKDTLT, BKDTKW, BKSBNR, BKVGPO, BKFNR, BKDTKD, BKKDNR)"
             " VALUES('1','123','xtodayx','1081230','1','2','01','xtodayx','   17200')")
@@ -1054,7 +1027,7 @@ class _OrderTests(unittest.TestCase):
         order = {'_id': '17200',
                  'anlieferdatum_von': u'2010-03-03',
                  'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A',
-                 'kundennr': u'17200',
+                 'kundennr': u'SC17200',
                  'orderlines': [{u'artnr': u'14600/03',
                                  'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A-0',
                                  u'menge': 1,
@@ -1098,7 +1071,7 @@ class _OrderTests(unittest.TestCase):
                  'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A',
                  'infotext_kunde': u'',
                  'kundenauftragsnr': u'',
-                 'kundennr': u'17200',
+                 'kundennr': u'SC17200',
                  'land': 'DE',
                  'name1': 'HUDORA GmbH',
                  'name2': '-UMFUHR-',
@@ -1157,7 +1130,7 @@ class _OrderTests(unittest.TestCase):
                                     u'01234567890123456789012345678901234567890123456789'
                                     u'0123456789<-Hier ein Ümbruch. üäöß Keine Ümlaute!!!'),
                  'kundenauftragsnr': u'',
-                 'kundennr': u'17200',
+                 'kundennr': u'SC17200',
                  'land': 'DE',
                  'name1': 'HUDORA GmbH',
                  'name2': '-UMFUHR-',
@@ -1193,6 +1166,7 @@ class _OrderTests(unittest.TestCase):
         self.assertEqual(adressen, [])
 
     def test_versandkosten(self):
+        """Test order with given shippping costs"""
         vorgangsnummer = 123
         order = {'_id': '17200',
                  '_rev': '4-4bba80636c015f98e908c79c521e5124',
@@ -1203,7 +1177,7 @@ class _OrderTests(unittest.TestCase):
                  'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A',
                  'infotext_kunde': u'',
                  'kundenauftragsnr': u'',
-                 'kundennr': u'17200',
+                 'kundennr': u'SC17200',
                  'land': 'DE',
                  'name1': 'HUDORA GmbH',
                  'name2': '-UMFUHR-',
@@ -1239,7 +1213,7 @@ class _OrderTests(unittest.TestCase):
                  'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A',
                  'infotext_kunde': u'',
                  'kundenauftragsnr': u'',
-                 'kundennr': u'17200',
+                 'kundennr': u'SC17200',
                  'land': 'DE',
                  'name1': 'HUDORA GmbH',
                  'name2': 'Anlieferung Modul',
@@ -1279,7 +1253,7 @@ class _OrderTests(unittest.TestCase):
                  'guid': 'VS6RRW2MYL4FZ3PPMVH4ZRFE3A',
                  'infotext_kunde': u'',
                  'kundenauftragsnr': u'',
-                 'kundennr': u'17200/444',
+                 'kundennr': u'SC17200.444',
                  'land': 'DE',
                  'name1': 'HUDORA GmbH',
                  'name2': 'Anlieferung Modul',

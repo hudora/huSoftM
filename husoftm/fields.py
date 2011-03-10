@@ -2436,5 +2436,6 @@ DATETIMEDIR = {'LKDTLF': 'LKZTLF',  # letzter_lieferschein
 # Fields which need padding before beeing used in SQL queries
 PADDINGFIELDS = {
     'AKKDNR': "%8s",
+    'BKKDNR': "%8s",
     'FKKDNR': "%8s",
 }

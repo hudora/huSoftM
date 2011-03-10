@@ -8,6 +8,7 @@ Copyright (c) 2007, 2010, 2011 HUDORA GmbH. All rights reserved.
 """
 
 import husoftm2.sachbearbeiter
+import logging
 from husoftm2.backend import query, x_en
 from husoftm2.tools import sql_quote, remove_prefix
 from husoftm2.texte import txt_auslesen
@@ -128,6 +129,17 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
                          cachingtime=cachingtime, ua='husoftm2.lieferscheine'):
             if is_lieferschein == True:
                 lsmenge = int(row['menge'])
+
+                # Wenn trotz allem noch 0 Mengen auftauchen, dann alles loggen
+                if not lsmenge:
+                    logging.critical("0-Menge!!! %s", row)
+                    logging.critical("%s", koepfe)
+                    logging.critical("gesamte Positionen %s", query(['ALN00'], condition="LNSANK = %s" %
+                                                                    row['satznr_kopf']))
+
+                    logging.critical("gesamter Kopf %s", query(['ALK00'], condition="LKLFSN = %s"
+                                      % remove_prefix(koepfe[aktsatznr]['lieferscheinnr'], "SL")))
+
                 if row['ALN_dfsl']:
                     # Basis dieses Codes:
                     # [LH #721] LS mit 0-mengen vermeiden

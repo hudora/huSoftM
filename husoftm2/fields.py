@@ -789,9 +789,8 @@ MAPPINGDIR = {
           #'LKKZLF': 'druckkennzeichen',
           'LKKBNR': 'kommibelegnr',
           'LKDTKB': 'kommibeleg_date',
-          # 'LKZTKB': 'kommibeleg_time',  # ist bei uns fast immer 999999
+          'LKZTKB': 'kommibeleg_time',  # ist bei uns fast immer 999999
           # 999999: Rechnungsfreigabe im Stapel erfolgt 888888: Belegfreigabe im Stapel erfolgt
-
           #'LKLFDN': 'laufendenr',
           # Die lfd. Nummer wird pro Kunde vergeben. Sie wird die Kommissionierbelegdaten für
           # unterschiedliche Lieferadressen des gleichen Kunden zu trennen. Die Vergabe der lfd. Nummer
@@ -804,8 +803,8 @@ MAPPINGDIR = {
           # Lieferschein nach Fakturierfreigabe: Kommissionierbelegnummer
           #'LKFGNR': 'Freigabenr AFA20
           #'LKFGSB': 'Sachbearb. Freigabe
-          #'LKDTFG': 'freigabe_date',
-          #'LKZTFG': 'freigabe_time',
+          'LKDTFG': 'freigabe_date',
+          'LKZTFG': 'freigabe_time',
           #'LKFGI1': 'freigabe_info1',
           #'LKFGI2': 'freigabe_info2',
           #'LKFGLC': 'Anzahl Liefsch.'
@@ -813,6 +812,8 @@ MAPPINGDIR = {
           # Nummer des Auftrags In diesem Feld steht die zu dem Lieferschein gehörende Auftragsnummer.
           # Bei Sammellieferscheinen wird die Auftragsnummer der ersten Lieferscheinposition gespeichert.
           'LKDTLT': 'anliefer_date',
+          # Achtung: wenn die Folgende zeile auskommentiert wird, muss das EDIhub Admin Interface angepasst
+          # werden.
           #'LKKZ02': 'hrl_status',
           # 'LKKZVA': 'alle_positionen_fakturiert',
           # *ZERO noch nicht alle Pos fakturiert
@@ -822,7 +823,7 @@ MAPPINGDIR = {
           'LKDTAE': 'ALK_aenderung_date',
           'LKZTAE': 'ALK_aenderung_time',   # scheinbar immer null
           'LKDFSL': 'ALK_dfsl',
-          #'LKSTAT': 'satzstatus',
+          # 'LKSTAT': 'satzstatus',
          },
 
 

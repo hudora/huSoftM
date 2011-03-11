@@ -202,7 +202,9 @@ def execute(url, args, method='GET', ua='', bust_cache=False):
     headers = {'X-sig': digest}
     # See http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9.4 for the reasoning here
     if bust_cache:
+        logging.debug("busting cache")
         headers['Cache-Control'] = "no-cache"
+        url += '&ts=%s' % time.time()
     status, headers, content = huTools.http.fetch('http://' + softmexpresshost + url,
                                                   method=method,
                                                   headers=headers,
@@ -326,7 +328,7 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
     bust_cache = True
     if cachingtime > 0:
         bust_cache = False
-        rows = memcache.get('husoftm_query_%r_%r' % (querymappings, args))
+        rows = memcache.get('husoftm2_query_%r_%r' % (querymappings, args))
         if rows:
             return rows
 
@@ -343,7 +345,7 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
     if delta > 5:
         logging.warning("Slow (%.3fs) SQL query in  %s", delta, args)
     try:
-        memcache.add(key='husoftm_query_%r_%r' % (querymappings, args),
+        memcache.add(key='husoftm2_query_%r_%r' % (querymappings, args),
                      value=rows, time=cachingtime)
     except:
         pass  # value 'rows' was probably to big for memcache or memcache was offline

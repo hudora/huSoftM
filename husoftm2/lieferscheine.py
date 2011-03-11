@@ -22,7 +22,7 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
 
     """
 
-    cachingtime = 60 * 60 * 12
+    cachingtime = 30
 
     if additional_conditions:
         conditions.extend(additional_conditions)
@@ -62,17 +62,24 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
                     softm_created_at=row.get('ALK_lieferschein'),
                     )
 
+        # Basis dieses Codes:
+        # [LH #721] LS mit 0-mengen vermeiden
+        # Wir sehen im Produktiv-Betrieb immer wieder Lieferscheine mit der Menge "0"
+        # erzeugt werden. Wir vermuten hier eine race Condition, bei der die
+        # ALK00 schon mit der Lieferscheinnummer geupdated ist, die ALN00 aber noch
+        # nicht mit der Lieferscheinmenge.
+        # Eine weitere Vermutung ist, dass wenn in der ALN00 die Menge noch cniht eingetragen
+        # ist, dort auch noch die Lieferscheinnummer fehlt. Das versuchen wir hier abzufangen.
+        # Lieber ein Crash, als ein Lieferschein mit (unbegründerter) 0-menge.
         if row['ALK_dfsl']:
-            # Basis dieses Codes:
-            # [LH #721] LS mit 0-mengen vermeiden
-            # Wir sehen im Produktiv-Betrieb immer wieder Lieferscheine mit der Menge "0"
-            # erzeugt werden. Wir vermuten hier eine race Condition, bei der die
-            # ALK00 schon mit der Lieferscheinnummer geupdated ist, die ALN00 aber noch
-            # nicht mit der Lieferscheinmenge.
-            # Eine weitere Vermutung ist, dass wenn in der ALN00 die Menge noch cniht eingetragen
-            # ist, dort auch noch die Lieferscheinnummer fehlt. Das versuchen wir hier abzufangen.
-            # Lieber ein Crash, als ein Lieferschein mit (unbegründerter) 0-menge.
             raise RuntimeError("Dateiführungsschlüssel in ALK00: %r" % kopf)
+        if not row['ALK_lieferschein_date']:
+            # Noch ist unklar, ob es eigentlich "korrekte" Lieferscheine ohne ALK_lieferschein_date
+            # geben kann. Bis dahin werfenw ir erstmal eine Exception.
+            logging.critical("? %s", row)
+            logging.critical("gesamter Kopf %s", query(['ALK00'], condition="LKLFSN = %s"
+                              % remove_prefix(kopf['lieferscheinnr'], "SL")))
+            raise RuntimeError("Noch kein Lieferscheindatum in ALK00: %r" % kopf)
 
         # Wir hatten erhebliche Probleme, weil Datumsfelder mal befüllt waren
         # und mal nicht (race condition) - wir gehen deswegen recht großzügig
@@ -130,7 +137,9 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
             if is_lieferschein == True:
                 lsmenge = int(row['menge'])
 
-                # Wenn trotz allem noch 0 Mengen auftauchen, dann alles loggen
+                # Wenn trotz allem noch 0 Mengen auftauchen, dann alles erstmal loggen
+                # Der Code kann entfernt werden, wenn wir die Probleme aus "[LH #721] 0-mengen"
+                # komplett verstehen.
                 if not lsmenge:
                     logging.critical("0-Menge!!! %s", row)
                     logging.critical("%s", koepfe)
@@ -138,7 +147,8 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
                                                                     row['satznr_kopf']))
 
                     logging.critical("gesamter Kopf %s", query(['ALK00'], condition="LKLFSN = %s"
-                                      % remove_prefix(koepfe[aktsatznr]['lieferscheinnr'], "SL")))
+                                      % remove_prefix(koepfe[remove_prefix(row['satznr_kopf'], 'SO')]['lieferscheinnr'], "SL")))
+                    raise RuntimeError("0-Menge %r" % row)
 
                 if row['ALN_dfsl']:
                     # Basis dieses Codes:
@@ -219,15 +229,15 @@ def get_changed_after(date, limit=None):
 
 
 # Wir arbeiten im Zusammenhang mit Liefershceinen mit dem Kundenspezifischen Feld LKKZ02.
-# Dies ist standartmässig mit 0 vorbelegt. Wir setzen den Wert nach Verarbeitung auf 0.
-def get_new(limit=41):
+# Dies ist standartmässig mit 0 vorbelegt. Wir setzen den Wert nach Verarbeitung auf 1.
+def get_new(limit=11):
     """Liefert unverarbeitete Lieferscheine zurück."""
     # Abfragen waren einige Zeit VIEL schneller, wenn wir Sie nur auf ein paar Tage einschränken,
     # deswegen hatten wir folgende Zusatzbedingung:
     # date = int((datetime.date.today()-datetime.timedelta(days=daydelta)).strftime('1%y%m%d'))
     #     "(LKDTER>=%d OR LKDTAE>=%d)" % (date, date),
 
-    # Ein neuer Index auf der AS/400 hat dannaber die Verhältnisse umgedreht, deswegen nun ohne Datum.
+    # Ein neuer Index auf der AS/400 hat dann aber die Verhältnisse umgedreht, deswegen nun ohne Datum.
     #     CREATE INDEX ALKIDX06 ON ALK00(LKSTAT, LKKZ02, LKLFSN)
 
     conditions = ["LKSTAT<>'X'",
@@ -237,7 +247,10 @@ def get_new(limit=41):
     ret = []
     # Wichtig ist es, jedes Caching zu unterbinden, denn möglicherweise arbeiten wir mit get_new()
     # in einer engen Schleife, da würde Caching alles durcheinanderwerfen.
-    for kopf in query(['ALK00'], ordering=['LKSANK DESC'], fields=['LKLFSN'],
+    # Dadurch dsa wir absteigend nach LKDTLF sortieren, senken wir das Risiko, noch nicht komplett
+    # von SoftM bearbeitete Datensätze zu erhelten - bei denen ist das Datum und die Menge in der Regel
+    # noch nicht gesetzt.
+    for kopf in query(['ALK00'], ordering=['LKDTLF DESC'], fields=['LKLFSN'],
                       condition=' AND '.join(conditions), limit=limit, ua='husoftm2.lieferscheine',
                       cachingtime=0):
         ret.append("SL%s" % kopf[0])
@@ -354,9 +367,10 @@ def get_lieferschein_statistics():
     rows = query(fields=['LKKZ02', 'COUNT(*)'],
                  tables=['ALK00'],
                  condition="LKLFSN<>0 AND LKSTAT<>'X'",
-                 grouping=['LKKZ02'])
+                 grouping=['LKKZ02'],
+                 cachingtime=50)
 
-    amounts = dict((row['LKKZ02'], row['COUNT(*)']) for row in rows)
+    amounts = dict((row.get('LKKZ02', '?'), row['COUNT(*)']) for row in rows)
     # Wenn alle Lieferscheine verarbeitet sind, gibt es den Key '0' nicht.
     return amounts.get(0, 0), amounts.get(1, 0)
 
@@ -382,8 +396,15 @@ def _selftest():
     lschein = get_lieferschein('SL4176141')
     pprint(lschein)
     assert lschein['datum']
-    # Bei dem lieferschein trat ein int/str dict key mixup auf. Sollte in 7777df6 gefixed sein.
-    pprint(get_lieferschein('300300'))
+    try:
+        # Bei dem lieferschein trat ein int/str dict key mixup auf. Sollte in 7777df6 gefixed sein.
+        pprint(get_lieferschein('300300'))
+    except RuntimeError, exc:
+        # Derzeit werden für LS mit 0 Mengen RuntimeError geworfen.
+        assert('0-Menge' in str(exc))
+    else:
+        raise RuntimeError("Wir erwarten hier einen RuntimeError")
+
     print get_new()
     # [LH #687] Lieferscheine sollten kein Lieferadressfeld haben, wenn es keine gesonderte
     # Lieferadresse gibt.

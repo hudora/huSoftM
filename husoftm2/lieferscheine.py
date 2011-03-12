@@ -261,7 +261,7 @@ def mark_processed(lieferscheinnr):
     """Markiert einen Lieferschein, so dass er von get_new() nicht mehr zurücuk gegeben wird."""
     conditions = ["LKLFSN=%s" % sql_quote(remove_prefix(lieferscheinnr, 'SL')),
                   "LKSTAT<>'X'",
-                  "LKKZ02=0",
+                  # "LKKZ02=0",  # Doppelt markieren ist OK
                   ]
     return x_en('ALK00', condition=' AND '.join(conditions), ua='husoftm2.lieferscheine')
 

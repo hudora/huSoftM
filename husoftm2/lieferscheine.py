@@ -228,9 +228,9 @@ def get_changed_after(date, limit=None):
     return ret
 
 
-# Wir arbeiten im Zusammenhang mit Liefershceinen mit dem Kundenspezifischen Feld LKKZ02.
+# Wir arbeiten im Zusammenhang mit Lieferscheinen mit dem Kundenspezifischen Feld LKKZ02.
 # Dies ist standartmässig mit 0 vorbelegt. Wir setzen den Wert nach Verarbeitung auf 1.
-def get_new(limit=11):
+def get_new(limit=401):
     """Liefert unverarbeitete Lieferscheine zurück."""
     # Abfragen waren einige Zeit VIEL schneller, wenn wir Sie nur auf ein paar Tage einschränken,
     # deswegen hatten wir folgende Zusatzbedingung:
@@ -250,7 +250,7 @@ def get_new(limit=11):
     # Dadurch dsa wir absteigend nach LKDTLF sortieren, senken wir das Risiko, noch nicht komplett
     # von SoftM bearbeitete Datensätze zu erhelten - bei denen ist das Datum und die Menge in der Regel
     # noch nicht gesetzt.
-    for kopf in query(['ALK00'], ordering=['LKDTLF DESC'], fields=['LKLFSN'],
+    for kopf in query(['ALK00'], ordering=['LKDTLF DESC, LKZTLF DESC'], fields=['LKLFSN'],
                       condition=' AND '.join(conditions), limit=limit, ua='husoftm2.lieferscheine',
                       cachingtime=0):
         ret.append("SL%s" % kopf[0])

@@ -9,7 +9,7 @@ This module enables connections to a SoftMexpress server which in
 turn enables ODBC connections to the AS/400.
 
 branched of connection3.py, Maximillian Dornseif on 2010-11-30.
-Copyright (c) 2006, 2008, 2009, 2010 HUDORA. All rights reserved.
+Copyright (c) 2006, 2008-2011 HUDORA. All rights reserved.
 """
 
 
@@ -67,6 +67,21 @@ except ImportError:
     pass
 
 
+class SoftMError(Exception):
+    """This is the base for all exceptions in this package."""
+    pass
+
+
+class TransientError(SoftMError):
+    """There was a transient error while accessing the Data. Please try again later."""
+    pass
+
+
+class TimeoutException(SoftMError, IOError):
+    """The the HTTP transport or SQL backend reports a timeout."""
+    pass
+
+
 def _find_credentials(credentials=None):
     if not credentials:
         credentials = getattr(settings, 'SOFTMEXPRESS_CREDENTIALS', None)
@@ -79,10 +94,6 @@ def _find_credentials(credentials=None):
     if not credentials:
         raise RuntimeError('set SOFTMEXPRESS_CREDENTIALS')
     return credentials
-
-
-class TimeoutException(IOError):
-    pass
 
 
 def as400_2_int(num):

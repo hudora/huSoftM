@@ -100,8 +100,8 @@ def softm_to_invoice(rechnungsnr):
     for attr in 'skontobetrag'.split():
         hint[attr] = rg[attr]
     out = {'hint': hint}
-    for attr in '''kundenauftragsnr auftragsnr versandkosten rechnung_steuranteil rechnungsnr
-                   zu_zahlen'''.split():
+    for attr in ['kundenauftragsnr', 'auftragsnr', 'versandkosten', 'rechnung_steueranteil', 'rechnungsnr',
+                 'zu_zahlen']:
         out[attr] = rg[attr]
 
     out['leistungsdatum'] = rg['versand_date']

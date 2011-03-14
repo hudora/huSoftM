@@ -543,7 +543,7 @@ MAPPINGDIR = {
      'FKSBRT': 'skontierfaehiger_betrag',
      'FKSKTA': 'skontobetrag',
      'FKNETT': 'warenwert',
-     'FKMWBT': 'rechnung_steuranteil',
+     'FKMWBT': 'rechnung_steueranteil',
      # 'FKNETR': 'Positionswert f}r Auftr.-Ra',
      # 'FKNBK ': 'Nebenkosten',
      # 'FKNBT1': 'Zus. Nebenkosten 1',

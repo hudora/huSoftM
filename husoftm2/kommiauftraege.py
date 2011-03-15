@@ -12,7 +12,7 @@ Copyright (c) 2011 HUDORA. All rights reserved.
 
 from husoftm2.lieferscheine import get_ls_kb_data
 from husoftm2.tools import remove_prefix, sql_quote
-from husoftm2.backend import query
+from husoftm2.backend import query, x_en
 import warnings
 
 
@@ -40,7 +40,8 @@ def get_kommiauftrag(komminr, header_only=False):
         beleg = belege[0]
         # Falls es bereits einen Lieferschein gibt, die Lieferscheinnr in das dict schreiben.
         # Ansonsten die Eintrag 'lieferscheinnr' entfernen (wäre sonst SL0)
-        rows = query(['ALK00'], condition="LKLFSN <> 0 AND LKKBNR = %s" % sql_quote(komminr))
+        rows = query(['ALK00'], condition="LKLFSN <> 0 AND LKKBNR = %s" % sql_quote(komminr),
+                     ua='husoftm2.kommiauftraege')
         if rows:
             beleg['lieferscheinnr'] = rows[0]['lieferscheinnr']
         else:
@@ -57,8 +58,30 @@ def get_kommibeleg(komminr, header_only=False):
 def get_rueckmeldedaten(komminr):
     """Liefert Informationen aus der SoftM Rückmeldeschnittstelle zurück - nur für debugging Zwecke."""
     komminr = remove_prefix(komminr, 'KA')
-    rows = query(['ISR00'], condition="IRKBNR = %s" % sql_quote(komminr))
+    rows = query(['ISR00'], condition="IRKBNR = %s" % sql_quote(komminr), ua='husoftm2.kommiauftraege')
     ret = {}
     for row in rows:
         ret[str(row['kommibelegposition'])] = row
     return ret
+
+
+def get_new(limit=401):
+    """Liefert unverarbeitete Kommiaufträge zurück."""
+
+    ret = []
+    # Wichtig ist es, jedes Caching zu unterbinden, denn möglicherweise arbeiten wir mit get_new()
+    # in einer engen Schleife, da würde Caching alles durcheinanderwerfen.
+    # Dadurch dsa wir absteigend nach LKDTLF sortieren, senken wir das Risiko, noch nicht komplett
+    # von SoftM bearbeitete Datensätze zu erhelten - bei denen ist das Datum und die Menge in der Regel
+    # noch nicht gesetzt.
+    for kopf in query(['ISA00'], fields=['IAKBNR'],
+                      condition="IASTAT<>'X'", limit=limit, ua='husoftm2.kommiauftraege',
+                      cachingtime=0):
+        ret.append("KA%s" % kopf[0])
+    return ret
+
+
+def mark_processed(kommiauftragnr):
+    """Markiert einen Kommiauftrag, so dass er von get_new() nicht mehr zurücuk gegeben wird."""
+    conditions = ["IAKBNR=%s" % sql_quote(remove_prefix(kommiauftragnr, 'KA'))]
+    return x_en('ISA00', condition=' AND '.join(conditions), ua='husoftm2.kommiauftraege')

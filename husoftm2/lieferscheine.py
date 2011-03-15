@@ -73,15 +73,18 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
         # Lieber ein Crash, als ein Lieferschein mit (unbegründerter) 0-menge.
         if row['ALK_dfsl']:
             raise husoftm2.backend.TransientError("Dateiführungsschlüssel in ALK00: %r" % kopf)
-        if not row['ALK_lieferschein_date']:
-            # Noch ist unklar, ob es eigentlich "korrekte" Lieferscheine ohne ALK_lieferschein_date
-            # geben kann. Bis dahin werfen wir erstmal eine Exception, weil wir davon ausgehen, dass
-            # Der Datensatz noch in Arbeit ist.
-            logging.critical("? %s", row)
-            logging.critical("gesamter Kopf %s", query(['ALK00'], condition="LKLFSN = %s"
-                              % remove_prefix(kopf['lieferscheinnr'], "SL")))
-            raise husoftm2.backend.TransientError("Noch kein Lieferscheindatum in ALK00: %r" % kopf)
-        kopf['datum'] = row['ALK_lieferschein'] or row['ALK_lieferschein_date']
+        if is_lieferschein == True:
+            if not row['ALK_lieferschein_date']:
+                # Noch ist unklar, ob es eigentlich "korrekte" Lieferscheine ohne ALK_lieferschein_date
+                # geben kann. Bis dahin werfen wir erstmal eine Exception, weil wir davon ausgehen, dass
+                # Der Datensatz noch in Arbeit ist.
+                logging.critical("? %s", row)
+                logging.critical("gesamter Kopf %s", query(['ALK00'], condition="LKLFSN = %s"
+                                  % remove_prefix(kopf['lieferscheinnr'], "SL")))
+                raise husoftm2.backend.TransientError("Noch kein Lieferscheindatum in ALK00: %r" % kopf)
+            kopf['datum'] = row['ALK_lieferschein'] or row['ALK_lieferschein_date']
+        else:
+            kopf['datum'] = row['kommibeleg'] or row['kommibeleg_date']
 
         pos_key = remove_prefix((row['satznr']), 'SO')
         if row.get('bezogener_kopf'):
@@ -95,6 +98,7 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
 
     satznr = koepfe.keys()
     allauftrnr = koepfe.keys()
+    mengen_mit_mehr_als_null = False
     # Alle texte einlesen
     postexte, kopftexte, posdaten, kopfdaten = txt_auslesen([satznr2auftragsnr[x] for x in allauftrnr])
     while satznr:
@@ -123,7 +127,6 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
             koepfe[aktsatznr]['lieferadresse']['warenempfaenger'] = warenempfaenger
 
         ### Positionen & Positionstexte zuordnen
-        mengen_mit_mehr_als_null = False
         for row in query(['ALN00'],
                          condition="LNSTAT<>'X' AND LNSANK IN (%s)" % ','.join([str(x) for x in batch]),
                          cachingtime=cachingtime, ua='husoftm2.lieferscheine'):
@@ -154,7 +157,9 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
             pos = dict(artnr=row['artnr'],
                        guid='%s-%03d-%03d' % (row['kommibelegnr'], row['auftrags_position'],
                                               row['kommibeleg_position']),
-                       menge=lsmenge)
+                       menge=lsmenge,
+                       _posnr_auftrag=row['auftrags_position'],
+                       _posnr_kommi=row['kommibeleg_position'])
             texte = postexte.get(remove_prefix(row['auftragsnr'], 'SO'),
                                                {}).get(row['auftrags_position'], [])
             pos['infotext_kunde'] = texte
@@ -204,10 +209,10 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
     # gewählt.
     # Wenn wir bessere Wege finden, noch nicht komplett importierte Lieferscheine zu finden, dann
     # könnte dieser Code wieder beseitigt werden.
-    if not mengen_mit_mehr_als_null:
+    if not mengen_mit_mehr_als_null and is_lieferschein == True:
         for kopf in koepfe.values():
             if datetime.datetime.now() - kopf['datum'] < datetime.timedelta(hours=6):
-                logging.critical("Lieferscheinen haben nur 0-Mengen %r", auftragsnr2satznr.keys())
+                logging.critical("Lieferscheine haben nur 0-Mengen %r", auftragsnr2satznr.keys())
                 logging.critical("Conditions: %r", condition)
                 raise husoftm2.backend.TransientError
 

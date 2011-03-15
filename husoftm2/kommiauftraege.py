@@ -30,11 +30,7 @@ def get_kommiauftrag(komminr, header_only=False):
     # Die Kommissionierbelege haben '0' als Lieferscheinnr.
     # Zusätzlich werden die (logisch) gelöschten Lieferscheine rausgefiltert.
     conditions = ["LKLFSN = 0", "LKKBNR = %s" % sql_quote(komminr), "LKSTAT<>'X'"]
-    try:
-        belege = get_ls_kb_data(conditions, header_only=header_only,
-                                is_lieferschein=False)
-    except RuntimeError:
-        return {}
+    belege = get_ls_kb_data(conditions, header_only=header_only, is_lieferschein=False)
 
     if belege:
         beleg = belege[0]

@@ -202,6 +202,17 @@ def auftraege_kunde(kundennr, limit=None, header_only=False):
     return auftraege
 
 
+def get_auftragsarten_by_auftragsnrs(auftragsnrs):
+    """Ermittelt die Auftragsart (Freitext) der Aufträge der gegebenen Auftragsnummern.
+
+    auftragsnrs: liste von Auftragsnummern
+    return: Dictionary Auftragnr -> Auftragsart
+    """
+    condition = "AKAUFN in (%s)" % ','.join(sql_quote(remove_prefix(nr, 'SO')) for nr in auftragsnrs)
+    rows = query(['AAK00'], fields=['AKAUFN', 'AKAUFA'], condition=condition)
+    return dict(("SO%s" % row['auftragsnr'], AUFTRAGSARTEN[row['art']]) for row in rows)
+
+
 def verspaetete_auftraege(datum=None):
     """Gibt eine Liste von Auftragsnummern zurück, die vor <datum> ausgeliefert hätten werden müssen,
     aber noch nicht ausgeliefert sind.

@@ -12,7 +12,8 @@ Copyright (c) 2011 HUDORA. All rights reserved.
 
 from husoftm2.lieferscheine import get_ls_kb_data
 from husoftm2.tools import remove_prefix, sql_quote
-from husoftm2.backend import query, x_en
+from husoftm2.backend import query, x_en, raw_SQL
+import datetime
 import warnings
 
 
@@ -52,12 +53,24 @@ def get_kommibeleg(komminr, header_only=False):
 
 
 def get_rueckmeldedaten(komminr):
-    """Liefert Informationen aus der SoftM Rückmeldeschnittstelle zurück - nur für debugging Zwecke."""
+    """Liefert Informationen aus der SoftM Rückmeldeschnittstelle zurück."""
     komminr = remove_prefix(komminr, 'KA')
-    rows = query(['ISR00'], condition="IRKBNR = %s" % sql_quote(komminr), ua='husoftm2.kommiauftraege')
+    rows = query(['ISR00'], condition="IRKBNR = %s" % sql_quote(komminr), ua='husoftm2.kommiauftraege',
+                 cachingtime=0)
     ret = {}
     for row in rows:
         ret[str(row['kommibelegposition'])] = row
+    return ret
+
+
+def get_rueckmeldestatus():
+    """Liefert die Zahl der nicht zurück gemeldeten Aufträge zurück."""
+    rows = query(['ISR00'], fields=['COUNT(*)', 'IRSTAT'], condition="IRSTAT<>'X'",
+                 ua='husoftm2.kommiauftraege', grouping=['IRSTAT'], cachingtime=0)
+    # [{'status': u'A', 'COUNT(*)': 67}, {'status': u'', 'COUNT(*)': 73}]
+    ret = {}
+    for row in rows:
+        ret[row['status']] = row['COUNT(*)']
     return ret
 
 
@@ -81,3 +94,36 @@ def mark_processed(kommiauftragnr):
     """Markiert einen Kommiauftrag, so dass er von get_new() nicht mehr zurücuk gegeben wird."""
     conditions = ["IAKBNR=%s" % sql_quote(remove_prefix(kommiauftragnr, 'KA'))]
     return x_en('ISA00', condition=' AND '.join(conditions), ua='husoftm2.kommiauftraege')
+
+
+def zurueckmelden(auftragsnr, komminr, positionen):
+    """Rückmeldung zu SoftM über die Rückmeldeschnittstelle (ISR00).
+
+    Es wird immer ein kompletter Kommiauftrag zurückgemeldet. Dh. jede Position, die im Kommiauftrag enthalten
+    war, muss auch in den Rückmeldedaten vorhanden sein. Die Mengen in diesen Positionen dürfen voneinander
+    abweichen. Rückmeldungen von bereits in dieser Schnittstelle stehenden Kommiaufträgen werden abgelehnt.
+    """
+
+    komminr = remove_prefix(komminr, 'KA')
+    auftragsnr = remove_prefix(auftragsnr, 'SO')
+    if get_rueckmeldedaten(komminr):
+        msg = u'%s: Kommiauftrag schon in ISR00' % komminr, 'wms2ic_rueckmeldung'
+        raise RuntimeError(msg)
+
+    lock_key = datetime.datetime.now().strftime("%m%d%H%M%S")
+    for pos in positionen:
+        pos_sql = dict(IRFNR='01',
+                       IRKBNR=int(komminr),
+                       IRKPOS=int(pos['posnr']),
+                       IRAUFN=int(auftragsnr),
+                       IRAUPO=int(pos['posnr_auftrag']),
+                       IRDFSL=lock_key,
+                       IRMENG=int(pos['menge']))
+        sqlstr = 'INSERT INTO ISR00 (%s) VALUES (%s)' % (','.join(pos_sql.keys()),
+                                                         ','.join([repr(x) for x in pos_sql.values()]))
+        raw_SQL(sqlstr, ua='husoftm2.kommiauftrag.zurueckmelden')
+
+    # set all records to be unlocked
+    sqlstr = "UPDATE ISR00 SET IRDFSL='' WHERE IRKBNR='%s' AND IRDFSL='%s'" % (int(komminr),
+                                                                               lock_key)
+    raw_SQL(sqlstr, ua='husoftm2.kommiauftrag.zurueckmelden')

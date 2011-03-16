@@ -208,29 +208,56 @@ def _get_tablename(name):
     return "SMKDIFP.%s" % name
 
 
-def execute(url, args, method='GET', ua='', bust_cache=False):
-    """Execute SQL statement"""
+def execute(url, args, ua='', bust_cache=False):
+    """Execute SQL comand - SQL generation is done by the Server"""
 
     args_encoded = urllib.urlencode({'q': hujson.dumps(args)})
     url = ("/%s?" % url) + args_encoded
-    digest = hmac.new(_find_credentials(), url, hashlib.sha1).hexdigest()
-    softmexpresshost = os.environ.get('SOFTMEXPRESSHOST', 'api.hudora.biz:8082')
-    headers = {'X-sig': digest}
+    headers = {}
     # See http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9.4 for the reasoning here
     if bust_cache:
         logging.debug("busting cache")
-        headers['Cache-Control'] = "no-cache"
+        headers.update({'Cache-Control': "no-cache"})
         url += '&ts=%s' % time.time()
+    # sign request
+    digest = hmac.new(_find_credentials(), url, hashlib.sha1).hexdigest()
+    softmexpresshost = os.environ.get('SOFTMEXPRESSHOST', 'api.hudora.biz:8082')
+    headers.update({'X-sig': digest})
     status, headers, content = huTools.http.fetch('http://' + softmexpresshost + url,
-                                                  method=method,
+                                                  method='GET',
                                                   headers=headers,
                                                   ua='%s/husoftm2.backend' % ua,
-                                                  timeout=21)
+                                                  timeout=26)
     if status != 200:
         # TODO: this looks extremely fragile. Must have be drunk while coding this.
         # needs a better implementation
         if content.startswith('Internal Error: {\'EXIT\',\n                    {timeout'):
             raise TimeoutException(content)
+        raise RuntimeError("Server Error: %r" % content)
+    return content
+
+
+def raw_SQL(command, ua=''):
+    """Reines SQL ausführen - darf mur von 4-reviewtem code benutzt werden."""
+
+    args_encoded = urllib.urlencode({'query': command})
+    url = "/raw?" + args_encoded
+    headers = {'Cache-Control': "no-cache"}
+    url += '&ts=%s' % time.time()
+    # sign request
+    digest = hmac.new(_find_credentials(), url, hashlib.sha1).hexdigest()
+    softmexpresshost = os.environ.get('SOFTMEXPRESSHOST', 'api.hudora.biz:8082')
+    headers = {'X-sig': digest}
+    # Wir nutzen POST mit einem Query-String in der URL. Das ist dirty
+    # See http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9.4 for the reasoning here
+    status, headers, content = huTools.http.fetch('http://' + softmexpresshost + url,
+                                                  method='POST',
+                                                  headers=headers,
+                                                  content={'query': command, 'ua': ua},
+                                                  ua='%s/husoftm2.backend' % ua,
+                                                  timeout=3000)
+    if status != 200:
+        logging.error(url)
         raise RuntimeError("Server Error: %r" % content)
     return content
 

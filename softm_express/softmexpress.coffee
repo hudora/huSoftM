@@ -46,6 +46,13 @@ desthost = args[1] || 'localhost'
 destport = args[2] || '8000'
 listenport = args[3] || '8082'
 query_counter = 0
+update_counter = 0
+raw_counter = 0
+
+# Implementierung von Pythons `string.startswith()`
+startswith = (s1, s2) ->
+    return s1.substr(0, s2.length) == s2
+
 
 # Send a Message to the client
 sendReply = (response, code, message) ->
@@ -67,7 +74,7 @@ login_required = (request, response, handler) ->
     # Prüfen, ob der Client den gleichen HMAC mitgeliefert hat
     if request.headers['x-sig'] != digest
         # Nein. Daten loggen und Fehlermeldung zum Client zurück senden
-        console.log(request.client.remoteAddress + ': ' + "Login Provided" + request.headers['x-sig']);
+        console.log(request.client.remoteAddress + ': ' + "Login Provided " + request.headers['x-sig']);
         # sendReply(response, 401, "Not with me!")
         handler(request, response)
     else
@@ -142,11 +149,26 @@ x_en = (request, response) ->
     console.log(newurl)
     proxy = new httpProxy.HttpProxy(request, response)
     proxy.proxyRequest(destport, desthost)
+    update_counter += 1
 
 
-# Implementierung von Pythons `string.startswith()`
-startswith = (s1, s2) ->
-    return s1.substr(0, s2.length) == s2
+# beliebiges SQL ausführen
+raw_sql = (request, response) ->
+    parsedurl = url.parse(request.url)
+    querystr = querystring.parse(parsedurl.query).query
+    # Alle Queries auf der Console loggen.
+    console.log(request.client.remoteAddress + ': ' + querystr);
+    if startswith(querystr, 'SELECT')
+        newurl = '/select?' + querystring.stringify({query: querystr, tag: '+sExWR'})
+    else if startswith(querystr, 'INSERT')
+        newurl = '/insert?' + querystring.stringify({query: querystr, tag: '+sExWR'})
+    else if startswith(querystr, 'UPDATE')
+        newurl = '/update?' + querystring.stringify({query: querystr, tag: '+sExWR'})
+    request.url = newurl
+    # Proxy Objekt für diesen REquest erstellen und ausführen.
+    proxy = new httpProxy.HttpProxy(request, response)
+    proxy.proxyRequest(destport, desthost)
+    raw_counter += 1
 
 
 # Main Server Code
@@ -159,17 +181,22 @@ server = httpProxy.createServer (request, response) ->
         proxy.proxyRequest(destport, desthost)
     else if parsedurl.pathname == '/stats' && request.method == 'GET'
         # return statistics information
-        sendReply(response, 200, "query_counter: " + query_counter)
+        sendReply(response, 200, "query_counter: " + query_counter + "\nupdate_counter: " + update_counter + "\nraw_counter: " + raw_counter)
     else if startswith(parsedurl.pathname, '/sql')
         if request.method != 'GET'
-            sendReply(response, 405, "Method not allowed")
+            sendReply(response, 405, "Method " + request.method + " not allowed")
         else
             login_required(request, response, select)
     else if startswith(parsedurl.pathname, '/x_en')
         if request.method != 'GET'
-            sendReply(response, 405, "Method not allowed")
+            sendReply(response, 405, "Method " + request.method + " not allowed")
         else
             login_required(request, response, x_en)
+    else if startswith(parsedurl.pathname, '/raw')
+        if request.method != 'POST'
+            sendReply(response, 405, "Method " + request.method + " not allowed")
+        else
+            login_required(request, response, raw_sql)
     else
         sendReply(response, 404, "Not here!")
 

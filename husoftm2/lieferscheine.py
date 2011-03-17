@@ -84,7 +84,7 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
                 raise husoftm2.backend.TransientError("Noch kein Lieferscheindatum in ALK00: %r" % kopf)
             kopf['datum'] = row['ALK_lieferschein'] or row['ALK_lieferschein_date']
         else:
-            kopf['datum'] = row['kommibeleg'] or row['kommibeleg_date']
+            kopf['datum'] = row.get('kommibeleg', row['kommibeleg_date'])
 
         pos_key = remove_prefix((row['satznr']), 'SO')
         if row.get('bezogener_kopf'):

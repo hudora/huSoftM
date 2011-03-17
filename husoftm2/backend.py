@@ -115,7 +115,7 @@ def _rows2dict(fields, mappings, rows):
 def _rows2dict_field_helper(fields, i, row, mappings, rowdict):
     """Called per column in a row to convert it to a dict and fix field types.
 
-    fields.DECIMALIZE2 and g.DATETIMEDIR are used to determine special field handling.
+    husoftm2.fields.DECIMALIZE2 and husoftm2.fields.DATETIMEDIR are used to determine special field handling.
     Also fields ending in '_date' are converted to datetime objects.
 
     >>> _rows2dict_field_helper(['LFARTN'], 0, ['12345'], {'LFARTN': 'artnr'}, {})
@@ -175,7 +175,7 @@ def _fix_field(data, feldname):
 
 
 def _combine_date_and_time(mappings, fieldname, data, fields, row):
-    """If there is also a time field in addition to a date field combine them."""
+    """Combine date and time if there is a time field belonging to the date field."""
 
     # Basename is the resulting field name for the combined datetime value
     basename = '_'.join(mappings[fieldname].split('_')[:-1])
@@ -188,10 +188,15 @@ def _combine_date_and_time(mappings, fieldname, data, fields, row):
     except ValueError:
         return {}
 
+    # The timefield is supposed to be of type int
+    if not isinstance(row[timepos], int):
+        return {}
+
     # Try to combine date and time if both values seem to be sane
-    if row[timepos] and not str(row[timepos]).startswith('9999'):  # Zeit = 9999: Unbestimmt
+    timevalue = '%06d' % int(row[timepos])
+    if not timevalue.startswith('999999'):  # time = 999999 means undefined
         if len(str(int(data))) == 7:
-            date = datetime.datetime.strptime("%sT%s" % (int(data), int(row[timepos])), '1%y%m%dT%H%M%S')
+            date = datetime.datetime.strptime("%sT%s" % (int(data), timevalue), '1%y%m%dT%H%M%S')
             return {basename: date}
         else:
             raise ValueError

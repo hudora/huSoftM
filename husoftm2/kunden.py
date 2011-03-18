@@ -30,6 +30,29 @@ betreuerdict = {
 }
 
 
+# Die Liste wird von Frau James gepflegt.
+# Diese Werte entsprechen dem Stand Februar 2011
+vertreterdict = {
+    u'': u'unbekannt',
+    u'100': u'Laurenz Kooistra',
+    u'101': u'Laurenz Kooistra',
+    u'102': u'Laurenz Kooistra',
+    u'200': u'Frank Ilmert',
+    u'201': u'Frank Ilmert',
+    u'202': u'Frank Ilmert',
+    u'300': u'Christoph Gerlach',
+    u'301': u'Tobias Lehnert',
+    u'302': u'Tobias Lehnert',
+    u'400': u'Andreas Karger',
+    u'500': u'Jürgen Tiszekker',
+    u'800': u'Thomas Ludwig',
+    u'900': u'Silvertoys',
+    u'901': u'Agefe Scandinavia AB',
+    u'910': u'Optitrade & Service AG',
+    u'999': u'Hauskunde',
+}
+
+
 def get_kundennummern():
     """Returns a list of all 'Kundennummern'"""
     rows = query('XKD00', fields=['KDKDNR'], condition="KDSTAT <> 'X'")
@@ -51,12 +74,9 @@ def get_kunde(kundennr):
     <kundennr> must be an Integer in the Range 10000..99999.
     If no data exists for that KdnNr ValueError is raised."""
 
-    kundennr = str(kundennr)
-    if kundennr.startswith('SC'):
-        kundennr = kundennr[2:]
-    kundennr = int(kundennr)
+    kundennr = husoftm2.tools.remove_prefix(kundennr, 'SC')
     rows = query(['XKD00'],
-                 condition="KDKDNR='%8d' AND KDSTAT<>'X'" % kundennr,
+                 condition="KDKDNR=%s AND KDSTAT<>'X'" % husoftm2.tools.pad('KDKDNR', kundennr),
                  joins=[('XKS00', 'KDKDNR', 'KSKDNR'),
                         ('AKZ00', 'KDKDNR', 'KZKDNR')])
     if len(rows) > 1:
@@ -96,7 +116,7 @@ def get_lieferadressen(kundennr):
     """
 
     kundennr = husoftm2.tools.remove_prefix(kundennr, 'SC')
-    avrows = query(['AVA00'], condition="VAKDNR='%8s' AND VASTAT <>'X'" % int(kundennr))
+    avrows = query(['AVA00'], condition="VAKDNR='%8s' AND VASTAT <>'X'" % kundennr)
     kunden = []
     for row in avrows:
         xarows = query(['XXA00'], condition="XASANR='%s'" % int(row['satznr']))
@@ -146,8 +166,8 @@ def _softm_to_dict(row):
                adressdatei_id=row.get('adressdatei_id', ''),
                company=row.get('company', ''),                          # '06'
                # gebiet=row.get('gebiet', ''),                          # ': u'04'
-               # distrikt=row.get('distrikt', ''),                      # ': u'16'
-               # vertreter=row.get('vertreter', ''),                    # ': u'201'
+               distrikt=row.get('distrikt', ''),
+               vertreter_handle=row.get('vertreter', ''),
                # branche=row.get('branche', ''),                        # ': u'13'
                # kundengruppe=row.get('kundengruppe', ''),
                betreuer_handle=row.get('betreuer', ''),                 # ': u'Birgit Bonrath'
@@ -160,6 +180,11 @@ def _softm_to_dict(row):
         logging.error('Kunde %s (%s) hat mit "%s" keinen gueltigen Betreuer' % (ret['name1'],
                                                                                 ret['kundennr'],
                                                                                 ret['betreuer_handle']))
+    ret['vertreter'] = vertreterdict.get(ret['vertreter_handle'], '')
+    if not ret['vertreter']:
+        logging.error('Kunde %s (%s) hat mit "%s" keinen gueltigen Vertreter' % (ret['name1'],
+                                                                                 ret['kundennr'],
+                                                                                 ret['vertreter_handle']))
     if 'verbandsnr' in row and row['verbandsnr']:
         ret['verbandsnr'] = 'SC%s' % row['verbandsnr']
         ret['mitgliedsnr'] = row.get('mitgliedsnr', '')
@@ -171,6 +196,45 @@ def _softm_to_dict(row):
     if row.get('XKD_aenderung_date'):
         ret['aenderung'] = row['XKD_aenderung_date']
     return ret
+
+
+def get_konditionen(kundennr):
+    """Liefere Zahlungskonditionen für einen Kunden
+
+    >>> get_konditionen('SC66669')
+    u'x Tage y%, z Tage netto'
+    """
+
+    kundennr = husoftm2.tools.remove_prefix(kundennr, 'SC')
+    rows = query(['AKZ00'], fields=['KZX3ZB'],
+                 condition="KZKDNR = %s" % husoftm2.tools.pad('KZKDNR', kundennr),
+                 limit=1, ua='husoftm2.kunden.get_konditionen')
+    if not rows:
+        return None
+    schluessel = rows[0][0]
+    if not schluessel:
+        return None
+
+    rows = query(['XKP00'], fields=['KPTXT2'], limit=1,
+                 condition="KPTYP='ZAHLBEDA' AND KPINHA=%s" % husoftm2.tools.pad('KPINHA', schluessel),
+                 ua='husoftm2.kunden.get_konditionen')
+    if rows:
+        return rows[0][0]
+
+
+def get_verband(kundennr):
+    """Suche Verbandsinformationen zu einem Kunden zusammen"""
+
+    kunde = get_kunde(kundennr)
+    if kunde.get('verbandsnr'):
+        verband = get_kunde(kunde['verbandsnr'])
+        return {'verbandsnr': kunde['verbandsnr'],
+                'name1': verband['name1'],
+                'name2': verband.get('name2', ''),
+                'name3': verband.get('name3', ''),
+                'name4': verband.get('name4', ''),
+                'mitgliedsnr': kunde.get('mitgliedsnr', '')}
+
 
 # Still missing:
 # def get_kundenbetreuer(kundennr):
@@ -192,6 +256,8 @@ def _selftest():
     print get_kunde('SC64000')
     print get_kunde('10001')
     print get_kunde('SC67100')
+    print get_verband('SC10123')
+    print get_konditionen('SC66669')
 
 
 if __name__ == '__main__':

@@ -742,7 +742,10 @@ MAPPINGDIR = {
           #'KZVANR': 'Versand-Adress Nr.',
           #'KZEXPR': 'Expreßgut-Station',
           'KZLGNR': 'auslieferunglager',
-          #'KZX3ZB': 'Zahl.-Bed-Schl.',
+          # Der zahlungsbedingung_schluessel ist ein Verweis auf XKP00.KPINHA
+          # Achtung! Der Wert kann nicht direkt z.B. in einer Subquery oder einem JOIN verwendet werden,
+          # sondern muss mit Leerzeichen aufgefüllt werden: husoftm2.tools.pad('KPINHA', value)
+          'KZX3ZB': 'zahlungsbedingung_schluessel',
           #'KZKDRG': 'Rechnungs-Zahler',
           #'KZWSL ': 'Währungs-Kennzeichen',
           #'KZKZBO': 'Bonus-Kennzeichen',
@@ -2536,16 +2539,16 @@ MAPPINGDIR = {
     # 'PNBPER': 'BenutzerPr.Erfassung',
     # 'PNDTER': 'Datum Erfassung CJJMMTT',
     # 'PNZTER': 'Uhrzeit der Erfassung',
-    # 'PNSBAE': 'Sachb.letzte ¢nderung  ',
-    # 'PNBPAE': 'BenutzerPr.letzte ¢nderung',
-    # 'PNDTAE': 'Datum l. ¢nderung CJJMMTT',
-    # 'PNZTAE': 'Uhrzeit letzte ¢nderung',
+    # 'PNSBAE': 'Sachb.letzte Änderung  ',
+    # 'PNBPAE': 'BenutzerPr.letzte Änderung',
+    # 'PNDTAE': 'Datum l. Änderung CJJMMTT',
+    # 'PNZTAE': 'Uhrzeit letzte Änderung',
     # 'PNSTAT': 'Satzstatus',
     # 'PNDFSL': 'dateifuehrungsschluessel',
 
 },
 
-'XPR00': {  # Koditionen / Preise
+'XPR00': {  # Konditionen / Preise
     'PRFNR': 'firma',
     'PRANW': 'anwendung',  # 'E' == Einkauf
     # 'PRIB': 'Datenart',
@@ -3142,13 +3145,29 @@ MAPPINGDIR = {
           # 'TYDTER': 'Datum Erfassung CJJMMTT',
           # 'TYSBER': 'Sachb. Erfassung',
           # 'TYBPER': 'BenutzerPr.Erfassung',
-          # 'TYDTAE': 'Datum l. ¢nderung CJJMMTT',
-          # 'TYSBAE': 'Sachb.letzte ¢nderung',
-          # 'TYBPAE': 'BenutzerPr.letzte ¢nderung',
+          # 'TYDTAE': 'Datum l. Änderung CJJMMTT',
+          # 'TYSBAE': 'Sachb.letzte Änderung',
+          # 'TYBPAE': 'BenutzerPr.letzte Änderung',
           # 'TYDFSL': 'Dateifuehrungs-Schluessel',
           'TYSTAT': 'satzstatus'},
 
-# SMKDIFP    XLF00      XLF00F01   Lagerbestands-F}hrungs-Datei
+'XKP00': {  # Validierungsdateien
+          #'KPFNR': 'Firma',
+          # 'KPANW': 'anwendung',
+          # bekannte Werte für KPTYP: ZAHLBEDA - Zahlungsbedingungen
+          'KPTYP': 'typ',
+          'KPINHA': 'inhalt1',
+          'KPINH2': 'inhalt2',
+          'KPINH3': 'inhalt3',
+          # 'KPLNG': 'laenge',
+          # 'KPDART': 'art',
+          'KPDTAE': 'XKP_aenderung_date',
+          'KPBSTX': 'kurztext',
+          'KPTXT2': 'langtext',
+          # 'KPTX30': 'bezeichnung',
+},
+
+# SMKDIFP    XLF00      XLF00F01   Lagerbestands-führungs-Datei
 # LFFNR    A         2  0    1    2 Firma
 # LFARTN   A        20  0    3   22 Artikel-Nummer
 # LFLGNR   S    4    4  0   23   26 Lager
@@ -3285,7 +3304,10 @@ DATETIMEDIR = {
 
 # Fields which need padding before beeing used in SQL queries
 PADDINGFIELDS = {
-    'AKKDNR': "%8s",
-    'FKKDNR': "%8s",
-    'KDKDNR': "%8s",
+    'AKKDNR': '%8s',
+    'FKKDNR': '%8s',
+    'KDKDNR': '%8s',
+    'KZVRT': '%8s',
+    'KZKDNR': '%8s',
+    'KPINHA': '%10s',
 }

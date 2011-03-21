@@ -1171,6 +1171,30 @@ MAPPINGDIR = {
         #'FUZTER': 'erfassung_time',
         },
 
+'AKA00': {  # Kunden-Artikel
+            # 'KAFNR': 'firma',
+            'KAKDNR': 'kundennr',
+            # 'KAKGRP': 'kundengruppe',
+            'KAARTN': 'artnr',
+            'KAKART': 'kundenartnr',
+            'KABEZE': 'bezeichnung',
+            # 'KAKZLI': 'listungskennzeichen',
+            # 'KAKZSP': 'sperren',
+            # 'KAGATG': 'Garantietage',
+            # 'KAPREV': 'empfohlener Verkaufspreis',
+            # 'KAPRE2': 'empfohlener Verkaufspreis neu',
+            'KADTPR': 'gueltig_ab_date',
+            # 'KAKZEU': 'Euro-Kennzeichen',
+            # 'KADTPC': 'Datum der letzten PRICAT-Übertragung',
+            # 'KAZTPC': 'Uhrzeit der letzten PRICAT-Übertragung',
+            # 'KAINFO': 'infofeld',
+            # 'KADFSL': 'Dateifuehrungsschlüssel',
+            'KASTAT': 'AKA00_status',
+            # 'KAAGRP': 'Abteilungsgruppe / Werk',
+            # 'KAABT': 'Abteilung',
+            # 'KAFGRP': 'Firmengruppe',
+            # 'KAARTG': 'Artikelgruppe',
+         },
 
 'ASK00': {  # Set/Komponenten
            # 'SKFNR':  'firma',
@@ -3306,8 +3330,9 @@ DATETIMEDIR = {
 PADDINGFIELDS = {
     'AKKDNR': '%8s',
     'FKKDNR': '%8s',
+    'KAKDNR': '%8s',
     'KDKDNR': '%8s',
-    'KZVRT': '%8s',
-    'KZKDNR': '%8s',
     'KPINHA': '%10s',
+    'KZKDNR': '%8s',
+    'KZVRT': '%8s',
 }

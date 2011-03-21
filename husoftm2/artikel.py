@@ -7,8 +7,10 @@ Created by Maximillian Dornseif on 2007-04-28.
 Copyright (c) 2007, 2009, 2010 HUDORA GmbH. All rights reserved.
 """
 
+import datetime
 import unittest
 from husoftm2.backend import query
+from husoftm2.tools import date2softm, sql_quote, pad, remove_prefix
 
 
 def get_artikelnummern():
@@ -38,6 +40,35 @@ def komponentenaufloesung(mengenliste):
             for row in rows:
                 ret.append((int(menge * row['menge_im_set']), row['komponenten_artnr']))
     return ret
+
+
+def get_kundenartikelnr(kundennr, artnrs, date=None):
+    """Liefert eine Zuordnung von SoftM-Artikelnr zu Kundenartikelnr für einen Kunden zurück.
+
+    Wird ein Datum angegeben, werden nur die Datensätze ausgewählt, die ab diesem Datum gültig sind.
+    Wird kein Datum angegeben, wird das aktuelle Datum verwendet.
+
+    Der Rückgabewert ist ein dict mit den SoftM-Artikelnr als Schlüssel und einem dict
+    mit Schlüsseln 'bezeichnung' und 'kundenartnr' als Werte. Bsp:
+    >>> get_kundenartikelnr('SC17200', ['11111'])
+    {u'11111': {'bezeichnung': u'Artikelbezeichnung',
+                'kundenartnr': u'HD-12345-XYZ'}}
+    """
+
+    if date is None:
+        date = datetime.date.today()
+
+    kundennr = remove_prefix(kundennr, 'SC')
+    conditions = ['KAKDNR=%s' % pad('KAKDNR', kundennr),
+                  'KAARTN IN %s' % ','.join(sql_quote(artnr) for artnr in artnrs),
+                  'KADTPR <= %s' % date2softm(date)]
+    rows = query(['AKA00'], fields=['KAARTN', 'KAKART', 'KABEZE'], condition=' AND '.join(conditions),
+                 ua='husoftm2.artikel.get_kundenartikelnr')
+    mapping = {}
+    for row in rows:
+        artnr = row.pop('artnr')
+        mapping[artnr] = row
+    return mapping
 
 
 class KomponentenaufloesungTests(unittest.TestCase):

@@ -9,12 +9,13 @@ Technisch hängt das in SoftM an den Lieferscheinen.
 Created by Christian Klein on 2011-01-03.
 Copyright (c) 2011 HUDORA. All rights reserved.
 """
+import datetime
+import logging
+import warnings
 
+from husoftm2.backend import query, x_en, raw_SQL
 from husoftm2.lieferscheine import get_ls_kb_data
 from husoftm2.tools import remove_prefix, sql_quote
-from husoftm2.backend import query, x_en, raw_SQL
-import datetime
-import warnings
 
 
 def get_kommiauftrag(komminr, header_only=False):
@@ -111,6 +112,7 @@ def zurueckmelden(auftragsnr, komminr, positionen):
         raise RuntimeError(msg)
 
     lock_key = datetime.datetime.now().strftime("%m%d%H%M%S")
+    zurueckgemeldete_positionen = set()
     for pos in positionen:
         pos_sql = dict(IRFNR='01',
                        IRKBNR=int(komminr),
@@ -121,7 +123,15 @@ def zurueckmelden(auftragsnr, komminr, positionen):
                        IRMENG=int(pos['menge']))
         sqlstr = 'INSERT INTO ISR00 (%s) VALUES (%s)' % (','.join(pos_sql.keys()),
                                                          ','.join([repr(x) for x in pos_sql.values()]))
+        zurueckgemeldete_positionen.add(pos['posnr'])
         raw_SQL(sqlstr, ua='husoftm2.kommiauftrag.zurueckmelden')
+
+    # checks if all records were written correctly
+    rueckmeldedaten = get_rueckmeldedaten(komminr)
+    if not set(rueckmeldedaten.keys()) == zurueckgemeldete_positionen:
+        msg = u'Fehler bei Rückmeldung von Kommiauftrag %s: Es wurden nicht alle Positionen geschrieben'
+        logging.critical(msg, komminr)
+        raise RuntimeError(msg % komminr)
 
     # set all records to be unlocked
     sqlstr = "UPDATE ISR00 SET IRDFSL='' WHERE IRKBNR='%s' AND IRDFSL='%s'" % (int(komminr),

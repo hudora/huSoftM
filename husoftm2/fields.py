@@ -1246,7 +1246,7 @@ MAPPINGDIR = {
     #'BUABKR': 'Abstimmkreis',
     'BUDTBL': 'beleg_date',
     #'BUMMBU': 'MM Bumo',
-    #'BUJJBU': 'JJ Bumo',
+    'BUJJBU': 'buchungsjahr',
     #'BUJHBU': 'JH Bumo',
     #'BUGJ':   'Gesch{ftsjahr',
     'BUBLRT': 'belegart',
@@ -3329,6 +3329,7 @@ DATETIMEDIR = {
 # Fields which need padding before beeing used in SQL queries
 PADDINGFIELDS = {
     'AKKDNR': '%8s',
+    'BUGKTO': '%8s',
     'FKKDNR': '%8s',
     'KAKDNR': '%8s',
     'KDKDNR': '%8s',

@@ -246,15 +246,9 @@ def get_changed_after(date, limit=None):
 # Dies ist standartmässig mit 0 vorbelegt. Wir setzen den Wert nach Verarbeitung auf 1.
 def get_new(limit=401):
     """Liefert unverarbeitete Lieferscheine zurück."""
-    # Abfragen waren einige Zeit VIEL schneller, wenn wir Sie nur auf ein paar Tage einschränken,
-    # deswegen hatten wir folgende Zusatzbedingung:
-    # date = int((datetime.date.today()-datetime.timedelta(days=daydelta)).strftime('1%y%m%d'))
-    #     "(LKDTER>=%d OR LKDTAE>=%d)" % (date, date),
-
-    # Ein neuer Index auf der AS/400 hat dann aber die Verhältnisse umgedreht, deswegen nun ohne Datum.
-    #     CREATE INDEX ALKIDX06 ON ALK00(LKSTAT, LKKZ02, LKLFSN)
-
-    conditions = ["LKSTAT<>'X'",
+    # Das klappt sinnvoll, wegen folgendem Indexes:
+    # CREATE INDEX QGPL.ALKIDX07  ON SMKDIFP.ALK00 ( LKSTAT ASC , LKKZ02 ASC , LKLFSN ASC );
+    conditions = ["LKSTAT=' '",
                   "LKKZ02=0",
                   "LKLFSN<>0",
                   ]
@@ -377,16 +371,23 @@ def get_lagerabgang(day):
 
 def get_lieferschein_statistics():
     """ gibt ein tuple (anzahl_nicht_uebernommene_lieferscheine, uebernommene_lieferscheine) zurueck
+
+    Tatsächlich geben wir nicht die Zahl der übernommenen Lieferscheine zurück - das ist zu langsam.
     """
-    rows = query(fields=['LKKZ02', 'COUNT(*)'],
+
+    # Das ganze klappt nur sinnvoll, wegen folgendem Indexes:
+    # CREATE INDEX QGPL.ALKIDX07  ON SMKDIFP.ALK00 (LKSTAT ASC, LKKZ02 ASC , LKLFSN ASC );
+    # SELECT COUNT(*) FROM ALK00 WHERE LKLFSN<>0 AND LKSTAT= ' ' AND LKKZ02 = 0
+    # Grouping, wie heri ursprünglich implementiert ist ein Preformance Killer
+    rows = query(fields=['COUNT(*)'],
                  tables=['ALK00'],
-                 condition="LKLFSN<>0 AND LKSTAT<>'X'",
-                 grouping=['LKKZ02'],
+                 condition="LKLFSN<>0 AND LKSTAT=' ' AND LKKZ02=0",
                  cachingtime=50)
 
-    amounts = dict((row.get('LKKZ02', '?'), row['COUNT(*)']) for row in rows)
-    # Wenn alle Lieferscheine verarbeitet sind, gibt es den Key '0' nicht.
-    return amounts.get(0, 0), amounts.get(1, 0)
+    if not rows:
+        return (0, 0)  # alles übernommen
+    nicht_uebernommen = rows[0][0]
+    return (nicht_uebernommen, 0)
 
 
 def _selftest():

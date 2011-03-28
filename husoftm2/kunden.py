@@ -31,7 +31,7 @@ betreuerdict = {
 
 
 # Die Liste wird von Frau James gepflegt.
-# Diese Werte entsprechen dem Stand Februar 2011
+# Diese Werte entsprechen dem Stand Maerz 2011
 vertreterdict = {
     u'': u'unbekannt',
     u'100': u'Laurenz Kooistra',
@@ -41,10 +41,12 @@ vertreterdict = {
     u'201': u'Frank Ilmert',
     u'202': u'Frank Ilmert',
     u'300': u'Christoph Gerlach',
-    u'301': u'Tobias Lehnert',
+    u'301': u'Thomas Harnischmacher',
     u'302': u'Tobias Lehnert',
     u'400': u'Andreas Karger',
+    u'401': u'Philipp Rauch',
     u'500': u'Jürgen Tiszekker',
+    u'501': u'Alexander Schrey',
     u'800': u'Thomas Ludwig',
     u'900': u'Silvertoys',
     u'901': u'Agefe Scandinavia AB',

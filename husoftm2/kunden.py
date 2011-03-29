@@ -7,7 +7,7 @@ Created by Maximillian Dornseif on 2007-04-13.
 Copyright (c) 2007, 2010, 2011 HUDORA GmbH. All rights reserved.
 """
 
-from husoftm2.backend import query
+from husoftm2.backend import query, raw_SQL
 import datetime
 import husoftm2.tools
 import logging
@@ -22,7 +22,7 @@ betreuerdict = {
             'cgiermann': 'Carsten Giermann',
             'dgrossmann': u'Dirk Grossmann',
             'export': u'Export',
-            'falin': u'Fuesun Alin',
+            'falin': u'Füsun Alin',
             'kschulze': u'Katrin Schulze',
             'mfischer': u'Melanie Fischer',
             'ngerloff': 'Nadine Gerloff',
@@ -179,14 +179,14 @@ def _softm_to_dict(row):
     ret['name'] = ' '.join((ret['name1'], ret['name2'])).strip()
     ret['betreuer'] = betreuerdict.get(ret['betreuer_handle'], '')
     if not ret['betreuer']:
-        logging.error('Kunde %s (%s) hat mit "%s" keinen gueltigen Betreuer' % (ret['name1'],
-                                                                                ret['kundennr'],
-                                                                                ret['betreuer_handle']))
+        logging.error('Kunde %s (%s) hat mit "%s" keinen gueltigen Betreuer', ret['name1'],
+                                                                              ret['kundennr'],
+                                                                              ret['betreuer_handle'])
     ret['vertreter'] = vertreterdict.get(ret['vertreter_handle'], '')
     if not ret['vertreter']:
-        logging.error('Kunde %s (%s) hat mit "%s" keinen gueltigen Vertreter' % (ret['name1'],
-                                                                                 ret['kundennr'],
-                                                                                 ret['vertreter_handle']))
+        logging.error('Kunde %s (%s) hat mit "%s" keinen gueltigen Vertreter', ret['name1'],
+                                                                               ret['kundennr'],
+                                                                               ret['vertreter_handle'])
     if 'verbandsnr' in row and row['verbandsnr']:
         ret['verbandsnr'] = 'SC%s' % row['verbandsnr']
         ret['mitgliedsnr'] = row.get('mitgliedsnr', '')
@@ -239,9 +239,44 @@ def get_verband(kundennr):
 
 
 # Still missing:
-# def get_kundenbetreuer(kundennr):
 # def offene_posten(kundennr):
 # def kredit_limit(kundennr):
+
+def get_betreuer(kundennr):
+    """Liefert einen String, der den Betreuer im Hause für einen bestimmten Kunden identifizert oder ''.
+
+    >>> get_betreuer('SC66669')
+    "Nadine Gerloff"
+    """
+    kundennr = husoftm2.tools.remove_prefix(kundennr, 'SC')
+    rows = query(['AKZ00'], fields=['KZINFO'],
+                 condition="KZKDNR = %s" % husoftm2.tools.pad('KZKDNR', kundennr),
+                 limit=1, ua='husoftm2.kunden.get_konditionen')
+    if rows:
+        return betreuerdict.get(rows[0][0], '')
+    return ''
+
+
+def set_betreuer(kundennr, betreuer):
+    """Updatet den Betreuer in SoftM wenn es für den Kunden schon einen Satz in der AKZ00 gibt..
+
+    >>> set_betreuer('SC10001', 'Birgith Bonrath')
+    """
+
+    # Eine der wenigen Funktionen, die in SoftM schreiben
+
+    # Das Betreuerkürzel finden. Wurde der volle Betreuername übergeben?
+    for key, value in betreuerdict.items():
+        if value == betreuer:
+            # Betreuername durch der Betreuerkürzel ersetzen
+            betreuer = key
+            break
+    if betreuer not in betreuerdict:
+        raise ValueError("Unbekannter Betreuer %s" % betreuer)
+    kundennr = husoftm2.tools.remove_prefix(kundennr, 'SC')
+    sql = "UPDATE AKZ00 SET KZINFO=%s WHERE KZKDNR=%s" % (husoftm2.tools.sql_quote(betreuer),
+                                                          husoftm2.tools.pad('KZKDNR', kundennr))
+    raw_SQL(sql, ua='husoftm.kunden')
 
 
 def _selftest():
@@ -260,7 +295,9 @@ def _selftest():
     print get_kunde('SC67100')
     print get_verband('SC10123')
     print get_konditionen('SC66669')
-
+    print get_betreuer('SC10001')
+    print get_betreuer('SC66669')
+    set_betreuer('SC10001', 'Nadine Gerloff')
 
 if __name__ == '__main__':
     _selftest()

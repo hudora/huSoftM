@@ -238,7 +238,7 @@ def execute(url, args, ua='', bust_cache=False):
 
 
 def raw_SQL(command, ua=''):
-    """Reines SQL ausführen - darf mur von 4-reviewtem code benutzt werden."""
+    """Reines SQL ausführen - darf nur von 4-reviewtem Code benutzt werden."""
 
     args_encoded = urllib.urlencode({'query': command})
     url = "/raw?" + args_encoded

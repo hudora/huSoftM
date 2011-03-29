@@ -60,7 +60,7 @@ def get_kundenartikelnr(kundennr, artnrs, date=None):
 
     kundennr = remove_prefix(kundennr, 'SC')
     conditions = ['KAKDNR=%s' % pad('KAKDNR', kundennr),
-                  'KAARTN IN %s' % ','.join(sql_quote(artnr) for artnr in artnrs),
+                  'KAARTN IN (%s)' % ','.join(sql_quote(artnr) for artnr in artnrs),
                   'KADTPR <= %s' % date2softm(date)]
     rows = query(['AKA00'], fields=['KAARTN', 'KAKART', 'KABEZE'], condition=' AND '.join(conditions),
                  ua='husoftm2.artikel.get_kundenartikelnr')

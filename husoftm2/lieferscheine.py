@@ -162,7 +162,9 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
                        _posnr_kommi=row['kommibeleg_position'])
             texte = postexte.get(remove_prefix(row['auftragsnr'], 'SO'),
                                                {}).get(row['auftrags_position'], [])
-            pos['infotext_kunde'] = texte
+            if isinstance(texte, list):
+                texte = '\n'.join(texte)
+            pos['infotext_kunde'] = texte.strip()
             if 'guid' in posdaten.get(remove_prefix(row['auftragsnr'], 'SO'), {}):
                 pos['auftragpos_guid'] = posdaten.get(remove_prefix(row['auftragsnr'], 'SO'), {}).get('guid')
             else:
@@ -179,7 +181,7 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
             pos_key = auftragsnr2satznr[remove_prefix(auftragsnr, 'SO')]
             if isinstance(texte, list):
                 texte = '\n'.join(texte)
-            koepfe[pos_key]['infotext_kunde'] = texte
+            koepfe[pos_key]['infotext_kunde'] = texte.strip()
         for auftragsnr, werte in kopfdaten.items():
             if 'guid' in werte:
                 pos_key = auftragsnr2satznr[remove_prefix(auftragsnr, 'SO')]

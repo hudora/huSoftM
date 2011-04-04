@@ -10,7 +10,7 @@ Copyright (c) 2009, 2010 HUDORA. All rights reserved.
 import unittest
 from decimal import Decimal
 from husoftm2.backend import query
-from husoftm.tools import sql_escape, sql_quote, date2softm
+from husoftm.tools import sql_escape, sql_quote, date2softm, remove_prefix
 
 
 class Bestellung(object):
@@ -140,8 +140,9 @@ def get_zugaenge_warenvereinnahmungsnr_simple(bestellnr, warenvereinnahmungsnr):
 
     Sammelt *nicht* alle Daten zu einer Bestellung, sondern nur die jeweils gelieferten Positionen.
     """
-    rows = query('EWZ00', condition="WZBSTN=%s and WZWVNR=%s" %
-                                  (sql_quote(bestellnr), sql_quote(warenvereinnahmungsnr)))
+    conditions = ["WZBSTN=%s" % remove_prefix(bestellnr, 'PO'),
+                  "WZWVNR=%s" % sql_quote(warenvereinnahmungsnr)]
+    rows = query('EWZ00', condition=' AND '.join(conditions), ua='husoftm2.bestellungen')
     return rows
 
 

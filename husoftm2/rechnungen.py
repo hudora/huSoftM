@@ -8,7 +8,7 @@ Copyright (c) 2010 HUDORA. All rights reserved.
 """
 
 from husoftm2.backend import query
-from husoftm2.tools import date2softm
+from husoftm2.tools import date2softm, add_prefix, remove_prefix
 
 
 def get_rechnung_by_date(startdate, enddate=None, limit=None):
@@ -26,3 +26,20 @@ def get_rechnung_by_date(startdate, enddate=None, limit=None):
     for row in rows:
         rechnungsnr.append("RG%s" % row['rechnungsnr'])
     return rechnungsnr
+
+
+def get_rechnung(rechnungsnr):
+    """Findet eine Rechnung anhand ihrer Rechnungsnr"""
+
+    conditions = ["FKSTAT <> 'X'",
+                  "FKRGNR = %s" % remove_prefix(rechnungsnr, 'RG')]
+    rows = query(tables=['AFK00'], condition=' AND '.join(conditions), limit=1, ua='husoftm2.rechnungen')
+    if rows:
+        # evtl. in Funktion auslagern wie in husoftm2.kunden
+        rows[0]['rechnungsnr'] = add_prefix(rows[0]['rechnungsnr'], 'RG')
+        rows[0]['auftragsnr'] = add_prefix(rows[0]['auftragsnr'], 'SO')
+        rows[0]['kundennr_rechnungsempfaenger'] = add_prefix(rows[0]['kundennr_rechnungsempfaenger'], 'SC')
+        rows[0]['kundennr_warenempfaenger'] = add_prefix(rows[0]['kundennr_warenempfaenger'], 'SC')
+        if rows[0]['verbandsnr']:
+            rows[0]['verbandsnr'] = add_prefix(rows[0]['verbandsnr'], 'SC')
+        return rows[0]

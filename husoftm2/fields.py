@@ -974,7 +974,7 @@ MAPPINGDIR = {
      'FKKDNR': 'kundennr_warenempfaenger',
      'FKKDRG': 'kundennr_rechnungsempfaenger',
      'FKKDN3': 'Kunden-Nr/Verbraucher',
-      'FKVERB': 'Kunden-Nr/Verband',
+     'FKVERB': 'verbandsnr',
      # 'FKSPSL': 'Sprache',
      # 'FKBRAN': 'Branche',
      # 'FKGEB ': 'Gebiet',

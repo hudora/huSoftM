@@ -106,13 +106,13 @@ def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate
         # Abweichende Lieferadressen
         for row in query(['XAD00'], ua='husoftm2.lieferscheine',
                          condition="ADAART=1 AND ADRGNR IN (%s)" % ','.join([str(x) for x in batch])):
-            koepfe[row['nr']]['lieferadresse'] = dict(name1=kopf['name1'],
-                                    name2=kopf['name2'],
-                                    name3=kopf['name3'],
-                                    strasse=row['strasse'],
-                                    land=husoftm2.tools.land2iso(row['laenderkennzeichen']),
-                                    plz=row['plz'],
-                                    ort=row['ort'])
+            koepfe[row['nr']]['lieferadresse'] = dict(name1=row['name1'],
+                                                      name2=row['name2'],
+                                                      name3=row['name3'],
+                                                      strasse=row['strasse'],
+                                                      land=husoftm2.tools.land2iso(row['laenderkennzeichen']),
+                                                      plz=row['plz'],
+                                                      ort=row['ort'])
 
         # Positionen einlesen
         for row in query(['AAP00'], condition="APSTAT<>'X' AND APAUFN IN (%s)" % ','.join([str(x)

@@ -1113,8 +1113,8 @@ MAPPINGDIR = {
         # 'FUMWAR': 'Steuerart / Artikel',
         # 'FUDEZI': 'Anzahl Dezimalstellen',
         # 'FUKZBE': 'Ohne Bestandsf}hrung',
-        'FUKZST': 'Kennzeichen Streckengesch{f',
-        'FUKZKO': 'Mit Komponentenaufl¦sung',
+        'FUKZST': 'kennzeichen_streckengeschaeft',
+        'FUKZKO': 'komponentenaufloesung',
         # Im Parametersatz: Steuerung Auftragsbearbeitung kann festgelegt
         # werden, ob ein Set bestandsgef}hrt sein kann oder nicht. Ist ein
         # Set bestandsgef}hrt, so kann auf Positionsebene entschieden

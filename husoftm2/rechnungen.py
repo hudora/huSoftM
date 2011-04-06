@@ -32,14 +32,25 @@ def get_rechnung(rechnungsnr):
     """Findet eine Rechnung anhand ihrer Rechnungsnr"""
 
     conditions = ["FKSTAT <> 'X'",
-                  "FKRGNR = %s" % remove_prefix(rechnungsnr, 'RG')]
+                  "FKRGNR = %d" % remove_prefix(rechnungsnr, 'RG')]
     rows = query(tables=['AFK00'], condition=' AND '.join(conditions), limit=1, ua='husoftm2.rechnungen')
-    if rows:
-        # evtl. in Funktion auslagern wie in husoftm2.kunden
-        rows[0]['rechnungsnr'] = add_prefix(rows[0]['rechnungsnr'], 'RG')
-        rows[0]['auftragsnr'] = add_prefix(rows[0]['auftragsnr'], 'SO')
-        rows[0]['kundennr_rechnungsempfaenger'] = add_prefix(rows[0]['kundennr_rechnungsempfaenger'], 'SC')
-        rows[0]['kundennr_warenempfaenger'] = add_prefix(rows[0]['kundennr_warenempfaenger'], 'SC')
-        if rows[0]['verbandsnr']:
-            rows[0]['verbandsnr'] = add_prefix(rows[0]['verbandsnr'], 'SC')
-        return rows[0]
+    if not rows:
+        return
+    rechnung = rows[0]
+
+    # Rechnungspositionen
+    conditions = ["FURGNR <> 'X'"]
+    rows = query(tables=['AFU00'], condition='FURGNR = %d' % remove_prefix(rechnungsnr, 'RG'),
+                 ua='husoftm2.rechnungen')
+
+    rechnung['positionen'] = rows
+
+    # Evtl. in Funktion auslagern wie in husoftm2.kunden:
+    rechnung['rechnungsnr'] = add_prefix(rechnung['rechnungsnr'], 'RG')
+    rechnung['auftragsnr'] = add_prefix(rechnung['auftragsnr'], 'SO')
+    rechnung['kundennr_rechnungsempfaenger'] = add_prefix(rechnung['kundennr_rechnungsempfaenger'], 'SC')
+    rechnung['kundennr_warenempfaenger'] = add_prefix(rechnung['kundennr_warenempfaenger'], 'SC')
+    if rechnung['verbandsnr']:
+        rechnung['verbandsnr'] = add_prefix(rechnung['verbandsnr'], 'SC')
+
+    return rechnung

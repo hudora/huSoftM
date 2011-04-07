@@ -2507,7 +2507,7 @@ MAPPINGDIR = {
           # 'KDSPSL': 'Sprache', # Werte 1 & 2
           # 'KDWSL ': 'Währungs-Kennzeichen',
           'KDKGRP': 'kunden_gruppe',  # für Preislisten
-          # 'KDEMAL': 'mail',
+          'KDEMAL': 'mail',
           # 'KDHOME': 'url',
           # 'KDSANR': 'adressdatei_id',
           'KDDTER': 'XKD_erfassung_date',

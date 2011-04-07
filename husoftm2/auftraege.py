@@ -30,6 +30,7 @@ AUFTRAGSARTEN = {
     "PK": "Personalkauf",
     "R": "Rahmenauftrag",
     "S": "Serviceauftrag",
+    "SF": "Sofortfaktura",
     "SR": "Sofort-Rechnung (wertm.)",
     "S3": u"Streckengeschäft Direkt",
     "S4": u"Streckengeschäft über Lager",

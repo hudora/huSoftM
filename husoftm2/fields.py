@@ -2526,7 +2526,7 @@ MAPPINGDIR = {
           'KSINFL': 'unsere_lieferantennr',
           'KCUSTN': 'ustid',
           # 'KSLIMI': 'kreditlimit2',
-          # 'KSSKSL': 'skontoschluessel',
+          'KSSKSL': 'skontoschluessel',
           # 'KSDKSL': 'delcredereschlüssel',
           # 'KSMASP': 'mahnsperre',
           # 'KSKDZA': 'lastschrift',
@@ -3334,6 +3334,7 @@ PADDINGFIELDS = {
     'KAKDNR': '%8s',
     'KDKDNR': '%8s',
     'KPINHA': '%10s',
+    'KSKDNR': '%8s',
     'KZKDNR': '%8s',
     'KZVRT': '%8s',
 }

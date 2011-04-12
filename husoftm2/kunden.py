@@ -6,11 +6,12 @@ huSoftM/kunden.py - High Level Access Kundeninformationen. Teil von huSoftM.
 Created by Maximillian Dornseif on 2007-04-13.
 Copyright (c) 2007, 2010, 2011 HUDORA GmbH. All rights reserved.
 """
-
-from husoftm2.backend import query, raw_SQL
 import datetime
-import husoftm2.tools
 import logging
+from decimal import Decimal
+
+import husoftm2.tools
+from husoftm2.backend import query, raw_SQL
 
 
 betreuerdict = {
@@ -222,6 +223,37 @@ def get_konditionen(kundennr):
                  ua='husoftm2.kunden.get_konditionen')
     if rows:
         return rows[0][0]
+
+
+def get_konditionen2(kundennr):
+    """Liefere die Zahlungsbedingungen für einen Kunden
+
+    Der Rückgabewert ist ein Drei-Tupel bestehend aus Netto-Tage, Skonto-Tage und Skonto.
+    >>> get_konditionen2('SC66669')
+    (30, 8, Decimal('2'))
+    """
+
+    # Die Kundenkonditionen sind im Format der Datei XPX00E03 gespeichert,
+    # diese stehen kodiert als Base16 in der Tabelle XPX00.
+    # Die Anwendung ist 'X' ("sonstige"), Dateiart 'S' (Skonto)
+    # und der Schlüssel ist der Skontoschlüssel aus der Tabelle XKS00.
+    # Die Datentypen der Schlüssel unterscheiden sich allerdings:
+    # PXPKEY ist CHAR(3), PXPKEY ist NUMERIC(3), mit DIGITS() wird die benötigte Konvertierung
+    # durchgeführt.
+    #
+    # Die Zahlen in PXPARM sind in einem obskuren Format gespeichert,
+    # das 0xf an die Zahlen hängt. Der Einfachheit halber wird die letzte Stelle einfach abgeschnitten.
+    kundennr = husoftm2.tools.remove_prefix(kundennr, 'SC')
+    conditions = ["PXANW = 'X'",
+                  "PXSART = 'S'",
+                  "KSKDNR = %s" % husoftm2.tools.pad('KSKDNR', kundennr),
+                  'PXPKEY = DIGITS(KSSKSL)']
+    rows = query(tables=['XKS00', 'XPX00'], fields=['HEX(PXPARM)'], condition=' AND '.join(conditions),
+                 ua='husoftm2.kunden.get_konditionen')
+    if rows:
+        data = rows[0][0]
+        skontotage, faelligkeit, skonto = [int(part) for part in (data[0:3], data[12:15], data[16:19])]
+        return faelligkeit, skontotage, Decimal(skonto) / 100
 
 
 def get_verband(kundennr):

@@ -1379,96 +1379,97 @@ MAPPINGDIR = {
           'EDSTBT': 'steuerbetrag',
           },
 
-# BOP00 - Offene Posten?
-#     OPFNR               BOP00              Firmennummer
-#     OPBHKZ              BOP00              Buchhaltungskennz. D,K,S
-#     OPBLRT              BOP00              Belegart
-#     OPBLRA              BOP00              Anzeigebelegart
-#     OPBUSL              BOP00              externe Belegart
-#     OPRGNR              BOP00              Rechnungs-Nummer
-#     OPRPOS              BOP00              Rechnungsposition
-#     OPRGLS              BOP00              Rechnungslistennr.
-#     OPPKTO              BOP00              Personenkonto KD/LIEF
-#     OPVKTO              BOP00              Verbandskto. nr.
-#     OPMKTO              BOP00              Mischkonto
-#     OPKTO               BOP00              Konto-Sachbuchhaltung
-#     OPWSL               BOP00              W{hrungs-Kennzeichen
-#     OPAUSB              BOP00              Auszahlungsbetrag
-#     OPDTEB              BOP00              F{lligkeit Einbehalt
-#     OPSKBT              BOP00              Skontobetrag
-#     OPSKKZ              BOP00              Skontokennzeichen
-#     OPSKSL              BOP00              Skonto-Schl}ssel
-#     OPDKSL              BOP00              Skt.Schl.Delcedere
-#     OPZAHL              BOP00              Zahlangabe
-#     OPBKLF              BOP00              Laufnr. vers. Banken/Konten
-#     OPMAHN              BOP00              Mahnabgabe
-#     OPMSTU              BOP00              Mahnstufe
-#     OPUKKZ              BOP00              Ungepr. Kreditorenrg.
-#     OPZPNR              BOP00              Zahlungsplannummer
-#     OPZPOS              BOP00              Zahlungsplanpos.
-#     OPDTVA              BOP00              Valutadatum
-#     OPDTFL              BOP00              F{lligkeitsdatum
-#     OPDTLM              BOP00              Datum letzte Mahnung
-#     OPDTBL              BOP00              Belegdatum
-#     OPMMBU              BOP00              MM Bumo
-#     OPJJBU              BOP00              JJ Bumo
-#     OPJHBU              BOP00              JH Bumo
-#     OPGJBU              BOP00              Gesch{ftsjahr
-#     OPMMAU              BOP00              TT Ausgleich
-#     OPJJAU              BOP00              JJ Ausgleich
-#     OPJHAU              BOP00              JH Ausgleich
-#     OPGJAU              BOP00              Gesch{ftsjahr
-#     OPOINF              BOP00              OP-Information
-#     OPVRT               BOP00              Vertreter-Nummer
-#     OPABT               BOP00              Abteilungs-Nummer
-#     OPBRAN              BOP00              Branche
-#     OPGEB               BOP00              Gebiet
-#     OPAKAN              BOP00              Akt.Betrag Anbu
-#     OPSKZA              BOP00              Gew{hrter Skonto
-#     OPDSLD              BOP00              Durchschn. Saldo
-#     OPWZZA              BOP00              Zahlungswartezeit
-#     OPOPBT              BOP00              Betrag off. Posten
-#     OPOPWB              BOP00              W{hrungsbetrag
-#     OPOPPW              BOP00              Rechnungsbetrag
-#     OPOPSH              BOP00              Kennzeichen Soll/Haben = S/
-#     OPRGBT              BOP00              Rechnungsbetrag
-#     OPRGWB              BOP00              W{hrungsbetrag
-#     OPRGPW              BOP00              Rechnungsbetrag
-#     OPRGSH              BOP00              Kennzeichen Soll/Haben = S/
-#     OPKURS              BOP00              Wechsel-Kurs
-#     OPKUFA              BOP00              Kursfaktor
-#     OPBDIM              BOP00              Betragsdimension
-#     OPZAKZ              BOP00              W{hrungsart
-#     OPSPAR              BOP00              Abteilungs-Gruppe/Sparte
-#     OPKZSB              BOP00              Kennz. Schattenbuchung
-#     OPSRT1              BOP00              Sort-Kennz. 1
-#     OPSRT2              BOP00              Sort-Kennz. 2
-#     OPSRT3              BOP00              Sort Text
-#     OPSRT4              BOP00              Sort Betrag
-#     OPSRT5              BOP00              Sort 5/Anz.tr{ger
-#     OPSRT6              BOP00              Sort 6/Anz.kennz.
-#     OPKZRG              BOP00              KZ J/N
-#     OPBUI1              BOP00              Informationsfeld 1
-#     OPBUI2              BOP00              Informationsfeld 2
-#     OPBUI3              BOP00              Informationsfeld 3
-#     OPBUI4              BOP00              Informationsfeld 4
-#     OPBUI5              BOP00              Info-Kennz. 1
-#     OPBUI6              BOP00              Info-Kennz. 2
-#     OPBUI7              BOP00              Info Text
-#     OPBUI8              BOP00              Info Betrag
-#     OPOPR1              BOP00              Feld 10 A
-#     OPOPR2              BOP00              Feld 10 A
-#     OPOPR3              BOP00              Feld 10 A
-#     OPOPR4              BOP00              Feld 20 A
-#     OPOPR5              BOP00              Feld 1 A
-#     OPOPR6              BOP00              Feld 1 A
-#     OPOPR7              BOP00              Buchungsbetrag
-#     OPSANR              BOP00              Satznummer
-#     OPSAN1              BOP00              Satznummer
-#     OPWSPW              BOP00              W{hrungs-Kennzeichen
-#     OPKUPW              BOP00              Wechsel-Kurs
-#     OPFAPW              BOP00              Kursfaktor
-#     OPKZPW              BOP00              W{hrungsart
+'BOP00': {  # Offene Posten
+          # 'OPFNR': 'Firmennummer',
+          # 'OPBHKZ': 'Buchhaltungskennz. D,K,S',
+          # 'OPBLRT': 'Belegart',
+          # 'OPBLRA': 'Anzeigebelegart',
+          # 'OPBUSL': 'externe Belegart',
+          # 'OPRGNR': 'Rechnungs-Nummer',
+          # 'OPRPOS': 'Rechnungsposition',
+          # 'OPRGLS': 'Rechnungslistennr.',
+          'OPPKTO': 'Personenkonto KD/LIEF',
+          # 'OPVKTO': 'Verbandskto. nr.',
+          # 'OPMKTO': 'Mischkonto',
+          # 'OPKTO': 'Konto-Sachbuchhaltung',
+          # 'OPWSL': 'W{hrungs-Kennzeichen',
+          # 'OPAUSB': 'Auszahlungsbetrag',
+          # 'OPDTEB': 'F{lligkeit Einbehalt',
+          # 'OPSKBT': 'Skontobetrag',
+          # 'OPSKKZ': 'Skontokennzeichen',
+          # 'OPSKSL': 'Skonto-Schl}ssel',
+          # 'OPDKSL': 'Skt.Schl.Delcedere',
+          # 'OPZAHL': 'Zahlangabe',
+          # 'OPBKLF': 'Laufnr. vers. Banken/Konten',
+          # 'OPMAHN': 'Mahnabgabe',
+          # 'OPMSTU': 'Mahnstufe',
+          # 'OPUKKZ': 'Ungepr. Kreditorenrg.',
+          # 'OPZPNR': 'Zahlungsplannummer',
+          # 'OPZPOS': 'Zahlungsplanpos.',
+          # 'OPDTVA': 'Valutadatum',
+          # 'OPDTFL': 'F{lligkeitsdatum',
+          # 'OPDTLM': 'Datum letzte Mahnung',
+          # 'OPDTBL': 'Belegdatum',
+          # 'OPMMBU': 'MM Bumo',
+          # 'OPJJBU': 'JJ Bumo',
+          # 'OPJHBU': 'JH Bumo',
+          # 'OPGJBU': 'Gesch{ftsjahr',
+          # 'OPMMAU': 'TT Ausgleich',
+          # 'OPJJAU': 'JJ Ausgleich',
+          # 'OPJHAU': 'JH Ausgleich',
+          # 'OPGJAU': 'Gesch{ftsjahr',
+          # 'OPOINF': 'OP-Information',
+          # 'OPVRT': 'Vertreter-Nummer',
+          # 'OPABT': 'Abteilungs-Nummer',
+          # 'OPBRAN': 'Branche',
+          # 'OPGEB': 'Gebiet',
+          # 'OPAKAN': 'Akt.Betrag Anbu',
+          # 'OPSKZA': 'Gew{hrter Skonto',
+          # 'OPDSLD': 'Durchschn. Saldo',
+          # 'OPWZZA': 'Zahlungswartezeit',
+          # 'OPOPBT': 'Betrag off. Posten',
+          # 'OPOPWB': 'W{hrungsbetrag',
+          # 'OPOPPW': 'Rechnungsbetrag',
+          # 'OPOPSH': 'Kennzeichen Soll/Haben = S/',
+          # 'OPRGBT': 'Rechnungsbetrag',
+          # 'OPRGWB': 'W{hrungsbetrag',
+          # 'OPRGPW': 'Rechnungsbetrag',
+          'OPRGSH': 'kennzeichen_soll_haben',
+          # 'OPKURS': 'Wechsel-Kurs',
+          # 'OPKUFA': 'Kursfaktor',
+          # 'OPBDIM': 'Betragsdimension',
+          # 'OPZAKZ': 'W{hrungsart',
+          # 'OPSPAR': 'Abteilungs-Gruppe/Sparte',
+          # 'OPKZSB': 'Kennz. Schattenbuchung',
+          # 'OPSRT1': 'Sort-Kennz. 1',
+          # 'OPSRT2': 'Sort-Kennz. 2',
+          # 'OPSRT3': 'Sort Text',
+          # 'OPSRT4': 'Sort Betrag',
+          # 'OPSRT5': 'Sort 5/Anz.tr{ger',
+          # 'OPSRT6': 'Sort 6/Anz.kennz.',
+          # 'OPKZRG': 'KZ J/N',
+          # 'OPBUI1': 'Informationsfeld 1',
+          # 'OPBUI2': 'Informationsfeld 2',
+          # 'OPBUI3': 'Informationsfeld 3',
+          # 'OPBUI4': 'Informationsfeld 4',
+          # 'OPBUI5': 'Info-Kennz. 1',
+          # 'OPBUI6': 'Info-Kennz. 2',
+          # 'OPBUI7': 'Info Text',
+          # 'OPBUI8': 'Info Betrag',
+          # 'OPOPR1': 'Feld 10 A',
+          # 'OPOPR2': 'Feld 10 A',
+          # 'OPOPR3': 'Feld 10 A',
+          # 'OPOPR4': 'Feld 20 A',
+          # 'OPOPR5': 'Feld 1 A',
+          # 'OPOPR6': 'Feld 1 A',
+          # 'OPOPR7': 'Buchungsbetrag',
+          # 'OPSANR': 'Satznummer',
+          # 'OPSAN1': 'Satznummer',
+          # 'OPWSPW': 'W{hrungs-Kennzeichen',
+          # 'OPKUPW': 'Wechsel-Kurs',
+          # 'OPFAPW': 'Kursfaktor',
+          # 'OPKZPW': 'W{hrungsart',
+},
 
 
 'EBL00': {  # Bestellköpfe
@@ -2525,7 +2526,7 @@ MAPPINGDIR = {
           # 'KSFNRK': 'interne_firmennr',
           'KSINFL': 'unsere_lieferantennr',
           'KCUSTN': 'ustid',
-          # 'KSLIMI': 'kreditlimit2',
+          'KSLIMI': 'kreditlimit2',
           'KSSKSL': 'skontoschluessel',
           # 'KSDKSL': 'delcredereschlüssel',
           # 'KSMASP': 'mahnsperre',
@@ -3337,4 +3338,5 @@ PADDINGFIELDS = {
     'KSKDNR': '%8s',
     'KZKDNR': '%8s',
     'KZVRT': '%8s',
+    'OPPKTO': '%8s',
 }

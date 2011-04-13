@@ -246,10 +246,6 @@ def get_verband(kundennr):
                 'mitgliedsnr': kunde.get('mitgliedsnr', '')}
 
 
-# Still missing:
-# def offene_posten(kundennr):
-# def kredit_limit(kundennr):
-
 def get_betreuer(kundennr):
     """Liefert einen String, der den Betreuer im Hause für einen bestimmten Kunden identifizert oder ''.
 
@@ -285,6 +281,36 @@ def set_betreuer(kundennr, betreuer):
     sql = "UPDATE AKZ00 SET KZINFO=%s WHERE KZKDNR=%s" % (husoftm2.tools.sql_quote(betreuer),
                                                           husoftm2.tools.pad('KZKDNR', kundennr))
     raw_SQL(sql, ua='husoftm.kunden')
+
+
+def kredit_limit(kundennr):
+    """Gib Kreditlimit für einen Kunden zurück.
+
+    >>> kredit_limit('SC66660')
+    Decimal('60000.0')
+    """
+    kundennr = husoftm2.tools.remove_prefix(kundennr, 'SC')
+    rows = query('XKS00', fields=['KSLIMI'], condition="KSKDNR=%s" % husoftm2.tools.pad('KSKDNR', kundennr),
+                 limit=1, ua='husoftm2.kunden.kredit_limit')
+    if rows:
+        return rows[0][0]
+
+
+def offene_posten(kundennr):
+    """Ermittle die Summe er offenen Posten für einen Kunden
+    >>> offene_posten('SC66660')
+    Decimal('1234.56')
+    """
+
+    kundennr = husoftm2.tools.remove_prefix(kundennr, 'SC')
+    rows = query('BOP00', fields=['OPRGSH', 'SUM(OPOPBT)'],
+                 condition='OPPKTO=%s' % husoftm2.tools.pad('OPPKTO', kundennr),
+                 grouping='OPRGSH',  # Gruppiert nach Typ: 'S' (Soll) und 'H' (Haben)
+                 querymappings={},  # Verhindere ein Mapping, so dass der Rückgabewert ein Tupel ist
+                 ua='husoftm2.kunden.offene_posten')
+    if rows:
+        offene_posten = dict(rows)
+        return Decimal(offene_posten.get('S', 0)) - Decimal(offene_posten.get('H', 0))
 
 
 def _selftest():

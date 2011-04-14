@@ -202,35 +202,11 @@ def _softm_to_dict(row):
 
 
 def get_konditionen(kundennr):
-    """Liefere Zahlungskonditionen für einen Kunden
-
-    >>> get_konditionen('SC66669')
-    u'x Tage y%, z Tage netto'
-    """
-
-    kundennr = husoftm2.tools.remove_prefix(kundennr, 'SC')
-    rows = query(['AKZ00'], fields=['KZX3ZB'],
-                 condition="KZKDNR = %s" % husoftm2.tools.pad('KZKDNR', kundennr),
-                 limit=1, ua='husoftm2.kunden.get_konditionen')
-    if not rows:
-        return None
-    schluessel = rows[0][0]
-    if not schluessel:
-        return None
-
-    rows = query(['XKP00'], fields=['KPTXT2'], limit=1,
-                 condition="KPTYP='ZAHLBEDA' AND KPINHA=%s" % husoftm2.tools.pad('KPINHA', schluessel),
-                 ua='husoftm2.kunden.get_konditionen')
-    if rows:
-        return rows[0][0]
-
-
-def get_konditionen2(kundennr):
     """Liefere die Zahlungsbedingungen für einen Kunden
 
-    Der Rückgabewert ist ein Drei-Tupel bestehend aus Netto-Tage, Skonto-Tage und Skonto.
+    Der Rückgabewert ist ein Drei-Tupel bestehend aus Skonto-Tage, Skonto und Netto-Tage.
     >>> get_konditionen2('SC66669')
-    (30, 8, Decimal('2'))
+    (8, Decimal('2'), 30)
     """
 
     # Die Kundenkonditionen sind im Format der Datei XPX00E03 gespeichert,
@@ -253,7 +229,7 @@ def get_konditionen2(kundennr):
     if rows:
         data = rows[0][0]
         skontotage, faelligkeit, skonto = [int(part) for part in (data[0:3], data[12:15], data[16:19])]
-        return faelligkeit, skontotage, Decimal(skonto) / 100
+        return skontotage, Decimal(skonto) / 100, faelligkeit
 
 
 def get_verband(kundennr):

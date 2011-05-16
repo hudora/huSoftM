@@ -5,7 +5,7 @@
 Vermischte Hilfen zur SoftM Nutzung.
 
 Created by Maximillian Dornseif on 2007-03-29.
-Copyright (c) 2007 HUDORA GmbH. All rights reserved.
+Copyright (c) 2007, 2011 HUDORA GmbH. All rights reserved.
 """
 
 import datetime
@@ -14,6 +14,7 @@ import sys
 import time
 import unittest
 from husoftm2.fields import PADDINGFIELDS
+from huTools.calendar.formats import convert_to_date
 
 
 # SoftM verwendet scheinbar Autokennzeichen
@@ -124,10 +125,9 @@ def date2softm(date):
     '1011213'
     """
 
+    date = convert_to_date(date)
     if not date:
         return ''
-    if isinstance(date, basestring):
-        date = datetime.datetime.strptime(date, '%Y-%m-%d')
     if date.year > 1999:
         return date.strftime('1%y%m%d')
     return date.strftime('%y%m%d')

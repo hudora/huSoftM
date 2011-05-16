@@ -9,7 +9,6 @@ build:
 	python setup.py build sdist
 
 test: dependencies
-	PYTHONPATH=. python husoftm2/tools.py
 	#PYTHONPATH=. python husoftm/connection2.py
 	#PYTHONPATH=. python husoftm/lieferanten.py
 	#PYTHONPATH=. python husoftm/misc.py

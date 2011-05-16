@@ -408,7 +408,7 @@ def _selftest():
     pprint(lieferscheine_auftrag(1163764, header_only=header))
     pprint(lieferscheine_auftrag('1163764', header_only=header))
     pprint(lieferscheine_auftrag('SO1163764', header_only=header))
-    print get_changed_after(datetime.date(2010, 12, 1))
+    # print get_changed_after(datetime.date.today() - datetime.timedelta(days=2))
     pprint(get_lieferschein('SL4173969'))
     lschein = get_lieferschein('SL4176141')
     pprint(lschein)

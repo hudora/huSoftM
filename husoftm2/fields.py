@@ -181,7 +181,7 @@ MAPPINGDIR = {
           # wird nach der Fakturierung des Auftrags an die Buchhaltung übergeben.
           # Dient als Vorbesetzung f ̧r Erfassung der Auftragsposition (statt Hauptlager aus Artikelstamm).
           # 'AKLGN1': 'auslieferungslager',
-          # 'AKLGN2': 'zugangslager',
+          'AKLGN2': 'zugangslager',
           # Bei Umbuchungsauftr‰gen und Leihauftr‰gen ist hier das empfangende Lager angegeben.
           # 'AKTRNR': 'Touren-nr',
           # 'AKLINR': 'Lieferant bei Strecke',
@@ -281,6 +281,8 @@ MAPPINGDIR = {
 
 'AAP00': {  # Auftragspositionen
           'APMNG-APMNGF-APMNGG': 'menge_offen',
+          # Für die Artikelverfügbarkeit muss scheinbar diese "offene Menge" verwendet werden:
+          'APMNG-APMNGF': 'menge_offen2',
            # 'APFNR ': 'Firma',
            'APAUFN': 'auftragsnr',
            'APAUPO': 'position',
@@ -289,11 +291,11 @@ MAPPINGDIR = {
            # 'APAGRP': 'Abteilungs-Gruppe/Sparte',
            # 'APFGRP': 'Firmen-Gruppe',
            # 'APFNRX': 'Best.-Führungsfirma',
-           # 'APKDNR': 'Kunden-nr',
+           'APKDNR': 'warenempfaenger',
            # 'APKDRG': 'Kundennr.Rechnungs-Empfänge',
            # 'APVERB': 'Verband/Mischkonto',
            # 'APLINR': 'Lieferanten-nr',
-           # 'APAUFA': 'AUFTRAGS-ART',
+           'APAUFA': 'auftragsart',
            # 'APHPTP': 'zugeordnete_position',
            # 'APRANR': 'rahmenauftrag',
            # 'APRAPO': 'rahmenposition',
@@ -312,7 +314,7 @@ MAPPINGDIR = {
            # 'APARTG': 'Artikel-Gruppe',
            # 'APARTH': 'Artikel-Haupt-Gruppe',
            # 'APKZSO': 'Kennzeichen Sonderartikel',
-           # 'APLGNR': 'lager',
+           'APLGNR': 'lager',
            # 'APLGRP': 'Lagergruppe',
            # 'APLGPL': 'Lager-Platz',
            # 'APKZBE': 'Ohne Bestandsführung',
@@ -347,9 +349,10 @@ MAPPINGDIR = {
            #                                      freigegebene, aber noch
            #                                      nicht fakturierte
            #                                      Mengen dieser Pos)
-           #   Menge, die im n{chsten Kommissionierbeleg oder Lieferschein
-           #   (abh{ngig von der Parameterisierung) gedruckt werden soll.
+           #   Menge, die im nächsten Kommissionierbeleg oder Lieferschein
+           #   (abhängig von der Parameterisierung) gedruckt werden soll.
            # 'APMNGL': 'Menge zu liefern',
+           'APMNGL+APMNGG': 'menge_zugeteilt',
            # 'APMNGG': 'Menge/Liefersch.nichtfakt',
            # Menge, }ber die bisher Lieferscheine geschrieben wurden und die
            # noch nicht fakturiert wurde. (Es k¦nnen mehrere Lieferscheine
@@ -685,7 +688,7 @@ MAPPINGDIR = {
            # 'APZTAE': 'Uhrzeit letzte Änderung',
            # 'APSBAE': 'Sachb.letzte Änderung',
            # 'APDFSL': 'Dateiführungs-Schlüssel',
-           # 'APSTAT': 'Satzstatus',
+           'APSTAT': 'AAP_status',
           },
 
 'AAT00': {  # Auftrags-Texte
@@ -3076,7 +3079,7 @@ MAPPINGDIR = {
         # 'LBLGP2': 'Umlag.: Empfangender Lager Platz',
         # 'LBLGNE': 'Transit: Endlager', # immer 0
         'LBPREW': 'wert',
-        # 'LBKZWR': 'bewegungswert_angegeben_kz', # scheinbar immer 9
+        # 'LBKZWR': 'bewegungswert_angegeben_kz', # scheinbar immer 9 = Gesamtwert
         'LBWSL': 'waehrung',
         'LBKURS': 'kurs',
         'LBKUFA': 'kursfaktor',
@@ -3099,14 +3102,14 @@ MAPPINGDIR = {
         # 'LBMGOP': 'Menge als offener Posten', - scheinbar immer 0
         'LBMGLP': 'bestand_vor_buchung',
         'LBMGKO': 'bestandsaenderung',    # Bestandsänderung am Lager',
-        #'LBBSTN': 'bestellnr',
-        #'LBBSTP': 'bestellpos',
+        'LBBSTN': 'bestellnr',
+        'LBBSTP': 'bestellpos',
         # 'LBFNRK': 'Firmen-Nr./Lieferant',
         # 'LBLINR': 'lieferantennr',
         # 'LBZUKZ': 'Zustand: A/R/F', Zeicheinbar immer ''
-        # 'LBAUFN': 'auftragsnr', # warenvereinnamungsnummer bei Zugängen
-        # 'LBAUPO': 'auftragspos',
-        # 'LBKZKO': 'KZ. Mit Komponenten', # immer 6?
+        'LBAUFN': 'auftragsnr',  # Warenvereinnamungsnummer bei Zugängen
+        'LBAUPO': 'auftragspos',
+        # 'LBKZKO': 'Kz. Mit Komponenten', # immer 6?
         'LBDTER': 'erfassung_date',
         'LBDTAE': 'aenderung_date',
         'LBINFO': 'info',

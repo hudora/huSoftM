@@ -31,8 +31,8 @@ def komponentenaufloesung(mengenliste):
 
     ret = []
     for menge, artnr in mengenliste:
-        rows = query(['ASK00'], fields=['SKLFNR', 'SKKART', 'SKMENG'], condition="SKARTN='%s'" % artnr,
-                     cachingtime=24 * 60 * 60)
+        rows = query(['ASK00'], fields=['SKLFNR', 'SKKART', 'SKMENG'],
+                     condition="SKARTN=%s" % sql_quote(artnr), cachingtime=24 * 60 * 60)
         if not rows:
             # kein Setartikel
             ret.append((int(menge), artnr))
@@ -40,6 +40,19 @@ def komponentenaufloesung(mengenliste):
             for row in rows:
                 ret.append((int(menge * row['menge_im_set']), row['komponenten_artnr']))
     return ret
+
+
+def set_artikel(artnr):
+    """Gib alle Set-Artikel zurück, die die ArtNr. enthalten
+
+    Der Rückgabewert ist ein dict mit ArtNr. als Schlüssel und den Mengen als Werten.
+    """
+
+    rows = query(['ASK00'], fields=['SKARTN', 'SKMENG'], condition='SKKART=%s' % sql_quote(artnr),
+                 cachingtime=24 * 60 * 60)
+    if not rows:
+        return [{'artnr': artnr, 'menge_im_set': 1}]
+    return rows
 
 
 def get_kundenartikelnr(kundennr, artnrs, date=None):

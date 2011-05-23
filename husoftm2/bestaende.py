@@ -40,7 +40,8 @@ Es gibt verschiedene Mengen von denen wir reden.
 """
 
 
-from husoftm.tools import sql_quote
+from husoftm2.artikel import set_artikel
+from husoftm2.tools import sql_quote, add_prefix, str2softmdate
 from husoftm2.backend import query, as400_2_int
 import datetime
 import husoftm2.artikel
@@ -87,7 +88,7 @@ def bestellmengen(artnr, lager=0):
                   "BPKZAK=0",
                   "BPARTN=%s" % sql_quote(artnr)]
     if lager:
-        conditions += ["BPLGNR=%s" % sql_quote(lager)]
+        conditions += ["BPLGNR=%d" % int(lager)]
 
     # detailierte Informationen gibts in EWZ00
     rows = query('EBP00', fields=['BPDTLT', 'SUM(BPMNGB-BPMNGL)'], ordering='BPDTLT',
@@ -211,7 +212,6 @@ def bewegungen(artnr, dateformat="%Y-%m-%d", lager=0):
 
     dateformat bestimmt dabei die Keys des Dictionaries und steuert die Granularität. "%Y-w%W" sorgt
     für eine wochenweise Auflösung, "%Y-%m-%d" für tageweise.
-
     """
 
     # Startwert ist der Buchbestand
@@ -222,6 +222,183 @@ def bewegungen(artnr, dateformat="%Y-%m-%d", lager=0):
     bewegungen.extend([(x[0].strftime(dateformat), -1 * x[1]) for x in auftragsmengen(artnr, lager).items()])
     bewegungen.sort()
     return bewegungen
+
+
+def auftragsmengen2(artnr, lager=0, max_date=None, resolve_sets=False):
+    """Liefert eine Liste offener Aufträge (Warenausgänge) für einen Artikel.
+
+    husoftm2.bestaende.auftragsmengen addiert Mengen und gruppiert nach Lieferdatum,
+    so dass einzelne Bewegungen nicht nachzuvollziehen sind.
+    Für eine Verfügbarkeitsanzeige wie in der SoftM Suite müssen die Sätze einzeln ermittelt werden.
+    """
+
+    conditions = [
+        "AKAUFN=APAUFN",                   # Natural Join von Auftragsköpfen und -positionen
+        "APSTAT<>'X'",                     # Position nicht logisch gelöscht
+        "APKZVA=0",                        # Position nicht als 'voll ausgeliefert' markiert
+        "(APMNG-APMNGF) > 0",              # (noch) zu liefernde menge ist positiv
+        "AKSTAT<>'X'",                     # Auftrag nicht logisch gelöscht
+        "AKKZVA=0"]                        # Auftrag nicht als 'voll ausgeliefert' markiert
+
+    # Wenn resolve_sets gesetzt ist, werden übergeordneten Set-Artikel, zu denen die ArtNr. gehört,
+    # bei den Auftragspositionen mit berücksichtigt.
+    sets = {}
+    if resolve_sets:
+        sets = dict((row['artnr'], row['menge_im_set']) for row in set_artikel(artnr))
+        artnrs = [artnr] + sets.keys()
+        conditions.append("APARTN IN (%s)" % ",".join(sql_quote(artnr) for artnr in artnrs))
+    else:
+        conditions.append("APARTN=%s" % sql_quote(artnr))
+
+    # Achtung, hier gibt es KEIN Lager 0 in der Tabelle. D.h. APLGNR=0 ergibt eine leere Rückgabe
+    if lager:
+        conditions.append("APLGNR=%d" % lager)
+
+    # Nur Datensätze berücksichtigen, die nicht jünger sind als das geg. Datum
+    if max_date:
+        conditions.append("AKDTLT <= %s" % str2softmdate(max_date))
+
+    rows = query(['AAP00', 'AAK00'],
+                   condition=' AND '.join(conditions), ordering='APDTLT', cachingtime=60 * 60)
+
+    # Korrigiere die Mengen für Komponenten von Set-Artikeln:
+    # Die Menge wird mit der Anzahl der Komponenten in einem Set-Artikel multipliziert.
+    for row in rows:
+        if row['artnr'] in sets:
+            factor = sets[row['artnr']]
+            row['menge_offen'] *= factor
+            row['bestellmenge'] *= factor
+            row['menge_zugeteilt'] *= factor
+    return rows
+
+
+def bestellmengen2(artnr, lager=0, max_date=None):
+    """Liefert eine Liste mit allen Bestellten aber noch nicht gelieferten Wareneingängen.
+
+    husoftm2.bestaende.bestellmengen2 addiert Mengen und gruppiert nach Lieferdatum,
+    so dass einzelne Bewegungen nicht nachzuvollziehen sind.
+    Für eine Verfügbarkeitsanzeige wie in der SoftM Suite müssen die Sätze einzeln ermittelt werden.
+    """
+
+    conditions = ["BPSTAT<>'X'",
+                  "BPKZAK=0",
+                  "BPARTN=%s" % sql_quote(artnr)]
+
+    # Achtung, hier gibt es KEIN Lager 0 in der Tabelle. D.h. APLGNR=0 ergibt eine leere Rückgabe
+    if lager:
+        conditions += ["BPLGNR=%d" % int(lager)]
+
+    # Nur Datensätze berücksichtigen, die nicht jünger sind als das geg. Datum
+    if max_date:
+        conditions.append("BPDTLT <= %s" % str2softmdate(max_date))
+
+    rows = query('EBP00', ordering='BPDTLT', condition=' AND '.join(conditions))
+    return rows
+
+
+def artikelverfuegbarkeit(artnr, lager=0, max_date=None, resolve_sets=True):
+    """Bestimme alle Mengenänderungen für einen Artikel für die Artikelverfügbarkeit
+
+    Der Rückgabewert ist eine Liste von dicts, die sortiert ist nach Datum und nach Belegnummer.
+    """
+
+    satzarten = {'LB': u'Lagerbestand',
+                 'ZT': u'Zuteilter Bedarf aus Kundenauftrag',
+                 'RB': u'Bedarf aus Kundenaufag',
+                 'UZ': u'Umlagerung/Zugang/Zuteilung',
+                 'OB': u'Offene Bestellung'
+    }
+
+    # Auftragspositionen, die den Artikel enthalten.
+    # Achtung! Es können auch Set-Artikel im Auftrag enthalten sein,
+    # diese müssen ebenfalls berücksichtigt und im richtigen Verhältnis umgerechnet werden.
+    rows = auftragsmengen2(artnr, lager, max_date, resolve_sets)
+
+    # Beim Durchlaufen der Auftragspositionen wird die zugeteilte Menge aufsummiert.
+    zugeteilte_menge = 0
+
+    records = [{'satzart': 'LB', 'datum': datetime.date.min, 'belegnr': '', 'position': 0}]
+
+    for row in rows:
+        zugeteilte_menge += row['menge_zugeteilt']
+
+        # Für Umlagerungsaufträge werden zwei Datensätze hinzugefügt:
+        # Dies ist der Datensatz für den Zugang. Der Datensatz für den Abgang
+        # wird "ganz normal" wie die anderen Datensätze behandelt.
+        if row['auftragsart'] == 'U':
+            record = dict(belegnr=add_prefix(row['auftragsnr'], 'SO'),
+                          position=row['position'],
+                          lager=row['zugangslager'],
+                          satzart='UZ',
+                          menge_offen=row['menge_offen2'],
+                          bestellmenge=row['bestellmenge'],
+                          datum=row['liefer_date'])
+            records.append(record)
+
+        if row['menge_zugeteilt'] > 0:
+            satzart = 'ZT'
+        else:
+            satzart = 'RB'
+
+        record = dict(belegnr=add_prefix(row['auftragsnr'], 'SO'),
+                      position=row['position'],
+                      lager=row['lager'],
+                      satzart=satzart,
+                      kundennr=add_prefix(row['warenempfaenger'], 'SC'),
+                      menge_offen=row['menge_offen2'],
+                      bestellmenge=row['bestellmenge'],
+                      datum=row['liefer_date'])
+        records.append(record)
+
+    # Bestellpositionen
+    rows = bestellmengen2(artnr, lager)
+    for row in rows:
+        record = dict(belegnr=add_prefix(row['bestellnr'], 'PO'),
+                      position=row['bestellpos'],
+                      lager=row['lager'],
+                      satzart='OB',
+                      kundennr=add_prefix(row['lieferant'], 'SC'),
+                      menge_offen=row['bestellmenge'],
+                      bestellmenge=row['bestellmenge'],
+                      datum=row['liefer_date'])
+        records.append(record)
+
+    # Bestand und verfügbare Menge berechnen:
+    # Der Startwert des Lagerbestands ist der Buchbestand.
+    bestand = int(buchbestand(artnr, lager))
+    verfuegbare_menge = bestand - zugeteilte_menge
+
+    # Die Datensätze müssen nach Datum sortiert werden
+    # Die Sätze werden nach Datum, Belegnummer und Position sortiert.
+    # SoftM berücksichtigt außerdem noch die Satzart, die Reihenfolge ist aber nicht ganz klar
+    # und außerdem auch unerheblich.
+    records = sorted(records, key=lambda x: (x['datum'], x['belegnr'], x['position']))
+
+    for index, record in enumerate(records):
+        record['lfdnr'] = index
+
+        # Berechne die verfügbare Menge und den Lagerbestand aus den Mengen des Datensatzes:
+
+        if record['satzart'] == 'ZT':                    # zugeteilte Menge aus Auftrag
+            bestand -= record['menge_offen']
+        elif record['satzart'] == 'RB':                  # Bedarf aus Auftrag (noch nicht zugeteilt)
+            bestand -= record['menge_offen']
+            verfuegbare_menge -= record['menge_offen']
+        elif record['satzart'] == 'UZ':                  # Zugang aus Umlagerungsauftrag
+            verfuegbare_menge += record['bestellmenge']
+        elif record['satzart'] == 'OB':                  # Zugang aus Bestellung
+            bestand += record['menge_offen']
+            verfuegbare_menge += record['menge_offen']
+        elif record['satzart'] == 'LB':                  # (initialer) Lagerbestand
+            record['datum'] = ''
+        else:
+            raise RuntimeError('Unknown record type %r' % record['satzart'])
+
+        record['bestand'] = bestand
+        record['verfuegbar'] = verfuegbare_menge
+        record['satzart'] = satzarten[record['satzart']]
+
+    return records
 
 
 def bewegungen_to_bestaende(bewegungen):

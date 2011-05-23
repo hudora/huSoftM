@@ -11,7 +11,6 @@ Copyright (c) 2007, 2011 HUDORA GmbH. All rights reserved.
 import datetime
 import doctest
 import sys
-import time
 import unittest
 from husoftm2.fields import PADDINGFIELDS
 from huTools.calendar.formats import convert_to_date
@@ -142,6 +141,8 @@ def softm2date(date):
     datetime.date(1974, 8, 21)
     >>> softm2date('740821.0')
     datetime.date(1974, 8, 21)
+    >>> softm2date('10707')
+    datetime.date(2007, 7, 1)
     """
 
     try:
@@ -149,12 +150,18 @@ def softm2date(date):
         if date.endswith('.0'):
             date = date[:-2]
         if date.endswith('999999'):  # Datum = 999999: Unbestimmt
-            return datetime.date(9999, 12, 31)
+            return datetime.date.max
         if date:
             if len(date) == 7:
-                return datetime.date(*time.strptime(str(int(date)), '1%y%m%d')[:3])
-            if len(date) == 6:
-                return datetime.date(*time.strptime(str(int(date)), '%y%m%d')[:3])
+                fmt = '1%y%m%d'
+            elif len(date) == 6:
+                fmt = '%y%m%d'
+            elif len(date) == 5:
+                fmt = '1%y%m'
+            else:
+                raise ValueError
+            date = datetime.datetime.strptime(str(int(date)), fmt)
+            return date.date()
     except ValueError, msg:
         raise ValueError("can't convert %s to date: %s" % (date, msg))
     return None
@@ -256,6 +263,7 @@ class _GenericTests(unittest.TestCase):
         self.assertEqual(softm2date('1070605'), datetime.date(2007, 6, 5))
         self.assertEqual(date2softm(datetime.datetime(2007, 6, 5)), '1070605')
         self.assertEqual(date2softm(softm2date('1070605')), '1070605')
+        self.assertEqual(date2softm(softm2date('10707')), '1070701')
         self.assertEqual(softm2date('       '), None)
         self.assertEqual(softm2date(''), None)
 

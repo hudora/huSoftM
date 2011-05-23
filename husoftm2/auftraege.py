@@ -85,6 +85,7 @@ def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate
                  teillieferung_erlaubt=(kopf['teillieferung_erlaubt'] == 1),
                  erledigt=(kopf['voll_ausgeliefert'] == 1),
                  positionen=[],
+                 art=kopf['art'],
                  # * *auftragsnr_kunde* - id of the order submitted by the customer
                  # * *info_kunde* - Freitext der für den Empfänger relevanz hat
                  )

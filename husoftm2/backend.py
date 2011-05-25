@@ -250,8 +250,13 @@ def raw_SQL(command, ua=''):
     headers = {'X-sig': digest}
     # Wir nutzen POST mit einem Query-String in der URL. Das ist dirty
     # See http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9.4 for the reasoning here
+    method = 'GET'
+    if command.startswith('UPDATE'):
+        method = 'POST'
+    if command.startswith('INSERT'):
+        method = 'POST'
     status, headers, content = huTools.http.fetch('http://' + softmexpresshost + url,
-                                                  method='POST',
+                                                  method=method,
                                                   headers=headers,
                                                   content={'query': command, 'ua': ua},
                                                   ua='%s/husoftm2.backend' % ua,
@@ -259,7 +264,12 @@ def raw_SQL(command, ua=''):
     if status != 200:
         logging.error(url)
         raise RuntimeError("Server Error: %r" % content)
-    return content
+
+    # Not all replies are JSON encoded
+    try:
+        return hujson.loads(content)
+    except:
+        return content
 
 
 def query(tables=None, condition=None, fields=None, querymappings=None,

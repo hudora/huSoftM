@@ -122,7 +122,7 @@ loop(Req, _DocRoot) ->
                                     "/update requires POST method\n"});
                 "insert" ->
                         Req:respond({405, [{"Content-Type", " text/plain; charset=utf-8"}],
-                                    "/update requires POST method\n"});
+                                    "/insert requires POST method\n"});
                 _ ->
                     Req:respond({404, 
                                  [{"Content-Type", " text/plain; charset=utf-8"}],

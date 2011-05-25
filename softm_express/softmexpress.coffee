@@ -146,7 +146,6 @@ x_en = (request, response) ->
     console.log(querystring.stringify({query: querystr, tag: query.tag + '+sEx'}))
     newurl = '/update?' + querystring.stringify({query: querystr, tag: query.tag + '+sEx'})
     request.url = newurl
-    console.log(newurl)
     proxy = new httpProxy.HttpProxy(request, response)
     proxy.proxyRequest(destport, desthost)
     update_counter += 1
@@ -165,7 +164,7 @@ raw_sql = (request, response) ->
     else if startswith(querystr, 'UPDATE')
         newurl = '/update?' + querystring.stringify({query: querystr, tag: '+sExWR'})
     request.url = newurl
-    # Proxy Objekt für diesen REquest erstellen und ausführen.
+    # Proxy Objekt für diesen Request erstellen und ausführen.
     proxy = new httpProxy.HttpProxy(request, response)
     proxy.proxyRequest(destport, desthost)
     raw_counter += 1
@@ -193,7 +192,7 @@ server = httpProxy.createServer (request, response) ->
         else
             login_required(request, response, x_en)
     else if startswith(parsedurl.pathname, '/raw')
-        if request.method != 'POST'
+        if request.method != 'GET' and request.method != 'POST'
             sendReply(response, 405, "Method " + request.method + " not allowed")
         else
             login_required(request, response, raw_sql)

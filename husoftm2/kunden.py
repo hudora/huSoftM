@@ -198,6 +198,9 @@ def _softm_to_dict(row):
         ret['aenderung'] = ret['erfassung']
     if row.get('XKD_aenderung_date'):
         ret['aenderung'] = row['XKD_aenderung_date']
+
+    # [LH#927] Kunden können in SoftM als inaktiv markiert sein
+    ret['aktiv'] = row['satzstatus'] != 'I'
     return ret
 
 

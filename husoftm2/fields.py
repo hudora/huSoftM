@@ -2513,7 +2513,7 @@ MAPPINGDIR = {
           # 'KDSANR': 'adressdatei_id',
           'KDDTER': 'XKD_erfassung_date',
           'KDDTAE': 'XKD_aenderung_date',
-          #'KDSTAT': 'satzstatus',
+          'KDSTAT': 'satzstatus',
           },
 
 'XKS00': {  # Kundenzusatzdaten

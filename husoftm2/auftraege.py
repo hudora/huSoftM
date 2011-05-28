@@ -157,9 +157,23 @@ def get_auftrag_by_auftragsnr(auftragsnr, header_only=False):
     return auftraege[0]
 
 
+def get_auftrag_by_auftragsnr_tmp(auftragsnr_tmp, header_only=False):
+    """Auftrag anhand der auftragsnr_tmp zurueckgeben. Wird von ic2/auftrag verwendet."""
+    conditions = ["ATTX60=%s" % sql_quote("#:auftragsnr_tmp:" + auftragsnr_tmp),
+                  "ATAUPO=0",
+                  "ATTART=8",
+                  "ATAUFN=AKAUFN"]
+    auftraege = _auftraege([" AND ".join(conditions)], addtables=['AAT00'], header_only=header_only)
+    if len(auftraege) > 1:
+        raise RuntimeError("Mehr als ein Auftrag mit auftragsnr_tmp %s vorhanden" % auftragsnr_tmp)
+    if not auftraege:
+        return None
+    return auftraege[0]
+
+
 def get_auftrag_by_guid(guid, header_only=False):
-    """Auftrag mit GUID guid zurueckgeben. ACHTUNG guids sind cniht zwingend eindeutig!"""
-    # TO BE FIXED
+    """Auftrag mit GUID guid zurueckgeben. ACHTUNG guids sind nicht zwingend eindeutig!"""
+    # TO BE FIXED - md: was ist hier zu fixen?
     condition = "ATTX60 = %s AND ATAUPO = 0 AND ATTART = 8 AND ATAUFN=AKAUFN" % sql_quote("#:guid:" + guid)
     auftraege = _auftraege([condition], addtables=['AAT00'], header_only=header_only)
     if len(auftraege) > 1:

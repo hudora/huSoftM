@@ -48,8 +48,8 @@ def texte_trennen(texte):
         if text.startswith('#:'):
             key = str(text.split(':')[1])
             value = ':'.join(text.split(':')[2:])
-            if key not in ['guid']:
-                raise RuntimeError("Unbekannte Auftragszusatzdaten: %s:%s" % key, value())
+            if key not in ['guid', 'auftragsnr_tmp', 'key', 'erfasst_von', '_rev']:
+                raise RuntimeError("Unbekannte Auftragszusatzdaten: %s:%s" % (key, value))
             else:
                 retdict[key] = value
         else:

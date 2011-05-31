@@ -14,7 +14,7 @@ Copyright (c) 2006, 2008-2011 HUDORA. All rights reserved.
 
 
 from decimal import Decimal
-from husoftm2.fields import MAPPINGDIR, DATETIMEDIR, DECIMALIZE2
+from husoftm2.fields import MAPPINGDIR, DATETIMEDIR, DECIMALIZE2, DECIMALIZE
 from husoftm2.tools import softm2date
 import datetime
 import doctest
@@ -160,6 +160,8 @@ def _fix_field(data, feldname):
     if feldname in DECIMALIZE2:
         # convert to 2 digits significant Decimal()
         return Decimal(str(data)).quantize(Decimal(10) ** -2)
+    elif feldname in DECIMALIZE:
+        return Decimal(str(data))
     elif isinstance(data, unicode):  # fix strings
         # due to various levels of braindamage in various programs we get unicode objects with latin-1
         # strings in them. So we first force unicode() -> str() and then decode to unicode

@@ -3195,6 +3195,24 @@ MAPPINGDIR = {
           # 'KPTX30': 'bezeichnung',
 },
 
+'XTK00': {  # Stichtagskurse (Währungskurse)
+    # 'TKFNR': 'Firma',
+    # 'TKKZPW': 'waehrungskennzeichen',
+    'TKDTST': 'stichtag_date',
+    # 'TKKART': 'Zu verwendender Kurs',
+    'TKKUR1': 'wechselkurs',
+    # 'TKKUR2': 'verrechnungskurs',
+    # 'TKKUFA': 'kursfaktor',
+    # *ZERO Kurs pro Fremdwährungseinheit
+    # 1     Kurs pro 10 Fremdwährungseinheiten
+    # 2     Kurs pro 100 Fremdwährungseinheiten
+    # 3     Kurs pro 1000 Fremdwährungseinheiten
+    # 'TKR5': 'reserve5_wechselkurs',
+    # 'TKR6': 'reserve6_wechselkurs',
+    # 'TKR7': 'reserve7_datum',
+    'TKWSL': 'waehrungskennzeichen',
+},
+
 # SMKDIFP    XLF00      XLF00F01   Lagerbestands-führungs-Datei
 # LFFNR    A         2  0    1    2 Firma
 # LFARTN   A        20  0    3   22 Artikel-Nummer
@@ -3297,6 +3315,7 @@ MAPPINGDIR = {
 # LFSTAT   A         1  0  585  585 Satzstatus
 }
 
+
 # decides which fields should be convertet to decimal, 2 digits
 DECIMALIZE2 = set(['BUR1', 'BUBUBT', 'BUNEBT', 'BUNEWB', 'BUABZU', 'BUWBBT',
                    'LBPREW', 'LBLWER', 'LBLWAK', 'LBLWKO', 'LBLWRT',
@@ -3307,6 +3326,11 @@ DECIMALIZE2 = set(['BUR1', 'BUBUBT', 'BUNEBT', 'BUNEWB', 'BUABZU', 'BUWBBT',
                    'WZBUBT', 'WZPREA', 'WZPREW',
                    'FKRBB1', 'FKRBB2', 'FKMWBT', 'FKVSK', 'FKSBRT', 'FKGERB',
                    'FUPORB', 'FUPREV'])
+
+
+# Decimal fields with the same precision like in SoftM
+DECIMALIZE = set(['TKKUR1', 'TKKUR2'])
+
 
 # maps datefield to related timefield for generating datetime objects
 DATETIMEDIR = {

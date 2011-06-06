@@ -21,6 +21,7 @@ betreuerdict = {
             'cblumberg': 'Claudia Blumberg',
             'cgerlach': 'Christoph Gerlach',
             'cgiermann': 'Carsten Giermann',
+            'cpudel': u'Carsten Pudel',
             'dgrossmann': u'Dirk Grossmann',
             'export': u'Export',
             'falin': u'Füsun Alin',

@@ -78,7 +78,7 @@ def buchbestand(artnr, lager=0):
 
 
 def bestellmengen(artnr, lager=0):
-    """Liefert eine Liste mit allen Bestellten aber noch nicht gelieferten Wareneingängen.
+    """Liefert eine Liste mit allen bestellten aber noch nicht gelieferten Wareneingängen.
 
     >>> bestellmengen('14865')
     {datetime.date(2009, 2, 20): 1200,
@@ -95,6 +95,29 @@ def bestellmengen(artnr, lager=0):
                  grouping='BPDTLT', condition=' AND '.join(conditions))
     return dict([(x['liefer_date'], as400_2_int(x['SUM(BPMNGB-BPMNGL)']))
                  for x in rows if as400_2_int(x['SUM(BPMNGB-BPMNGL)']) > 0])
+
+
+def bestellmengen_ausgeliefert(mindate=None, maxdate=None, artnrs=None, lager=0):
+    """Gibt alle gelieferten Wareneingängen aus Bestellungen zurück.
+
+    Eingrenzen kann man die Suche über den Zeitraum [mindate, maxdate], das Lager und eine Liste von
+    Artikelnummern.
+
+    Rückgabewert ist eine Liste von dicts, die jeweils den Liefertermin, die Artikelnummer, das Lager und die
+    Menge enthalten.
+    """
+    conditions = ["BPSTAT<>'X'", "BPKZAK=1"]
+    if lager:
+        conditions += ["BPLGNR=%d" % int(lager)]
+    if artnrs:
+        conditions += ["BPARTN IN (%s)" % ','.join([sql_quote(artnr) for artnr in artnrs])]
+    if mindate:
+        conditions += ["BPDTLZ >= %s" % str2softmdate(mindate)]
+    if maxdate:
+        conditions += ["BPDTLZ <= %s" % str2softmdate(maxdate)]
+    rows = query(['EBP00'], fields=['BPLGNR', 'BPDTLZ', 'BPARTN', 'BPMNGL'],
+                 condition=' AND '.join(conditions))
+    return rows
 
 
 def auftragsmengen(artnr, lager=0):

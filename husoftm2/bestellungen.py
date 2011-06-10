@@ -7,8 +7,10 @@ Created by Maximillian Dornseif on 2009-07-02.
 Copyright (c) 2009, 2010 HUDORA. All rights reserved.
 """
 
+import collections
 import unittest
 from decimal import Decimal
+
 from husoftm2.backend import query
 from husoftm.tools import sql_escape, sql_quote, date2softm, remove_prefix
 
@@ -233,6 +235,36 @@ def bestellungen(mindate=None, maxdate=None, additional_conditions=None, limit=N
     rows = query('EBP00', ordering=['BPBSTN DESC', 'BPDTLT'], condition=condition, limit=limit)
     # AND BPKZAK=0 to get only the open ones
     return rows
+
+
+def kopftext(bestellnr):
+    """Gibt den Kopftext einer Bestellung zurück.
+
+    Es wird nicht zwischen Anfangs- und Endetext unterschieden.
+    """
+    # Beziehe Bestelltexte folgender Textarten: BTTART=8 "Anfangstexte", BTTART=9 "Endetexte"
+    bestellnr = remove_prefix(bestellnr, 'PO')
+    rows = query('EBT00', ordering=['BTTART', 'BTLFNR'],
+                 condition="BTSTAT<>'X' AND BTKZ01=1 AND BTBSTN=%s AND BTBSTP=0 AND BTTART in (8, 9)" %
+                 sql_escape(bestellnr))
+    return '\n'.join(row['text'] for row in rows)
+
+
+def positionstexte(bestellnr):
+    """Gibt alle Positionstexte einer Bestellung zurück.
+
+    Dabei wird nicht zwischen Texten vor und Texten nach der Position unterschieden.
+    Rückgabewert ist ein dict mit den Positionsnummern als keys und den zugeh. Texten als values.
+    """
+    # Beziehe Positionstexte folgender Textarten: BTTART=5 "Text vor Positionen", BTTART=8 "Positionstexte"
+    bestellnr = remove_prefix(bestellnr, 'PO')
+    rows = query('EBT00', ordering=['BTBSTP', 'BTTART', 'BTLFNR'],
+                 condition="BTSTAT<>'X' AND BTKZ01=1 AND BTBSTN=%s AND BTTART in (5, 8)" %
+                 sql_escape(bestellnr))
+    postexte = collections.defaultdict(list)
+    for row in rows:
+        postexte[row['bestellposnr']].append(row['text'])
+    return dict((posnr, '\n'.join(texts)) for (posnr, texts) in postexte.iteritems())
 
 
 def testbestellung():

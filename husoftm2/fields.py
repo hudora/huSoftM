@@ -1756,6 +1756,38 @@ MAPPINGDIR = {
           'BPSTAT': 'status',
            },
 
+'EBT00': {  # Bestelltexte
+          #'BTFNR': 'Firma',
+          'BTBSTN': 'bestellnr',
+          'BTBSTP': 'bestellposnr',
+          'BTTART': 'textart',
+          'BTLFNR': 'laufende_nr',
+          #'BTSBNR': 'Sachb. Erfassung',
+          #'BTABT' : 'Abteilungs-Nummer',
+          #'BTAGRP': 'Abteilungs-Gruppe/Sparte',
+          #'BTFGRP': 'Firmen-Gruppe',
+          'BTTX60': 'text',
+          'BTKZ01': 'andruck_auf_bestellung',
+          #'BTKZ02': 'Kz: Andruck WE-Beleg',
+          #'BTKZ03': 'Kz: frei 1',
+          #'BTKZ04': 'Kz: frei 2',
+          #'BTKZ05': 'Kennzeichen 05',
+          #'BTKZ06': 'Kennzeichen 06',
+          #'BTKZ07': 'Kennzeichen 07',
+          #'BTKZ08': 'Kennzeichen 08',
+          #'BTKZ09': 'Kennzeichen 09',
+          #'BTKZ10': 'Kennzeichen 10',
+          #'BTKZ11': 'Kennzeichen 11',
+          #'BTKZ12': 'Kennzeichen 12',
+          #'BTKZ13': 'Kennzeichen 13',
+          #'BTKZ14': 'Kennzeichen 14',
+          #'BTKZ15': 'Kennzeichen 15',
+          #'BTDTER': 'Datum Erfassung CJJMMTT',
+          #'BTDTAE': 'Datum l. Änderung CJJMMTT',
+          #'BTDFSL': 'Dateiführungs-Schlüssel',
+          #'BTSTAT': 'satzstatus',
+         },
+
 
 # Eingangsrechnungen
 #     ERFNR               EER00              Firma

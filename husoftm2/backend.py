@@ -235,6 +235,8 @@ def execute(url, args, ua='', bust_cache=False):
         # needs a better implementation
         if content.startswith('Internal Error: {\'EXIT\',\n                    {timeout'):
             raise TimeoutException(content)
+        logging.error(headers)
+        logging.error(content)
         raise RuntimeError("Server Error: %r" % content)
     return content
 
@@ -250,28 +252,34 @@ def raw_SQL(command, ua=''):
     digest = hmac.new(_find_credentials(), url, hashlib.sha1).hexdigest()
     softmexpresshost = os.environ.get('SOFTMEXPRESSHOST', 'api.hudora.biz:8082')
     headers = {'X-sig': digest}
+    url = 'http://' + softmexpresshost + url
+    method = 'POST'
+    if command.upper().startswith('SELECT'):
+        method = 'GET'
     # Wir nutzen POST mit einem Query-String in der URL. Das ist dirty
     # See http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.9.4 for the reasoning here
+
     method = 'GET'
     if command.startswith('UPDATE'):
         method = 'POST'
     if command.startswith('INSERT'):
         method = 'POST'
-    status, headers, content = huTools.http.fetch('http://' + softmexpresshost + url,
+    status, headers, content = huTools.http.fetch(url,
                                                   method=method,
                                                   headers=headers,
                                                   content={'query': command, 'ua': ua},
                                                   ua='%s/husoftm2.backend' % ua,
                                                   timeout=3000)
     if status != 200:
-        logging.error(url)
-        raise RuntimeError("Server Error: %r" % content)
+        logging.error("%s %s" % (method, url))
+        raise RuntimeError("Server Error: %r" % status)
 
     # Not all replies are JSON encoded
     try:
         return hujson.loads(content)
     except:
         return content
+    return content
 
 
 def query(tables=None, condition=None, fields=None, querymappings=None,

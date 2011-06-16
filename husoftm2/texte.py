@@ -35,13 +35,12 @@ import warnings
 # * "Steuer-Nr.:1031...", "Steuer Nummer 5124...", "Steuer Nr.: 151...", "Steuernr. 129...".
 #   Diese Daten können unter http://hdmashup.appspot.com/stammdaten/kunde/ gepflegt werden.
 #
-# Im Allgemeinen geht SoftM ehr wirr mit den textn um, und was wo landet ist nie ganz klar. Das wir Texte,
-# die nirgens angeruckt werden sollen und mit `#:` beginnen zum Datentransport nutzen ist eine
+# Im Allgemeinen geht SoftM eher wirr mit den Texten um, und was wo landet ist nie ganz klar. Das wir Texte,
+# die nirgens angeruckt werden sollen und mit `#:` beginnen zum Datentransport nutzen, ist eine
 # interne Erweiterung.
 
 def texte_trennen(texte):
     """Trennt Texte in eine Liste aus Texten und ein Dict aus spezial Bezeichnern ('#:guid:1234')"""
-
     rettexte = []
     retdict = {}
     for text in texte:

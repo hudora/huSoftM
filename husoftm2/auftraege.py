@@ -7,7 +7,7 @@ Created by Christian Klein on 2010-03-15.
 Copyright (c) 2010 HUDORA GmbH. All rights reserved.
 """
 
-from husoftm2.tools import sql_escape, sql_quote, date2softm, pad, remove_prefix
+from husoftm2.tools import sql_escape, sql_quote, date2softm, pad, add_prefix, remove_prefix
 from husoftm2.texte import texte_trennen, txt_auslesen
 from husoftm2.backend import query
 import datetime
@@ -251,6 +251,20 @@ def verspaetete_auftraege(datum=None):
                      ua='husoftm2.auftraege.verspaetete_auftraege')
     return ["SO%s" % row[0] for row in rows]
     return _auftraege(conditions, addtables=['AAT00'], header_only=False)
+
+
+def get_rahmenauftrag(kundennr, artnr):
+    """Gib die Auftragsnummern aller offenen Rahmenaufträge für den Kunden und den Artikel zurück
+
+    >>> get_rahmenauftrag('SC66663', '14600')
+    ['SO1205711']
+    """
+    kundennr = remove_prefix(kundennr, 'SC')
+    conditions = ["AKAUFN=APAUFN", "AKKZVA=0", "APKZVA=0", "AKSTAT<>'X'", "APSTAT<>'X'", "AKAUFN>0",
+                  "AKAUFA='R'", "AKKDNR=%s" % pad('AKKDNR', kundennr), "APARTN=%s" % sql_quote(artnr)]
+    rows = query(['AAK00', 'AAP00'], condition=' AND '.join(conditions), fields=['AKAUFN'],
+                 ua='husoftm2.auftraege.get_rahmenauftrag')
+    return [add_prefix(row[0], 'SO') for row in rows]
 
 
 def _selftest():

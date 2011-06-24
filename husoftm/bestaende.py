@@ -472,6 +472,8 @@ def versionsvorschlag(menge, orgartnr, date, dateformat="%Y-%m-%d"):
     >>> versionsvorschlag(2000, '76095', '2009-01-04')
     (False, [(0, '76095')])
     """
+    warnings.warn("versionsvorschlag() ist veraltet. Bitte nutzen sie husoftm2.bestaende.versionsvorschlag()",
+                  DeprecationWarning, stacklevel=2)
     ret = []
     benoetigt = menge
     for artnr in cs.masterdata.eaplight.get_alternatives(orgartnr):

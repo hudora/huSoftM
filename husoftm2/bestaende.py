@@ -43,6 +43,7 @@ Es gibt verschiedene Mengen von denen wir reden.
 from husoftm2.artikel import set_artikel
 from husoftm2.tools import sql_quote, add_prefix, str2softmdate
 from husoftm2.backend import query, as400_2_int
+import cs.masterdata.eaplight
 import datetime
 import husoftm2.artikel
 import itertools
@@ -499,6 +500,26 @@ def bestandsentwicklung(artnr, dateformat="%Y-%m-%d", lager=0):
         entwicklung = bewegungen_to_bestaende(bewegungen_komponenten + bewegungen_set)
 
     return entwicklung
+
+
+def versionsvorschlag(menge, orgartnr, date, dateformat="%Y-%m-%d"):
+    """Gib einen Vorschlag für Zusammenstellung von Artikeln zurück.
+
+    >>> versionsvorschlag(2000, '22006', '2009-01-04')
+    (True, [(1184, '22006'), (816, '22006/03')])
+    >>> versionsvorschlag(2000, '76095', '2009-01-04')
+    (False, [(0, '76095')])
+    """
+    ret = []
+    benoetigt = menge
+    for artnr in cs.masterdata.eaplight.get_alternatives(orgartnr):
+        dummy, untermenge = ist_frei_am(benoetigt, artnr, date, dateformat)
+        if untermenge > 0:
+            ret.append((min(benoetigt, untermenge), artnr))
+            benoetigt -= untermenge
+        if benoetigt <= 0:
+            return True, ret
+    return False, ret
 
 
 def freie_menge(artnr, dateformat="%Y-w%W"):

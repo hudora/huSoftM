@@ -301,10 +301,12 @@ def kredit_limit(kundennr):
 
 
 def offene_posten(kundennr):
-    """Ermittle die Summe er offenen Posten für einen Kunden
+    """Ermittle die Summe der offenen Posten für einen Kunden
     >>> offene_posten('SC66660')
     Decimal('1234.56')
     """
+
+    # TODO: offener Auftragswert aus Tabelle 'XKS00'
 
     kundennr = husoftm2.tools.remove_prefix(kundennr, 'SC')
     rows = query('BOP00', fields=['OPRGSH', 'SUM(OPOPBT)'],
@@ -315,6 +317,20 @@ def offene_posten(kundennr):
     if rows:
         offene_posten = dict(rows)
         return Decimal(offene_posten.get('S', 0)) - Decimal(offene_posten.get('H', 0))
+
+
+def offener_auftragswert(kundennr):
+    """Ermittle die Summe der offenen Aufträge für einen Kunden
+    >>> offener_auftragswert('SC66660')
+    Decimal('57.11')
+    """
+
+    kundennr = husoftm2.tools.remove_prefix(kundennr, 'SC')
+    rows = query('XKS00', fields=['KSAWRT'],
+                 condition='KSKDNR=%s' % husoftm2.tools.pad('KSKDNR', kundennr),
+                 ua='husoftm2.kunden.offener_auftragswert')
+    if rows:
+        return rows[0][0]
 
 
 def _selftest():

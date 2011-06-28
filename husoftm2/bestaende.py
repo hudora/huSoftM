@@ -536,7 +536,7 @@ def freie_menge(artnr, dateformat="%Y-w%W"):
 
     """
 
-    today = datetime.date.today().strftime("%Y-w%W")
+    today = datetime.date.today().strftime(dateformat)
     bestandse = bestandsentwicklung(artnr, dateformat)
     # remove historic data, since this tends to be negative
     bestandse = [x[1] for x in bestandse.items() if x[0] >= today]

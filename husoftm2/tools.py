@@ -52,6 +52,7 @@ SOFTMLKZ2ISOLAND = {'': 'DE',
                     'IR': 'IR',   # Iran
                     'IRL': 'IE',  # Irland
                     'IS': 'IS',   # Island
+                    'KOR': 'KR',    # Korea
                     'L': 'LU',    # Luxemburg
                     'LTL': 'LT',  # Litauen
                     'LV': 'LV',   # Lettland
@@ -61,8 +62,10 @@ SOFTMLKZ2ISOLAND = {'': 'DE',
                     'NZ': 'NZ',   # Neuseeland
                     'P': 'PT',    # Portugal
                     'PA': 'PA',   # Panama
+                    'PAK': 'PK',    # Pakistan
                     'PL': 'PL',   # Polen
                     'RA': 'AR',   # Argentinien
+                    'RC': 'TW',   # Taiwan
                     'RCH': 'CL',  # Chile
                     'RI': 'ID',   # Republik Indonesia
                     'RO': 'RO',   # Rumaenien
@@ -73,6 +76,7 @@ SOFTMLKZ2ISOLAND = {'': 'DE',
                     'SLO': 'SI',  # Slowenien
                     'TR': 'TR',   # Tuerkei
                     'UA': 'UA',   # Ukraine
+                    'VC': 'CN',   # Volksrepublik China
                     'ZA': 'ZA',   # Südafrika
 }
 # invert dictionary

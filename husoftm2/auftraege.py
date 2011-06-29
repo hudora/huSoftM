@@ -68,6 +68,8 @@ def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate
     koepfe = {}
     kopftexte = {}
 
+    auftragsnr_to_lieferadresse_kdnr = {}
+
     if addtables is None:
         addtables = []
 
@@ -90,6 +92,9 @@ def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate
                  # * *info_kunde* - Freitext der für den Empfänger relevanz hat
                  )
         koepfe[kopf['auftragsnr']] = d
+
+        auftragsnr_to_lieferadresse_kdnr[kopf['auftragsnr']] = "%s.%03d" % (kopf['kundennr_warenempf'],
+                                                                            kopf['versandadressnr'])
 
     if header_only:
         return koepfe.values()
@@ -114,6 +119,7 @@ def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate
                                                       strasse=row['strasse'],
                                                       land=husoftm2.tools.land2iso(row['laenderkennzeichen']),
                                                       plz=row['plz'],
+                                                      kundennr=auftragsnr_to_lieferadresse_kdnr[row['nr']],
                                                       ort=row['ort'])
 
         # Positionen einlesen

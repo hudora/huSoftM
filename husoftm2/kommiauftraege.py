@@ -107,9 +107,9 @@ def zurueckmelden(auftragsnr, komminr, positionen):
 
     komminr = remove_prefix(komminr, 'KA')
     auftragsnr = remove_prefix(auftragsnr, 'SO')
-    if get_rueckmeldedaten(komminr):
-        msg = u'%s: Kommiauftrag schon in ISR00' % komminr, 'wms2ic_rueckmeldung'
-        raise RuntimeError(msg)
+    rueckmeldedaten = get_rueckmeldedaten(komminr)
+    if rueckmeldedaten:
+        raise RuntimeError(u'%s: Kommiauftrag schon in ISR00 (%s)' % (komminr, rueckmeldedaten))
 
     lock_key = datetime.datetime.now().strftime("%m%d%H%M%S")
     zurueckgemeldete_positionen = set()

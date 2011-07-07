@@ -93,8 +93,15 @@ def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate
                  )
         koepfe[kopf['auftragsnr']] = d
 
-        auftragsnr_to_lieferadresse_kdnr[kopf['auftragsnr']] = "%s.%03d" % (kopf['kundennr_warenempf'],
-                                                                            kopf['versandadressnr'])
+        # Auftrag geht an die 'normale' Lieferadresse: Kein .00?-Suffix an die `lieferadresse.kundennr`
+        if kopf['versandadressnr'] == 0:
+            auftragsnr_to_lieferadresse_kdnr[kopf['auftragsnr']] = add_prefix(kopf['kundennr_warenempf'],
+                                                                              'SC')
+        # Auftrag geht an eine abweichende Lieferadresse: .00?-Suffix an die `lieferadresse.kundennr` hängen.
+        else:
+            lieferadresse_kdnr = add_prefix("%s.%03d" % (kopf['kundennr_warenempf'], kopf['versandadressnr']),
+                                            "SC")
+            auftragsnr_to_lieferadresse_kdnr[kopf['auftragsnr']] = lieferadresse_kdnr
 
     if header_only:
         return koepfe.values()
@@ -121,7 +128,6 @@ def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate
                                                       plz=row['plz'],
                                                       kundennr=auftragsnr_to_lieferadresse_kdnr[row['nr']],
                                                       ort=row['ort'])
-
         # Positionen einlesen
         for row in query(['AAP00'], condition="APSTAT<>'X' AND APAUFN IN (%s)" % ','.join([str(x)
                                                                                            for x in batch]),

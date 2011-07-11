@@ -63,13 +63,29 @@ def get_kundennummern():
     return ["SC%s" % int(x[0]) for x in rows]
 
 
-def get_changed_after(date):
-    """Returns a list of all Kundennummern where the underlying Data has changed since <date>."""
+def get_changed_after(date, lieferadressen=False):
+    """Gibt alle Kundennr zurück, deren Daten sich seit 'date' geändert haben.
 
+    Mit dem Parameter lieferadressen=True werden auch die Kundennr für abweichende Lieferadressen
+    zurückgegeben, wenn sich diese seit 'date' verändert haben. Diese Kundennummern haben dann die
+    Form SCxxxxx.yyy
+    """
+
+    # Änderungen in der Tabelle XKD00 (Kundenadressen)
     date = int(date.strftime('1%y%m%d'))
-    rows1 = query('XKD00', fields=['KDKDNR'], condition="KDDTER>%d OR KDDTAE>=%d" % (date, date))
-    rows2 = query('AKZ00', fields=['KZKDNR'], condition="KZDTAE>=%d" % (date))
-    return list(set(["SC%s" % int(x[0]) for x in rows1]) | set(["SC%s" % int(x[0]) for x in rows2]))
+    rows = query('XKD00', fields=['KDKDNR'], condition="KDDTER>%d OR KDDTAE>=%d" % (date, date))
+    kundennrs = set("SC%s" % int(x[0]) for x in rows)
+
+    # Änderungen in der Tabelle AKZ00 (Kundenstamm für Auftragsverwaltung)
+    rows = query('AKZ00', fields=['KZKDNR'], condition="KZDTAE>=%d" % (date))
+    kundennrs.update(set("SC%s" % int(x[0]) for x in rows))
+    kundennrs = list(kundennrs)
+
+    # Änderungen in der Tabelle AVA00 (Lieferadressen)
+    if lieferadressen:
+        rows = query('AVA00', fields=['VAKDNR', 'VAVANR'], condition="VADTER>%d OR VADTAE>=%d" % (date, date))
+        kundennrs += ["SC%5s.%03d" % (row['kundennr'], row['versandadresssnr']) for row in rows]
+    return kundennrs
 
 
 def get_kunde(kundennr):

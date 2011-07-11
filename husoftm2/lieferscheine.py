@@ -75,12 +75,9 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
             raise husoftm2.backend.TransientError("Dateiführungsschlüssel in ALK00: %r" % kopf)
         if is_lieferschein == True:
             if not row['ALK_lieferschein_date']:
-                # Noch ist unklar, ob es eigentlich "korrekte" Lieferscheine ohne ALK_lieferschein_date
-                # geben kann. Bis dahin werfen wir erstmal eine Exception, weil wir davon ausgehen, dass
-                # Der Datensatz noch in Arbeit ist.
-                logging.critical("? %s", row)
-                logging.critical("gesamter Kopf %s", query(['ALK00'], condition="LKLFSN = %s"
-                                  % remove_prefix(kopf['lieferscheinnr'], "SL")))
+                # Wenn kein Lieferscheindatum (ALK_lieferschein_date) gesetzt ist,
+                # handelt es sich um Lieferscheine, die erst vor kurzer Zeit erzeugt wurden.
+                # SoftM benötigt noch Zeit, um das Lieferscheindatum zu setzen.
                 raise husoftm2.backend.TransientError("Noch kein Lieferscheindatum in ALK00: %r" % kopf)
             kopf['datum'] = row['ALK_lieferschein'] or row['ALK_lieferschein_date']
         else:

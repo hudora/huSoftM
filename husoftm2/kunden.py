@@ -149,22 +149,38 @@ def get_lieferadressen(kundennr):
     return kunden
 
 
-def get_lieferadresse(warenempfaenger):
-    """Lieferadresse für Warenempfänger ermitteln"""
+def get_lieferadresse(kundennr_lieferadresse):
+    """Lieferadresse für eine Kundennr der Form SCxxxxx.yyy ermitteln.
 
-    warenempfaenger = str(warenempfaenger)
-    if warenempfaenger.startswith('SC'):
-        warenempfaenger = warenempfaenger[2:]
-    tmp = warenempfaenger.split('.')
-    if len(tmp) == 1:
-        return get_kunde(warenempfaenger)
+    Wenn eine normale Kundennr (SCxxxxx) als kundennr_lieferadresse übergeben wird, dann wird auf die
+    Funktion get_kunde() zurückgegriffen und die Kundenadresse zurückgegeben.
+    Ansonsten wird die abweichende Lieferadresse mit der Versandadressnr (yyy) zurückgegeben.
+    """
 
+    kundennr_lieferadresse = str(kundennr_lieferadresse)
+
+    if '.' not in kundennr_lieferadresse:
+        return get_kunde(kundennr_lieferadresse)
+
+    kundennr, versandadressnr = kundennr_lieferadresse.split('.')
+    kundennr = husoftm2.tools.remove_prefix(kundennr, 'SC')
+    versandadressnr = int(versandadressnr)
     rows = query(['AVA00'], joins=[('XXA00', 'VASANR', 'XASANR')],
-                 condition="VAKDNR='%8s' AND VAVANR=%03d AND VASTAT <>'X'" % (int(tmp[0]), int(tmp[1])))
+                 condition="VAKDNR='%8s' AND VAVANR=%03d AND VASTAT <>'X'" % (kundennr, versandadressnr))
     if len(rows) == 1:
-        return _softm_to_dict(rows[0])
+        row = rows[0]
+        address = _softm_to_dict(row)
+        # Erfassungs- und Änderungsdatum aus XXA00 eintragen
+        if row.get('erfassung_date'):
+            address['erfassung'] = row['erfassung_date']
+            address['aenderung'] = address['erfassung']
+        if row.get('XXA_aenderung_date'):
+            address['aenderung'] = row['XXA_aenderung_date']
+        # Die Kundennr inkl. Erweiterung für abweichende Lieferadressen eintragen
+        address['kundennr'] = husoftm2.tools.add_prefix(kundennr_lieferadresse, 'SC')
+        return address
     elif len(rows) > 1:
-        raise RuntimeError(u"Kunden-Lieferadresse inkonsistent: %s" % warenempfaenger)
+        raise RuntimeError(u"Kunden-Lieferadresse inkonsistent: %s" % kundennr_lieferadresse)
 
 
 def _softm_to_dict(row):

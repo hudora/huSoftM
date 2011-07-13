@@ -68,6 +68,10 @@ def get_kundenartikelnr(kundennr, artnrs, date=None):
                 'kundenartnr': u'HD-12345-XYZ'}}
     """
 
+    # Falls keine Artikelnummern übergeben wurden (leere Liste), wird ein leeres dict zurückgegeben
+    if not artnrs:
+        return {}
+
     if date is None:
         date = datetime.date.today()
 

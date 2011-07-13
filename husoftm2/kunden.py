@@ -334,8 +334,11 @@ def kredit_limit(kundennr):
 
 def offene_posten(kundennr):
     """Ermittle die Summe der offenen Posten für einen Kunden
+    Bei unbekannten Kunden oder bei einem nicht zu ermittelnden Wert wird 0 zurückgegeben.
     >>> offene_posten('SC66660')
     Decimal('1234.56')
+    >>> offene_posten('S11111111111')
+    Decimal('0')
     """
 
     # TODO: offener Auftragswert aus Tabelle 'XKS00'
@@ -349,6 +352,7 @@ def offene_posten(kundennr):
     if rows:
         offene_posten = dict(rows)
         return Decimal(offene_posten.get('S', 0)) - Decimal(offene_posten.get('H', 0))
+    return Decimal('0')
 
 
 def offener_auftragswert(kundennr):

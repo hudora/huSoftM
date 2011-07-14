@@ -220,11 +220,11 @@ def bestellungen(mindate=None, maxdate=None, additional_conditions=None, limit=N
     conditions = ["BPSTAT<>'X'"]
 
     if mindate and maxdate:
-        conditions.append("BPDTER BETWEEN %s AND %s" % (date2softm(mindate), date2softm(maxdate)))
+        conditions.append("BPDTLZ BETWEEN %s AND %s" % (date2softm(mindate), date2softm(maxdate)))
     elif mindate:
-        conditions.append("BPDTER > %s" % date2softm(mindate))
+        conditions.append("BPDTLZ > %s" % date2softm(mindate))
     elif maxdate:
-        conditions.append("BPDTER < %s" % date2softm(maxdate))
+        conditions.append("BPDTLZ < %s" % date2softm(maxdate))
 
     # You should REALLY know what you are doing!
     if additional_conditions:

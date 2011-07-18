@@ -749,6 +749,7 @@ MAPPINGDIR = {
           # Achtung! Der Wert kann nicht direkt z.B. in einer Subquery oder einem JOIN verwendet werden,
           # sondern muss mit Leerzeichen aufgefüllt werden: husoftm2.tools.pad('KPINHA', value)
           'KZX3ZB': 'zahlungsbedingung_schluessel',
+          'KZRBPR': 'kundenrabatt',
           #'KZKDRG': 'Rechnungs-Zahler',
           #'KZWSL ': 'Währungs-Kennzeichen',
           #'KZKZBO': 'Bonus-Kennzeichen',

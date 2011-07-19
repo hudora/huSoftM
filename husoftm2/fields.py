@@ -2203,7 +2203,7 @@ MAPPINGDIR = {
 #     VPSTAT              EVP00              Satzstatus
 
 
-'EWZ00': {  # Bestellpositionszusatzinformationen
+'EWZ00': {  # geprüfte Warenzugänge
      # 'WZFGRP': 'Firmen-Gruppe              ',
      # 'WZFNR ': 'Firma                      ',
      # 'WZAGRP': 'Abteilungs-Gruppe/Sparte   ',

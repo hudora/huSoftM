@@ -130,7 +130,6 @@ def get_changed_after(date):
     return list(ret)
 
 
-#@caching.cache_function(60*60*2)
 def get_kunde(kdnnr):
     """Get the Kunde object representing Kundennummer <kdnnr>.
 
@@ -163,7 +162,6 @@ def get_kunde(kdnnr):
     return Kunde().fill_from_softm(rows[0])
 
 
-@caching.cache_function(60 * 60 * 2)
 def get_kunde_by_iln(iln):
     """Get Kunden Address based on ILN.
 
@@ -240,9 +238,10 @@ def get_lieferadressen_all():
     return dict(("%s.%03d" % (row['kundennr'], int(row['versandadressnr'])), row) for row in rows)
 
 
-@caching.cache_function(60 * 60 * 2)
 def get_kundenbetreuer(kundennr):
     """'Liefert einen String, der den Betreuer im Hause für einen bestimmten Kunden identifizert oder ''."""
+    warnings.warn("husoftm.kunden.get_kundenbetreuer is deprecated, use husoftm2.kunden.get_betreuer()",
+                  DeprecationWarning, stacklevel=2)
     rows = husoftm.connection2.get_connection().query(['AKZ00'], fields=['KZINFO'],
            condition="KZKDNR LIKE '%s'" % ('%' + str(kundennr)))
     if rows:

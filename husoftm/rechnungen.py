@@ -109,7 +109,7 @@ def softm_to_invoice(rechnungsnr):
     out['erfasst_von'] = rg['sachbearbeiternr']
     out['abschlag_prozent'] = rg['auftragsrabatt1p'] + rg['auftragsrabatt2p']
     out['auftragsrabatt'] = rg['auftragsrabatt']
-    out['rechungsdatum'] = rg['druck_date']
+    out['rechnungsdatum'] = rg['druck_date']
     rabatttext = ' und '.join([x for x in [rg['rabatttext1'].strip(), rg['rabatttext2'].strip()] if x])
     rabatttext = ""
     if rabatttext:

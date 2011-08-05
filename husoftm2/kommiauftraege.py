@@ -15,7 +15,7 @@ import warnings
 
 from husoftm2.backend import query, x_en, raw_SQL
 from husoftm2.lieferscheine import get_ls_kb_data
-from husoftm2.tools import remove_prefix, sql_quote
+from husoftm2.tools import remove_prefix, sql_quote, add_prefix
 
 
 def get_kommiauftrag(komminr, header_only=False):
@@ -75,6 +75,16 @@ def get_rueckmeldestatus():
     return ret
 
 
+def get_offene_rueckmeldungen():
+    """Liefert die aktuell in der ISR00 in Bearbeitung befindlichen Rückmeldungen mit ihrem Status zurück."""
+    rows = query(['ISR00'], fields=['IRKBNR', 'IRSTAT'], condition="IRSTAT<>'X'",
+                 ua='husoftm2.kommiauftraege', cachingtime=0)
+    ret = {}
+    for row in rows:
+        ret[add_prefix(row['kommibelegnr'], 'KA')] = row['status']
+    return ret
+
+
 def get_new(limit=401):
     """Liefert unverarbeitete Kommiaufträge zurück."""
 
@@ -123,7 +133,7 @@ def zurueckmelden(auftragsnr, komminr, positionen):
                        IRMENG=int(pos['menge']))
         sqlstr = 'INSERT INTO ISR00 (%s) VALUES (%s)' % (','.join(pos_sql.keys()),
                                                          ','.join([repr(x) for x in pos_sql.values()]))
-        zurueckgemeldete_positionen.add(pos['posnr'])
+        zurueckgemeldete_positionen.add(int(pos['posnr']))
         raw_SQL(sqlstr, ua='husoftm2.kommiauftrag.zurueckmelden')
 
     logging.info(u'Positionen aus ISR00: %s', zurueckgemeldete_positionen)

@@ -41,7 +41,7 @@ AUFTRAGSARTEN = {
 
 
 def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate=None, limit=None,
-               header_only=False):
+               header_only=False, canceled=False):
     """
     Alle Aufträge ermitteln
     `additional_conditions` kann eine Liste von SQL-Bedingungen enthalten, die die Auftragssuche
@@ -49,18 +49,28 @@ def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate
     `mindate` & `maxdate` können den Anliefertermin einschränken.
     `limit` kann die Zahl der zurückgelieferten Aufträge einschraenken. Dabei werden groessere
     Auftragsnummern zuerst zurueck gegeben.
+    `header_only` ruft nur Auftragsköpfe ab und ist bedeutend schneller
+    `canceled` wenn True, werden auch stornierte Aufträge zurück gegeben.
 
     Rückgabewert sind dicts nach dem Lieferungprotokoll.
     Wenn header_only == True, werden nur Auftragsköpfe zurück gegeben, was deutlich schneller ist.
     """
 
-    conditions = ["AKSTAT<>'X'"]
+    # Solange der Client das nciht gesondert verlangt, werden stornierte Aufträge ignoriert.
+    if not canceled:
+        conditions = ["AKSTAT<>'X'"]
+    else:
+        conditions = []
+    # Anliefertermin ist ein Range
     if mindate and maxdate:
         conditions.append("AKDTER BETWEEN %s AND %s" % (date2softm(mindate), date2softm(maxdate)))
+    # Anliefertermin ist nach unten begrenzt
     elif mindate:
         conditions.append("AKDTER > %s" % date2softm(mindate))
+    # Anliefertermin ist nach oben begrenzt
     elif maxdate:
         conditions.append("AKDTER < %s" % date2softm(maxdate))
+    # vom Aufrufer direkt angegebenen, weitere SQL Bedingungen zufügen. Diese werden mit `AND` verkettet.
     if additional_conditions:
         conditions.extend(additional_conditions)
 
@@ -86,9 +96,12 @@ def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate
                  sachbearbeiter=husoftm2.sachbearbeiter.resolve(kopf['sachbearbeiter']),
                  anliefertermin=kopf['liefer_date'],
                  teillieferung_erlaubt=(kopf['teillieferung_erlaubt'] == 1),
+                 # TODO: md: ich denke, "erledigt" ist ein Auftrag auch, wenn er storneirt wurde,
+                 # oder wenn alle Positionen auf voll_ausgeliefert stehen.
                  erledigt=(kopf['voll_ausgeliefert'] == 1),
                  positionen=[],
                  art=kopf['art'],
+                 storniert=(kopf['aak_status'] == 'X'),
                  # * *info_kunde* - Freitext der für den Empfänger relevanz hat
                  )
         koepfe[kopf['auftragsnr']] = d
@@ -176,7 +189,8 @@ def get_auftrag_by_auftragsnr_tmp(auftragsnr_tmp, header_only=False):
                   "ATAUPO=0",
                   "ATTART=8",
                   "ATAUFN=AKAUFN"]
-    auftraege = _auftraege([" AND ".join(conditions)], addtables=['AAT00'], header_only=header_only)
+    auftraege = _auftraege([" AND ".join(conditions)], addtables=['AAT00'],
+                           header_only=header_only, canceled=True)
     if len(auftraege) > 1:
         raise RuntimeError("Mehr als ein Auftrag mit auftragsnr_tmp %s vorhanden" % auftragsnr_tmp)
     if not auftraege:

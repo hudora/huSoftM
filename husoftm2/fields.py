@@ -275,7 +275,7 @@ MAPPINGDIR = {
           # 'AKKDN2': 'Adresse 2',
           # 'AKZUOR': 'Zuordnung für dezentrale An',
           # 'AKDFSL': 'Dateiführungs-Schlüssel',
-          # 'AKSTAT': 'satzstatus'
+          'AKSTAT': 'aak_status'
           # 'AKRSA6': 'Satznummer Ansprechpartner',
          },
 

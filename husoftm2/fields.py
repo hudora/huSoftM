@@ -73,7 +73,7 @@ MAPPINGDIR = {
           # Lieferadressdatei gespeichert ist, kann die Nummer der Lieferadresse hier angegeben werden.
           # Die Nummer kann auch über F5=Lieferadressübersicht ausgewählt werden.
           # 'AKALS1': 'Alphasortierung/Warenempfän',
-          # 'AKKDRG': 'Kundennr.Rechnungs-Empfänge',
+          'AKKDRG': 'kundennr_rechnungsempf',
           # Das Feld wird mit dem Rechnungszahler lt. Kundenzusatzdatei vorbesetzt. Die
           # Rechnungszahler-Kundennummer muss in den Datei XKD00, XKS00 und AKZ00 gespeichert sein.
           # Wird ein abweichender Rechnungszahler angegeben, dann wird dessen Adresse bei der

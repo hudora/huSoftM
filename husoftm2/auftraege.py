@@ -78,6 +78,7 @@ def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate
                       joins=[('XKD00', 'AKKDNR', 'KDKDNR')],
                              limit=limit, ua='husoftm2.auftraege'):
         d = dict(kundennr="SC%s" % kopf['kundennr_warenempf'],
+                 kundennr_rechnung="SC%s" % kopf['kundennr_rechnungsempf'],
                  auftragsnr="SO%s" % kopf['auftragsnr'],
                  auftragsnr_kunde=kopf['auftragsnr_kunde'],
                  erfassung=kopf['AAK_erfassung_date'],
@@ -88,7 +89,6 @@ def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate
                  erledigt=(kopf['voll_ausgeliefert'] == 1),
                  positionen=[],
                  art=kopf['art'],
-                 # * *auftragsnr_kunde* - id of the order submitted by the customer
                  # * *info_kunde* - Freitext der für den Empfänger relevanz hat
                  )
         koepfe[kopf['auftragsnr']] = d

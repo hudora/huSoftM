@@ -12,7 +12,7 @@ import unittest
 from decimal import Decimal
 
 from husoftm2.backend import query
-from husoftm.tools import sql_escape, sql_quote, date2softm, remove_prefix
+from husoftm.tools import sql_escape, sql_quote, date2softm, remove_prefix, add_prefix
 
 
 class Bestellung(object):
@@ -73,27 +73,29 @@ def get_bestellung(bestellnr):
     ]
 
     """
-
+    bestellnr = remove_prefix(bestellnr, 'PO')
     kopf = query('EBL00', ordering=['BLBSTN DESC'],
         condition="BLSTAT<>'X' AND BLBSTN=%s" % sql_escape(bestellnr))
     if len(kopf) != 1:
         raise RuntimeError('inkonsistente Kopfdaten in EBL00')
     kopf = kursfaktorkorrektur(kopf)[0]
 
-    # leer? WTF?
-    # print query('ESL00', condition="SLBSTN=%s" % sql_escape(ponr))
-
     # BZT00 - zusatztexte
     # positionen = query(['EBP00', 'EWZ00'], ordering=['BPBSTN DESC', 'BPDTLT'],
     #     condition="WZBSTN=BPBSTN AND WZBSTP=BPBSTP AND BPSTAT<>'X' AND BPBSTN=%s" % sql_escape(ponr))
     positionen = query(['EBP00'], ordering=['BPBSTN DESC', 'BPDTLT'],
-        condition="BPSTAT<>'X' AND BPBSTN=%s" % sql_escape(bestellnr))
+                       condition="BPSTAT<>'X' AND BPBSTN=%s" % sql_escape(bestellnr))
     # detailierte Informationen über den Zugang gibts in EWZ00
 
     # AND BPKZAK=0 to get only the open ones
     # Buchungsdaten: SELECT * FROM SMKDIFP/BBU00 WHERE BUBELN = 900003977
     # Lagerveraenderung: SELECT * FROM SMKDIFP/XLB00 WHERE LBBSTN = '43072'
     # ?: SELECT * FROM EWZ00 WHERE WZBSTN = 43072
+
+    # Prefixen der Bestellnr
+    kopf['bestellnr'] = add_prefix(kopf['bestellnr'], 'PO')
+    for position in positionen:
+        position['bestellnr'] = add_prefix(position['bestellnr'], 'PO')
     return kopf, positionen
 
 

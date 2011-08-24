@@ -130,6 +130,8 @@ ABK00 = {
                       Gültige Werte sind:
                       *ZERO Teillieferung nicht zulässig
                       1 Teillieferung zulässig'''),
+# Anscheinend Ignoriert es SoftM, wenn in diesem Feld der Wert '0' übergeben wird.
+# BZW Noch schlimmer: SoftM ändert dern Wert in der Stapelschnittstelle auf 1.
 'BKAUFN': dict(name='auftrag', format='P7.0',
                doc='''Nummer des Auftrags Angabe wird per Programm gefüllt, falls der Auftrag fehlerfrei war
                       und in den Auftragsbestand übernommen werden konnte. Es wird die vom System bei der

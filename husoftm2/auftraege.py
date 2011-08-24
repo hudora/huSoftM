@@ -279,17 +279,17 @@ def verspaetete_auftraege(datum=None):
     return _auftraege(conditions, addtables=['AAT00'], header_only=False)
 
 
-def get_rahmenauftrag(kundennr, artnr):
-    """Gib die Auftragsnummern aller offenen Rahmenaufträge für den Kunden und den Artikel zurück
+def get_rahmenauftraege(kundennr, artnr):
+    """Gib die Auftragsnummern aller offenen Rahmenaufträge für den Kunden und den Artikel als Liste zurück.
 
-    >>> get_rahmenauftrag('SC66663', '14600')
+    >>> get_rahmenauftraege('SC66663', '14600')
     ['SO1205711']
     """
     kundennr = remove_prefix(kundennr, 'SC')
     conditions = ["AKAUFN=APAUFN", "AKKZVA=0", "APKZVA=0", "AKSTAT<>'X'", "APSTAT<>'X'", "AKAUFN>0",
                   "AKAUFA='R'", "AKKDNR=%s" % pad('AKKDNR', kundennr), "APARTN=%s" % sql_quote(artnr)]
     rows = query(['AAK00', 'AAP00'], condition=' AND '.join(conditions), fields=['AKAUFN'],
-                 ua='husoftm2.auftraege.get_rahmenauftrag')
+                 ua='husoftm2.auftraege.get_rahmenauftraege')
     return [add_prefix(row[0], 'SO') for row in rows]
 
 

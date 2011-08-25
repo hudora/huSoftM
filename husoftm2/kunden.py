@@ -57,9 +57,29 @@ vertreterdict = {
 }
 
 
-def get_kundennummern():
-    """Returns a list of all 'Kundennummern'"""
-    rows = query('XKD00', fields=['KDKDNR'], condition="KDSTAT <> 'X'")
+def get_kundennummern(kundennrs=None):
+    """
+    Gibt eine Liste mit allen Kundennummern zurück.
+
+    Als Parameter `kundennrs` kann eine Liste mit Kundennummern übergeben werden.
+    Wenn der Parameter `kundennrs` gesetzt ist, werden nur die Kundennummern
+    zurückgegeben, die in `kundennrs` enthalten sind.
+
+    >>> get_kundennummern(kundennrs=['SC17200', 'NONEXISTENT'])
+    ['SC17200']
+    """
+
+    conditions = ["KDSTAT <> 'X'"]
+    if kundennrs:
+        tmp = set()
+        for kundennr in kundennrs:
+            kundennr = husoftm2.tools.remove_prefix(kundennr, 'SC')
+            if kundennr:
+                tmp.add(husoftm2.tools.pad('KDKDNR', kundennr))
+        if tmp:
+            conditions.append('KDKDNR IN (%s)' % ','.join(tmp))
+
+    rows = query('XKD00', fields=['KDKDNR'], condition=" AND ".join(conditions))
     return ["SC%s" % int(x[0]) for x in rows]
 
 

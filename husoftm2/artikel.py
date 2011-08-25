@@ -13,10 +13,22 @@ from husoftm2.backend import query
 from husoftm2.tools import date2softm, sql_quote, pad, remove_prefix
 
 
-def get_artikelnummern():
-    """Gibt eine Liste mit allen Artikelnummern zurück."""
+def get_artikelnummern(artnrs=None):
+    """
+    Gibt eine Liste mit allen Artikelnummern zurück.
 
-    rows = query(['XAR00'], fields=['ARARTN'])
+    Als Parameter `artnrs` kann eine Liste mit Artikelnummern übergeben werden.
+    Wenn der Parameter artnrs gesetzt ist, werden nur die Artikelnummern
+    zurückgegeben, die in `artnrs` enthalten sind.
+
+    >>> get_artikelnummern(artnrs=['11111', 'NONEXISTENT'])
+    ['11111']
+    """
+
+    condition = None
+    if artnrs:
+        condition = ['ARARTN IN (%s)' % ','.join(sql_quote(artnr) for artnr in artnrs)]
+    rows = query(['XAR00'], fields=['ARARTN'], condition=condition, ua='husoftm2.artikel.get_artikelnummern')
     return [x[0] for x in rows]
 
 

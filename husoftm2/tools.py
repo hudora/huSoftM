@@ -52,6 +52,7 @@ SOFTMLKZ2ISOLAND = {'': 'DE',
                     'IR': 'IR',   # Iran
                     'IRL': 'IE',  # Irland
                     'IS': 'IS',   # Island
+                    'J': 'JP',    # Japan
                     'KOR': 'KR',    # Korea
                     'L': 'LU',    # Luxemburg
                     'LTL': 'LT',  # Litauen

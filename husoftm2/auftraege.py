@@ -89,6 +89,13 @@ def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate
                              limit=limit, ua='husoftm2.auftraege'):
         d = dict(kundennr="SC%s" % kopf['kundennr_warenempf'],
                  kundennr_rechnung="SC%s" % kopf['kundennr_rechnungsempf'],
+                 name1=kopf['name1'],
+                 name2=kopf['name2'],
+                 name3=kopf['name3'],
+                 strasse=kopf['strasse'],
+                 land=husoftm2.tools.land2iso(kopf['laenderkennzeichen']),
+                 plz=kopf['plz'],
+                 ort=kopf['ort'],
                  auftragsnr="SO%s" % kopf['auftragsnr'],
                  auftragsnr_kunde=kopf['auftragsnr_kunde'],
                  erfassung=kopf['AAK_erfassung_date'],
@@ -106,7 +113,7 @@ def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate
                  )
         koepfe[kopf['auftragsnr']] = d
 
-        # Auftrag geht an die 'normale' Lieferadresse: Kein .00?-Suffix an die `lieferadresse.kundennr`
+        # Auftrag geht an die 'normale' Lieferadresse: Kein .\d\d\d-Suffix an die `lieferadresse.kundennr`
         if kopf['versandadressnr'] == 0:
             auftragsnr_to_lieferadresse_kdnr[kopf['auftragsnr']] = add_prefix(kopf['kundennr_warenempf'],
                                                                               'SC')

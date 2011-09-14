@@ -161,6 +161,11 @@ def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate
                      # 'position': 2,
                      # 'teilzuteilungsverbot': u'0',
                      )
+
+            # Preis einfügen
+            if row.get('verkaufspreis'):
+                d['preis'] = row['verkaufspreis']
+
             texte = postexte.get(row['auftragsnr'], {}).get(row['position'], [])
             texte, attrs = texte_trennen(texte)
             d['infotext_kunde'] = texte

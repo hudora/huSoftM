@@ -385,7 +385,7 @@ MAPPINGDIR = {
            # 'APGANP': 'Gebinde verpackt',
            # 'APGANR': 'Gebinde AFA35',
            # 'APGEWI': 'Gewicht',
-           # 'APPREV': 'verkaufspreis',
+           'APPREV': 'verkaufspreis',
            # 'APPEBN': 'Ebene Preisfindung',
            # 'APKZPR': 'Preiskennzeichen Verkauf',
            # 'APMEPR': 'Preis-Einheit',

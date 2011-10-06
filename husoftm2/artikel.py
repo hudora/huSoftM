@@ -27,7 +27,7 @@ def get_artikelnummern(artnrs=None):
 
     condition = None
     if artnrs:
-        condition = ' AND '.join(['ARARTN IN (%s)' % ','.join(sql_quote(artnr) for artnr in artnrs)])
+        condition = 'ARARTN IN (%s)' % ','.join(sql_quote(artnr) for artnr in artnrs)
     rows = query(['XAR00'], fields=['ARARTN'], condition=condition, ua='husoftm2.artikel.get_artikelnummern')
     return [x[0] for x in rows]
 

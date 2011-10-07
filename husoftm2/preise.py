@@ -6,11 +6,10 @@ preise.py - Zugriff auf Artikelpreise.
 Created by Maximillian Dornseif on 2007-04-28.
 Copyright (c) 2007, 2009, 2010 HUDORA GmbH. All rights reserved.
 """
+import datetime
 
 from husoftm2.backend import query
-from husoftm2.tools import sql_quote, date2softm, remove_prefix
-import datetime
-import husoftm2.kunden
+from husoftm2.tools import sql_quote, date2softm, remove_prefix, pad
 
 
 def abgabepreis_kunde(artnr, kundennr, auftragsdatum=None):
@@ -23,13 +22,13 @@ def abgabepreis_kunde(artnr, kundennr, auftragsdatum=None):
 
     Rückgabe ist tuple mit Preis und Herkunft des Preises.
 
-    >>> verkaufspreis('04711', 99954)
+    >>> abgabepreis_kunde('04711', 99954)
     (1500, 'Preisliste 95')
 
-    >>> verkaufspreis('04711', 98000)
+    >>> abgabepreis_kunde('04711', 98000)
     (1400, 'Listenpreis')
 
-    >>> verkaufspreis('04711', 94763)
+    >>> abgabepreis_kunde('04711', 94763)
     (1300, 'Kundenpreis')
 
     """
@@ -50,21 +49,25 @@ def abgabepreis_kunde(artnr, kundennr, auftragsdatum=None):
                   "PRDTBI>=%s" % date_str,
                   "PRDTVO<=%s" % date_str,
                   ]
-    condition_kunde = conditions + ["PRKDNR=%s" % sql_quote("%8s" % kundennr)]
-    rows = query(['XPN00', 'XPR00'], ordering='PRDTVO', condition=' AND '.join(condition_kunde))
+    condition_kunde = conditions + ["PRKDNR=%s" % pad('PRKDNR', kundennr)]
+    rows = query(['XPN00', 'XPR00'], fields=['PNPRB'], condition=' AND '.join(condition_kunde),
+                 ordering='PRDTVO', limit=1)
     if rows:
-        return (int(float(rows[0]['preis']) * 100), 'Kundenpreis')
+        return (int(rows[0][0] * 100), 'Kundenpreis')
 
     # 2. Preis aus Preislistennr. des Kunden ermitteln
-    kunde = husoftm2.kunden.get_kunde(str(kundennr))
-    if kunde and 'kunden_gruppe' in kunde and kunde['kunden_gruppe']:
-        condition_gruppe = conditions + ["PRPRLK = %s" % sql_quote(kunde['kunden_gruppe'])]
-        rows = query(['XPN00', 'XPR00'], ordering='PRDTVO', condition=' AND '.join(condition_gruppe))
-        if rows:
-            return (int(float(rows[0]['preis']) * 100), 'Preisliste %s' % kunde['kunden_gruppe'])
+    condition_gruppe = conditions + [
+                            # "PRPRLK = %s" % sql_quote(kunde['kunden_gruppe']),
+                            "KDKDNR=%s" % pad('KDKDNR', kundennr),
+                            "PRPRLK=KDKGRP"
+                       ]
+    rows = query(['XPN00', 'XPR00', 'XKD00'], fields=['PNPRB', 'PRPRLK'],
+                 ordering='PRDTVO', condition=' AND '.join(condition_gruppe), limit=1)
+    if rows:
+        return (int(rows[0]['preis'] * 100), 'Preisliste %s' % rows[0]['preisliste_kunde'])
 
     # 3. Listenpreis aus Artikelstammdaten
-    return (listenpreise(artnr), 'Listenpreis')
+    return (listenpreis(artnr), 'Listenpreis')
 
 
 def buchdurchschnittspreise(artnrs=None):
@@ -104,7 +107,9 @@ def listenpreise(artnrs=None):
 
 def listenpreis(artnr):
     """Listenpreis für einene einzelenen Artikel."""
-    return listenpreise([artnr]).values()[0]
+    preise = listenpreise([artnr]).values()
+    if preise:
+        return preise[0]
 
 
 def durchschnittlicher_abgabepreis(artnr, kundennr=None, startdatum=None):

@@ -49,24 +49,6 @@ except:
     pass
 
 
-class DummyCache(object):
-    def __init__(self, *args, **kwargs):
-        pass
-
-    def add(self, *args, **kwargs):
-        pass
-
-    def get(self, key, default=None):
-        return default
-
-
-memcache = DummyCache()
-try:
-    from google.appengine.api import memcache
-except ImportError:
-    pass
-
-
 class SoftMError(Exception):
     """This is the base for all exceptions in this package."""
     pass
@@ -213,6 +195,16 @@ def _get_tablename(name):
 def execute(url, args, ua='', bust_cache=False):
     """Execute SQL comand - SQL generation is done by the Server"""
 
+    url, headers = execute_prepare_headers(url, args, bust_cache)
+    status, headers, content = huTools.http.fetch(url,
+                                                  method='GET',
+                                                  headers=headers,
+                                                  ua='%s/husoftm2.backend' % ua,
+                                                  timeout=26)
+    return execute_process_results(status, content, headers)
+
+
+def execute_prepare_headers(url, args, bust_cache):
     args_encoded = urllib.urlencode({'q': hujson.dumps(args)})
     url = ("/%s?" % url) + args_encoded
     headers = {}
@@ -225,11 +217,11 @@ def execute(url, args, ua='', bust_cache=False):
     digest = hmac.new(_find_credentials(), url, hashlib.sha1).hexdigest()
     softmexpresshost = os.environ.get('SOFTMEXPRESSHOST', 'api.hudora.biz:8082')
     headers.update({'X-sig': digest})
-    status, headers, content = huTools.http.fetch('http://' + softmexpresshost + url,
-                                                  method='GET',
-                                                  headers=headers,
-                                                  ua='%s/husoftm2.backend' % ua,
-                                                  timeout=26)
+    url = 'http://' + softmexpresshost + url
+    return url, headers
+
+
+def execute_process_results(status, content, headers):
     if status != 200:
         # TODO: this looks extremely fragile. Must have be drunk while coding this.
         # needs a better implementation
@@ -338,6 +330,41 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
     Results are cached for 300 seconds unless you set something else via the cachingtime parameter.
     """
 
+    args, bust_cache, querymappings, fields = query_prepare_parameters(tables, grouping, ordering,
+        fields, joins, querymappings, ua, condition, limit, cachingtime)
+
+    start = time.time()
+    result = execute('sql', args, ua=ua, bust_cache=bust_cache)
+    rows = hujson.loads(result)
+    delta = time.time() - start
+    if delta > 5:
+        logging.warning("Slow (%.3fs) SQL query in  %s", delta, args)
+    return query_process_results(querymappings, fields, rows, args, cachingtime)
+
+
+def query_async(tables=None, condition=None, fields=None, querymappings=None,
+          joins=None,
+          grouping=None, ordering=None, limit=None, ua='', cachingtime=300,
+          returnhandler=lambda x: x):
+
+    def internelreturnhandler(status, rheaders, rcontent):
+        result = execute_process_results(status, rcontent, rheaders)
+        rows = hujson.loads(result)
+        processed = query_process_results(querymappings, fields, rows, args, cachingtime)
+        return returnhandler(processed)
+
+    args, bust_cache, querymappings, fields = query_prepare_parameters(tables, grouping, ordering,
+        fields, joins, querymappings, ua, condition, limit, cachingtime)
+
+    # async implementation of `execute()`
+    url, headers = execute_prepare_headers('sql', args, bust_cache)
+    return huTools.http.fetch_async(url, method='GET',
+                                    headers=headers,
+                                    ua='%s/husoftm2.backend (async)' % ua,
+                                    timeout=26, returnhandler=internelreturnhandler)
+
+
+def query_prepare_parameters(tables, grouping, ordering, fields, joins, querymappings, ua, condition, limit, cachingtime):
     # fixup sloppy parameter passing
     if isinstance(tables, basestring):
         tables = [tables]
@@ -391,27 +418,14 @@ def query(tables=None, condition=None, fields=None, querymappings=None,
     bust_cache = True
     if cachingtime > 0:
         bust_cache = False
-        rows = memcache.get('husoftm2_query_%r_%r' % (querymappings, args))
-        if rows:
-            return rows
+    return args, bust_cache, querymappings, fields
 
-    start = time.time()
-    result = execute('sql', args, ua=ua, bust_cache=bust_cache)
-    rows = hujson.loads(result)
 
+def query_process_results(querymappings, fields, rows, args, cachingtime):
     if querymappings:
         rows = _rows2dict(fields, querymappings, rows)
     else:
         rows = [tuple([_fix_field(data, name) for data, name in zip(row, fields)]) for row in rows]
-
-    delta = time.time() - start
-    if delta > 5:
-        logging.warning("Slow (%.3fs) SQL query in  %s", delta, args)
-    try:
-        memcache.add(key='husoftm2_query_%r_%r' % (querymappings, args),
-                     value=rows, time=cachingtime)
-    except:
-        pass  # value 'rows' was probably to big for memcache or memcache was offline
     return rows
 
 

@@ -13,7 +13,7 @@ Für die Frage, ob wir einen Artikel verkaufen können ist freie_menge() die ric
 Für die Frage, ob ein bestimmter Artikel in einem bestimmten Lager ist, ist bestand() geignet.
 
     bestellmengen(artnr)                          von uns bei Lieferanten bestellte Mengen
-    auftragsmengen(artnr, lager=0)                bei uns von Kunden bestellte Mengen
+    auftragsmengen(artnr, lager=0)                bei uns von Kunden beauftragte Mengen
     umlagermenge(artnr, lager)                    Menge, die zur Zeit von einem Lager ans andere
                                                   unterwegs ist
     buchbestand(artnr, lager=0)                   Artikel am Lager
@@ -30,8 +30,10 @@ Es gibt verschiedene Mengen von denen wir reden.
  * Bezogen aufs Lager
    * verfügbare menge - ist die Menge die wir am Lager haben und die zur Zeit noch keinem Kundenauftrag
      zugeordnet ist, d.h. die noch nicht zugeteilt ist.
-   * freie menge - ist die Menge die wir noch verkaufen können (entspricht der verfügbaren Menge abzüglich
-     der noch nicht zugeteilten Kundenaufträge)
+   * freie menge - ist die Menge die wir (heute) noch verkaufen können (entspricht der verfügbaren Menge
+     abzüglich der noch nicht zugeteilten Kundenaufträge). Ware, die im Zulauf ist, wird dabei nicht
+     berücksichtigt.
+
  * bezogen auf Aufträge
    * bestellmenge - wieviel will der Kunde haben will
    * gelieferte - menge wieviel schon geliefert wurde
@@ -42,7 +44,7 @@ Es gibt verschiedene Mengen von denen wir reden.
 
 from husoftm2.artikel import set_artikel
 from husoftm2.tools import sql_quote, add_prefix, str2softmdate
-from husoftm2.backend import query, as400_2_int
+from husoftm2.backend import query, query_async, as400_2_int
 import cs.masterdata.eaplight
 import datetime
 import husoftm2.artikel
@@ -66,6 +68,25 @@ def buchbestaende(artnrs=None, lager=0):
     return dict([(artnr, int(menge)) for (artnr, menge) in rows])
 
 
+def buchbestaende_async(artnrs=None, lager=0, returnhandler=lambda x: x):
+    """Gibt die Buchbestand einiger oder aller Artikels für ein Lager zurück oder (lager=0) für alle Lager
+
+    >>> buchbestand(['14600/03'])
+    {u'14600/03': 338}
+    """
+
+    def formatresult(rows):
+        return returnhandler(dict([(artnr, int(menge)) for (artnr, menge) in rows]))
+
+    conditions = ["LFLGNR=%d" % int(lager),
+                  "LFMGLP<>0",
+                  "LFSTAT<>'X'"]
+    if artnrs:
+        conditions += ["LFARTN IN (%s)" % ','.join([sql_quote(artnr) for artnr in artnrs])]
+    return query_async(['XLF00'], fields=['LFARTN', 'LFMGLP'], condition=' AND '.join(conditions),
+                       returnhandler=formatresult)
+
+
 def buchbestand(artnr, lager=0):
     """Gibt den Buchbestand eines Artikels für ein Lager zurück oder (lager=0) für alle Lager
 
@@ -76,6 +97,21 @@ def buchbestand(artnr, lager=0):
     if ret:
         return buchbestaende([artnr], lager).values()[0]
     return 0
+
+
+def buchbestand_async(artnr, lager=0):
+    """Gibt den Buchbestand eines Artikels für ein Lager zurück oder (lager=0) für alle Lager
+
+    >>> buchbestand('14600/03')
+    338
+    """
+
+    def formatresult(data):
+        if data:
+            return data.values()[0]
+        return 0
+
+    return buchbestaende_async([artnr], lager, returnhandler=formatresult)
 
 
 def bestellmengen(artnr, lager=0):
@@ -96,6 +132,23 @@ def bestellmengen(artnr, lager=0):
                  grouping='BPDTLT', condition=' AND '.join(conditions))
     return dict([(x['liefer_date'], as400_2_int(x['SUM(BPMNGB-BPMNGL)']))
                  for x in rows if as400_2_int(x['SUM(BPMNGB-BPMNGL)']) > 0])
+
+
+def bestellmengen_async(artnr, lager=0):
+    def formatresult(rows):
+        return dict([(x['liefer_date'], as400_2_int(x['SUM(BPMNGB-BPMNGL)']))
+                    for x in rows if as400_2_int(x['SUM(BPMNGB-BPMNGL)']) > 0])
+
+    conditions = ["BPSTAT<>'X'",
+                  "BPKZAK=0",
+                  "BPARTN=%s" % sql_quote(artnr)]
+    if lager:
+        conditions += ["BPLGNR=%d" % int(lager)]
+
+    # detailierte Informationen gibts in EWZ00
+    return query_async('EBP00', fields=['BPDTLT', 'SUM(BPMNGB-BPMNGL)'], ordering='BPDTLT',
+                 grouping='BPDTLT', condition=' AND '.join(conditions),
+                 returnhandler=formatresult)
 
 
 def bestellmengen_ausgeliefert(mindate=None, maxdate=None, artnrs=None, lager=0):
@@ -148,6 +201,40 @@ def auftragsmengen(artnr, lager=0):
                    ordering='APDTLT', grouping='APDTLT',
                    querymappings={'SUM(APMNG-APMNGF)': 'menge_offen', 'APDTLT': 'liefer_date'})
     return dict([(x['liefer_date'], as400_2_int(x['menge_offen'])) for x in rows if x['menge_offen'] > 0])
+
+
+def auftragsmengen_async(artnr, lager=0, returnhandler=lambda x: x):
+    """Liefert eine Liste offener Aufträge (Warenausgänge) für einen Artikel OHNE UMLAGERUNGEN.
+
+    >>> auftragsmengen(14865)
+    {datetime.date(2009, 3, 2): 340,
+     datetime.date(2009, 4, 1): 300,
+     datetime.date(2009, 5, 4): 260,
+     datetime.date(2009, 6, 2): 300}
+    """
+
+    def formatresult(rows):
+        ret = dict([(x['liefer_date'], as400_2_int(x['menge_offen'])) for x in rows if x['menge_offen'] > 0])
+        return returnhandler(ret)
+
+    conditions = [
+        "APARTN=%s" % (sql_quote(artnr)),  # Artikelnummer
+        "AKAUFN=APAUFN",
+        "AKAUFA<>'U'",                     # kein Umlagerungsauftrag
+        "APSTAT<>'X'",                     # Position nicht logisch gelöscht
+        "APKZVA=0",                        # Position nicht als 'voll ausgeliefert' markiert
+        "(APMNG-APMNGF) > 0",              # (noch) zu liefernde menge ist positiv
+        "AKSTAT<>'X'",                     # Auftrag nicht logisch gelöscht
+        "AKKZVA=0"]                        # Auftrag nicht als 'voll ausgeliefert' markiert
+
+    if lager:
+        # Achtung, hier gibt es KEIN Lager 0 in der Tabelle. D.h. APLGNR=0 gibt nix
+        conditions = conditions + ["APLGNR=%d" % lager]
+    return query_async(['AAP00', 'AAK00'], fields=['APDTLT', 'SUM(APMNG-APMNGF)'],
+                   condition=' AND '.join(conditions),
+                   ordering='APDTLT', grouping='APDTLT',
+                   querymappings={'SUM(APMNG-APMNGF)': 'menge_offen', 'APDTLT': 'liefer_date'},
+                   returnhandler=formatresult)
 
 
 def auftragsmengen_alle_artikel():

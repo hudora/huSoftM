@@ -12,6 +12,77 @@ from husoftm2.backend import query
 from husoftm2.tools import sql_quote, date2softm, remove_prefix, pad
 
 
+def abgabepreise_kunde(artnrs, kundennr, auftragsdatum=None):
+    """
+    Verkaufspreis für einen oder mehrere Artikel in Abhängigkeit von kundennr und Auftragsdatum ermitteln.
+
+    Der Rückgabewert ist ein dict mit den ArtNr. als  Schlüssel.
+    Die Werte sind Preisinformationen als Tupel (Preis, Herkunft)
+    oder None, falls zu der ArtNr. kein Preis ermittelt werden konnte.
+
+    Die Logik funktioniert genau wie bei abgabepreis_kunde:
+    Es werden zuerst kundenspezifische Preise, dann kundengruppen-spezifische Preise und als
+    letztes Listenpreise ermittelt.
+    """
+    if not auftragsdatum:
+        auftragsdatum = datetime.date.today()
+
+    artnrs = set(artnrs)
+    kundennr = remove_prefix(kundennr, 'SC')
+    date_str = sql_quote(date2softm(auftragsdatum))
+
+    abgabepreise = {}
+
+    # 1. Preise für Kunden hinterlegt?
+    conditions = ["PNSANR=PRSANR",
+                  "PRANW='A'",
+                  "PRSTAT=' '",
+                  "PNSTAT=' '",
+                  "PRDTBI>=%s" % date_str,
+                  "PRDTVO<=%s" % date_str,
+                  ]
+    condition_kunde = conditions + ["PRKDNR=%s" % sql_quote("%8s" % kundennr),
+                                    "PRARTN IN (%s)" % ",".join([sql_quote(artnr) for artnr in artnrs])]
+    rows = query(tables=['XPN00', 'XPR00'],
+                 fields=['PRARTN', 'PNPRB'],
+                 condition=' AND '.join(condition_kunde),
+                 ordering='PRDTVO')
+    for row in rows:
+        artnrs.remove(row['artnr'])
+        abgabepreise[row['artnr']] = (int(row['preis'] * 100), u'Kundenpreis')
+
+    if not artnrs:
+        return abgabepreise
+
+    # 2. Preise aus Preislistennr. des Kunden ermitteln
+    condition_gruppe = conditions + [
+                            # "PRPRLK = %s" % sql_quote(kunde['kunden_gruppe']),
+                            "PRARTN IN (%s)" % ",".join([sql_quote(artnr) for artnr in artnrs]),
+                            "KDKDNR=%s" % pad('KDKDNR', kundennr),
+                            "PRPRLK=KDKGRP"
+                       ]
+    rows = query(tables=['XPN00', 'XPR00', 'XKD00'],
+                 fields=['PRARTN', 'PNPRB', 'PRPRLK'],
+                 condition=' AND '.join(condition_gruppe),
+                 ordering='PRDTVO')
+    for row in rows:
+        artnrs.remove(row['artnr'])
+        abgabepreise[row['artnr']] = (int(row['preis'] * 100), u'Preisliste %s' % row['preisliste_kunde'])
+
+    if not artnrs:
+        return abgabepreise
+
+    # 3. Listenpreis aus Artikelstammdaten
+    for artnr, preis in listenpreise(artnrs).iteritems():
+        artnrs.remove(artnr)
+        abgabepreise[artnr] = (preis, u'Listenpreis')
+
+    for artnr in artnrs:
+        abgabepreise[artnr] = None
+
+    return abgabepreise
+
+
 def abgabepreis_kunde(artnr, kundennr, auftragsdatum=None):
     """
     Verkaufspreis für einen Artikel in Abhängigkeit von kundennr und Auftragsdatum ermitteln.

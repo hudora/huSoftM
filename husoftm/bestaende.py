@@ -345,7 +345,7 @@ def bestandsentwicklung(artnr, dateformat="%Y-%m-%d", lager=0):
 
 
 def bestellmengen(artnr, lager=0):
-    """Liefert eine liste mit allen Bestellten aber noch nicht gelieferten Wareneingängen.
+    """Liefert eine liste mit allen bestellten, aber noch nicht gelieferten Wareneingängen.
 
     >>> bestellmengen('14865')
 

@@ -108,7 +108,7 @@ def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate
                  erledigt=(kopf['voll_ausgeliefert'] == 1),
                  positionen=[],
                  art=kopf['art'],
-                 storniert=(kopf['aak_status'] == 'X'),
+                 storniert=(kopf['AAK_status'] == 'X'),
                  # * *info_kunde* - Freitext der für den Empfänger relevanz hat
                  )
         koepfe[kopf['auftragsnr']] = d

@@ -24,6 +24,9 @@ Für die Frage, ob ein bestimmter Artikel in einem bestimmten Lager ist, ist bes
     frei_ab(menge, artnr, dateformat="%Y-%m-%d")  ab wann ist eine bestimmte Menge frühstens verfügbar?
     bestand(artnr, lager)                         Wieviel ist zur Zeit an einem Lager oder trifft
                                                   kurzum ein?
+    artikelverfuegbarkeit(artnr, lage, max_date, resolve_sets)
+                                                  Bestimme alle Mengenänderungen für einen Artikel für
+                                                  die Artikelverfügbarkeit
 
 
 Es gibt verschiedene Mengen von denen wir reden.
@@ -122,20 +125,11 @@ def bestellmengen(artnr, lager=0):
     {datetime.date(2009, 2, 20): 1200,
      datetime.date(2009, 5, 5): 300}
     """
-    conditions = ["BPSTAT<>'X'",
-                  "BPKZAK=0",
-                  "BPARTN=%s" % sql_quote(artnr)]
-    if lager:
-        conditions += ["BPLGNR=%d" % int(lager)]
-
-    # detailierte Informationen gibts in EWZ00
-    rows = query('EBP00', fields=['BPDTLT', 'SUM(BPMNGB-BPMNGL)'], ordering='BPDTLT',
-                 grouping='BPDTLT', condition=' AND '.join(conditions))
-    return dict([(x['liefer_date'], as400_2_int(x['SUM(BPMNGB-BPMNGL)']))
-                 for x in rows if as400_2_int(x['SUM(BPMNGB-BPMNGL)']) > 0])
+    return bestellmengen_async(artnr, lager).get_result()
 
 
 def bestellmengen_async(artnr, lager=0):
+    """Siehe bestellmengen()"""
     def formatresult(rows):
         return dict([(x['liefer_date'], as400_2_int(x['SUM(BPMNGB-BPMNGL)']))
                     for x in rows if as400_2_int(x['SUM(BPMNGB-BPMNGL)']) > 0])
@@ -150,6 +144,30 @@ def bestellmengen_async(artnr, lager=0):
     return query_async('EBP00', fields=['BPDTLT', 'SUM(BPMNGB-BPMNGL)'], ordering='BPDTLT',
                  grouping='BPDTLT', condition=' AND '.join(conditions),
                  returnhandler=formatresult)
+
+
+def bestellmengen2(artnr, lager=0, max_date=None):
+    """Liefert eine Liste mit allen Bestellten aber noch nicht gelieferten Wareneingängen.
+
+    husoftm2.bestaende.bestellmengen2 addiert Mengen und gruppiert nach Lieferdatum,
+    so dass einzelne Bewegungen nicht nachzuvollziehen sind.
+    Für eine Verfügbarkeitsanzeige wie in der SoftM Suite müssen die Sätze einzeln ermittelt werden.
+    """
+
+    conditions = ["BPSTAT<>'X'",
+                  "BPKZAK=0",
+                  "BPARTN=%s" % sql_quote(artnr)]
+
+    # Achtung, hier gibt es KEIN Lager 0 in der Tabelle. D.h. APLGNR=0 ergibt eine leere Rückgabe
+    if lager:
+        conditions += ["BPLGNR=%d" % int(lager)]
+
+    # Nur Datensätze berücksichtigen, die nicht jünger sind als das geg. Datum
+    if max_date:
+        conditions.append("BPDTLT <= %s" % str2softmdate(max_date))
+
+    rows = query('EBP00', ordering='BPDTLT', condition=' AND '.join(conditions))
+    return rows
 
 
 def bestellmengen_ausgeliefert(mindate=None, maxdate=None, artnrs=None, lager=0):
@@ -184,35 +202,11 @@ def auftragsmengen(artnr, lager=0):
      datetime.date(2009, 5, 4): 260,
      datetime.date(2009, 6, 2): 300}
     """
-    conditions = [
-        "APARTN=%s" % (sql_quote(artnr)),  # Artikelnummer
-        "AKAUFN=APAUFN",
-        "AKAUFA<>'U'",                     # kein Umlagerungsauftrag
-        "APSTAT<>'X'",                     # Position nicht logisch gelöscht
-        "APKZVA=0",                        # Position nicht als 'voll ausgeliefert' markiert
-        "(APMNG-APMNGF) > 0",              # (noch) zu liefernde menge ist positiv
-        "AKSTAT<>'X'",                     # Auftrag nicht logisch gelöscht
-        "AKKZVA=0"]                        # Auftrag nicht als 'voll ausgeliefert' markiert
-
-    if lager:
-        # Achtung, hier gibt es KEIN Lager 0 in der Tabelle. D.h. APLGNR=0 gibt nix
-        conditions = conditions + ["APLGNR=%d" % lager]
-    rows = query(['AAP00', 'AAK00'], fields=['APDTLT', 'SUM(APMNG-APMNGF)'],
-                   condition=' AND '.join(conditions),
-                   ordering='APDTLT', grouping='APDTLT',
-                   querymappings={'SUM(APMNG-APMNGF)': 'menge_offen', 'APDTLT': 'liefer_date'})
-    return dict([(x['liefer_date'], as400_2_int(x['menge_offen'])) for x in rows if x['menge_offen'] > 0])
+    return auftragsmengen_async(artnr, lager).get_result()
 
 
 def auftragsmengen_async(artnr, lager=0, returnhandler=lambda x: x):
-    """Liefert eine Liste offener Aufträge (Warenausgänge) für einen Artikel OHNE UMLAGERUNGEN.
-
-    >>> auftragsmengen(14865)
-    {datetime.date(2009, 3, 2): 340,
-     datetime.date(2009, 4, 1): 300,
-     datetime.date(2009, 5, 4): 260,
-     datetime.date(2009, 6, 2): 300}
-    """
+    "Siehe auftragsmengen()."
 
     def formatresult(rows):
         ret = dict([(x['liefer_date'], as400_2_int(x['menge_offen'])) for x in rows if x['menge_offen'] > 0])
@@ -235,6 +229,38 @@ def auftragsmengen_async(artnr, lager=0, returnhandler=lambda x: x):
                    condition=' AND '.join(conditions),
                    ordering='APDTLT', grouping='APDTLT',
                    querymappings={'SUM(APMNG-APMNGF)': 'menge_offen', 'APDTLT': 'liefer_date'},
+                   returnhandler=formatresult)
+
+
+def auftragsmengen_geliefert_async(artnr, lager=0, returnhandler=lambda x: x):
+    """Ausgelieferte menden nach tagen gruppiert ausgeben.
+    >>> auftragsmengen_geliefert_async('12345').get_result()
+    {datetime.date(2010, 12, 8): 16,
+     datetime.date(2010, 9, 8): 8,
+     datetime.date(2007, 8, 21): 10,
+     ...}
+    """
+
+    def formatresult(rows):
+        ret = dict([(x['liefer_date'], as400_2_int(x['menge_fakturiert'])) for x in rows if x['menge_fakturiert'] > 0])
+        return returnhandler(ret)
+
+    conditions = [
+        "APARTN=%s" % (sql_quote(artnr)),  # Artikelnummer
+        "AKAUFN=APAUFN",
+        "AKAUFA<>'U'",                     # kein Umlagerungsauftrag
+        "APSTAT<>'X'",                     # Position nicht logisch gelöscht
+        "APMNGF > 0",                      # fakturierte Menge ist > 0
+        "AKSTAT<>'X'",                     # Auftrag nicht logisch gelöscht
+        ]
+
+    if lager:
+        # Achtung, hier gibt es KEIN Lager 0 in der Tabelle. D.h. APLGNR=0 gibt nix
+        conditions = conditions + ["APLGNR=%d" % lager]
+    return query_async(['AAP00', 'AAK00'], fields=['APDTLT', 'SUM(APMNGF)'],
+                   condition=' AND '.join(conditions),
+                   ordering='APDTLT DESC', grouping='APDTLT',
+                   querymappings={'SUM(APMNGF)': 'menge_fakturiert', 'APDTLT': 'liefer_date'},
                    returnhandler=formatresult)
 
 
@@ -276,6 +302,89 @@ def auftragsmengen_alle_artikel():
             ret.setdefault(str(row['artnr']), {})[row['liefer_date']] = (as400_2_int(row['menge_offen']),
                                                                          row['orderlines'])
     return ret
+
+
+def auftragsmengen2(artnr, lager=0, max_date=None, resolve_sets=False):
+    """Liefert eine Liste offener Aufträge (Warenausgänge) für einen Artikel.
+
+    husoftm2.bestaende.auftragsmengen addiert Mengen und gruppiert nach Lieferdatum,
+    so dass einzelne Bewegungen nicht nachzuvollziehen sind.
+    Für eine Verfügbarkeitsanzeige wie in der SoftM Suite müssen die Sätze einzeln ermittelt werden.
+
+    >>> auftragsmengen2('12345')
+    [{'AAK_aenderung_date': None,
+      'AAK_aenderung_time': 0,
+      'AAK_erfassung': datetime.datetime(2011, 7, 25, 0, 0),
+      'AAK_erfassung_date': datetime.date(2011, 7, 25),
+      'AAK_erfassung_time': 0,
+      'AAP_status': u'',
+      'AAK_status': u'',
+      'art': u'R',
+      'artnr': u'12345',
+      'auftragsart': u'R',
+      'auftragsnr': 1205724,
+      'auftragsnr_kunde': u'Scooter dezentral',
+      'bestellmenge': Decimal('800.0'),
+      'fakturierte_menge': Decimal('0.0'),
+      'kundennr_rechnungsempf': u'64612',
+      'kundennr_warenempf': u'64612',
+      'lager': 200,
+      'liefer_date': datetime.date(2011, 10, 4),
+      'menge_offen': Decimal('800.0'),
+      'menge_offen2': Decimal('800.0'),
+      'menge_zugeteilt': Decimal('800.0'),
+      'position': 3,
+      'sachbearbeiter': 14,
+      'teillieferung_erlaubt': 1,
+      'teilzuteilungsverbot': u'0',
+      'verkaufspreis': Decimal('3.63'),
+      'versandadressnr': 1,
+      'voll_ausgeliefert': 0,
+      'warenempfaenger': u'64612',
+      'zugangslager': 0},
+    ...]
+    """
+
+    # TODO: das sind zu viele felder, die wir hier ziehen
+
+    conditions = [
+        "AKAUFN=APAUFN",                   # Natural Join von Auftragsköpfen und -positionen
+        "APSTAT<>'X'",                     # Position nicht logisch gelöscht
+        "APKZVA=0",                        # Position nicht als 'voll ausgeliefert' markiert
+        "(APMNG-APMNGF) > 0",              # (noch) zu liefernde menge ist positiv
+        "AKSTAT<>'X'",                     # Auftrag nicht logisch gelöscht
+        "AKKZVA=0"]                        # Auftrag nicht als 'voll ausgeliefert' markiert
+
+    # Wenn resolve_sets gesetzt ist, werden übergeordneten Set-Artikel, zu denen die ArtNr. gehört,
+    # bei den Auftragspositionen mit berücksichtigt.
+    sets = {}
+    if resolve_sets:
+        sets = dict((row['artnr'], row['menge_im_set']) for row in set_artikel(artnr))
+        artnrs = [artnr] + sets.keys()
+        conditions.append("APARTN IN (%s)" % ",".join(sql_quote(artnr) for artnr in artnrs))
+    else:
+        conditions.append("APARTN=%s" % sql_quote(artnr))
+
+    # Achtung, hier gibt es KEIN Lager 0 in der Tabelle. D.h. APLGNR=0 ergibt eine leere Rückgabe
+    if lager:
+        conditions.append("APLGNR=%d" % lager)
+
+    # Nur Datensätze berücksichtigen, die nicht jünger sind als das geg. Datum
+    if max_date:
+        conditions.append("AKDTLT <= %s" % str2softmdate(max_date))
+
+    rows = query(['AAP00', 'AAK00'],
+                   condition=' AND '.join(conditions), ordering='APDTLT', cachingtime=60 * 60)
+
+    # Korrigiere die Mengen für Komponenten von Set-Artikeln:
+    # Die Menge wird mit der Anzahl der Komponenten in einem Set-Artikel multipliziert.
+    for row in rows:
+        if row['artnr'] in sets:
+            factor = sets[row['artnr']]
+            row['menge_offen'] *= factor
+            row['bestellmenge'] *= factor
+            row['menge_zugeteilt'] *= factor
+    return rows
 
 
 def umlagermenge(artnr, anlager=100):
@@ -334,78 +443,6 @@ def bewegungen(artnr, dateformat="%Y-%m-%d", lager=0):
     bewegungen.extend([(x[0].strftime(dateformat), -1 * x[1]) for x in auftragsmengen(artnr, lager).items()])
     bewegungen.sort()
     return bewegungen
-
-
-def auftragsmengen2(artnr, lager=0, max_date=None, resolve_sets=False):
-    """Liefert eine Liste offener Aufträge (Warenausgänge) für einen Artikel.
-
-    husoftm2.bestaende.auftragsmengen addiert Mengen und gruppiert nach Lieferdatum,
-    so dass einzelne Bewegungen nicht nachzuvollziehen sind.
-    Für eine Verfügbarkeitsanzeige wie in der SoftM Suite müssen die Sätze einzeln ermittelt werden.
-    """
-
-    conditions = [
-        "AKAUFN=APAUFN",                   # Natural Join von Auftragsköpfen und -positionen
-        "APSTAT<>'X'",                     # Position nicht logisch gelöscht
-        "APKZVA=0",                        # Position nicht als 'voll ausgeliefert' markiert
-        "(APMNG-APMNGF) > 0",              # (noch) zu liefernde menge ist positiv
-        "AKSTAT<>'X'",                     # Auftrag nicht logisch gelöscht
-        "AKKZVA=0"]                        # Auftrag nicht als 'voll ausgeliefert' markiert
-
-    # Wenn resolve_sets gesetzt ist, werden übergeordneten Set-Artikel, zu denen die ArtNr. gehört,
-    # bei den Auftragspositionen mit berücksichtigt.
-    sets = {}
-    if resolve_sets:
-        sets = dict((row['artnr'], row['menge_im_set']) for row in set_artikel(artnr))
-        artnrs = [artnr] + sets.keys()
-        conditions.append("APARTN IN (%s)" % ",".join(sql_quote(artnr) for artnr in artnrs))
-    else:
-        conditions.append("APARTN=%s" % sql_quote(artnr))
-
-    # Achtung, hier gibt es KEIN Lager 0 in der Tabelle. D.h. APLGNR=0 ergibt eine leere Rückgabe
-    if lager:
-        conditions.append("APLGNR=%d" % lager)
-
-    # Nur Datensätze berücksichtigen, die nicht jünger sind als das geg. Datum
-    if max_date:
-        conditions.append("AKDTLT <= %s" % str2softmdate(max_date))
-
-    rows = query(['AAP00', 'AAK00'],
-                   condition=' AND '.join(conditions), ordering='APDTLT', cachingtime=60 * 60)
-
-    # Korrigiere die Mengen für Komponenten von Set-Artikeln:
-    # Die Menge wird mit der Anzahl der Komponenten in einem Set-Artikel multipliziert.
-    for row in rows:
-        if row['artnr'] in sets:
-            factor = sets[row['artnr']]
-            row['menge_offen'] *= factor
-            row['bestellmenge'] *= factor
-            row['menge_zugeteilt'] *= factor
-    return rows
-
-
-def bestellmengen2(artnr, lager=0, max_date=None):
-    """Liefert eine Liste mit allen Bestellten aber noch nicht gelieferten Wareneingängen.
-
-    husoftm2.bestaende.bestellmengen2 addiert Mengen und gruppiert nach Lieferdatum,
-    so dass einzelne Bewegungen nicht nachzuvollziehen sind.
-    Für eine Verfügbarkeitsanzeige wie in der SoftM Suite müssen die Sätze einzeln ermittelt werden.
-    """
-
-    conditions = ["BPSTAT<>'X'",
-                  "BPKZAK=0",
-                  "BPARTN=%s" % sql_quote(artnr)]
-
-    # Achtung, hier gibt es KEIN Lager 0 in der Tabelle. D.h. APLGNR=0 ergibt eine leere Rückgabe
-    if lager:
-        conditions += ["BPLGNR=%d" % int(lager)]
-
-    # Nur Datensätze berücksichtigen, die nicht jünger sind als das geg. Datum
-    if max_date:
-        conditions.append("BPDTLT <= %s" % str2softmdate(max_date))
-
-    rows = query('EBP00', ordering='BPDTLT', condition=' AND '.join(conditions))
-    return rows
 
 
 def artikelverfuegbarkeit(artnr, lager=0, max_date=None, resolve_sets=True):

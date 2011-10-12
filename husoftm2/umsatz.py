@@ -2,6 +2,7 @@
 # encoding: utf-8
 """
 umsatz.py
+TODO: mit kunden.py zusammenlegen
 
 Created by Christian Klein on 2011-03-25.
 Copyright (c) 2011 HUDORA. All rights reserved.

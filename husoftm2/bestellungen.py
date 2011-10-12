@@ -125,8 +125,19 @@ def _get_zugaenge_helper(rows):
 
 
 def get_zugaenge_artnr(artnr):
-    """Liefert alle Warenzugaenge eines Artikels"""
+    """Liefert alle Warenzugaenge eines Artikels.
 
+    [{'lager': 16, 'status': 0, 'art': u'', 'artnr': u'30026', '_lagerbuchungen': [],
+      'menge': Decimal('0.0'), 'buchungstext': u'30026', 'konto': u'31000', 'satzstatus': u'',
+      'zugang_date': None, 'bezogener_satz_EWZ00': 0, 'bestellnr': 42318, 'rechnungsnr': 900002993,
+      'opnr': 0, 'bestell_preis': Decimal('13.10'), 'satznummer_warenzugang': 31813,
+      'kurs_zugang': Decimal('1.4681'), 'tatsaechlicher_preis': 1310, 'bestellpos': 120,
+      'lagerbewegung_rechnung': 0, 'rechnungsposnr': 12, 'erfassungs_date': datetime.date(2008, 1, 23),
+      'kursfaktor_zugang': 3, 'lagerbewegung_zugang': 0, 'warenvereinnahmungsnr': 0, 'info_intern': u'',
+      'buchungsbetrag': Decimal('995.60'), 'rechnungs_date': datetime.date(2008, 1, 21)},
+      ...
+      ]
+    """
     rows = query('EWZ00', ordering=['WZDTWZ'], condition="WZSTAT<>'X' AND WZARTN='%s'" % sql_escape(artnr))
     return _get_zugaenge_helper(rows)
 

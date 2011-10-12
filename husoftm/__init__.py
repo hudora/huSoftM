@@ -29,3 +29,7 @@ konfiguriert sein.
 
 Der Zugriff auf der Clientseite wird über das Modul "connection" abgewickelt.
 """
+
+import warnings
+warnings.warn("husoftm is deprecated, use husoftm2 instead",
+              DeprecationWarning, stacklevel=2)

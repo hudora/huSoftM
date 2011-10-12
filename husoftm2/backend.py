@@ -200,7 +200,7 @@ def execute(url, args, ua='', bust_cache=False):
                                                   method='GET',
                                                   headers=headers,
                                                   ua='%s/husoftm2.backend' % ua,
-                                                  timeout=26)
+                                                  timeout=50)
     return execute_process_results(status, content, headers)
 
 

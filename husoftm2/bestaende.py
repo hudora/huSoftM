@@ -43,7 +43,7 @@ Es gibt verschiedene Mengen von denen wir reden.
 
 
 from husoftm2.artikel import set_artikel
-from husoftm2.tools import sql_quote, add_prefix, str2softmdate
+from husoftm2.tools import sql_quote, add_prefix, str2softmdate, date2softm
 from husoftm2.backend import query, query_async, as400_2_int
 import cs.masterdata.eaplight
 import datetime
@@ -51,6 +51,7 @@ import husoftm2.artikel
 import itertools
 import time
 import unittest
+from decimal import Decimal
 
 
 def buchbestaende(artnrs=None, lager=0):
@@ -685,6 +686,81 @@ def frei_ab(menge, artnr, dateformat="%Y-%m-%d", lager=0):
                 return False
         previous_date = datum
     return None
+
+
+def get_lagerbestandsaenderung(artnr, datum_start, datum_ende, lager='200'):
+    """Gibt die Veränderung des Lagerbestandes eines Artikels in einem Bestimmten Zeitraum und Lager zurück.
+
+    Beispiel:
+    >>> get_lagerbestandsaenderung('11007', datetime.date(2011, 7, 31), datetime.date(2011, i, 1))
+    <<< Decimal('-380.000')
+
+    artnr
+        Artikelnummer, dessen Änderung abgefragt werden soll
+    datum_start
+        Datum (exclusive!) ab dem die Änderung abgefragt werden soll.
+
+        Exklusive, damit gilt:
+        >>> assert datum1 < datum2 < datum3
+        >>> assert get_lagerbestandsaenderung(artnr, datum1, datum2) \
+                 + get_lagerbestandsaenderung(artnr, datum2, datum3) == \
+                            get_lagerbestandsaenderung(artnr, datum1, datum3)
+        Dieses Verhalten sollte die Addition mit gecachten Ergebnissen vereinfachen.
+    datum_end
+        Datum (inclusive) bis zu dem die Änderung abgefragt werden soll.
+    lager
+        Nummer des Lagers, in dem die Änderung abgefragt werden soll.
+    returns
+        Einen Positiven numerischen Wert (Decimal), wenn der Bestand gewachsen ist, einen negativen, wenn er
+        gesunken ist.
+    """
+    # Die Tabelle XLB00 gibt, laut Doku, einen Lückenlosen Nachweis der Bestandsentwicklung eines Lagers wieder
+    # https://docs.google.com/a/hudora.de/viewer
+    #                ?a=v&pid=sites&srcid=aHVkb3JhLmRlfGludGVybnxneDo0Yjk4Mjc3ZjI2MmVjZGVm
+    #
+    # Tabelle XLB00 (Lagerbewegungen)
+    #   LBLGNR: Nummer des Lagers
+    #   LBARTN: Artikelnummer
+    #   LBDTBL: Datum
+    #   LBMNGB: Menge in Bestandsführungseinheit
+    #   LBBTYP: Bewegungstyp
+    #     '001' Zugang
+    #     '005' Zugang aus Inventur
+    #     '006' Zugang wegen Abgangsstorno
+    #     '011' Nachbewertung
+    #     '012' Wertkorrektur
+    #     '013' Wertrücknahme
+    #     '021' Abgang
+    #     '022' Abgang aus Inventur
+    #     '023' Abgang wegen Zugangsstorno
+    #     '050' Inventurbestätigung
+    #     '060' Nur Sperren Lagerbewegung
+    #     '061' Nur Entsperren Lagerbewegung
+    #     '070' InfoBwg ohne Mengen- und Wertänderung
+
+    # Es werden summiert alle Änderungen des Lagers im Zeitraum abgefragt...
+    conditions = [
+        "LBLGNR = %s" % sql_quote(lager),
+        "LBARTN = %s" % sql_quote(artnr),
+        "LBDTBL > %s" % date2softm(datum_start),
+        "LBDTBL <= %s" % date2softm(datum_ende),
+    ]
+
+    rows = query(['XLB00'],
+                 condition=' AND '.join(conditions),
+                 fields=['SUM(LBMNGB)', 'LBBTYP'],
+                 grouping=['LBBTYP'],
+                 querymappings={
+                    'SUM(LBMNGB)': 'menge',
+                    'LBBTYP': 'typ',
+                 })
+
+    zugangstypen = [1, 5, 6]     # Zugang, Zugang aus Inventur, Zugang wegen Abgangsstorno
+    abgangstypen = [21, 22, 23]  # Abgang, Abgang aus Inventur, Abgang wegen Zugangsstorno
+
+    # ...und, je nach Zu- oder Abgang mit entsprechendem Vorzeichen summiert
+    return Decimal(sum(Decimal(row['menge']) for row in rows if row['typ'] in zugangstypen)
+                 - sum(Decimal(row['menge']) for row in rows if row['typ'] in abgangstypen))
 
 
 def _test():

@@ -725,8 +725,8 @@ def frei_ab(menge, artnr, dateformat="%Y-%m-%d", lager=0):
     return None
 
 
-def get_lagerbestandsaenderung(artnr, datum_start, datum_ende, lager='200'):
-    """Gibt die Veränderung des Lagerbestandes eines Artikels in einem Bestimmten Zeitraum und Lager zurück.
+def get_lagerbestandsaenderung(artnr, datum_start, datum_ende):
+    """Gibt die Veränderung des Lagerbestandes eines Artikels in einem bestimmten Zeitraum zurück.
 
     Beispiel:
     >>> get_lagerbestandsaenderung('11007', datetime.date(2011, 7, 31), datetime.date(2011, i, 1))
@@ -745,18 +745,14 @@ def get_lagerbestandsaenderung(artnr, datum_start, datum_ende, lager='200'):
         Dieses Verhalten sollte die Addition mit gecachten Ergebnissen vereinfachen.
     datum_end
         Datum (inclusive) bis zu dem die Änderung abgefragt werden soll.
-    lager
-        Nummer des Lagers, in dem die Änderung abgefragt werden soll.
     returns
-        Einen Positiven numerischen Wert (Decimal), wenn der Bestand gewachsen ist, einen negativen, wenn er
-        gesunken ist.
+        Einen positiven Wert, wenn der Bestand gewachsen ist, einen negativen, wenn er gesunken ist.
     """
     # Die Tabelle XLB00 gibt, laut Doku, einen Lückenlosen Nachweis der Bestandsentwicklung eines Lagers wieder
     # https://docs.google.com/a/hudora.de/viewer
     #                ?a=v&pid=sites&srcid=aHVkb3JhLmRlfGludGVybnxneDo0Yjk4Mjc3ZjI2MmVjZGVm
     #
     # Tabelle XLB00 (Lagerbewegungen)
-    #   LBLGNR: Nummer des Lagers
     #   LBARTN: Artikelnummer
     #   LBDTBL: Datum
     #   LBMNGB: Menge in Bestandsführungseinheit
@@ -775,9 +771,8 @@ def get_lagerbestandsaenderung(artnr, datum_start, datum_ende, lager='200'):
     #     '061' Nur Entsperren Lagerbewegung
     #     '070' InfoBwg ohne Mengen- und Wertänderung
 
-    # Es werden summiert alle Änderungen des Lagers im Zeitraum abgefragt...
+    # Es werden summiert alle Änderungen im Zeitraum abgefragt...
     conditions = [
-        "LBLGNR = %s" % sql_quote(lager),
         "LBARTN = %s" % sql_quote(artnr),
         "LBDTBL > %s" % date2softm(datum_start),
         "LBDTBL <= %s" % date2softm(datum_ende),
@@ -796,8 +791,18 @@ def get_lagerbestandsaenderung(artnr, datum_start, datum_ende, lager='200'):
     abgangstypen = [21, 22, 23]  # Abgang, Abgang aus Inventur, Abgang wegen Zugangsstorno
 
     # ...und, je nach Zu- oder Abgang mit entsprechendem Vorzeichen summiert
-    return Decimal(sum(Decimal(row['menge']) for row in rows if row['typ'] in zugangstypen)
-                 - sum(Decimal(row['menge']) for row in rows if row['typ'] in abgangstypen))
+    return int(sum(Decimal(row['menge']) for row in rows if row['typ'] in zugangstypen)
+             - sum(Decimal(row['menge']) for row in rows if row['typ'] in abgangstypen))
+
+
+def _test_get_lagerbestandsaenderung():
+    # Lange Zeiträume, um Performance zu Testen
+    print get_lagerbestandsaenderung('11992/02', datetime.date(1900, 1, 1), datetime.date(2012, 1, 1))
+    print get_lagerbestandsaenderung('76105', datetime.date(1900, 1, 1), datetime.date(2012, 1, 1))
+    print get_lagerbestandsaenderung('14695', datetime.date(1900, 1, 1), datetime.date(2012, 1, 1))
+
+    # Und einen Konkreten Historischen Stand
+    print get_lagerbestandsaenderung('76105', datetime.date(1900, 1, 1), datetime.date(2008, 5, 23))
 
 
 def _test():
@@ -830,5 +835,6 @@ def _test():
 
 
 if __name__ == '__main__':
+#    _test_get_lagerbestandsaenderung()
     _test()
     unittest.main()

@@ -48,7 +48,8 @@ def abgabepreise_kunde(artnrs, kundennr, auftragsdatum=None):
                  condition=' AND '.join(condition_kunde),
                  ordering='PRDTVO')
     for row in rows:
-        artnrs.remove(row['artnr'])
+        if row['artnr'] in artnrs:
+            artnrs.remove(row['artnr'])
         abgabepreise[row['artnr']] = (int(row['preis'] * 100), u'Kundenpreis')
 
     if not artnrs:
@@ -65,8 +66,10 @@ def abgabepreise_kunde(artnrs, kundennr, auftragsdatum=None):
                  fields=['PRARTN', 'PNPRB', 'PRPRLK'],
                  condition=' AND '.join(condition_gruppe),
                  ordering='PRDTVO')
+
     for row in rows:
-        artnrs.remove(row['artnr'])
+        if row['artnr'] in artnrs:
+            artnrs.remove(row['artnr'])
         abgabepreise[row['artnr']] = (int(row['preis'] * 100), u'Preisliste %s' % row['preisliste_kunde'])
 
     if not artnrs:
@@ -74,7 +77,8 @@ def abgabepreise_kunde(artnrs, kundennr, auftragsdatum=None):
 
     # 3. Listenpreis aus Artikelstammdaten
     for artnr, preis in listenpreise(artnrs).iteritems():
-        artnrs.remove(artnr)
+        if row['artnr'] in artnrs:
+            artnrs.remove(row['artnr'])
         abgabepreise[artnr] = (preis, u'Listenpreis')
 
     for artnr in artnrs:

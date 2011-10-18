@@ -251,8 +251,14 @@ def get_guid(auftragsnr):
 def auftraege_kunde(kundennr, limit=None, header_only=False):
     """Alle Aufträge für eine Kundennummer ermitteln.
     Gibt eine Liste von dict()s zurück."""
+
+    conditions = []
+    if '.' in kundennr:
+        kundennr, adressindex = kundennr.split('.')
+        conditions.append("AKVANR=%d" % int(adressindex))
     kundennr = remove_prefix(kundennr, 'SC')
-    auftraege = _auftraege(["AKKDNR=%s" % pad('AKKDNR', kundennr)], limit=limit, header_only=header_only)
+    conditions.append("AKKDNR=%s" % pad('AKKDNR', kundennr))
+    auftraege = _auftraege(conditions, limit=limit, header_only=header_only)
     return auftraege
 
 

@@ -149,8 +149,11 @@ def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate
                                                       kundennr=auftragsnr_to_lieferadresse_kdnr[row['nr']],
                                                       ort=row['ort'])
         # Positionen einlesen
-        for row in query(['AAP00'], condition="APSTAT<>'X' AND APAUFN IN (%s)" % ','.join([str(x)
-                                                                                           for x in batch]),
+        if not canceled:
+            poscondition = "APSTAT<>'X' AND APAUFN IN (%s)" % ','.join([str(x) for x in batch])
+        else:
+            poscondition = "APAUFN IN (%s)" % ','.join([str(x) for x in batch])
+        for row in query(['AAP00'], condition=poscondition,
                          ua='husoftm2.auftraege'):
             d = dict(menge=int(row['bestellmenge']),
                      artnr=row['artnr'],
@@ -158,6 +161,7 @@ def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate
                      menge_offen=int(row['menge_offen']),
                      fakturierte_menge=int(row['fakturierte_menge']),
                      erledigt=(row['voll_ausgeliefert'] == 1),
+                     storniert=(row['AAP_status'] == 'X'),
                      # 'position': 2,
                      # 'teilzuteilungsverbot': u'0',
                      )
@@ -183,11 +187,13 @@ def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate
     return koepfe.values()
 
 
-def get_auftrag_by_auftragsnr(auftragsnr, header_only=False):
-    """Auftrag mit Auftragsnummer auftragsnr zurueckgeben"""
+def get_auftrag_by_auftragsnr(auftragsnr, header_only=False, canceled=False):
+    """Auftrag mit Auftragsnummer auftragsnr zurueckgeben.
+
+    Wenn `canceled == False` werden keine stornierten Aufträge und Positionen zurückgegeben."""
 
     auftragsnr = remove_prefix(auftragsnr, 'SO')
-    auftraege = _auftraege(["AKAUFN=%s" % sql_escape(auftragsnr)], header_only=header_only)
+    auftraege = _auftraege(["AKAUFN=%s" % sql_escape(auftragsnr)], header_only=header_only, canceled=canceled)
     if len(auftraege) > 1:
         raise RuntimeError("Mehr als ein Auftrag mit auftragsnr %s vorhanden" % auftragsnr)
     if not auftraege:
@@ -195,14 +201,17 @@ def get_auftrag_by_auftragsnr(auftragsnr, header_only=False):
     return auftraege[0]
 
 
-def get_auftrag_by_auftragsnr_tmp(auftragsnr_tmp, header_only=False):
-    """Auftrag anhand der auftragsnr_tmp zurueckgeben. Wird von ic2/auftrag verwendet."""
+def get_auftrag_by_auftragsnr_tmp(auftragsnr_tmp, header_only=False, canceled=False):
+    """Auftrag anhand der auftragsnr_tmp zurueckgeben. Wird von ic2/auftrag verwendet.
+
+    Wenn `canceled == False` werden keine stornierten Aufträge und Positionen zurückgegeben."""
+
     conditions = ["ATTX60=%s" % sql_quote("#:auftragsnr_tmp:" + auftragsnr_tmp),
                   "ATAUPO=0",
                   "ATTART=8",
                   "ATAUFN=AKAUFN"]
     auftraege = _auftraege([" AND ".join(conditions)], addtables=['AAT00'],
-                           header_only=header_only, canceled=True)
+                           header_only=header_only, canceled=canceled)
     if len(auftraege) > 1:
         raise RuntimeError("Mehr als ein Auftrag mit auftragsnr_tmp %s vorhanden" % auftragsnr_tmp)
     if not auftraege:
@@ -210,11 +219,14 @@ def get_auftrag_by_auftragsnr_tmp(auftragsnr_tmp, header_only=False):
     return auftraege[0]
 
 
-def get_auftrag_by_guid(guid, header_only=False):
-    """Auftrag mit GUID guid zurueckgeben. ACHTUNG guids sind nicht zwingend eindeutig!"""
+def get_auftrag_by_guid(guid, header_only=False, canceled=False):
+    """Auftrag mit GUID guid zurueckgeben. ACHTUNG guids sind nicht zwingend eindeutig!
+
+    Wenn `canceled == False` werden keine stornierten Aufträge und Positionen zurückgegeben."""
+
     # TO BE FIXED - md: was ist hier zu fixen?
     condition = "ATTX60 = %s AND ATAUPO = 0 AND ATTART = 8 AND ATAUFN=AKAUFN" % sql_quote("#:guid:" + guid)
-    auftraege = _auftraege([condition], addtables=['AAT00'], header_only=header_only)
+    auftraege = _auftraege([condition], addtables=['AAT00'], header_only=header_only, canceled=canceled)
     if len(auftraege) > 1:
         raise RuntimeError("Mehr als ein Auftrag mit guid %s vorhanden" % guid)
     if not auftraege:
@@ -222,23 +234,23 @@ def get_auftrag_by_guid(guid, header_only=False):
     return auftraege[0]
 
 
-def get_auftrag(nr, header_only=False):
-    "Findet einen Auftrag anhand des Bezeichners. Akzeptiert GUID oder AuftragsNr"
+def get_auftrag(nr, header_only=False, canceled=False):
+    """Findet einen Auftrag anhand des Bezeichners. Akzeptiert GUID oder AuftragsNr
+
+    Wenn `canceled == False` werden keine stornierten Aufträge und Positionen zurückgegeben."""
     if len(nr) > 9:
         tasks = [get_auftrag_by_guid, get_auftrag_by_auftragsnr]
     else:
         tasks = [get_auftrag_by_auftragsnr, get_auftrag_by_guid]
     for task in tasks:
-        auftrag = task(nr, header_only=header_only)
+        auftrag = task(nr, header_only=header_only, canceled=True)
         if auftrag:
             return auftrag
     return None
 
 
 def get_guid(auftragsnr):
-    """
-    Gibt den GUID zu einer Auftragsnr zurück, sofern vorhanden.
-    """
+    """Gibt den GUID zu einer Auftragsnr zurück, sofern vorhanden."""
     auftragsnr = remove_prefix(auftragsnr, 'SO')
     condition = "ATTX60 LIKE %s AND ATAUFN = %s AND ATAUPO = 0 AND ATTART = 8" % (sql_quote("#:guid:%%"),
                                                                                   sql_quote(auftragsnr))
@@ -248,9 +260,11 @@ def get_guid(auftragsnr):
     return ''
 
 
-def auftraege_kunde(kundennr, limit=None, header_only=False):
+def auftraege_kunde(kundennr, limit=None, header_only=False, canceled=False):
     """Alle Aufträge für eine Kundennummer ermitteln.
-    Gibt eine Liste von dict()s zurück."""
+
+    Gibt eine Liste von dict()s zurück.
+    Wenn `canceled == False` werden keine stornierten Aufträge und Positionen zurückgegeben."""
 
     conditions = []
     if '.' in kundennr:
@@ -258,7 +272,31 @@ def auftraege_kunde(kundennr, limit=None, header_only=False):
         conditions.append("AKVANR=%d" % int(adressindex))
     kundennr = remove_prefix(kundennr, 'SC')
     conditions.append("AKKDNR=%s" % pad('AKKDNR', kundennr))
-    auftraege = _auftraege(conditions, limit=limit, header_only=header_only)
+    auftraege = _auftraege(conditions, limit=limit, header_only=header_only, canceled=canceled)
+    return auftraege
+
+
+def offene_auftraege_kunde(kundennr, limit=None, header_only=False, canceled=False):
+    """Alle nicht abgeschlossene Aufträge für eine Kundennummer ermitteln.
+
+    Gibt eine Liste von dict()s zurück.
+    Wenn `canceled == False` werden keine stornierten Aufträge und Positionen zurückgegeben."""
+    kundennr = remove_prefix(kundennr, 'SC')
+    auftraege = _auftraege(["AKKDNR=%s" % pad('AKKDNR', kundennr), "AKKZVA=0"],
+                           limit=limit, header_only=header_only, canceled=canceled)
+    return auftraege
+
+
+def fertige_auftraege_kunde(kundennr, limit=None, header_only=False, canceled=False):
+    """Alle abgeschlossene Aufträge für eine Kundennummer ermitteln.
+
+    Gibt eine Liste von dict()s zurück.
+    Wenn `canceled == False` werden keine stornierten Aufträge und Positionen zurückgegeben."""
+    kundennr = remove_prefix(kundennr, 'SC')
+    # dies mag stornierte Aufträge übersehen - hab ich bisher nicht überprüft
+    auftraege = _auftraege(["AKKDNR=%s" % pad('AKKDNR', kundennr),
+                            "(AKKZVA=1 OR AKSTAT='X')"], limit=limit,
+                            header_only=header_only, canceled=canceled)
     return auftraege
 
 

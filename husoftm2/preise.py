@@ -77,8 +77,8 @@ def abgabepreise_kunde(artnrs, kundennr, auftragsdatum=None):
 
     # 3. Listenpreis aus Artikelstammdaten
     for artnr, preis in listenpreise(artnrs).iteritems():
-        if row['artnr'] in artnrs:
-            artnrs.remove(row['artnr'])
+        if artnr in artnrs:
+            artnrs.remove(artnr)
         abgabepreise[artnr] = (preis, u'Listenpreis')
 
     for artnr in artnrs:

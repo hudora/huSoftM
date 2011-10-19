@@ -12,7 +12,7 @@ import husoftm2.backend
 import husoftm2.sachbearbeiter
 import logging
 from husoftm2.backend import query, x_en
-from husoftm2.tools import sql_quote, remove_prefix
+from husoftm2.tools import sql_quote, remove_prefix, pad
 from husoftm2.texte import txt_auslesen
 
 
@@ -288,6 +288,11 @@ def lieferschein_for_kommiauftrag(komminr, header_only=False):
     lieferscheine = _lieferscheine(["LKKBNR = %s" % sql_quote(komminr)], limit=1, header_only=header_only)
     if lieferscheine:
         return lieferscheine[0]
+
+def lieferscheine_kunde(kundennr, limit=50, header_only=False):
+    """Gibt eine Liste mit Lieferscheindicts für einen Kunden zurück"""
+    kundennr = remove_prefix(kundennr, 'SC')
+    return _lieferscheine(["LKKDNR = %s" % pad('LKKDNR', kundennr)], limit=limit, header_only=header_only)
 
 
 def get_lieferschein(lieferscheinnr, header_only=False):

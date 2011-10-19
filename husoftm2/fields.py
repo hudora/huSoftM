@@ -3473,6 +3473,7 @@ PADDINGFIELDS = {
     'KZKDNR': '%8s',
     'KZVRT': '%8s',
     'LILINR': '%8s',
+    'LKKDNR': '%8s',
     'OPPKTO': '%8s',
     'PRKDNR': '%8s',
     'XALINR': '%8s',

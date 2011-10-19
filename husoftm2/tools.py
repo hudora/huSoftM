@@ -12,6 +12,7 @@ import datetime
 import doctest
 import sys
 import unittest
+import warnings
 from husoftm2.fields import PADDINGFIELDS
 from huTools.calendar.formats import convert_to_date
 
@@ -214,6 +215,7 @@ def pad(field, value):
     """Pad field to fixed length"""
     if field in PADDINGFIELDS:
         return sql_quote(PADDINGFIELDS[field] % value)
+    warnings.warn("padding of '%s; has no effect" % field, stacklevel=2)
     return sql_quote(value)
 
 

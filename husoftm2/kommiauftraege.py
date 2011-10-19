@@ -18,7 +18,7 @@ from husoftm2.lieferscheine import get_ls_kb_data
 from husoftm2.tools import remove_prefix, sql_quote, add_prefix
 
 
-def get_kommiauftrag(komminr, header_only=False):
+def get_kommiauftrag(komminr, additional_conditions=None, header_only=False):
     """Gibt einen Kommiauftrag zurück"""
 
     prefix = 'KA'
@@ -28,10 +28,12 @@ def get_kommiauftrag(komminr, header_only=False):
         prefix = 'KB'
     komminr = remove_prefix(komminr, prefix)
 
-    # In der Tabelle ALK00 stehen Kommissionierbelege und Lieferscheine.
+    # In der Tabelle ALK00 stehen Kommiaufträge und Lieferscheine.
     # Die Kommissionierbelege haben '0' als Lieferscheinnr.
-    # Zusätzlich werden die (logisch) gelöschten Lieferscheine rausgefiltert.
+    # Zusätzlich werden die (logisch) gelöschten Kommiaufträge rausgefiltert.
     conditions = ["LKLFSN = 0", "LKKBNR = %s" % sql_quote(komminr), "LKSTAT<>'X'"]
+    if additional_conditions:
+        conditions.extend(additional_conditions)
     belege = get_ls_kb_data(conditions, header_only=header_only, is_lieferschein=False)
 
     if belege:
@@ -46,6 +48,17 @@ def get_kommiauftrag(komminr, header_only=False):
             beleg.pop('lieferscheinnr', None)
         return beleg
     return {}
+
+
+def kommiauftraege_auftrag(auftragsnr, header_only=False):
+    """Gibt eine Liste mit Kommiauftragsdicts für einen Auftrag zurück"""
+    auftragsnr = remove_prefix(auftragsnr, 'SO')
+    # In der Tabelle ALK00 stehen Kommiaufträge und Lieferscheine.
+    # Die Kommissionierbelege haben '0' als Lieferscheinnr.
+    # Zusätzlich werden die (logisch) gelöschten Kommiaufträge rausgefiltert.
+    conditions = ["LKLFSN = 0", "LKAUFS = %s" % sql_quote(auftragsnr), "LKSTAT<>'X'"]
+    belege = get_ls_kb_data(conditions, header_only=header_only, is_lieferschein=False)
+    return belege
 
 
 def get_kommibeleg(komminr, header_only=False):

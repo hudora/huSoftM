@@ -289,6 +289,7 @@ def lieferschein_for_kommiauftrag(komminr, header_only=False):
     if lieferscheine:
         return lieferscheine[0]
 
+
 def lieferscheine_kunde(kundennr, limit=50, header_only=False):
     """Gibt eine Liste mit Lieferscheindicts für einen Kunden zurück"""
     kundennr = remove_prefix(kundennr, 'SC')

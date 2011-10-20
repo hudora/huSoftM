@@ -99,32 +99,30 @@ def get_bestellung(bestellnr):
     return kopf, positionen
 
 
-def _get_zugaenge_helper(rows):
+def _get_zugaenge_helper(rows, header_only=False):
     """Sammelt Daten zu einer Bestellung aus verschiedenen Tabellen."""
     rows = kursfaktorkorrektur(rows, 'kurs_zugang', 'kursfaktor_zugang')
     ret = []
     for row in rows:
         lagerbuchungen = []
-        if row['lagerbewegung_rechnung']:
-            buchung = query('XLB00', condition="LBSANR=%s" % sql_escape(row['lagerbewegung_rechnung']))
-            if len(buchung) > 1:
-                raise RuntimeError('mehr als einen XLB Satz zu einem EWZ Satz: %r' % buchung)
-            if buchung:
-                buchung = kursfaktorkorrektur(buchung)[0]
-                lagerbuchungen.append(buchung)
-        if row['lagerbewegung_zugang'] and row['lagerbewegung_zugang'] != row['lagerbewegung_rechnung']:
-            buchung = query('XLB00',
-                    condition="LBSANR=%s" % sql_escape(row['lagerbewegung_zugang']))
-            if len(buchung) > 1:
-                raise RuntimeError('mehr als einen XLB Satz zu einem EWZ Satz: %r' % buchung)
-            lagerbuchungen.append(kursfaktorkorrektur(buchung)[0])
+        if not header_only:
+            if row['lagerbewegung_rechnung']:
+                buchung = query('XLB00',
+                                condition="LBSANR=%s" % sql_escape(row['lagerbewegung_rechnung']))
+                if buchung:
+                    lagerbuchungen.append(kursfaktorkorrektur(buchung)[0])
+            if row['lagerbewegung_zugang'] and row['lagerbewegung_zugang'] != row['lagerbewegung_rechnung']:
+                buchung = query('XLB00',
+                        condition="LBSANR=%s" % sql_escape(row['lagerbewegung_zugang']))
+                if buchung:
+                    lagerbuchungen.append(kursfaktorkorrektur(buchung)[0])
         row['_lagerbuchungen'] = lagerbuchungen
         row['tatsaechlicher_preis'] = int(row['tatsaechlicher_preis'] * 100)
         ret.append(row)
     return ret
 
 
-def get_zugaenge_artnr(artnr):
+def get_zugaenge_artnr(artnr, header_only=False):
     """Liefert alle Warenzugaenge eines Artikels.
 
     [{'lager': 16, 'status': 0, 'art': u'', 'artnr': u'30026', '_lagerbuchungen': [],
@@ -139,7 +137,7 @@ def get_zugaenge_artnr(artnr):
       ]
     """
     rows = query('EWZ00', ordering=['WZDTWZ'], condition="WZSTAT<>'X' AND WZARTN='%s'" % sql_escape(artnr))
-    return _get_zugaenge_helper(rows)
+    return _get_zugaenge_helper(rows, header_only=header_only)
 
 
 def get_zugaenge_bestellnr(bestellnr):

@@ -12,7 +12,7 @@ import unittest
 from decimal import Decimal
 
 from husoftm2.backend import query
-from husoftm.tools import sql_escape, sql_quote, date2softm, remove_prefix, add_prefix
+from husoftm2.tools import sql_escape, sql_quote, date2softm, remove_prefix, add_prefix
 
 
 class Bestellung(object):

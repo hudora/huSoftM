@@ -54,7 +54,6 @@ import husoftm2.artikel
 import itertools
 import time
 import unittest
-from decimal import Decimal
 
 
 def buchbestaende(artnrs=None, lager=0):
@@ -778,21 +777,25 @@ def get_lagerbestandsaenderung(artnr, datum_start, datum_ende):
         "LBDTBL <= %s" % date2softm(datum_ende),
     ]
 
-    rows = query(['XLB00'],
-                 condition=' AND '.join(conditions),
-                 fields=['SUM(LBMNGB)', 'LBBTYP'],
-                 grouping=['LBBTYP'],
-                 querymappings={
-                    'SUM(LBMNGB)': 'menge',
-                    'LBBTYP': 'typ',
-                 })
+    rows = query(['XLB00'], fields=['LBDTBL', 'LBMNGB', 'LBBTYP', 'LBLGNR'],
+                 condition=' AND '.join(conditions), ordering='LBDTBL')
 
     zugangstypen = [1, 5, 6]     # Zugang, Zugang aus Inventur, Zugang wegen Abgangsstorno
     abgangstypen = [21, 22, 23]  # Abgang, Abgang aus Inventur, Abgang wegen Zugangsstorno
+    absoluttypen = [50]  # Inveturbestätigung
 
-    # ...und, je nach Zu- oder Abgang mit entsprechendem Vorzeichen summiert
-    return int(sum(Decimal(row['menge']) for row in rows if row['typ'] in zugangstypen)
-             - sum(Decimal(row['menge']) for row in rows if row['typ'] in abgangstypen))
+    bestaende = {}
+    for row in rows:
+        bestaende.setdefault(row['lager'], 0)
+
+        if row['typ'] in zugangstypen:
+            bestaende[row['lager']] += row['menge']
+        elif row['typ'] in abgangstypen:
+            bestaende[row['lager']] -= row['menge']
+        elif row['typ'] in absoluttypen:
+            bestaende[row['lager']] = row['menge']
+
+    return sum(bestaende.values())
 
 
 def _test_get_lagerbestandsaenderung():

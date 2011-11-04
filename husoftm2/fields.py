@@ -1086,7 +1086,7 @@ MAPPINGDIR = {
         #'FURGNR': 'rechnungsnr',
         # 'FURGNI': 'Intern Rechnungs-Nr.',
         #'FUAUFN': 'auftragsnr',
-        #'FUAUPO': 'auftragsposition',
+        'FUAUPO': 'auftragsposition',
         # 'FUPOZU': 'Zusatz-Position',
         # 'FUABT ': 'Abteilung/Auftrag',
         # 'FUKDNR': 'Kunden-Nr/Warenempf{nger',

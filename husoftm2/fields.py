@@ -1170,7 +1170,7 @@ MAPPINGDIR = {
         # 'FUKZ02': 'EstdPrs XSL',
         # 'FUAUPS': 'bezogene Position',
         # 'FUSNRG': 'StzNr SmlRg',
-        # 'FUDTRI': 'Rechnungsdatum/intern',
+        'FUDTRI': 'rechnungs_date',
         #'FUDTER': 'erfassung_date',
         #'FUZTER': 'erfassung_time',
         },

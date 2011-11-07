@@ -15,11 +15,6 @@ from husoftm2.backend import query
 from husoftm2.tools import sql_escape, sql_quote, date2softm, remove_prefix, add_prefix
 
 
-class Bestellung(object):
-    """Repräsentiert eine Bestellung in SoftM."""
-    pass
-
-
 def kursfaktorkorrektur(rows, kursname='kurs', kursfaktorname='kursfaktor', umdrehen=True):
     """Wandelt einen Kurs anhand des Kursfaktors inhand das von uns gewohnte Format.
 
@@ -159,7 +154,7 @@ def get_zugaenge_warenvereinnahmungsnr_simple(bestellnr, warenvereinnahmungsnr):
     return rows
 
 
-def get_bestellungen_artnr(artnr):
+def get_bestellungen_artnr(artnr, header_only=False):
     """Liefert alle Warenzugaenge einer Artikelnummer."""
 
     # BZT00 - zusatztexte
@@ -167,15 +162,16 @@ def get_bestellungen_artnr(artnr):
         condition="BLBSTN=BPBSTN AND BLSTAT<>'X' AND BPSTAT<>'X' AND BPARTN=%s" % sql_quote(artnr))
     ret = []
     for position in positionen:
-        position['_zugaenge'] = [x for x in get_zugaenge_bestellnr(position['bestellnr'])
-                                     if x['artnr'] == artnr]
-        for zugang in position['_zugaenge']:  # Buchungsdaten
-            buchungen = query('BBU00',
-                condition='BUBELN=%s' % sql_escape(zugang['rechnungsnr']))
-            zugang['_fibubuchungen'] = kursfaktorkorrektur(buchungen, umdrehen=False)
-        position['_lager_stapelschnittstelle'] = query(
-            'ESL00', condition="SLBSTN=%s AND SLBSTP=%s AND SLARTN=%s"
-            % (sql_escape(position['bestellnr']), sql_escape(position['bestellpos']), sql_escape(artnr)))
+        if not header_only:
+            position['_zugaenge'] = [x for x in get_zugaenge_bestellnr(position['bestellnr'])
+                                         if x['artnr'] == artnr]
+            for zugang in position['_zugaenge']:  # Buchungsdaten
+                buchungen = query('BBU00',
+                    condition='BUBELN=%s' % sql_escape(zugang['rechnungsnr']))
+                zugang['_fibubuchungen'] = kursfaktorkorrektur(buchungen, umdrehen=False)
+            position['_lager_stapelschnittstelle'] = query(
+                'ESL00', condition="SLBSTN=%s AND SLBSTP=%s AND SLARTN=%s"
+                % (sql_escape(position['bestellnr']), sql_escape(position['bestellpos']), sql_escape(artnr)))
         ret.append(position)
     # ?: SELECT * FROM EWZ00 WHERE WZBSTN = 43072
     return kursfaktorkorrektur(ret)

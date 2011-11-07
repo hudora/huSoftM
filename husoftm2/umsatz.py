@@ -13,8 +13,8 @@ import decimal
 import huTools.world
 
 
-from husoftm2.tools import pad, remove_prefix
-from husoftm2.backend import query
+from husoftm2.tools import pad, remove_prefix, softm2date, date2softm, sql_quote
+from husoftm2.backend import query, as400_2_int
 import husoftm2.kunden
 
 
@@ -52,3 +52,24 @@ def get_umsatz(kundennr, jahr):
         elif row['art'] == 'S':
             umsatz += decimal.Decimal(row['umsatz'])
     return umsatz
+
+
+def artikel_mengenumsatz_range(artnr, startdate, enddate):
+    """Liefert die FakturirtenUmsatz-MEngen für den Interval [startdate; enddata[
+
+    >>> artikel_mengenumsatz_range('10101', datetime.date(2009, 6, 2), datetime.date(2009, 6, 5))
+    {datetime.date(2009, 6, 2): 500, datetime.date(2009, 6, 4): 1000, datetime.date(2009, 6, 3): 0}
+    """
+
+    conditions = ['FUDTRI>=%s' % date2softm(startdate),
+                  'FUDTRI<%s' % date2softm(enddate),
+                  'FUARTN=%s' % sql_quote(artnr),
+                 ]
+
+    rows = query(tables=['AFU00'], fields=['SUM(FUMNG)', 'FUDTRI'], grouping=['FUDTRI'],
+             querymappings={'FUDTRI': 'tag', 'SUM(FUMNG)': 'menge'},
+             condition=' AND '.join(conditions), ua='husoftm2.umsatz', cachingtime=86400)
+    ret = {}
+    for row in rows:
+        ret[softm2date(row['tag'])] = as400_2_int(row['menge'])
+    return ret

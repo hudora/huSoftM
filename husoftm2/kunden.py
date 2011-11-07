@@ -57,6 +57,15 @@ vertreterdict = {
 }
 
 
+# Mapping between *X3LB and textual representation
+lieferbedingungendict = {
+     '01': u'frei Haus',
+     '02': u'frei an Bord',
+     '18': u'unfrei',
+     '21': u'Selbstabholer',
+}
+
+
 def get_kundennummern(kundennrs=None):
     """
     Gibt eine Liste mit allen Kundennummern zurück.
@@ -311,7 +320,7 @@ def get_betreuer(kundennr):
     kundennr = husoftm2.tools.remove_prefix(kundennr, 'SC')
     rows = query(['AKZ00'], fields=['KZINFO'],
                  condition="KZKDNR = %s" % husoftm2.tools.pad('KZKDNR', kundennr),
-                 limit=1, ua='husoftm2.kunden.get_konditionen')
+                 limit=1, ua='husoftm2.kunden.get_betreuer')
     if rows:
         return betreuerdict.get(rows[0][0], '')
     return ''
@@ -337,6 +346,16 @@ def set_betreuer(kundennr, betreuer):
     sql = "UPDATE AKZ00 SET KZINFO=%s WHERE KZKDNR=%s" % (husoftm2.tools.sql_quote(betreuer),
                                                           husoftm2.tools.pad('KZKDNR', kundennr))
     raw_SQL(sql, ua='husoftm.kunden')
+
+
+def get_lieferbedingungen(kundennr):
+    """Liefert einen String für die in SoftM hinterlegten Lieferbedingungen oder ''."""
+    kundennr = husoftm2.tools.remove_prefix(kundennr, 'SC')
+    rows = query(['AKZ00'], fields=['KZX3LB'], condition="KZKDNR = %s" % husoftm2.tools.pad('KZKDNR', kundennr),
+                 limit=1, ua='husoftm2.kunden.get_lieferbedingungen')
+    if rows:
+        return lieferbedingungendict.get(rows[0][0], '')
+    return ''
 
 
 def kredit_limit(kundennr):

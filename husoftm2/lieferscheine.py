@@ -229,15 +229,15 @@ def _lieferscheine(additional_conditions=None, limit=None, header_only=False):
 def get_changed_after(date, limit=None):
     """Liefert die Lieferscheinnummern zurück, die nach <date> geändert wurden."""
     date = int(date.strftime('1%y%m%d'))
-    conditions = ["LKLFSN<>0",
-                  "LKSTAT<>'X'",
+    conditions = ["LKSTAT<>'X'",
                   "(LKDTER>%d OR LKDTAE>=%d)" % (date, date),
                   ]
     condition = " AND ".join(conditions)
     ret = []
-    for kopf in query(['ALK00'], ordering=['LKSANK DESC'], fields=['LKLFSN'],
-                      condition=condition, limit=limit, ua='husoftm2.lieferscheine'):
-        ret.append("SL%s" % kopf[0])
+    for kopf in query(['ALK00'], fields=['LKLFSN'], condition=condition, limit=limit,
+                      ua='husoftm2.lieferscheine'):
+        if kopf[0] != 0:
+            ret.append("SL%s" % kopf[0])
     return ret
 
 

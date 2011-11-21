@@ -18,6 +18,7 @@ betreuerdict = {
             'ajames': 'Andrea James',
             'alangen': 'Anja Langen',
             'bbonrath': 'Birgit Bonrath',
+            'calby': u'Christine Alby',
             'cblumberg': 'Claudia Blumberg',
             'cgerlach': 'Christoph Gerlach',
             'cgiermann': 'Carsten Giermann',

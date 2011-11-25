@@ -98,7 +98,7 @@ def buchbestand(artnr, lager=0):
     """
     ret = buchbestaende([artnr], lager)
     if ret:
-        return buchbestaende([artnr], lager).values()[0]
+        return int(buchbestaende([artnr], lager).values()[0])
     return 0
 
 
@@ -448,24 +448,26 @@ def artikelverfuegbarkeit(artnr, lager=0, max_date=None, resolve_sets=True):
     """Bestimme alle Mengenänderungen für einen Artikel für die Artikelverfügbarkeit
 
     Der Rückgabewert ist eine Liste von dicts, die sortiert ist nach Datum und nach Belegnummer.
+    Besser waere der NAme "Artikelkonto" oder "Artikelbewegungen".
     """
 
     satzarten = {'LB': u'Lagerbestand',
-                 'ZT': u'Zuteilter Bedarf aus Kundenauftrag',
-                 'RB': u'Bedarf aus Kundenaufag',
-                 'UZ': u'Umlagerung/Zugang/Zuteilung',
+                 'ZT': u'Auftrag',
+                 'RB': u'Auftrag, zugeteilt',
+                 'UZ': u'Zugang',
                  'OB': u'Offene Bestellung'
     }
 
-    # Auftragspositionen, die den Artikel enthalten.
+    # wir Starten mir einem leeren Datendatz
+    records = [{'satzart': 'LB', 'datum': datetime.date.min, 'belegnr': '', 'position': 0}]
+
+    ## Auftragspositionen, die den Artikel enthalten.
     # Achtung! Es können auch Set-Artikel im Auftrag enthalten sein,
     # diese müssen ebenfalls berücksichtigt und im richtigen Verhältnis umgerechnet werden.
     rows = auftragsmengen2(artnr, lager, max_date, resolve_sets)
 
     # Beim Durchlaufen der Auftragspositionen wird die zugeteilte Menge aufsummiert.
     zugeteilte_menge = 0
-
-    records = [{'satzart': 'LB', 'datum': datetime.date.min, 'belegnr': '', 'position': 0}]
 
     for row in rows:
         zugeteilte_menge += row['menge_zugeteilt']
@@ -498,7 +500,7 @@ def artikelverfuegbarkeit(artnr, lager=0, max_date=None, resolve_sets=True):
                       datum=row['liefer_date'])
         records.append(record)
 
-    # Bestellpositionen
+    ## Bestellpositionen
     rows = bestellmengen2(artnr, lager)
     for row in rows:
         record = dict(belegnr=add_prefix(row['bestellnr'], 'PO'),

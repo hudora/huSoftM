@@ -49,6 +49,11 @@ except:
     pass
 
 
+SOFTMEXPRESSHOST = 'api.hudora.biz:8082'
+# nötig, bis https://hudora.lighthouseapp.com/projects/43795/tickets/217 erledigt ist.
+SOFTMEXPRESSHOST = 'api2.hudora.biz:8082'
+
+
 class SoftMError(Exception):
     """This is the base for all exceptions in this package."""
     pass
@@ -215,7 +220,7 @@ def execute_prepare_headers(url, args, bust_cache):
         url += '&ts=%s' % time.time()
     # sign request
     digest = hmac.new(_find_credentials(), url, hashlib.sha1).hexdigest()
-    softmexpresshost = os.environ.get('SOFTMEXPRESSHOST', 'api.hudora.biz:8082')
+    softmexpresshost = os.environ.get('SOFTMEXPRESSHOST', SOFTMEXPRESSHOST)
     headers.update({'X-sig': digest})
     url = 'http://' + softmexpresshost + url
     return url, headers
@@ -242,7 +247,7 @@ def raw_SQL(command, ua=''):
     url += '&ts=%s' % time.time()
     # sign request
     digest = hmac.new(_find_credentials(), url, hashlib.sha1).hexdigest()
-    softmexpresshost = os.environ.get('SOFTMEXPRESSHOST', 'api.hudora.biz:8082')
+    softmexpresshost = os.environ.get('SOFTMEXPRESSHOST', SOFTMEXPRESSHOST)
     headers = {'X-sig': digest}
     url = 'http://' + softmexpresshost + url
     method = 'POST'

@@ -3165,8 +3165,8 @@ MAPPINGDIR = {
         #'LBARTG': 'Artikel-Gruppe',
         'LBARTN': 'artnr',
         #'LBSENR': 'Serien-/Chargennummer',
-        # 'LBSBNR': 'sachbearbeiter_erfassung',
-        # 'LDWSID': 'herkunft', # z.B. 'EINKAUF'
+        'LBSBNR': 'sachbearbeiter_erfassung',
+        'LDWSID': 'herkunft', # z.B. 'EINKAUF'
         # 'LBSAKZ': 'SA',
         'LBBWSL': 'bewegungsschluessel',  # 22 = Warenzugang
         'LBBELN': 'belegnummer',          # == Nummer in der Fibu
@@ -3190,13 +3190,13 @@ MAPPINGDIR = {
         'LBWSL': 'waehrung',
         'LBKURS': 'kurs',
         'LBKUFA': 'kursfaktor',
-        # 'LBRPRZ': 'Rabatt-%-Satz',
+        # 'LBRPRZ': 'Rabatt-%-Satz', - scheinbar immer 0
         # 'LBFPRZ': 'fracht_prozent', # % - Satz scheinbar immer 0
         # 'LBZPRZ': 'zoll_prozent', # % - Satz scheinbar immer 0
-        # 'LBZARZ': 'abwertung_prozent', # % - Satz - scheinbar immer 0
+        'LBZARZ': 'abwertung_prozent', # % - Satz - scheinbar immer 0
         'LBLWER': 'wert_erfassung',
         'LBLWAK': 'wert_aktuell',
-        # 'LBLWKO': 'lagerwert_korrektur', # scheinbar immer identisch mit LBLWAK
+        'LBLWKO': 'lagerwert_korrektur', # scheinbar immer identisch mit LBLWAK
         'LBLWRT': 'lagerwert_vor_buchung',
         'LBMNGE': 'bewegungsmenge',       # 'Bewegungs-Menge lt. Eingabe',
         # 'LBMEER': 'Mengeneinheit/Erfassung', # immer 1
@@ -3216,11 +3216,11 @@ MAPPINGDIR = {
         # 'LBZUKZ': 'Zustand: A/R/F', Zeicheinbar immer ''
         'LBAUFN': 'auftragsnr',  # Warenvereinnamungsnummer bei Zugängen
         'LBAUPO': 'auftragspos',
-        # 'LBKZKO': 'Kz. Mit Komponenten', # immer 6?
+        'LBKZKO': 'mit_komponenten', # immer 0 oder 6?
         'LBDTER': 'erfassung_date',
         'LBDTAE': 'aenderung_date',
         'LBINFO': 'info',
-        # 'LBART ': 'art', # bisher 0 und 1 beobachtet
+        'LBART ': 'art', # bisher 0 1, und 13 beobachtet
         'LBBTYP': 'typ',
         #'LBDFSL': 'dateifuehrungsschluessel',
         'LBSTAT': 'satzstatus',

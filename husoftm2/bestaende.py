@@ -750,8 +750,7 @@ def get_lagerbestandsaenderung(artnr, datum_start, datum_ende):
         Einen positiven Wert, wenn der Bestand gewachsen ist, einen negativen, wenn er gesunken ist.
     """
     # Die Tabelle XLB00 gibt, laut Doku, einen Lückenlosen Nachweis der Bestandsentwicklung eines Lagers wieder
-    # https://docs.google.com/a/hudora.de/viewer
-    #                ?a=v&pid=sites&srcid=aHVkb3JhLmRlfGludGVybnxneDo0Yjk4Mjc3ZjI2MmVjZGVm
+    # https://docs.google.com/a/hudora.de/viewer?a=v&pid=sites&srcid=aHVkb3JhLmRlfGludGVybnxneDo0Yjk4Mjc3ZjI2MmVjZGVm
     #
     # Tabelle XLB00 (Lagerbewegungen)
     #   LBARTN: Artikelnummer

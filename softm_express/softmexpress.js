@@ -37,7 +37,7 @@
     digest = hmac.digest(encoding = 'hex');
     if (request.headers['x-sig'] !== digest) {
       console.log(request.client.remoteAddress + ': ' + "Login Provided " + request.headers['x-sig']);
-      return handler(request, response);
+      return sendReply(response, 401, "Not with me!");
     } else {
       return handler(request, response);
     }
@@ -57,7 +57,7 @@
       });
     }
     if (query.condition) {
-      querystr = querystr + ' WHERE ' + query.condition.replace(/';/g, "");
+      querystr = querystr + ' WHERE ' + query.condition.join(' AND ').replace(/';/g, "");
     }
     if (query.grouping) {
       querystr = querystr + ' GROUP BY ' + query.grouping.join(',').replace(/';/g, "");

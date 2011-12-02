@@ -75,8 +75,7 @@ login_required = (request, response, handler) ->
     if request.headers['x-sig'] != digest
         # Nein. Daten loggen und Fehlermeldung zum Client zurück senden
         console.log(request.client.remoteAddress + ': ' + "Login Provided " + request.headers['x-sig']);
-        # sendReply(response, 401, "Not with me!")
-        handler(request, response)
+        sendReply(response, 401, "Not with me!")
     else
         # User authentifiziert. Handler aufrufen.
         handler(request, response)
@@ -100,7 +99,7 @@ select = (request, response) ->
     # Verschiedene weitere Parametertypen nach Bedarf zufügen. Wir gehen
     # davon aus, das der Client schonn das Escaping vorgenommen hat
     if query.condition
-        querystr = querystr + ' WHERE ' + query.condition.replace(/';/g, "")
+        querystr = querystr + ' WHERE ' + query.condition.join(' AND ').replace(/';/g, "")
     if query.grouping
         querystr = querystr + ' GROUP BY ' + query.grouping.join(',').replace(/';/g, "")
     if query.ordering

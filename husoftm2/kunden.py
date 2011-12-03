@@ -6,8 +6,10 @@ huSoftM/kunden.py - High Level Access Kundeninformationen. Teil von huSoftM.
 Created by Maximillian Dornseif on 2007-04-13.
 Copyright (c) 2007, 2010, 2011 HUDORA GmbH. All rights reserved.
 """
+
 import datetime
 import logging
+import warnings
 from decimal import Decimal
 
 import husoftm2.tools
@@ -124,6 +126,7 @@ def get_kunde(kundennr):
     <kundennr> must be an Integer in the Range 10000..99999.
     If no data exists for that KdnNr ValueError is raised."""
 
+    warnings.warn("use `cs.masterdata.kunden` instead!",  DeprecationWarning, stacklevel=2)
     kundennr = husoftm2.tools.remove_prefix(kundennr, 'SC')
     rows = query(['XKD00'],
                  condition="KDKDNR=%s AND KDSTAT<>'X'" % husoftm2.tools.pad('KDKDNR', kundennr),

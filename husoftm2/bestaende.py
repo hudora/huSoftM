@@ -232,7 +232,7 @@ def auftragsmengen_async(artnr, lager=0, returnhandler=lambda x: x):
 
 
 def auftragsmengen_geliefert_async(artnr, lager=0, returnhandler=lambda x: x):
-    """Ausgelieferte menden nach tagen gruppiert ausgeben.
+    """Ausgelieferte mengen nach tagen gruppiert ausgeben.
     >>> auftragsmengen_geliefert_async('12345').get_result()
     {datetime.date(2010, 12, 8): 16,
      datetime.date(2010, 9, 8): 8,
@@ -264,7 +264,7 @@ def auftragsmengen_geliefert_async(artnr, lager=0, returnhandler=lambda x: x):
 
 
 def auftragsmengen_alle_artikel():
-    """Liefert eine Liste offener Aufträge aller Artikel furu alle Läger.
+    """Liefert eine Liste offener Aufträge aller Artikel für alle Läger.
 
     >>> auftragsmengen_alle_artikel(34)
     {'14550': {datetime.date(2008, 11, 30): 3450,
@@ -298,8 +298,7 @@ def auftragsmengen_alle_artikel():
     ret = {}
     for row in rows:
         if row['menge_offen']:
-            ret.setdefault(str(row['artnr']), {})[row['liefer_date']] = (as400_2_int(row['menge_offen']),
-                                                                         row['orderlines'])
+            ret.setdefault(str(row['artnr']), {})[row['liefer_date']] = as400_2_int(row['menge_offen'])
     return ret
 
 

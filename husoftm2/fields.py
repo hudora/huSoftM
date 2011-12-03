@@ -3166,7 +3166,7 @@ MAPPINGDIR = {
         'LBARTN': 'artnr',
         #'LBSENR': 'Serien-/Chargennummer',
         'LBSBNR': 'sachbearbeiter_erfassung',
-        'LDWSID': 'herkunft', # z.B. 'EINKAUF'
+        'LDWSID': 'herkunft',  # z.B. 'EINKAUF'
         # 'LBSAKZ': 'SA',
         'LBBWSL': 'bewegungsschluessel',  # 22 = Warenzugang
         'LBBELN': 'belegnummer',          # == Nummer in der Fibu

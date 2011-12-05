@@ -113,13 +113,18 @@ loop(Req, _DocRoot) ->
                         undefined ->
                             Req:respond({500, [{"Content-Type", " text/plain; charset=utf-8"}],
                                         "/select needs a 'query' parameter\n"});
-                        QueryStr ->
-                            do_select(Req, QueryStr,
-                                      io_lib:format("~s/~s", [Req:get(peer), proplists:get_value("tag", Req:parse_qs())]))
+			QueryStr ->
+			    do_select(Req, QueryStr,
+			              io_lib:format("~s/~s", [Req:get(peer), proplists:get_value("tag", Req:parse_qs())]))
                     end;
                 "update" ->
-                        Req:respond({405, [{"Content-Type", " text/plain; charset=utf-8"}],
-                                    "/update requires POST method\n"});
+                    case proplists:get_value("query", Req:parse_qs()) of
+                        undefined ->
+                            Req:respond({500, [{"Content-Type", " text/plain; charset=utf-8"}],
+                                        "/update needs a 'query' parameter\n"});
+                        QueryStr ->
+                            do_update(Req, QueryStr, Req:get(peer))
+                    end;
                 "insert" ->
                         Req:respond({405, [{"Content-Type", " text/plain; charset=utf-8"}],
                                     "/insert requires POST method\n"});

@@ -126,7 +126,7 @@ def get_kunde(kundennr):
     <kundennr> must be an Integer in the Range 10000..99999.
     If no data exists for that KdnNr ValueError is raised."""
 
-    warnings.warn("use `cs.masterdata.kunden` instead!",  DeprecationWarning, stacklevel=2)
+    warnings.warn("use `cs.masterdata.kunden` instead!", DeprecationWarning, stacklevel=2)
     kundennr = husoftm2.tools.remove_prefix(kundennr, 'SC')
     rows = query(['XKD00'],
                  condition="KDKDNR=%s AND KDSTAT<>'X'" % husoftm2.tools.pad('KDKDNR', kundennr),

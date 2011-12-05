@@ -7,7 +7,7 @@ Created by Maximillian Dornseif on 2007-04-28.
 Copyright (c) 2007, 2009, 2010 HUDORA GmbH. All rights reserved.
 """
 import datetime
-importport warnings
+import warnings
 
 from husoftm2.backend import query
 from husoftm2.tools import sql_quote, date2softm, remove_prefix, pad
@@ -25,7 +25,7 @@ def abgabepreise_kunde(artnrs, kundennr, auftragsdatum=None):
     Es werden zuerst kundenspezifische Preise, dann kundengruppen-spezifische Preise und als
     letztes Listenpreise ermittelt.
     """
-    warnings.warn("use `cs.salesforce.preise` instead!",  DeprecationWarning, stacklevel=2)
+    warnings.warn("use `cs.salesforce.preise` instead!", DeprecationWarning, stacklevel=2)
     if not auftragsdatum:
         auftragsdatum = datetime.date.today()
 
@@ -175,7 +175,7 @@ def listenpreise(artnrs=None):
     {'04711': 1365}
     """
 
-    warnings.warn("use `cs.salesforce.preise` instead!",  DeprecationWarning, stacklevel=2)
+    warnings.warn("use `cs.salesforce.preise` instead!", DeprecationWarning, stacklevel=2)
     conditions = ["ARSTAT<>'X'"]
     if artnrs:
         conditions += ['ARARTN IN (%s)' % ','.join([sql_quote(x) for x in artnrs])]
@@ -183,7 +183,7 @@ def listenpreise(artnrs=None):
     return dict([(x['artnr'], int(100 * float(x['listenpreis']))) for x in rows])
 
 
-def listenpreisereis(artnr):
+def listenpreis(artnr):
     """Listenpreis für einene einzelenen Artikel."""
     preise = listenpreise([artnr]).values()
     if preise:

@@ -177,7 +177,8 @@ def get_bestellungen_artnr(artnr, header_only=False):
     return kursfaktorkorrektur(ret)
 
 
-def bestellungskoepfe(mindate=None, maxdate=None, additional_conditions=None, limit=None):
+def bestellungskoepfe(mindate=None, maxdate=None, additional_conditions=None, limit=None, fields=None):
+    """Liefert die Köpfe für Bestellungen"""
     conditions = ["BLSTAT<>'X'"]
 
     if mindate and maxdate:
@@ -192,7 +193,7 @@ def bestellungskoepfe(mindate=None, maxdate=None, additional_conditions=None, li
         conditions.extend(additional_conditions)
 
     condition = " AND ".join(conditions)
-    rows = query('EBL00', ordering=['BLBSTN DESC', 'BLDTBE'], condition=condition, limit=limit)
+    rows = query('EBL00', fields=fields, ordering=['BLBSTN DESC', 'BLDTBE'], condition=condition, limit=limit)
     return rows
 
 

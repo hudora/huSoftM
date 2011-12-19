@@ -3464,6 +3464,10 @@ DATETIMEDIR = {
 # Fields which need padding before beeing used in SQL queries
 PADDINGFIELDS = {
     'AKKDNR': '%8s',
+    'BBGKTO': '%8s',
+    'BBKST': '%10s',
+    'BBKTO': '%8s',
+    'BBPKTO': '%8s',
     'BUGKTO': '%8s',
     'FKKDNR': '%8s',
     'KAKDNR': '%8s',

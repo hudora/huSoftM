@@ -201,6 +201,15 @@ def get_auftrag_by_auftragsnr(auftragsnr, header_only=False, canceled=False):
     return auftraege[0]
 
 
+def get_auftraege_by_auftragsnrs(auftragsnrs, header_only=False, canceled=False):
+    """Aufträge mit Auftragsnummern aus auftragsnrs zurückgeben."""
+    auftragsnrs = [remove_prefix(auftragsnr, 'SO') for auftragsnr in auftragsnrs]
+    auftraege = _auftraege(["AKAUFN=%s" % sql_escape(auftragsnr)], header_only=header_only, canceled=canceled)
+    if not auftraege:
+        return None
+    return auftraege
+
+
 def get_auftrag_by_auftragsnr_tmp(auftragsnr_tmp, header_only=False, canceled=False):
     """Auftrag anhand der auftragsnr_tmp zurueckgeben. Wird von ic2/auftrag verwendet.
 

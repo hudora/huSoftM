@@ -98,8 +98,8 @@ def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate
                  ort=kopf['ort'],
                  auftragsnr="SO%s" % kopf['auftragsnr'],
                  auftragsnr_kunde=kopf['auftragsnr_kunde'],
-                 erfassung=kopf['AAK_erfassung_date'],
-                 aenderung=kopf['AAK_aenderung_date'],
+                 erfassung=kopf['AAK_erfassung'],
+                 aenderung=kopf.get('AAK_aenderung', None),
                  sachbearbeiter=husoftm2.sachbearbeiter.resolve(kopf['sachbearbeiter']),
                  anliefertermin=kopf['liefer_date'],
                  teillieferung_erlaubt=(kopf['teillieferung_erlaubt'] == 1),
@@ -162,6 +162,10 @@ def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate
                      fakturierte_menge=int(row['fakturierte_menge']),
                      erledigt=(row['voll_ausgeliefert'] == 1),
                      storniert=(row['AAP_status'] == 'X'),
+                     posnr=int(row['position']),
+                     _aenderung=row.get('AAP_aenderung', None),
+                     _erfassung=row['AAP_erfassung'],
+                     _zuteilung=row.get('AAP_zuteilung', None),
                      # 'position': 2,
                      # 'teilzuteilungsverbot': u'0',
                      )
@@ -202,11 +206,13 @@ def get_auftrag_by_auftragsnr(auftragsnr, header_only=False, canceled=False):
 
 
 def get_auftraege_by_auftragsnrs(auftragsnrs, header_only=False, canceled=False):
-    """Aufträge mit Auftragsnummern aus auftragsnrs zurückgeben."""
-    auftragsnrs = [remove_prefix(auftragsnr, 'SO') for auftragsnr in auftragsnrs]
-    auftraege = _auftraege(["AKAUFN=%s" % sql_escape(auftragsnr)], header_only=header_only, canceled=canceled)
-    if not auftraege:
-        return None
+    """Aufträge mit bestimmten Auftragsnummern zurückgeben.
+
+    Wenn `canceled == False` werden keine stornierten Aufträge und Positionen zurückgegeben."""
+
+    auftragsnrs = [sql_escape(remove_prefix(x, 'SO')) for x in auftragsnrs]
+    auftraege = _auftraege(["AKAUFN IN (%s)" % ','.join(auftragsnrs)],
+                           header_only=header_only, canceled=canceled)
     return auftraege
 
 

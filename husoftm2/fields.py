@@ -679,13 +679,13 @@ MAPPINGDIR = {
            # Bei der Marge f}r einen kompletten Vorgang sind f}r die Angaben
            # Verkaufspreis und Einstandspreis die entsprechenden Summen }ber
            # alle Positionen einzusetzen.
-           # 'APDTZU': 'Datum Zuteilung',
-           # 'APZTZU': 'Uhrzeit Zuteilung HHMMSS',
+           'APDTZU': 'AAP_zuteilung_date',
+           'APZTZU': 'AAP_zuteilung_time',
            # 'APJNZU': 'Jobnr Zuteilung',
-           # 'APDTER': 'Datum Format CJJMMTT',
-           # 'APZTER': 'Uhrzeit der Erfassung',
-           # 'APDTAE': 'Datum Format CJJMMTT',
-           # 'APZTAE': 'Uhrzeit letzte Änderung',
+           'APDTER': 'AAP_erfassung_date',
+           'APZTER': 'AAP_erfassung_time',
+           'APDTAE': 'AAP_aenderung_date',
+           'APZTAE': 'AAP_aenderung_time',
            # 'APSBAE': 'Sachb.letzte Änderung',
            # 'APDFSL': 'Dateiführungs-Schlüssel',
            'APSTAT': 'AAP_status',
@@ -3443,6 +3443,9 @@ DECIMALIZE = set(['TKKUR1', 'TKKUR2'])
 DATETIMEDIR = {
                'AKDTAE': 'AKZTAE',
                'AKDTER': 'AKZTER',
+               'APDTZU': 'APZTZU',
+               'APDTER': 'APZTER',
+               'APDTAE': 'APZTAE',
                'CKANFD': 'CKANFZ',  # XCK00 start
                'CKENDD': 'CKENDZ',  # XCK00 ende
                'FKDTER': 'FKZTER',  # Rechnungskopf erfassung_date

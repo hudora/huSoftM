@@ -71,8 +71,10 @@ def get_bestellung(bestellnr):
     bestellnr = remove_prefix(bestellnr, 'PO')
     kopf = query('EBL00', ordering=['BLBSTN DESC'],
         condition="BLSTAT<>'X' AND BLBSTN=%s" % sql_escape(bestellnr))
+    if len(kopf) == 0:
+        return None, None  # Unbekannter / Stornierter Datensatz.
     if len(kopf) != 1:
-        raise RuntimeError('inkonsistente Kopfdaten in EBL00')
+        raise RuntimeError('inkonsistente Kopfdaten in EBL00: %s' % kopf)
     kopf = kursfaktorkorrektur(kopf)[0]
 
     # BZT00 - zusatztexte

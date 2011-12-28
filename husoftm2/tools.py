@@ -50,11 +50,12 @@ SOFTMLKZ2ISOLAND = {'': 'DE',
                     'HK': 'HK',   # Hongkong
                     'HR': 'HR',   # Kroatien
                     'I': 'IT',    # Italien
+                    'IL': 'IL',   # Israel
                     'IR': 'IR',   # Iran
                     'IRL': 'IE',  # Irland
                     'IS': 'IS',   # Island
                     'J': 'JP',    # Japan
-                    'KOR': 'KR',    # Korea
+                    'KOR': 'KR',  # Korea
                     'L': 'LU',    # Luxemburg
                     'LTL': 'LT',  # Litauen
                     'LV': 'LV',   # Lettland
@@ -64,7 +65,7 @@ SOFTMLKZ2ISOLAND = {'': 'DE',
                     'NZ': 'NZ',   # Neuseeland
                     'P': 'PT',    # Portugal
                     'PA': 'PA',   # Panama
-                    'PAK': 'PK',    # Pakistan
+                    'PAK': 'PK',  # Pakistan
                     'PL': 'PL',   # Polen
                     'RA': 'AR',   # Argentinien
                     'RC': 'TW',   # Taiwan

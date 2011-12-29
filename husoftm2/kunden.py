@@ -243,6 +243,7 @@ def _softm_to_dict(row):
                interne_firmennr=row.get('interne_firmennr', ''),        # ': u''
                unsere_lieferantennr=row.get('unsere_lieferantennr', ''),
                skontoschluessel=row.get('skontoschluessel', ''),
+               zahlungsbedingung_schluessel=row.get('zahlungsbedingung_schluessel', 0),
               )
     ret['name'] = ' '.join((ret['name1'], ret['name2'])).strip()
     ret['betreuer'] = betreuerdict.get(ret['betreuer_handle'], '')

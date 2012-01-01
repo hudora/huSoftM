@@ -114,9 +114,9 @@ def get_new(limit=401):
     return ret
 
 
-def mark_processed(kommiauftragnr):
+def mark_processed(kommiauftragsnr):
     """Markiert einen Kommiauftrag, so dass er von get_new() nicht mehr zurücuk gegeben wird."""
-    conditions = ["IAKBNR=%s" % sql_quote(remove_prefix(kommiauftragnr, 'KA'))]
+    conditions = ["IAKBNR=%s" % sql_quote(remove_prefix(kommiauftragsnr, 'KA'))]
     return x_en('ISA00', condition=' AND '.join(conditions), ua='husoftm2.kommiauftraege')
 
 

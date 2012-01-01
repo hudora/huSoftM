@@ -45,6 +45,8 @@ Es gibt verschiedene Mengen von denen wir reden.
 """
 
 
+import warnings
+
 from husoftm2.artikel import set_artikel
 from husoftm2.tools import sql_quote, add_prefix, str2softmdate, date2softm
 from husoftm2.backend import query, query_async, as400_2_int
@@ -62,6 +64,7 @@ def buchbestaende(artnrs=None, lager=0):
     >>> buchbestand(['14600/03'])
     {u'14600/03': 338}
     """
+    warnings.warn("nutzen sie cs.huwawi.get_lager_artnrs()",  DeprecationWarning, stacklevel=2)
     conditions = ["LFLGNR=%d" % int(lager),
                   "LFMGLP<>0",
                   "LFSTAT<>'X'"]
@@ -279,7 +282,8 @@ def auftragsmengen_alle_artikel():
                datetime.date(2008, 11, 24): 763,
                datetime.date(2008, 11, 27): 200}}
     """
-
+    warnings.warn("auftragsmengen_alle_artikel() wird abgeschafft",
+                  DeprecationWarning, stacklevel=2)
     conditions = [
     "AKAUFN=APAUFN",
     "AKAUFA<>'U'",               # keine Umlagerungen

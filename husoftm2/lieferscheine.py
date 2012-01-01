@@ -46,7 +46,7 @@ def get_ls_kb_data(conditions, additional_conditions=None, limit=None, header_on
                     lieferadresse=dict(kundennr="SC%s" % row['warenempfaenger']),
                     anlieferdatum=row['anliefer_date'],
                     lager="LG%03d" % int(row['lager']),
-                    kommiauftragnr="KA%s" % row['kommibelegnr'],
+                    kommiauftragsnr="KA%s" % row['kommibelegnr'],
                     kommiauftrag_datum=row['kommibeleg_date'],
                     lieferscheinnr="SL%s" % row['lieferscheinnr'],
                     name1=row.get('name1', ''),

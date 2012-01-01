@@ -28,8 +28,8 @@ def get_new(limit=100):
     return ret
 
 
-def mark_processed(kommiauftragnr, posnr):
+def mark_processed(kommiauftragsnr, posnr):
     """Markiert einen Umlagerungsauftrag, so dass er von get_new() nicht mehr zurück gegeben wird."""
-    conditions = ["IKKBNR=%s" % sql_quote(remove_prefix(kommiauftragnr, 'KA')),
+    conditions = ["IKKBNR=%s" % sql_quote(remove_prefix(kommiauftragsnr, 'KA')),
                   "IKKPOS=%d" % int(posnr)]
     return x_en('ISK00', condition=' AND '.join(conditions), ua='husoftm2.umlagerungen')

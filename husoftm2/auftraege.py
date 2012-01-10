@@ -156,6 +156,7 @@ def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate
         for row in query(['AAP00'], condition=poscondition,
                          ua='husoftm2.auftraege'):
             d = dict(menge=int(row['bestellmenge']),
+                     lager="LG%s" % row['lager'],
                      artnr=row['artnr'],
                      liefer_date=row['liefer_date'],
                      menge_offen=int(row['menge_offen']),

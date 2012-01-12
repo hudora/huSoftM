@@ -251,6 +251,7 @@ def _softm_to_dict(row):
         logging.error('Kunde %s (%s) hat mit "%s" keinen gueltigen Betreuer', ret['name1'],
                                                                               ret['kundennr'],
                                                                               ret['betreuer_handle'])
+
     ret['vertreter'] = vertreterdict.get(ret['vertreter_handle'], '')
     if not ret['vertreter']:
         logging.error('Kunde %s (%s) hat mit "%s" keinen gueltigen Vertreter', ret['name1'],

@@ -38,6 +38,7 @@ def abgabepreise_kunde(artnrs, kundennr, auftragsdatum=None):
     # 1. Preise für Kunden hinterlegt?
     conditions = ["PNSANR=PRSANR",
                   "PRANW='A'",
+                  "PRPRLK<>''"
                   "PRSTAT=' '",
                   "PNSTAT=' '",
                   "PRDTBI>=%s" % date_str,
@@ -61,10 +62,10 @@ def abgabepreise_kunde(artnrs, kundennr, auftragsdatum=None):
     condition_gruppe = conditions + [
                             # "PRPRLK = %s" % sql_quote(kunde['kunden_gruppe']),
                             "PRARTN IN (%s)" % ",".join([sql_quote(artnr) for artnr in artnrs]),
-                            "KDKDNR=%s" % pad('KDKDNR', kundennr),
-                            "PRPRLK=KDKGRP"
+                            "KZKDNR=%s" % pad('KZKDNR', kundennr),
+                            "PRPRLK=KZPREL"
                        ]
-    rows = query(tables=['XPN00', 'XPR00', 'XKD00'],
+    rows = query(tables=['XPN00', 'XPR00', 'AKZ00'],
                  fields=['PRARTN', 'PNPRB', 'PRPRLK'],
                  condition=' AND '.join(condition_gruppe),
                  ordering='PRDTVO')

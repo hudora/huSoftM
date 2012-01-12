@@ -736,6 +736,7 @@ MAPPINGDIR = {
           'KZGEB': 'gebiet',
           'KZBRAN': 'branche',
           'KZDSTK': 'distrikt',
+          'KZPREL': 'preisliste',
           #'KZKZVB':' Kz. 'Kunde ist Verbraucher','
           #'KZKZZU': 'Bevorzugte Zuteilung',
           #'KZKZRK': 'Rückstand möglich',
@@ -2617,7 +2618,7 @@ MAPPINGDIR = {
           # 'KDALSO': 'sortierfeld',
           # 'KDSPSL': 'Sprache', # Werte 1 & 2
           # 'KDWSL ': 'Währungs-Kennzeichen',
-          'KDKGRP': 'kunden_gruppe',  # für Preislisten
+          'KDKGRP': 'kunden_gruppe',
           'KDEMAL': 'mail',
           # 'KDHOME': 'url',
           # 'KDSANR': 'adressdatei_id',
@@ -2793,7 +2794,7 @@ MAPPINGDIR = {
         # 'XASPSL': Sprache
         # 'XAWSL ': W{hrungs-Kennzeichen
         # 'XAFGRP': Firmen-Gruppe
-        'XAKGRP': 'kunden_gruppe',  # für Preisliste
+        'XAKGRP': 'kunden_gruppe',
         # 'XALGRP': Lieferanten-Gruppe
         # 'XAISIC': ISIC-Schl}ssel
         # 'XARPMK': RPM-Kreis

@@ -43,10 +43,13 @@
     }
   };
   select = function(request, response) {
+
+
     var newurl, parsedurl, proxy, query, querystr;
     parsedurl = url.parse(request.url);
     query = JSON.parse(querystring.parse(parsedurl.query).q);
     querystr = "SELECT " + query.fields.join(',') + " FROM " + query.tablenames.join(',');
+
     if (query.joins) {
       query.joins.forEach(function(x) {
         var jointable, leftattr, rightattr;

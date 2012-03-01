@@ -1,25 +1,44 @@
 (function() {
   var args, colors, crypto, desthost, destport, http, httpProxy, listenport, login_required, password, query_counter, querystring, raw_counter, raw_sql, select, sendReply, server, startswith, update_counter, url, util, welcome, x_en;
+
   colors = require('./lib/colors');
+
   crypto = require('crypto');
+
   http = require('http');
+
   httpProxy = require('./lib/node-http-proxy');
+
   querystring = require('querystring');
+
   url = require('url');
+
   util = require('util');
+
   welcome = '      __             _         _   _                                          \n    /    )         /  `        /  /|                                          \n----\\--------__--_/__---_/_---/| /-|----__---|/------__---)__----__---__---__-\n     \\     /   ) /      /    / |/  |  /___)  |     /   ) /   ) /___) (_ ` (_ `\n_(____/___(___/_/______(_ __/__/___|_(___ __/|____/___/_/_____(___ _(__)_(__)_\n           Midrange over HTTP                    /     /                      \n                                                /                             ';
+
   util.puts(welcome.yellow.bold);
+
   args = process.argv.slice(2);
+
   password = args[0] || 'geheim';
+
   desthost = args[1] || 'localhost';
+
   destport = args[2] || '8000';
+
   listenport = args[3] || '8082';
+
   query_counter = 0;
+
   update_counter = 0;
+
   raw_counter = 0;
+
   startswith = function(s1, s2) {
     return s1.substr(0, s2.length) === s2;
   };
+
   sendReply = function(response, code, message) {
     response.writeHead(code, {
       "Content-Type": 'text/plain',
@@ -30,6 +49,7 @@
     response.write("\n");
     return response.end();
   };
+
   login_required = function(request, response, handler) {
     var digest, encoding, hmac;
     hmac = crypto.createHmac('sha1', password);
@@ -42,14 +62,12 @@
       return handler(request, response);
     }
   };
+
   select = function(request, response) {
-
-
     var newurl, parsedurl, proxy, query, querystr;
     parsedurl = url.parse(request.url);
     query = JSON.parse(querystring.parse(parsedurl.query).q);
     querystr = "SELECT " + query.fields.join(',') + " FROM " + query.tablenames.join(',');
-
     if (query.joins) {
       query.joins.forEach(function(x) {
         var jointable, leftattr, rightattr;
@@ -60,6 +78,7 @@
       });
     }
     if (query.condition) {
+      if (typeof query.condition === 'string') query.condition = [query.condition];
       querystr = querystr + ' WHERE ' + query.condition.join(' AND ').replace(/';/g, "");
     }
     if (query.grouping) {
@@ -81,6 +100,7 @@
     proxy.proxyRequest(destport, desthost);
     return query_counter += 1;
   };
+
   x_en = function(request, response) {
     var column, newurl, parsedurl, proxy, query, querystr, tablemapping, value;
     tablemapping = {
@@ -110,11 +130,11 @@
       tag: query.tag + '+sEx'
     });
     request.url = newurl;
-    console.log(newurl);
     proxy = new httpProxy.HttpProxy(request, response);
     proxy.proxyRequest(destport, desthost);
     return update_counter += 1;
   };
+
   raw_sql = function(request, response) {
     var newurl, parsedurl, proxy, querystr;
     parsedurl = url.parse(request.url);
@@ -141,6 +161,7 @@
     proxy.proxyRequest(destport, desthost);
     return raw_counter += 1;
   };
+
   server = httpProxy.createServer(function(request, response) {
     var parsedurl, proxy;
     parsedurl = url.parse(request.url);
@@ -163,7 +184,7 @@
         return login_required(request, response, x_en);
       }
     } else if (startswith(parsedurl.pathname, '/raw')) {
-      if (request.method !== 'POST') {
+      if (request.method !== 'GET' && request.method !== 'POST') {
         return sendReply(response, 405, "Method " + request.method + " not allowed");
       } else {
         return login_required(request, response, raw_sql);
@@ -172,7 +193,11 @@
       return sendReply(response, 404, "Not here!");
     }
   });
+
   server.listen(listenport);
+
   util.puts('proxy server '.blue + 'started '.green.bold + 'on port '.blue + (listenport + '').yellow);
+
   util.puts(' connecting to '.blue + (desthost + ':' + destport).yellow);
+
 }).call(this);

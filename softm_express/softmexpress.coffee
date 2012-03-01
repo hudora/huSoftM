@@ -99,8 +99,8 @@ select = (request, response) ->
     # Verschiedene weitere Parametertypen nach Bedarf zufügen. Wir gehen
     # davon aus, das der Client schonn das Escaping vorgenommen hat
     if query.condition
-		if typeof query.condition == 'string'
-			query.condition = [query.condition]
+        if typeof query.condition == 'string'
+            query.condition = [query.condition]
         querystr = querystr + ' WHERE ' + query.condition.join(' AND ').replace(/';/g, "")
     if query.grouping
         querystr = querystr + ' GROUP BY ' + query.grouping.join(',').replace(/';/g, "")

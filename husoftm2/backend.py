@@ -50,8 +50,6 @@ except:
 
 
 SOFTMEXPRESSHOST = 'api.hudora.biz:8082'
-# nötig, bis https://hudora.lighthouseapp.com/projects/43795/tickets/217 erledigt ist.
-SOFTMEXPRESSHOST = 'api2.hudora.biz:8082'
 
 
 class SoftMError(Exception):

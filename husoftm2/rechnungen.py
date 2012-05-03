@@ -7,6 +7,9 @@ Created by Christian Klein on 2010-12-13.
 Copyright (c) 2010 HUDORA. All rights reserved.
 """
 
+raise NotImplementedError("Dieses Modul sollte nciht emhr verwendet werden")
+
+
 from husoftm2.backend import query
 from husoftm2.tools import date2softm, add_prefix, remove_prefix
 

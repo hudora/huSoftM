@@ -10,6 +10,9 @@ Created by Christian Klein on 2010-03-25.
 Copyright (c) 2010 HUDORA GmbH. All rights reserved.
 """
 
+raise NotImplementedError("Dieses Modul sollte nciht emhr verwendet werden")
+
+
 from husoftm2.backend import query
 
 

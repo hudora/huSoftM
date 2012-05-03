@@ -9,6 +9,10 @@ Technisch hängt das in SoftM an den Lieferscheinen.
 Created by Christian Klein on 2011-01-03.
 Copyright (c) 2011 HUDORA. All rights reserved.
 """
+
+raise NotImplementedError("Dieses Modul sollte nciht emhr verwendet werden")
+
+
 import datetime
 import logging
 import warnings

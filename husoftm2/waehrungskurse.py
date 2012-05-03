@@ -6,6 +6,10 @@ waehrungskurse.py - Funktionen zu Währungskursen in SoftM
 Created by Christian Klein on 2011-05-31.
 Copyright (c) 2011 HUDORA GmbH. All rights reserved.
 """
+
+raise NotImplementedError("Dieses Modul sollte nciht emhr verwendet werden")
+
+
 from husoftm2.backend import query
 from husoftm2.tools import date2softm, sql_quote
 

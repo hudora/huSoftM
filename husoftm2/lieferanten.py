@@ -7,6 +7,9 @@ Created by Christoph Borgolte on 2011-05-31.
 Copyright (c) 2011 HUDORA. All rights reserved.
 """
 
+raise NotImplementedError("Dieses Modul sollte nciht emhr verwendet werden")
+
+
 from husoftm2.backend import query
 from husoftm2.tools import pad, remove_prefix, add_prefix, land2iso
 

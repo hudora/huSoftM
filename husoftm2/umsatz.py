@@ -8,6 +8,9 @@ Created by Christian Klein on 2011-03-25.
 Copyright (c) 2011 HUDORA. All rights reserved.
 """
 
+raise NotImplementedError("Dieses Modul sollte nciht emhr verwendet werden")
+
+
 import datetime
 import decimal
 import huTools.world

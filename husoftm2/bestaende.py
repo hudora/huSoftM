@@ -44,6 +44,8 @@ Es gibt verschiedene Mengen von denen wir reden.
 
 """
 
+raise NotImplementedError("Dieses Modul sollte nciht emhr verwendet werden")
+
 
 import warnings
 

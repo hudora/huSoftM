@@ -7,6 +7,9 @@ Created by Maximillian Dornseif on 2007-04-28.
 Copyright (c) 2007, 2009, 2010 HUDORA GmbH. All rights reserved.
 """
 
+raise NotImplementedError("Dieses Modul sollte nciht emhr verwendet werden")
+
+
 import datetime
 import unittest
 from husoftm2.backend import query

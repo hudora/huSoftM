@@ -6,6 +6,10 @@ umlagerungen.py
 Created by Christian Klein on 2011-04-01.
 Copyright (c) 2011 HUDORA GmbH. All rights reserved.
 """
+
+raise NotImplementedError("Dieses Modul sollte nciht emhr verwendet werden")
+
+
 from husoftm2.backend import query, x_en
 from husoftm2.tools import add_prefix, remove_prefix, sql_quote
 

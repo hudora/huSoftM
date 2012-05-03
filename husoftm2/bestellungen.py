@@ -7,6 +7,8 @@ Created by Maximillian Dornseif on 2009-07-02.
 Copyright (c) 2009, 2010 HUDORA. All rights reserved.
 """
 
+raise NotImplementedError("Dieses Modul sollte nciht emhr verwendet werden")
+
 import collections
 import unittest
 from decimal import Decimal

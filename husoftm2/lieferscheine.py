@@ -7,6 +7,9 @@ Created by Maximillian Dornseif on 2007-03-17.
 Copyright (c) 2007, 2010, 2011 HUDORA GmbH. All rights reserved.
 """
 
+raise NotImplementedError("Dieses Modul sollte nciht emhr verwendet werden")
+
+
 import datetime
 import husoftm2.backend
 import husoftm2.sachbearbeiter

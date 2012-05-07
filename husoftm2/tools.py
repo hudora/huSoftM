@@ -79,6 +79,7 @@ SOFTMLKZ2ISOLAND = {'': 'DE',
                     'SLO': 'SI',  # Slowenien
                     'TR': 'TR',   # Tuerkei
                     'UA': 'UA',   # Ukraine
+                    'USA': 'US',  # Vereinigte Staaten
                     'VC': 'CN',   # Volksrepublik China
                     'ZA': 'ZA',   # Südafrika
 }

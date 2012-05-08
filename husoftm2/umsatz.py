@@ -17,9 +17,18 @@ from husoftm2.tools import pad, remove_prefix, softm2date, date2softm, sql_quote
 from husoftm2.backend import query, as400_2_int
 import husoftm2.kunden
 
-
 def get_umsatz(kundennr, jahr):
-    """Ermittle den Umsatz für den Kunden im gegebenen Jahr"""
+    """Ermittle den Umsatz für den WARENEMPFAENGER im gegebenen Jahr"""
+    return _get_umsatz(kundennr, jahr, 'AKKDNR')
+
+
+def get_umsatz_kunde(kundennr, jahr):
+    """Ermittle den Umsatz für den Rechungsempfaenger im gegebenen Jahr"""
+    return _get_umsatz(kundennr, jahr, 'AKKDRG')
+
+
+def _get_umsatz(kundennr, jahr, kundenfeld):
+    """Ermittle den Umsatz im gegebenen Jahr"""
 
     if isinstance(jahr, datetime.date):
         jahr = jahr.year
@@ -38,7 +47,7 @@ def get_umsatz(kundennr, jahr):
     conditions = ['BUJJBU=%d' % (jahr - 2000),  # Keinen Kommentar zu SoftM!
                   'BUGKTO=%s' % pad('BUGKTO', ktonr),
                   'AKAUFN=BUAUFN',
-                  'AKKDNR=%s' % pad('AKKDNR', remove_prefix(kundennr, 'SC')),
+                  '%s=%s' % (kundenfeld, pad(kundenfeld, remove_prefix(kundennr, 'SC'))),
                  ]
 
     rows = query(tables=['BBU00', 'AAK00'], fields=['BUSOHA', 'SUM(BUNEBT)'], grouping=['BUSOHA'],

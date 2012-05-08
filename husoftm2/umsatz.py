@@ -2,7 +2,6 @@
 # encoding: utf-8
 """
 umsatz.py
-TODO: mit kunden.py zusammenlegen
 
 Created by Christian Klein on 2011-03-25.
 Copyright (c) 2011 HUDORA. All rights reserved.
@@ -46,11 +45,10 @@ def _get_umsatz(kundennr, jahr, kundenfeld):
 
     conditions = ['BUJJBU=%d' % (jahr - 2000),  # Keinen Kommentar zu SoftM!
                   'BUGKTO=%s' % pad('BUGKTO', ktonr),
-                  'AKAUFN=BUAUFN',
-                  '%s=%s' % (kundenfeld, pad(kundenfeld, remove_prefix(kundennr, 'SC'))),
+                  'BUPKTO=%s' % pad('BUPKTO', remove_prefix(kundennr, 'SC')),
                  ]
 
-    rows = query(tables=['BBU00', 'AAK00'], fields=['BUSOHA', 'SUM(BUNEBT)'], grouping=['BUSOHA'],
+    rows = query(tables=['BBU00'], fields=['BUSOHA', 'SUM(BUNEBT)'], grouping=['BUSOHA'],
                  querymappings={'BUSOHA': 'art', 'SUM(BUNEBT)': 'umsatz'},
                  condition=' AND '.join(conditions), ua='husoftm2.umsatz.get_umsatz', cachingtime=86400)
 

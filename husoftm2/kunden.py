@@ -258,7 +258,7 @@ def _softm_to_dict(row):
                                                                                ret['kundennr'],
                                                                                ret['vertreter_handle'])
     if 'verbandsnr' in row and row['verbandsnr']:
-        ret['verbandsnr'] = 'SC%s' % row['verbandsnr']
+        ret['verbandsnr'] = husoftm2.tools.add_prefix(row['verbandsnr'], 'SV')
         ret['mitgliedsnr'] = row.get('mitgliedsnr', '')
     if 'iln' in row and row['iln']:
         ret['iln'] = unicode(int(row['iln'])).strip()
@@ -270,6 +270,11 @@ def _softm_to_dict(row):
 
     # [LH#927] Kunden können in SoftM als inaktiv markiert sein
     ret['aktiv'] = row['satzstatus'] != 'I'
+
+    if row.get('technischer_rechnungsempfaenger'):
+        ret['technischer_rechnungsempfaenger'] = \
+             husoftm2.tools.add_prefix(row['technischer_rechnungsempfaenger'], 'SC')
+
     return ret
 
 

@@ -751,7 +751,7 @@ MAPPINGDIR = {
           # sondern muss mit Leerzeichen aufgefüllt werden: husoftm2.tools.pad('KPINHA', value)
           'KZX3ZB': 'zahlungsbedingung_schluessel',
           'KZRBPR': 'kundenrabatt',
-          #'KZKDRG': 'Rechnungs-Zahler',
+          'KZKDRG': 'technischer_rechnungsempfaenger',
           #'KZWSL ': 'Währungs-Kennzeichen',
           #'KZKZBO': 'Bonus-Kennzeichen',
           #'KZKZSL': 'Sammellieferschein',

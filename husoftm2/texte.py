@@ -180,6 +180,16 @@ def auftragstextdaten(auftragsnr):
             kopfdaten.get(auftragsnr, {}))
 
 
+def get_map(schluesseltyp):
+    """Liefert ein dict aller Schlüssel und Werte zu dem Schlüsseltyp"""
+    result = {}
+    rows = query('XKP00', fields=['KPINHA', 'KPTX30'],
+                                      condition="KPTYP='%s'" % schluesseltyp, ua='husoftm2.texte')
+    for row in rows:
+        result[row['inhalt1']] = row['KPTX30']
+    return result
+
+
 def _test():
     """Einfache Selbsttests."""
     import pprint

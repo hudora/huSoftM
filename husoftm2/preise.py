@@ -9,8 +9,9 @@ Copyright (c) 2007, 2009, 2010 HUDORA GmbH. All rights reserved.
 import datetime
 import warnings
 
+import husoftm2.texte
 from husoftm2.backend import query
-from husoftm2.tools import sql_quote, date2softm, remove_prefix, pad
+from husoftm2.tools import sql_quote, date2softm, add_prefix, remove_prefix, pad
 
 
 def abgabepreise_kunde(artnrs, kundennr, auftragsdatum=None):
@@ -248,6 +249,32 @@ def durchschnittlicher_abgabepreis(artnr, kundennr=None, startdatum=None):
     for datum in sorted(mengen.keys()):
         ret.append((datum, int(umsatz[datum] / mengen[datum]), mengen[datum], umsatz[datum]))
     return ret
+
+
+def preislisten(gueltig_bis=None):
+    """Gib die 'Namen' aller Preislisten für Kundengruppen und Kunden zurück"""
+
+    conditions = ["PNSANR=PRSANR",
+                  "PRANW='A'",
+                  "PRSTAT=' '",
+                  "PNSTAT=' '",
+                  ]
+
+    if gueltig_bis:
+        conditions.append("PRDTBI>=%s" % date2softm(gueltig_bis))
+
+    preislisten = husoftm2.texte.get_map('PRL')
+
+    rows = query(tables=['XPR00', 'XPN00'],
+                 fields=['PRKDNR', 'PRPRLK', 'PRARTN', 'PNPRB', 'PRDTVO', 'PRDTBI'],
+                 condition=' AND '.join(conditions))
+    for row in rows:
+        if row['kunde']:
+            row['kunde'] = add_prefix(row['kunde'], 'SC')
+        if row['preisliste_kunde']:
+            row['preislistenname'] = preislisten[row['preisliste_kunde']]
+
+    return rows
 
 
 def _selftest():

@@ -60,6 +60,7 @@ SOFTMLKZ2ISOLAND = {'': 'DE',
                     'LTL': 'LT',  # Litauen
                     'LV': 'LV',   # Lettland
                     'M': 'MT',    # Malta
+                    'MCD': 'MK',  # Mazedonien
                     'N': 'NO',    # Norwegen
                     'NL': 'NL',   # Niederlande
                     'NZ': 'NZ',   # Neuseeland

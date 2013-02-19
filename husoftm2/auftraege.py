@@ -98,7 +98,7 @@ def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate
                  ort=kopf['ort'],
                  auftragsnr="SO%s" % kopf['auftragsnr'],
                  auftragsnr_kunde=kopf['auftragsnr_kunde'],
-                 erfassung=kopf['AAK_erfassung'],
+                 erfassung=kopf.get('AAK_erfassung'),
                  aenderung=kopf.get('AAK_aenderung', None),
                  sachbearbeiter=husoftm2.sachbearbeiter.resolve(kopf['sachbearbeiter']),
                  anliefertermin=kopf['liefer_date'],
@@ -108,9 +108,7 @@ def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate
                  erledigt=(kopf['voll_ausgeliefert'] == 1),
                  positionen=[],
                  art=kopf['art'],
-                 storniert=(kopf['AAK_status'] == 'X'),
-                 # * *info_kunde* - Freitext der für den Empfänger relevanz hat
-                 )
+                 storniert=(kopf['AAK_status'] == 'X'))
         koepfe[kopf['auftragsnr']] = d
 
         # Auftrag geht an die 'normale' Lieferadresse: Kein .\d\d\d-Suffix an die `lieferadresse.kundennr`
@@ -138,7 +136,7 @@ def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate
         allauftrnr = allauftrnr[50:]
 
         # Abweichende Lieferadressen
-        for row in query(['XAD00'], ua='husoftm2.lieferscheine',
+        for row in query(['XAD00'], ua='husoftm2.auftraege',
                          condition="ADAART=1 AND ADRGNR IN (%s)" % ','.join([str(x) for x in batch])):
             koepfe[row['nr']]['lieferadresse'] = dict(name1=row['name1'],
                                                       name2=row['name2'],
@@ -164,9 +162,9 @@ def _auftraege(additional_conditions=None, addtables=None, mindate=None, maxdate
                      erledigt=(row['voll_ausgeliefert'] == 1),
                      storniert=(row['AAP_status'] == 'X'),
                      posnr=int(row['position']),
-                     _aenderung=row.get('AAP_aenderung', None),
-                     _erfassung=row['AAP_erfassung'],
-                     _zuteilung=row.get('AAP_zuteilung', None),
+                     _aenderung=row.get('AAP_aenderung'),
+                     _erfassung=row.get('AAP_erfassung'),
+                     _zuteilung=row.get('AAP_zuteilung'),
                      # 'position': 2,
                      # 'teilzuteilungsverbot': u'0',
                      )

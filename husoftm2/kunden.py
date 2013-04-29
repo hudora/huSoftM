@@ -392,11 +392,14 @@ def offene_posten(kundennr):
     Decimal('0')
     """
 
-    # TODO: offener Auftragswert aus Tabelle 'XKS00'
+    conditions = [
+        'OPPKTO=%s' % husoftm2.tools.pad('OPPKTO', kundennr),
+        "NOT OPOINF LIKE 'XX%'",
+    ]
 
     kundennr = husoftm2.tools.remove_prefix(kundennr, 'SC')
     rows = query('BOP00', fields=['OPRGSH', 'SUM(OPOPBT)'],
-                 condition='OPPKTO=%s' % husoftm2.tools.pad('OPPKTO', kundennr),
+                 condition=' AND '.join(conditions),
                  grouping='OPRGSH',  # Gruppiert nach Typ: 'S' (Soll) und 'H' (Haben)
                  querymappings={},  # Verhindere ein Mapping, so dass der Rückgabewert ein Tupel ist
                  ua='husoftm2.kunden.offene_posten')

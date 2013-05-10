@@ -392,12 +392,12 @@ def offene_posten(kundennr):
     Decimal('0')
     """
 
+    kundennr = husoftm2.tools.remove_prefix(kundennr, 'SC')
     conditions = [
         'OPPKTO=%s' % husoftm2.tools.pad('OPPKTO', kundennr),
         "NOT OPOINF LIKE 'XX%'",
     ]
 
-    kundennr = husoftm2.tools.remove_prefix(kundennr, 'SC')
     rows = query('BOP00', fields=['OPRGSH', 'SUM(OPOPBT)'],
                  condition=' AND '.join(conditions),
                  grouping='OPRGSH',  # Gruppiert nach Typ: 'S' (Soll) und 'H' (Haben)

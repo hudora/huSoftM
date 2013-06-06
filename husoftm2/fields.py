@@ -1423,7 +1423,7 @@ MAPPINGDIR = {
           # 'OPJJAU': 'JJ Ausgleich',
           # 'OPJHAU': 'JH Ausgleich',
           # 'OPGJAU': 'Gesch{ftsjahr',
-          # 'OPOINF': 'OP-Information',
+          'OPOINF': 'opinformationen',
           # 'OPVRT': 'Vertreter-Nummer',
           # 'OPABT': 'Abteilungs-Nummer',
           # 'OPBRAN': 'Branche',

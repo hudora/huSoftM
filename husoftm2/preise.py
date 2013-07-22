@@ -173,7 +173,7 @@ def listenpreise(artnrs=None):
 
 
 def listenpreis(artnr):
-    """Listenpreis für einene einzelenen Artikel."""
+    """Listenpreis für einene einzelnen Artikel."""
     preise = listenpreise([artnr]).values()
     if preise:
         return preise[0]
@@ -204,6 +204,38 @@ def preislisten(gueltig_bis=None):
                                                      "?=%s" % row['preisliste_kunde'])
 
     return rows
+
+
+def kundenpreise(kundennr, gueltig_von=None, gueltig_bis=None):
+    """Alle kundenspezifischen Preis für einen Kunden"""
+
+    kundennr = remove_prefix(kundennr, 'SC')
+
+    conditions = ["PNSANR=PRSANR",
+                  "PRANW='A'",
+                  "PRSTAT=' '",
+                  "PNSTAT=' '",
+                  "PRKDNR=%s" % pad('PRKDNR', kundennr)
+                  ]
+
+    if gueltig_von:
+        conditions.append("PRDTVO>=%s" % sql_quote(date2softm(gueltig_von)))
+    if gueltig_bis:
+        conditions.append("PRDTBI>=%s" % sql_quote(date2softm(gueltig_bis)))
+
+    rows = query(tables=['XPN00', 'XPR00'],
+                 fields=['PRARTN', 'PNPRB', 'PRDTVO', 'PRDTBI'],
+                 condition=' AND '.join(conditions),
+                 ordering='PRDTVO'
+                 )
+
+    preise = {}
+    for row in rows:
+        print row
+        preise[row['artnr']] = dict(preis=int(row['preis'] * 100),
+                                    gueltig_von=row.get('gueltig_ab_date'),
+                                    gueltig_bis=row.get('gueltig_bis_date'))
+    return preise
 
 
 def _selftest():

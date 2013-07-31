@@ -2689,7 +2689,7 @@ MAPPINGDIR = {
     'PRANW': 'anwendung',  # 'E' == Einkauf
     # 'PRIB': 'Datenart',
     # 'PRANW1': 'Preismodul',
-    'PRSANR': 'satznr_xpn00',
+    'PRSANR': 'satznr_xpr00',
     # 'PRKTYP': 'Konditionstyp',
     'PRKDNR': 'kunde',
     'PRARTN': 'artnr',

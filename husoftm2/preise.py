@@ -224,17 +224,17 @@ def kundenpreise(kundennr, gueltig_von=None, gueltig_bis=None):
         conditions.append("PRDTBI>=%s" % sql_quote(date2softm(gueltig_bis)))
 
     rows = query(tables=['XPN00', 'XPR00'],
-                 fields=['PRARTN', 'PNPRB', 'PRDTVO', 'PRDTBI'],
+                 fields=['PRARTN', 'PNPRB', 'PRDTVO', 'PRDTBI', 'PRSANR'],
                  condition=' AND '.join(conditions),
                  ordering='PRDTVO'
                  )
 
     preise = {}
     for row in rows:
-        print row
         preise[row['artnr']] = dict(preis=int(row['preis'] * 100),
                                     gueltig_von=row.get('gueltig_ab_date'),
-                                    gueltig_bis=row.get('gueltig_bis_date'))
+                                    gueltig_bis=row.get('gueltig_bis_date'),
+                                    satznr=str(row['satznr_xpr00']))
     return preise
 
 

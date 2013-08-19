@@ -247,16 +247,8 @@ def _softm_to_dict(row):
               )
     ret['name'] = ' '.join((ret['name1'], ret['name2'])).strip()
     ret['betreuer'] = betreuerdict.get(ret['betreuer_handle'], '')
-    if not ret['betreuer']:
-        logging.error('Kunde %s (%s) hat mit "%s" keinen gueltigen Betreuer', ret['name1'],
-                                                                              ret['kundennr'],
-                                                                              ret['betreuer_handle'])
-
     ret['vertreter'] = vertreterdict.get(ret['vertreter_handle'], '')
-    if not ret['vertreter']:
-        logging.error('Kunde %s (%s) hat mit "%s" keinen gueltigen Vertreter', ret['name1'],
-                                                                               ret['kundennr'],
-                                                                               ret['vertreter_handle'])
+
     if 'verbandsnr' in row and row['verbandsnr']:
         ret['verbandsnr'] = husoftm2.tools.add_prefix(row['verbandsnr'], 'SV')
         ret['mitgliedsnr'] = row.get('mitgliedsnr', '')

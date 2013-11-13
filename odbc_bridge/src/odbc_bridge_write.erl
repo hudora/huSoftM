@@ -57,6 +57,7 @@ handle_call({update, QueryStr}, _From, State) ->
             odbc_bridge_log:log(io_lib:format("~5..0w ~4..0w ~s", [Time div 1000, Rowcount, QueryStr])),
             {reply, {ok, Rowcount}, State#state{successcount=State#state.successcount+1}};
         {error, Info} ->
+            odbc_bridge_log:log(io_lib:format("Error ~s ~s", [Info, QueryStr])),
             {reply, {error, Info}, State#state{errorcount=State#state.errorcount+1}};
         Any ->
             erlang:display(Any),

@@ -67,6 +67,10 @@ class TimeoutException(SoftMError, IOError):
     pass
 
 
+class SQLError(SoftMError):
+    """Exception for failure of raw_SQL """
+
+
 def _find_credentials(credentials=None):
     if not credentials:
         credentials = getattr(settings, 'SOFTMEXPRESS_CREDENTIALS', None)
@@ -267,7 +271,7 @@ def raw_SQL(command, ua=''):
                                                   timeout=3000)
     if status != 200:
         logging.error("%s %s" % (method, url))
-        raise RuntimeError("Server Error: %r" % status)
+        raise SQLError(status, content)
 
     # Not all replies are JSON encoded
     try:

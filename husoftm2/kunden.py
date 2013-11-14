@@ -8,7 +8,6 @@ Copyright (c) 2007, 2010, 2011 HUDORA GmbH. All rights reserved.
 """
 
 import datetime
-import logging
 import warnings
 from decimal import Decimal
 
@@ -274,7 +273,7 @@ def get_konditionen(kundennr):
     """Liefere die Zahlungsbedingungen für einen Kunden
 
     Der Rückgabewert ist ein Drei-Tupel bestehend aus Skonto-Tage, Skonto und Netto-Tage.
-    >>> get_konditionen2('SC66669')
+    >>> get_konditionen('SC66669')
     (8, Decimal('2'), 30)
     """
 

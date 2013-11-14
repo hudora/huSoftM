@@ -149,18 +149,11 @@ def abgabepreis_kunde(artnr, kundennr, auftragsdatum=None):
     return (listenpreis(artnr), 'Listenpreis')
 
 
-def listenpreis(artnr):
-    """Listenpreis für einene einzelenen Artikel."""
-    preise = listenpreise([artnr]).values()
-    if preise:
-        return preise[0]
-
-
 def listenpreise(artnrs=None):
     """Gibt den (aktuellen) Listenpreis in Cent für eine Liste von Artikeln zurück.
     Wenn keine Artikelnummern angegeben werden, gibt es alle Listenpreise zurück.
 
-    >>> preise(['04711'])
+    >>> listenpreise(['04711'])
     {'04711': 1365}
     """
 
@@ -242,11 +235,8 @@ def _selftest():
     """Test basic functionality"""
     from pprint import pprint
     pprint(listenpreise(['14600', '14600/00', '14600/01', '14600/02', '14600/03']))
-    pprint(buchdurchschnittspreise(['14600', '14600/00', '14600/01', '14600/02', '14600/03']))
-    #pprint(durchschnittlicher_abgabepreis('14600'))
-    pprint(durchschnittlicher_abgabepreis('74501/01', 'SC77900'))
     pprint(abgabepreis_kunde('74501/01', 'SC77900'))
-    print len(buchdurchschnittspreise())
+
 
 if __name__ == '__main__':
     from timeit import Timer

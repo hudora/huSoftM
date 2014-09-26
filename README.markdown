@@ -88,3 +88,6 @@ BSD Licensed
 Contains node-http-proxy Copyright (c) 2010 Charlie Robbins, Mikeal Rogers, Fedor Indutny, & Marak Squires.
 Contains colors.js Copyright (c) 2010 Alexis Sellier (cloudhead) , Marak Squires.
 Conatins pool.js Copyright (c) 2010 Mikeal Rogers.
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/hudora/husoftm/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
